@@ -1,0 +1,36 @@
+#!/bin/bash
+# Linux VM creation script
+
+if [ $# -lt 2 ]; then
+	echo "usage: create_vm <vm_name> <vbox_home_path> [ <file_name> ]"
+	exit 1;
+fi
+
+vm_name=$1
+export VBOX_USER_HOME="$2"
+
+VBoxManage createvm -name $vm_name -ostype Fedora -register
+VBoxManage modifyvm $vm_name -boot1 disk -boot2 none -boot3 none -vram 32 -memory 1024 \
+    -floppy enabled -usb on -usbehci on -nictype1 82540EM -biosbootmenu disabled -audio pulse
+
+if [ "$3" != "" ]; then
+    
+    echo "add disk ($3)"
+    VBoxManage openmedium disk $3
+    file=`basename $3`
+    VBoxManage modifyvm $vm_name -hda $3
+fi
+
+VBoxManage setextradata global "GUI/MaxGuestResolution" "any"
+VBoxManage setextradata global "GUI/Input/AutoCapture" "true"
+VBoxManage setextradata global "GUI/SuppressMessages" ",remindAboutAutoCapture,confirmInputCapture,remindAboutMouseIntegrationOn,remindAboutMouseIntegrationOff,remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen"
+VBoxManage setextradata global "GUI/TrayIcon/Enabled" "false"
+VBoxManage setextradata global "GUI/UpdateCheckCount" "2"
+VBoxManage setextradata global "GUI/UpdateDate" "never"
+VBoxManage setextradata $vm_name "GUI/SaveMountedAtRuntime" "false"
+VBoxManage setextradata $vm_name "GUI/Fullscreen" "on"
+VBoxManage setextradata $vm_name "GUI/Seamless" "off"
+VBoxManage setextradata $vm_name "GUI/LastCloseAction" "powerOff"
+VBoxManage setextradata $vm_name "GUI/AutoresizeGuest" "on"
+
+#!/
