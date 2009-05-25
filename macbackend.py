@@ -112,8 +112,11 @@ def get_free_ram():
 def get_dvd_device():
     pass
 
+def get_host_home():
+    return path.expanduser('~'), "Mes documents Mac"
+    
 def get_usb_devices():
-    return []
+    return [], []
 
 def restore_fstab():
     if path.exists('/etc/fstab'):

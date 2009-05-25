@@ -161,6 +161,18 @@ class VirtualMachine:
 				adapter.setAttribute("MACAddress", mac_addr)
 				return
 
+	def set_guest_property (self, name, value):
+		for prop in self.xml.getElementsByTagName('GuestProperty'):
+			if prop.getAttribute('name') == name:
+				prop.setAttribute('value', value)
+				return
+
+		element = self.xml.getElementsByTagName('GuestProperties')[0]
+		new_element = self.xml.createElement("GuestProperty")
+		new_element.setAttribute('name', name)
+		new_element.setAttribute('value', value)
+		element.appendChild(new_element)
+				
 	def set_shared_folder (self, share_name, host_path):
 		if not host_path or host_path == "none":
 			self.disable_shared_folder(share_name)
@@ -184,11 +196,17 @@ class VirtualMachine:
 				shares.removeChild(share)
 				return
 				
-	def reset_usb_shared (self):
+	def reset_shared_folders (self):
+		# beurkk...
 		for share in self.xml.getElementsByTagName('SharedFolder'):
-			if share.getAttribute('name').startswith("usb_"):
-				shares = share.parentNode
-				shares.removeChild(share)
+			shares = share.parentNode
+			shares.removeChild(share)
+				
+	def reset_share_properties (self):
+		for prop in self.xml.getElementsByTagName('GuestProperty'):
+			if prop.getAttribute('name').startswith("share_"):
+				properties = prop.parentNode
+				properties.removeChild(prop)
 
 	def write (self):
 		open(self.file, 'w').write(self.xml.toxml().encode("utf-8"))

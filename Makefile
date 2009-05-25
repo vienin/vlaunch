@@ -89,3 +89,10 @@ install:
 
 	# Kit de survie
 	cp "Kit de survie.pdf" $(DESTDIR)$(TARGET_PATH)
+
+	# shared folders automount and links
+	mkdir -p $(DESTDIR)/usr/bin
+	mkdir -p $(DESTDIR)/etc/xdg/autostart
+	chmod +x VBoxClientSymlink
+	cp VBoxClientSymlink $(DESTDIR)/usr/bin
+	cp vboxclientsymlink.desktop $(DESTDIR)/etc/xdg/autostart

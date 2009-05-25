@@ -117,8 +117,12 @@ def find_device_by_volume(dev_volume):
     logical_disks = WMI.Win32_LogicalDisk (VolumeName = dev_volume)
     if not logical_disks:
         return ""
-    partition = logical_disks[0].associators(wmi_association_class="Win32_LogicalDiskToPartition")[0]
-    disks = partition.associators(wmi_result_class="Win32_DiskDrive")
+        
+    partitions = logical_disks[0].associators(wmi_association_class="Win32_LogicalDiskToPartition")
+    if not partitions:
+        return ""
+        
+    disks = partitions[0].associators(wmi_result_class="Win32_DiskDrive")
     if len(disks) > 0:
         return disks[0].Name
     return ""
@@ -223,6 +227,9 @@ def get_free_ram ():
             return max(int(ram[0].TotalPhysicalMemory) / 1024 / 1024 / 2, 384)
     return 0
 
+def get_host_home():
+    return path.expanduser('~'), "Mes documents Windows"
+    
 def get_usb_devices():
     return [ logical_disk.Caption + '\\' for logical_disk in WMI.Win32_LogicalDisk (DriveType = 2) ]
 

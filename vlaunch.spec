@@ -68,19 +68,21 @@ rm -rf iso
 #TODO: probably compile au3 windows script
 make %{?_smp_mflags}
 
+
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH} VM_NAME=%{VM_NAME}
 
+
 %post
 
+
 %preun
-rm -rf %{TARGET_PATH}/Linux
-rm -rf %{TARGET_PATH}/Mac-Intel
-rm -rf %{TARGET_PATH}/Windows
+
 
 %clean
 rm -rf $RPM_BUILD_ROOT
+
 
 %files
 %defattr(-,root,root,-)
@@ -89,8 +91,14 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/
 %{TARGET_PATH}/Mac-Intel/
 "%{TARGET_PATH}/Kit de survie.pdf"
+/usr/bin/VBoxClientSymlink
+/etc/xdg/autostart/vboxclientsymlink.desktop
+
 
 %changelog
+* Mon May 25 2009 Kevin Pouget <kevin.pouget@agorabox.org>
+Add host removable medias as shared folders
+
 * Tue Feb 17 2009 Kevin Pouget <kevin.pouget@agorabox.org>
 Added mac intel launcher script
 Update all platforms script, now configure virtual machine to boot on iso

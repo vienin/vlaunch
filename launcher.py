@@ -98,14 +98,24 @@ def configure_virtual_machine(create_vmdk = True):
         virtual_box.machine.set_fullscreen()
         virtual_box.machine.set_logo_image(path.join(conf.HOME, "ufo.bmp"))
 
-        if not conf.USESERVICE:
-            virtual_box.machine.set_shared_folder("hostshared", path.expanduser('~'))
+        # manage shared folders
+        virtual_box.machine.reset_shared_folders()
+        virtual_box.machine.reset_share_properties()
         
-        virtual_box.machine.reset_usb_shared()
-        usb_number = 0
-        for usb_device in get_usb_devices():
-            virtual_box.machine.set_shared_folder("usb_" + str(usb_number), usb_device)
-            usb_number += 1
+        # set host home shared folder
+        if not conf.USESERVICE:
+            share_name = "hosthome"
+            home_path, displayed_name = get_host_home()
+            virtual_box.machine.set_shared_folder(share_name, home_path)
+            virtual_box.machine.set_guest_property("share_" + share_name, displayed_name)
+            logging.debug("Setting shared folder : " + home_path + ", " + displayed_name)
+        
+        # set removable media shared folders
+        paths, names = get_usb_devices()
+        for usb in range(0, len(paths)):
+            virtual_box.machine.set_shared_folder(names[usb], paths[usb])
+            virtual_box.machine.set_guest_property("share_" + names[usb], names[usb])
+            logging.debug("Setting shared folder : " + paths[usb] + ", " + names[usb])
 
     # Write changes
     virtual_box.write()
