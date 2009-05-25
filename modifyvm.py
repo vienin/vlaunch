@@ -102,24 +102,23 @@ class VirtualMachine:
 				return
 
 	def set_ram_size (self, size):
-		# TODO:
-		# Check if (multiple de 4 ou je ne sais pas quoi)
 		element = self.xml.getElementsByTagName('Memory')[0]
 		element.setAttribute('RAMSize', str(size))
 
 	def set_resolution (self, resolution):
+                self.set_guest_property ('/VirtualBox/GuestAdd/Vbgl/Video/SavedMode', resolution + 'x32')
 		# Change resolution if node exist
-		for prop in self.xml.getElementsByTagName('GuestProperty'):
-			if prop.getAttribute('name') == '/VirtualBox/GuestAdd/Vbgl/Video/SavedMode':
-				prop.setAttribute('value', resolution + 'x32')
-				return
+		# for prop in self.xml.getElementsByTagName('GuestProperty'):
+		#	if prop.getAttribute('name') == '/VirtualBox/GuestAdd/Vbgl/Video/SavedMode':
+		#		prop.setAttribute('value', resolution + 'x32')
+		#		return
 
 		# Else add this node
-		element = self.xml.getElementsByTagName('GuestProperties')[0]
-		new_element = self.xml.createElement("GuestProperty")
-		new_element.setAttribute("name", "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode")
-		new_element.setAttribute("value", resolution + 'x32')
-		element.appendChild(new_element)
+		# element = self.xml.getElementsByTagName('GuestProperties')[0]
+		# new_element = self.xml.createElement("GuestProperty")
+		# new_element.setAttribute("name", "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode")
+		# new_element.setAttribute("value", resolution + 'x32')
+		# element.appendChild(new_element)
 
 	def set_fullscreen (self):
 		for extra_data in self.xml.getElementsByTagName('ExtraDataItem'):

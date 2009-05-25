@@ -113,9 +113,11 @@ def configure_virtual_machine(create_vmdk = True):
         # set removable media shared folders
         paths, names = get_usb_devices()
         for usb in range(0, len(paths)):
+            if names[usb] == None:
+                continue
             virtual_box.machine.set_shared_folder(names[usb], paths[usb])
-            virtual_box.machine.set_guest_property("share_" + names[usb], names[usb])
-            logging.debug("Setting shared folder : " + paths[usb] + ", " + names[usb])
+            virtual_box.machine.set_guest_property("share_" + str(names[usb]), names[usb])
+            logging.debug("Setting shared folder : " + str(paths[usb]) + ", " + str(names[usb]))
 
     # Write changes
     virtual_box.write()
