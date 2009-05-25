@@ -232,7 +232,7 @@ def get_host_home():
     
 def get_usb_devices():
     logical_disks = WMI.Win32_LogicalDisk (DriveType = 2)
-    return [ logical_disk.Caption + '\\' for logical_disk in logical_disks ], [ logical_disk.VolumeName for logical_disk in logical_disks ]
+    return [[logical_disk.Caption + '\\', logical_disk.VolumeName] for logical_disk in logical_disks ]
 
 def rights_error():
     msg = u"Vous ne possédez pas les permissions nécessaires pour lancer UFO."

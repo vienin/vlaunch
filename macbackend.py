@@ -116,7 +116,7 @@ def get_host_home():
     return path.expanduser('~'), "Mes documents Mac"
     
 def get_usb_devices():
-    return [], []
+    return [[device, grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()[2]] for device in glob.glob("/dev/disk[0-9]s[0-9]") if grep(commands.getoutput("diskutil info " + device), "Protocol:").split()[1] == "USB" and len(grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()) > 2 ]
 
 def restore_fstab():
     if path.exists('/etc/fstab'):
@@ -194,7 +194,6 @@ def find_network_device():
 # and add an entry in fstab to disable automount
 # params : dev_string
 # return : 0 if device is ready
-
 def prepare_device(disk):
     if conf.MOBILE:
         if path.exists("/etc/fstab"):
