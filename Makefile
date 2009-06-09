@@ -1,6 +1,6 @@
 NAME=vlaunch
 VERSION=0.4
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
