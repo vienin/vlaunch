@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Version=1.0
+Name=vboxclientsymlink
+Name[C]=vboxclientsymlink
+Comment[C]=VirtualBox Client shared folder symlink
+Comment=VirtualBox Client shared folder symlink
+Exec=/usr/bin/VBoxClientSymlink
+X-GNOME-Autostart-enabled=true
+

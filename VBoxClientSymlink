@@ -1,0 +1,59 @@
+#!/bin/sh
+
+# Create symlink as hostos
+cmdline=`cat /proc/cmdline`
+host="${cmdline#*hostos=}"
+host="${host%% *}"
+desktop="$HOME/Bureau"
+target=/media
+share_id="share_"
+
+# Set $IFS to end-of-line and coma
+ORIGIFS=$IFS
+IFS=`echo -en ",\n\b"`
+
+# Parse VBoxControl output
+share_names=()
+share_labels=()
+i=0
+for ligne in `sudo /usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share_id`; do
+	case "${ligne%%:*}" in
+	" value")
+		share_names[$i]="${ligne#*: }"
+		i=$(( $i + 1 ))
+		;;
+	"Name")
+		share_labels[$i]="${ligne#*: share_}"
+		;;
+	esac
+done
+
+# Remove old shares
+for ligne in `cat $HOME/.sharelinks`
+do
+	unlink "${desktop}/${ligne%:*}"
+	sudo rm -Rf "${target}/${ligne#*:}"
+done
+echo "" > $HOME/.sharelinks
+
+# Create new shares
+i=0
+for share_label in ${share_labels[@]}; do
+	share_name=${share_names[$i]}
+
+	[ -d "$target/$share_label" ] || sudo mkdir "$target/$share_label"
+	
+	echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$UID,rw\""
+	sudo mount.vboxsf "$share_label" "${target}/${share_label}" -o "uid=$UID,rw"
+	if [ $? -eq 0 ]; then
+		echo "ln -s -f \"${target}/${share_label}\" \"${desktop}/$share_name\""
+		ln -s -f "${target}/${share_label}" "${desktop}/$share_name"
+		echo "${share_name}:${share_label}" >> $HOME/.sharelinks
+	fi
+
+	i=$(( $i + 1 ))
+done
+
+IFS=$ORIGIFS
+
+
