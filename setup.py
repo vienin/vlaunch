@@ -16,8 +16,8 @@ data_files=[
            ]
 
 setup(zipfile = None,
-      options = {'py2exe': {'bundle_files': 1}},
+      #options = {'py2exe': {'bundle_files': 1}},
       windows = [{'script': "launcher.py", "icon_resources" : [(1, "UFO.ico")]}],
       
-      # data_files=data_files,
+      data_files=data_files,
 )
