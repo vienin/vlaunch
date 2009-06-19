@@ -14,6 +14,7 @@ import conf
 import shutil
 from utils import *
 from Tkinter import Tk, Image, PhotoImage, Toplevel, FLAT, NW, Canvas
+import Tix
 
 def grep(input, pattern, inverse=False):
     for line in input.split("\n"):
