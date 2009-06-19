@@ -56,6 +56,11 @@ for share_label in ${share_labels[@]}; do
 	i=$(( $i + 1 ))
 done
 
+# On MAC-OSX hosts, mount UFO part as real device
+host="${cmdline#*hostos=}"
+host="${host%% *}"
+[ "$host" == "macosx" ] && su $USER_UID -c "gnome-mount --device /dev/sda1"
+
 IFS=$ORIGIFS
 
 
