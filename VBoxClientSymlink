@@ -46,7 +46,7 @@ for share_label in ${share_labels[@]}; do
 	[ -d "$target/$share_label" ] || mkdir "$target/$share_label"
 	
 	echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$USER_UID,rw\""
-	mount.vboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw"
+	mountvboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw"
 	if [ $? -eq 0 ]; then
 		echo "ln -s -f \"${target}/${share_label}\" \"${desktop}/$share_name\""
 		ln -s -f "${target}/${share_label}" "${desktop}/$share_name"
