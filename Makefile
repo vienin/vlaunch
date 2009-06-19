@@ -1,6 +1,6 @@
 NAME=vlaunch
 VERSION=0.4
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop VBoxClientDnD vboxclientdnd.desktop
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -94,5 +94,9 @@ install:
 	mkdir -p $(DESTDIR)/usr/bin
 	mkdir -p $(DESTDIR)/etc/xdg/autostart
 	chmod +x VBoxClientSymlink
+	chmod +x VBoxClientDnD
 	cp VBoxClientSymlink $(DESTDIR)/usr/bin
 	cp vboxclientsymlink.desktop $(DESTDIR)/etc/xdg/autostart
+	cp VBoxClientDnD $(DESTDIR)/usr/bin
+	cp vboxclientdnd.desktop $(DESTDIR)/etc/xdg/autostart
+	

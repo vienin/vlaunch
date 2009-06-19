@@ -1,0 +1,13 @@
+#!/bin/sh
+# Mount Drag and Drog shared folder,
+# and start VBoxClient DnD service
+. /etc/sysconfig/ufo/vbox-client
+
+export VBOX_DND_SF_PATH=$VBOX_DND_SF_PATH
+
+[ -d "$VBOX_DND_SF_PATH" ] || sudo mkdir "$VBOX_DND_SF_PATH"
+
+echo "sudo mount.vboxsf DnD \"$VBOX_DND_SF_PATH\" -o \"uid=$UID,rw\""
+sudo mount.vboxsf DnD "$VBOX_DND_SF_PATH" -o "uid=$UID,rw"
+
+VBoxClient -d --dnd > $VBOX_DND_SF_PATH/vbox-dnd.log

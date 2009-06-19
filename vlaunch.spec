@@ -93,9 +93,14 @@ rm -rf $RPM_BUILD_ROOT
 "%{TARGET_PATH}/Kit de survie.pdf"
 /usr/bin/VBoxClientSymlink
 /etc/xdg/autostart/vboxclientsymlink.desktop
+/usr/bin/VBoxClientDnD
+/etc/xdg/autostart/vboxclientdnd.desktop
 
 
 %changelog
+* Wed Jun 17 2009 Kevin Pouget <kevin.pouget@agorabox.org>
+Add VBoxClientDnD script to start drag and drop service
+
 * Mon May 25 2009 Kevin Pouget <kevin.pouget@agorabox.org>
 Add host removable medias as shared folders
 

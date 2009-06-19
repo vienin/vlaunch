@@ -168,6 +168,10 @@ class Backend:
                 virtual_box.machine.set_shared_folder(share_name, home_path)
                 virtual_box.machine.set_guest_property("share_" + share_name, displayed_name)
                 logging.debug("Setting shared folder : " + home_path + ", " + displayed_name)
+                
+                self.dnddir = tempfile.mkdtemp(suffix="ufodnd")
+                virtual_box.machine.set_shared_folder("DnD", self.dnddir)
+                logging.debug("Setting shared folder : " + self.dnddir + ", DnD")
         
             # set removable media shared folders
             usb_devices = self.get_usb_devices()
@@ -314,4 +318,6 @@ class Backend:
         self.run_vbox(command, env)
 
         logging.debug("Clean up")
+        if self.dnddir:
+                shutil.rmtree(self.dnddir)
         self.cleanup(command)
