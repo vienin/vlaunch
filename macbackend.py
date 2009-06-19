@@ -12,11 +12,7 @@ import easygui
 import tempfile
 import time
 from utils import *
-
-KEXTS = "kexts"
-OS_VERSION = os.uname()[2]
-if OS_VERSION < "9":
-    KEXTS = path.join(KEXTS, "Tiger")
+import Tkinter
 
 conf.APP_PATH = path.dirname(path.dirname(conf.SCRIPT_DIR))
 conf.MOBILE = not conf.USESERVICE
@@ -29,29 +25,37 @@ class MacBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
 
+    def __init__(self):
+        self.KEXTS = "kexts"
+        self.OS_VERSION = os.uname()[2]
+        if self.OS_VERSION < "9":
+            self.KEXTS = path.join(self.KEXTS, "Tiger")
+        self.tk = Tkinter.Tk()
+        self.tk.withdraw()
+
     def get_model(self, dev):
-        medianame = self.grep(commands.getoutput("/usr/sbin/diskutil info " + dev), "Media Name:")
+        medianame = grep(commands.getoutput("/usr/sbin/diskutil info " + dev), "Media Name:")
         if medianame:
             return medianame[medianame.find(':') + 1:]
 
-    def find_device_by_uuid(dev_uuid):
+    def find_device_by_uuid(self, dev_uuid):
         return ""
     
-    def find_device_by_volume(dev_volume):
+    def find_device_by_volume(self, dev_volume):
         output = grep(commands.getoutput("diskutil list"), " " + dev_volume + " ").split()
         if output:
             return "/dev/" + output[-1][:-2]
         return ""
 
-    def find_device_by_model(dev_model):
+    def find_device_by_model(self, dev_model):
         for device in glob.glob("/dev/disk[0-9]"):
-            model = get_model(device)
+            model = self.get_model(device)
             logging.debug("device: %s, %s" % (device, model))
             if model == dev_model:
                 return device[:-2]
         return ""
 
-    def get_free_ram():
+    def get_free_ram(self):
         maxmem = 384
         mem = grep(commands.getoutput("top -l 1"), "PhysMem:").split()
         for ind, val in enumerate(mem):
@@ -63,24 +67,25 @@ class MacBackend(Backend):
                 maxmem = max(int(ival), maxmem)
         return maxmem
 
-    def get_dvd_device():
+    def get_dvd_device(self):
         pass
 
-    def get_host_home():
+    def get_host_home(self):
         return path.expanduser('~'), "Mes documents Mac"
     
-    def get_usb_devices():
-        return [[device, grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()[2]] for device in glob.glob("/dev/disk[0-9]s[0-9]") if grep(commands.getoutput("diskutil info " + device), "Protocol:").split()[1] == "USB" and len(grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()) > 2 ]
+    def get_usb_devices(self):
+        try: return [[device, grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()[2]] for device in glob.glob("/dev/disk[0-9]s[0-9]") if grep(commands.getoutput("diskutil info " + device), "Protocol:").split()[1] == "USB" and len(grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()) > 2 ]
+        except: return []
 
-    def restore_fstab():
+    def restore_fstab(self):
         if path.exists('/etc/fstab'):
             os.unlink('/etc/fstab')
         if path.exists('/etc/fstab.bak'):
             shutil.copyfile("/etc/fstab.bak", "/etc/fstab")
 
-    def dialog_question(msg, title, button1, button2):
+    def dialog_question(self, msg, title, button1, button2):
         choices = [ button1, button2 ]
-        reply = easygui.buttonbox(msg, title, choices=choices)
+        reply = easygui.buttonbox(msg, title, choices=choices, root=self.tk)
         return reply
 
     """
@@ -95,38 +100,39 @@ class MacBackend(Backend):
     return ""
     """
 
-    def dialog_info(title, msg):
+    def dialog_info(self, title, msg):
         """
         subprocess.call(
             ["/usr/bin/osascript", "-e",
              'tell app "UFO" to display dialog "%s" with title "%s" buttons "OK"' %
                 (msg, title) ])
         """
-        easygui.msgbox(msg, title)
+        easygui.msgbox(msg, title, root=self.tk)
             
     # generic dialog box for ask password 
     # params :
     # return : pass_string
-    def dialog_password():
-        return easygui.passwordbox("Veuillez entrer le mot de passe de cet ordinateur")
+    def dialog_password(self):
+        return easygui.passwordbox("Veuillez entrer le mot de passe de cet ordinateur", root=self.tk)
 
-        return subprocess.Popen([ "/usr/bin/osascript" ]).communicate("""with timeout of 300 seconds
-            tell application "UFO"
-            activate
-            set Input to display dialog "Entrez votre mot de passe:"
-                with title "Mot de passe"
-                with icon caution
-                default answer ""
-                buttons {"Annuler", "OK"}
-                default button 2
-                with hidden answer
-            giving up after 295
-            return text returned of Input as string
-            end tell
-        end timeout
-    """)
+        return subprocess.Popen([ "/usr/bin/osascript" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate("""
+with timeout of 300 seconds
+  tell app "UFO"
+    activate
+    set Input to display dialog "Entrez votre mot de passe:"
+     with title "Mot de passe"
+     with icon caution
+     default answer ""
+     buttons {"Annuler", "OK"}
+     default button 2
+     with hidden answer
+    giving up after 295
+    return text returned of Input as string
+  end tell
+end timeout
+""")
 
-    def get_device_size(dev):
+    def get_device_size(self, dev):
         fd = os.open(dev, os.O_RDONLY)
   
         DKIOCGETBLOCKSIZE = 1074029592
@@ -138,7 +144,7 @@ class MacBackend(Backend):
         os.close(fd)
         return blockcount
 
-    def find_network_device():
+    def find_network_device(self):
        if conf.NETTYPE == conf.NET_HOST and conf.HOSTNET != "":
            return conf.NET_HOST, conf.HOSTNET   
 
@@ -148,7 +154,7 @@ class MacBackend(Backend):
     # and add an entry in fstab to disable automount
     # params : dev_string
     # return : 0 if device is ready
-    def prepare_device(disk):
+    def prepare_device(self, disk):
         if conf.MOBILE:
             if path.exists("/etc/fstab"):
                 shutil.copyfile("/etc/fstab", "/etc/fstab.bak")
@@ -164,19 +170,18 @@ class MacBackend(Backend):
                 logging.debug('echo "LABEL=%s none %s rw,noauto" >> /etc/fstab' % (volname, fstype))
                 if conf.MOBILE:
                     append_to_end("/etc/fstab", "LABEL=%s none %s rw,noauto\n" % (volname, fstype))
-                retcode = call([ "diskutil", "unmount", partition ])
+                retcode = self.call([ "diskutil", "unmount", partition ])
                 if not retcode: return retcode
         return 0
 
-    def check_privileges():
+    def check_privileges(self):
         if os.geteuid() != 0:
-            password = dialog_password()
-            # call([ "sudo", "-S ", sys.argv[0] ])
+            password = self.dialog_password()
             if conf.USESERVICE:
-                call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
+                self.call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
                 sys.exit(0)
             else:
-                call([ "sudo" , "-k" ])
+                self.call([ "sudo" , "-k" ])
                 if path.basename(sys.executable) == "python":
                     cmd = [ path.join(path.dirname(sys.executable), "UFO") ]
                 else:
@@ -187,49 +192,46 @@ class MacBackend(Backend):
                 p = subprocess.Popen([ "sudo", "-S" ] + cmd, stdin=subprocess.PIPE, close_fds=True)
                 p.communicate(password)
                 if p.returncode:
-                    dialog_info("Erreur", "Erreur lors de la saisie du mot de passe")
+                    self.dialog_info("Erreur", "Erreur lors de la saisie du mot de passe")
                 # logging.debug("Exiting...")
                 sys.exit(0)
 
-    tmpdir = ""
-    def is_ready():
+    def is_ready(self):
         # test if i need to mode at another location
         if not conf.APP_PATH.startswith("/Volumes"):
             conf.READY = 1
 
-        global tmpdir
         if not conf.READY:
-            tmpdir = tempfile.mkdtemp(suffix="ufo")
-            logging.debug("Copying myself to " + tmpdir)
-            call([ "cp", "-P", "-R", conf.APP_PATH, tmpdir + "/"])
-            logging.debug(" ".join([ path.join(tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ]))
+            self.tmpdir = tempfile.mkdtemp(suffix="ufo")
+            logging.debug("Copying myself to " + self.tmpdir)
+            self.call([ "cp", "-P", "-R", conf.APP_PATH, self.tmpdir + "/"])
+            logging.debug(" ".join([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ]))
             logging.shutdown()
             env = os.environ.copy()
             env["VBOX_USER_HOME"] = conf.HOME
-            subprocess.Popen([ path.join(tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ],
+            subprocess.Popen([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ],
                 env = env, close_fds=True)
             # logging.debug("Exiting for good")
             sys.exit(0)
 
         logging.debug("Ready")
 
-    def load_kexts():
+    def load_kexts(self):
         # loading kernel extentions
-        global KEXTS
-        KEXTS = path.join(conf.BIN, KEXTS)
+        KEXTS = path.join(conf.BIN, self.KEXTS)
 
-        if OS_VERSION < "9":
-            modules = [ "VBoxDrvTiger.kext", "VBoxUSBTiger.kext" ]
+        if self.OS_VERSION < "9":
+            modules = [ "VBoxDrvTiger.kext" ]
         else:
-            modules = [ "VBoxDrv.kext", "VBoxNetFlt.kext", "VBoxUSB.kext" ]
+            modules = [ "VBoxDrv.kext", "VBoxNetFlt.kext" ]
 
-        call(["/sbin/kextload"] + map(lambda x: path.join(KEXTS, x), modules))
+        self.call(["/sbin/kextload"] + map(lambda x: path.join(KEXTS, x), modules))
 
-    def kill_resilient_vbox():
+    def kill_resilient_vbox(self):
         # Kill resident com server
-        call([ "killall", "-9", "VBoxXPCOMIPCD" ])
+        self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
 
-    def build_command():
+    def build_command(self):
         if conf.STARTVM:
             # VBoxSDL do not exist for Mac...
             return [ path.join(conf.BIN, "VirtualBoxVM"), "-startvm", conf.VM ]
@@ -237,15 +239,14 @@ class MacBackend(Backend):
         else:
             return [ path.join(conf.BIN, "VirtualBox") ]
 
-    def prepare():
-        global KEXTS
-    
+    def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, "Contents", "Resources", ".VirtualBox")
         if not conf.BIN: conf.BIN = path.join(conf.APP_PATH, "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
-        check_privileges()
-        is_ready()
+        self.check_privileges()
+        self.is_ready()
+        self.splash = SplashScreen(self.tk, image=path.join(conf.HOME, "ufo.gif"))
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")
@@ -254,21 +255,21 @@ class MacBackend(Backend):
                        "/Applications/VirtualBox.app")
                          
             # Restore permissions
-            call([ "/usr/sbin/chown", "-R", "0:0", conf.APP_PATH ])
-            call([ "chmod", "-R", "755", "/Applications/VirtualBox.app/Contents" ])
+            self.call([ "/usr/sbin/chown", "-R", "0:0", conf.APP_PATH ])
+            self.call([ "chmod", "-R", "755", "/Applications/VirtualBox.app/Contents" ])
             for f in glob.glob("/Applications/VirtualBox.app/Contents/*.*"):
-                call([ "chmod", "-R", "644", f ])
+                self.call([ "chmod", "-R", "644", f ])
         
-            load_kexts()
+            self.load_kexts()
 
-    def cleanup(command):
+    def cleanup(self, command):
         if conf.MOBILE:
-            restore_fstab()
+            self.restore_fstab()
     
         if not conf.VBOX_INSTALLED:
             os.unlink("/Applications/VirtualBox.app")
         
-        call([ "diskutil", "mountDisk", conf.DEV ])
+        self.call([ "diskutil", "mountDisk", conf.DEV ])
     
         # clean host
         command = path.basename(command[0])
@@ -286,11 +287,12 @@ class MacBackend(Backend):
                               " with " + os.path.join(conf.HOME, "VirtualBox.xml"))
                 shutil.copyfile(os.path.join(conf.HOME, "VirtualBox.xml"),
                                 os.path.join(os.environ["VBOX_USER_HOME"], "VirtualBox.xml"))
-            if tmpdir:
-                shutil.rmtree(tmpdir)
+            if self.tmpdir:
+                shutil.rmtree(self.tmpdir)
 
-    def run_vbox(command, env):
-        call(command, env = env)
+    def run_vbox(self, command, env):
+        self.splash.destroy()
+        self.call(command, env = env)
 
-    def find_resolution():
+    def find_resolution(self):
         return ""

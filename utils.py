@@ -15,6 +15,25 @@ import shutil
 from utils import *
 from Tkinter import Tk, Image, PhotoImage, Toplevel, FLAT, NW, Canvas
 
+def grep(input, pattern, inverse=False):
+    for line in input.split("\n"):
+        if inverse:
+            if pattern not in line:
+                return line
+        else:
+            if pattern in line:
+                return line
+    return ""
+
+def append_to_end(filename, line):
+    if not path.exists(filename):
+        lines = [ ]
+    else:
+        lines = open(filename).readlines()
+    if lines and not lines[-1].strip():
+        line += "\n" + line
+    open(filename, 'a').write(line)
+
 class SplashScreen(Toplevel):
     def __init__(self, master, image=None, timeout=1000):
         """(master, image, timeout=1000) -> create a splash screen
@@ -60,16 +79,6 @@ class Backend:
     def __init__(self):
         self.usb_devices = []
 
-    def grep(self, input, pattern, inverse=False):
-        for line in input.split("\n"):
-            if inverse:
-                if pattern not in line:
-                    return line
-            else:
-                if pattern in line:
-                    return line
-        return ""
-    
     def call(self, cmd, env = None, shell = False, cwd = None):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
         retcode = subprocess.call(cmd, env = env, shell = shell, cwd = cwd)
@@ -84,15 +93,6 @@ class Backend:
     def write_fake_vmdk(self, dev):
         vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
-
-    def append_to_end(self, filename, line):
-        if not path.exists(filename):
-            lines = [ ]
-        else:
-            lines = open(filename).readlines()
-        if lines and not lines[-1].strip():
-            line += "\n" + line
-        open(filename, 'a').write(line)
 
     def configure_virtual_machine(self, create_vmdk = True):
         if not conf.VMDK and not conf.CONFIGUREVM: return
