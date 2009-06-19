@@ -8,6 +8,8 @@ desktop="$HOME/Bureau"
 target=/media
 share_id="share_"
 
+USER_UID=`id -u $USER`
+
 # Set $IFS to end-of-line and coma
 ORIGIFS=$IFS
 IFS=`echo -en ",\n\b"`
@@ -16,7 +18,7 @@ IFS=`echo -en ",\n\b"`
 share_names=()
 share_labels=()
 i=0
-for ligne in `sudo /usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share_id`; do
+for ligne in `/usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share_id`; do
 	case "${ligne%%:*}" in
 	" value")
 		share_names[$i]="${ligne#*: }"
@@ -32,7 +34,7 @@ done
 for ligne in `cat $HOME/.sharelinks`
 do
 	unlink "${desktop}/${ligne%:*}"
-	sudo rm -Rf "${target}/${ligne#*:}"
+	rm -Rf "${target}/${ligne#*:}"
 done
 echo "" > $HOME/.sharelinks
 
@@ -41,10 +43,10 @@ i=0
 for share_label in ${share_labels[@]}; do
 	share_name=${share_names[$i]}
 
-	[ -d "$target/$share_label" ] || sudo mkdir "$target/$share_label"
+	[ -d "$target/$share_label" ] || mkdir "$target/$share_label"
 	
-	echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$UID,rw\""
-	sudo mount.vboxsf "$share_label" "${target}/${share_label}" -o "uid=$UID,rw"
+	echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$USER_UID,rw\""
+	mount.vboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw"
 	if [ $? -eq 0 ]; then
 		echo "ln -s -f \"${target}/${share_label}\" \"${desktop}/$share_name\""
 		ln -s -f "${target}/${share_label}" "${desktop}/$share_name"

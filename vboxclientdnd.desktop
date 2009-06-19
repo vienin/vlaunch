@@ -6,6 +6,6 @@ Name=vboxclientdnd
 Name[C]=vboxclientdnd
 Comment[C]=VirtualBox Client drag and drop service
 Comment=VirtualBox Client drag and drop service
-Exec=/usr/bin/VBoxClientDnD
+Exec=sudo /usr/bin/VBoxClientDnD
 X-GNOME-Autostart-enabled=true
 

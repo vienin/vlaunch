@@ -6,6 +6,6 @@ Name=vboxclientsymlink
 Name[C]=vboxclientsymlink
 Comment[C]=VirtualBox Client shared folder symlink
 Comment=VirtualBox Client shared folder symlink
-Exec=/usr/bin/VBoxClientSymlink
+Exec=sudo /usr/bin/VBoxClientSymlink
 X-GNOME-Autostart-enabled=true
 
