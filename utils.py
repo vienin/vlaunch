@@ -60,9 +60,10 @@ class SplashScreen(Toplevel):
         xmax = self.winfo_screenwidth()
         ymax = self.winfo_screenheight()
 
-        x0 = self.x0 = (xmax - self.winfo_reqwidth()) / 2 - width/2
-        y0 = self.y0 = (ymax - self.winfo_reqheight()) / 2 - height/2
-        self.geometry("+%d+%d" % (x0, y0))
+        x0 = self.x0 = xmax/2 - width/2
+        y0 = self.y0 = ymax/2 - height/2
+        
+        self.geometry("%dx%d+%d+%d" % (width, height, x0, y0))
         self.createWidgets()
 
     def createWidgets(self):
