@@ -1,6 +1,6 @@
 NAME=vlaunch
 VERSION=0.4
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop VBoxClientDnD vboxclientdnd.desktop
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp ufo.gif README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop VBoxClientDnD vboxclientdnd.desktop
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -33,7 +33,7 @@ install:
 	# cp $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf $(DESTDIR)$(TARGET_PATH)/Windows/settings/
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp  settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
-	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo.bmp $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
+	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo.bmp ufo.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp -R tmp_vbox_home_windows/VirtualBox.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/VirtualBox.xml.template
 	cp tmp_vbox_home_windows/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Machines/UFO/UFO.xml.template
 	
@@ -49,20 +49,20 @@ install:
 	# cp ufo.icns $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/MacOS
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/Resources
-	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGuiVBox.framework/QtGuiVBox
-	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCoreVBox.framework/QtCoreVBox
-	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetworkVBox.framework/QtNetworkVBox
+	# unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGuiVBox.framework/QtGuiVBox
+	# unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCoreVBox.framework/QtCoreVBox
+	# unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetworkVBox.framework/QtNetworkVBox
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/site.py
 	cp Resources MacOS $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/
-	cp QtGuiVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGuiVBox.framework/QtGuiVBox
-	cp QtCoreVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCoreVBox.framework/QtCoreVBox
-	cp QtNetworkVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetworkVBox.framework/QtNetworkVBox
+	# cp QtGuiVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGuiVBox.framework/QtGuiVBox
+	# cp QtCoreVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCoreVBox.framework/QtCoreVBox
+	# cp QtNetworkVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetworkVBox.framework/QtNetworkVBox
 	cp site.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings.conf
 	cp -f settings.conf.mac $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/site.pyc
-	cp -R tmp_vbox_home_macosx/Machines tmp_vbox_home_macosx/VirtualBox.xml ufo.bmp $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
+	cp -R tmp_vbox_home_macosx/Machines tmp_vbox_home_macosx/VirtualBox.xml ufo.bmp ufo.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	cp tmp_vbox_home_macosx/VirtualBox.xml $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/VirtualBox.xml.template
 	cp tmp_vbox_home_macosx/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines/UFO/UFO.xml.template
 	
@@ -75,7 +75,7 @@ install:
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
 	cp modifyvm.py linuxbackend.py launcher.py createrawvmdk.py easygui.py conf.py utils.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
-	cp -R tmp_vbox_home_linux/Machines tmp_vbox_home_linux/VirtualBox.xml ufo.bmp $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
+	cp -R tmp_vbox_home_linux/Machines tmp_vbox_home_linux/VirtualBox.xml ufo.bmp ufo.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp tmp_vbox_home_linux/VirtualBox.xml $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/VirtualBox.xml.template
 	cp tmp_vbox_home_linux/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Machines/UFO/UFO.xml.template
 	
