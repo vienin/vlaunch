@@ -12,6 +12,7 @@ import createrawvmdk
 import os
 import conf
 import shutil
+import tempfile
 from utils import *
 from Tkinter import Tk, Image, PhotoImage, Toplevel, FLAT, NW, Canvas
 import Tix
