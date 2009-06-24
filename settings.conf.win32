@@ -5,7 +5,7 @@ BIN=bin
 [vm]
 WIDTH=full
 HEIGHT=full
-NETTYPE=1
+NETTYPE=2
 
 [rawdisk]
 VOLUME=UFO
