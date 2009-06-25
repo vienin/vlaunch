@@ -166,7 +166,7 @@ class WindowsBackend(Backend):
             print disk.Model
 
     def find_network_device(self):
-        if conf.NETTYPE in (conf.NET_NAT, conf.NET_HOST) and \
+        if conf.NETTYPE == conf.NET_HOST and \
            not conf.VBOX_INSTALLED and \
            not path.exists(path.join(self.systemdir, "VBoxNetFltNotify.dll")):
             logging.debug("Installing VirtualBox driver")
@@ -257,7 +257,7 @@ class WindowsBackend(Backend):
     def cleanup(self, command):
         self.processes_wait_close()
         self.stop_services()
-        if conf.NETTYPE in (conf.NET_HOST, conf.NET_NAT) and not conf.VBOX_INSTALLED and conf.UNINSTALLDRIVERS:
+        if conf.NETTYPE == conf.NET_HOST and not conf.VBOX_INSTALLED and conf.UNINSTALLDRIVERS:
             self.call(["regsvr32.exe", "/S", "/U", path.join(self.systemdir, "VBoxNetFltNotify.dll")])
             self.call([path.join(conf.BIN, "snetcfg_x86.exe"), "-v", "-u", "sun_VBoxNetFlt"])
             self.call(["sc", "delete", "VBoxNetFlt" ])
