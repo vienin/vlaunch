@@ -3,7 +3,7 @@
 # and start VBoxClient DnD service
 . /etc/sysconfig/ufo/vboxclient
 
-USER_UID=`id -u $USER`
+[ -z "$SUDO_UID" ] && USER_UID=`id -u $USER` || USER_UID=$SUDO_UID
 
 export VBOX_DND_SF_PATH=$VBOX_DND_SF_PATH
 

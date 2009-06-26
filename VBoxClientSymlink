@@ -8,7 +8,8 @@ desktop="$HOME/Bureau"
 target=/media
 share_id="share_"
 
-USER_UID=`id -u $USER`
+[ -z "$SUDO_UID" ] && USER_UID=`id -u $USER` || USER_UID=$SUDO_UID
+[ -z "$SUDO_USER" ] && USERNAME=$USER || USERNAME=$SUDO_USER
 
 # Set $IFS to end-of-line and coma
 ORIGIFS=$IFS
@@ -59,7 +60,7 @@ done
 # On MAC-OSX hosts, mount UFO part as real device
 host="${cmdline#*hostos=}"
 host="${host%% *}"
-[ "$host" == "macosx" ] && su $USER_UID -c "gnome-mount --device /dev/sda1"
+[ "$host" == "macosx" ] && sudo -u $USERNAME gnome-mount --device /dev/sda1
 
 IFS=$ORIGIFS
 
