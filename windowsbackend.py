@@ -15,6 +15,7 @@ import logging
 import conf
 import time
 import platform
+import Tkinter
 from utils import *
 
 class WindowsBackend(Backend):
@@ -25,6 +26,11 @@ class WindowsBackend(Backend):
     def __init__(self):
         self.WMI = wmi.WMI()
         self.splash = None
+        self.tk = Tkinter.Tk()
+        self.tk.withdraw()
+
+    def call(self, cmd, env = None, shell = True, cwd = None):
+        return Backend.call(self, cmd, env, shell, cwd)
 
     def build_command(self):
         if conf.STARTVM:
@@ -44,16 +50,17 @@ class WindowsBackend(Backend):
                       "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
                       "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDRV" ], shell=True) == 5:
                 return 1
-            self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
-                               "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSBMon" ], shell=True)
+            
+            #self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
+            #                   "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSBMon" ], shell=True)
                          
-            try:
-                key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
-                if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
-                    self.call(["sc", "create", "VBoxUSB", "binpath=", path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
-                                "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSB" ], shell=True)
-            except:
-                logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
+            #try:
+            #    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
+            #    if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
+            #        self.call(["sc", "create", "VBoxUSB", "binpath=", path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
+            #                    "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSB" ], shell=True)
+            #except:
+            #    logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
     
         if conf.STARTSRVS:
             logging.debug("Starting services :")
@@ -61,7 +68,7 @@ class WindowsBackend(Backend):
             if self.call([ "sc", "start", "PortableVBoxDRV" ], shell=True) in [ 1060, 5 ]:
                return 1
 
-            self.call([ "sc", "start", "PortableVBoxUSBMon" ], shell=True)
+            # self.call([ "sc", "start", "PortableVBoxUSBMon" ], shell=True)
 
         logging.debug("Re-registering server:")
 
@@ -77,8 +84,9 @@ class WindowsBackend(Backend):
     def process_wait_close(self, process):
         processes = self.WMI.Win32_Process(name=process)
         while processes:
-            time.sleep(0.1)
+            time.sleep(2)
             processes = self.WMI.Win32_Process(name=process)
+            self.check_usb_devices()
 
     def processes_wait_close(self):
         self.process_wait_close("VBoxSDL.exe")
@@ -89,21 +97,21 @@ class WindowsBackend(Backend):
     def stop_services(self):
         if conf.STARTSRVS:
             self.call([ "sc", "stop", "PortableVBoxDRV" ], shell=True)
-            self.call([ "sc", "stop", "PortableVBoxUSBMon" ], shell=True)
+            # self.call([ "sc", "stop", "PortableVBoxUSBMon" ], shell=True)
             self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/unregserver" ], shell=True)
             self.call([ "regsvr32.exe", "/S", "/U", path.join(conf.BIN, "VBoxC.dll") ], shell=True)
 
         if conf.CREATESRVS:
             self.call([ "sc", "delete", "PortableVBoxDRV" ], shell=True)
-            self.call([ "sc", "delete", "PortableVBoxUSBMon" ], shell=True)
+            # self.call([ "sc", "delete", "PortableVBoxUSBMon" ], shell=True)
 
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
-            if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
-                self.call([ "sc", "stop", "VBoxUSB" ], shell=True)
-                self.call([ "sc", "delete", "VBoxUSB" ], shell=True)
-        except:
-            logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
+        # try:
+        #     key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
+        #     if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
+        #         self.call([ "sc", "stop", "VBoxUSB" ], shell=True)
+        #         self.call([ "sc", "delete", "VBoxUSB" ], shell=True)
+        # except:
+        #     logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
 
     def find_device_by_uuid(self, dev_uuid):
         return ""
@@ -243,7 +251,7 @@ class WindowsBackend(Backend):
     def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
-        self.splash = SplashScreen(Tk(), image=path.join(conf.HOME, "ufo.gif"))
+        self.splash = SplashScreen(self.tk, image=path.join(conf.HOME, "ufo.gif"))
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
             conf.VBOX_INSTALLED = True

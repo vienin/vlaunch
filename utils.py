@@ -74,8 +74,9 @@ class SplashScreen(Toplevel):
         self.canvas.pack()
 
     def destroy(self):
-        self.main.update()
-        self.main.deiconify()
+        # self.main.update()
+        # self.main.deiconify()
+        self.main.withdraw()
         self.withdraw()
 
 class Backend:
