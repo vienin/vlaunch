@@ -23,11 +23,10 @@ operating systems : Linux, Windows and MacOSX.
 
 %prep
 %setup -q
-cp ../mac-intel.tgz ../windows.tgz ../fake_vmdk.tgz .
 # wget all binaries
-# wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
-# wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
-# wget http://kickstart.agorabox.org/private/virtualization/fake_vmdk.tgz
+wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
+wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
+wget http://kickstart.agorabox.org/private/virtualization/fake_vmdk.tgz
 wget -O "Kit de survie.pdf" http://ufo.agorabox.fr/sites/myufo/media/files/KIT_DE_SURVIE_BETA.pdf
 
 rm -rf iso
