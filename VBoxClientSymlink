@@ -8,6 +8,26 @@ desktop="$HOME/Bureau"
 target=/media
 share_id="share_"
 
+mount_share_and_link() {
+
+	share_label="$1"
+	share_name="$2"
+
+	[ -d "$target/$share_label" ] || mkdir "$target/$share_label"
+
+	mountpoint "$target/$share_label"
+	if [ $? -ne 0 ]; then
+		echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$USER_UID,rw\""
+		mountvboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw"
+	fi
+	
+	if [ $? -eq 0 ]; then
+		echo "ln -s -f \"${target}/${share_label}\" \"${desktop}/$share_name\""
+		ln -s -f "${target}/${share_label}" "${desktop}/$share_name"
+		echo "${share_name};${share_label}" >> $HOME/.sharelinks
+	fi
+}
+
 [ -z "$SUDO_UID" ] && USER_UID=`id -u $USER` || USER_UID=$SUDO_UID
 [ -z "$SUDO_USER" ] && USERNAME=$USER || USERNAME=$SUDO_USER
 
@@ -22,37 +42,40 @@ i=0
 for ligne in `/usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share_id`; do
 	case "${ligne%%:*}" in
 	" value")
+		[ "${lab#*_}" == "None" ] && continue
 		share_names[$i]="${ligne#*: }"
 		i=$(( $i + 1 ))
 		;;
 	"Name")
+		lab="${ligne#*: share_}"
+		[ "${lab#*_}" == "None" ] && continue
 		share_labels[$i]="${ligne#*: share_}"
 		;;
 	esac
 done
 
 # Remove old shares
+echo "" > $HOME/.sharelinks.new
 for ligne in `cat $HOME/.sharelinks`
 do
-	unlink "${desktop}/${ligne%:*}"
-	rm -Rf "${target}/${ligne#*:}"
+	mountpoint "${target}/${ligne#*;}"
+	if [ $? -eq 0 ]; then
+		echo $ligne >> $HOME/.sharelinks.new
+	else
+		echo "unlink \"${desktop}/${ligne%;*}\""
+		unlink "${desktop}/${ligne%;*}"
+		rmdir "${target}/${ligne#*;}"
+	fi
 done
-echo "" > $HOME/.sharelinks
+cat $HOME/.sharelinks.new > $HOME/.sharelinks
+rm -f $HOME/.sharelinks.new
 
 # Create new shares
 i=0
-for share_label in ${share_labels[@]}; do
-	share_name=${share_names[$i]}
+for label in ${share_labels[@]}; do
+	name=${share_names[$i]}
 
-	[ -d "$target/$share_label" ] || mkdir "$target/$share_label"
-	
-	echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$USER_UID,rw\""
-	mountvboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw"
-	if [ $? -eq 0 ]; then
-		echo "ln -s -f \"${target}/${share_label}\" \"${desktop}/$share_name\""
-		ln -s -f "${target}/${share_label}" "${desktop}/$share_name"
-		echo "${share_name}:${share_label}" >> $HOME/.sharelinks
-	fi
+	mount_share_and_link $label $name
 
 	i=$(( $i + 1 ))
 done
@@ -61,6 +84,30 @@ done
 host="${cmdline#*hostos=}"
 host="${host%% *}"
 [ "$host" == "macosx" ] && sudo -u $USERNAME gnome-mount --device /dev/sda1
+
+awaited_share_time="0"
+while [ 1 ]; do
+	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "share_*" -timestamp "$awaited_share_time"`; do
+
+		echo "ligne:$ligne"
+		case "${ligne%%:*}" in
+		"Value")
+			awaited_share_name="${ligne#*: }"
+			;;
+		"Name")
+			awaited_share_label="${ligne#*: share_}"
+			;;
+		"Timestamp")
+			a="${ligne#*: }"
+			awaited_share_time="${a% ns}"
+			;;
+		# TODO:
+		# Store received timestamp, to set next wait to timestamp
+		esac
+	done
+
+	mount_share_and_link $awaited_share_label $awaited_share_name
+done
 
 IFS=$ORIGIFS
 
