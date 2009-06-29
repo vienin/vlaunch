@@ -10,11 +10,12 @@ from utils import *class LinuxBackend(Backend):    VBOXMANAGE_EXECUTABLE = "V
             usb_paths = [ mnt.split()[1] for mnt in open('/proc/mounts','r').readlines() if mnt.split()[0] in usb_devices ]            return [[path,os.path.basename(path)] for path in usb_paths ]        return [], []    def find_resolution(self):        if path.exists("/usr/bin/xrandr"):            return commands.getoutput('/usr/bin/xrandr | grep "*"').split()[0]        return ""    def build_command(self):        if conf.STARTVM:            if conf.KIOSKMODE:                return [ path.join(conf.BIN, "VBoxSDL"),  "-vm", conf.VM, "-termacpi", "-fullscreen",                      "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys",  "fnpqrs" ]            else:                return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]        else:            return [ path.join(conf.BIN, "VirtualBox") ]    def dialog_info(self, title, msg):        easygui.msgbox(msg, title)    def check_privileges(self):        if os.geteuid() != 0:            dialog_info("Droits insuffisants",                        "Vos permissions ne sont pas suffisantes pour lancer UFO. " + \                        "Veuillez entrer le mot de passe administrateur dans l'invite de " + \                        "la console :")            self.call([ "su", "-c", sys.executable ])            sys.exit(0)    def prepare(self):        self.call([ "rmmod", "kvm-intel" ])        self.call([ "rmmod", "kvm-amd" ])        self.call([ "rmmod", "kvm" ])    def cleanup(self, command):        pass    def kill_resilient_vbox(self):        self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])        self.call([ "killall", "-9", "VBoxSVC" ])    def dialog_question(self, title, msg, button1, button2):        choices = [ button1, button2 ]        reply = easygui.buttonbox(msg, title, choices=choices)        return reply    def dialog_info(self, title, msg):        easygui.msgbox(msg, title)
 
     def wait_for_termination(self):
-        while not self.terminated:
+        while True:
+            if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBox"), "grep", inverse=True):   
+                break
             logging.debug("Checking for USB devices")
             self.check_usb_devices()
             time.sleep(3)
-    def run_vbox(self, command, env):        # For some reason, it doesn't work with 'call'        cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + " ".join(command)        import thread
-        thread.start_new_thread(self.wait_for_termination, ())
-        os.system(cmd)        self.terminated = True
+    def run_vbox(self, command, env):        # For some reason, it doesn't work with 'call'        cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + " ".join(command)
+        os.system(cmd)        self.wait_for_termination()
 
