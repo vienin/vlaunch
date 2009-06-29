@@ -1,5 +1,5 @@
 Name:           vlaunch
-Version:        0.4
+Version:        0.5
 Release:        1%{?dist}
 Summary:        Install files for virtualization on the UFO vfat partition
 
@@ -7,7 +7,7 @@ BuildArch:      i386
 Group:          Applications/System
 License:        GPLv2
 URL:            http://www.glumol.com
-Source0:        http://www.glumol.com/chicoutimi/vlaunch-0.4.tar.gz
+Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
@@ -23,10 +23,11 @@ operating systems : Linux, Windows and MacOSX.
 
 %prep
 %setup -q
+cp ../mac-intel.tgz ../windows.tgz ../fake_vmdk.tgz .
 # wget all binaries
-wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
-wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
-wget http://kickstart.agorabox.org/private/virtualization/fake_vmdk.tgz
+# wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
+# wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
+# wget http://kickstart.agorabox.org/private/virtualization/fake_vmdk.tgz
 wget -O "Kit de survie.pdf" http://ufo.agorabox.fr/sites/myufo/media/files/KIT_DE_SURVIE_BETA.pdf
 
 rm -rf iso
@@ -98,6 +99,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Mon Jun 29 2009 Sylvain Baubeau <sylvain.baubeau@agorabox.org>
+Now uses VirtualBox OSE
+
 * Wed Jun 17 2009 Kevin Pouget <kevin.pouget@agorabox.org>
 Add VBoxClientDnD script to start drag and drop service
 

@@ -1,6 +1,10 @@
 NAME=vlaunch
-VERSION=0.4
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp ufo.gif README COPYING Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop VBoxClientDnD vboxclientdnd.desktop
+VERSION=0.5
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo.bmp ufo.gif README COPYING \
+        Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
+        QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop \
+        VBoxClientDnD vboxclientdnd.desktop Headers Current 4.0 QtCore QtGui \
+        QtGui.Resources QtNetwork
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -44,19 +48,26 @@ install:
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
-	# cp Info.plist PkgInfo $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/
-	# cp mac-intel-launcher settings.conf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS/
-	# cp ufo.icns $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/MacOS
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/Resources
-	# unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGuiVBox.framework/QtGuiVBox
-	# unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCoreVBox.framework/QtCoreVBox
-	# unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetworkVBox.framework/QtNetworkVBox
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/site.py
 	cp Resources MacOS $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/
-	# cp QtGuiVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGuiVBox.framework/QtGuiVBox
-	# cp QtCoreVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCoreVBox.framework/QtCoreVBox
-	# cp QtNetworkVBox $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetworkVBox.framework/QtNetworkVBox
+
+	find $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework -type l -exec unlink {} \;
+
+	cp Headers $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework/Headers
+	cp QtCore $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework/QtCore
+	cp 4.0 Current $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework/Versions
+
+	cp Headers $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework/Headers
+	cp QtGui $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework/QtGui
+	cp QtGui.Resources $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework/Resources
+	cp 4.0 Current $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework/Versions
+
+	cp Headers $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework/Headers
+	cp QtNetwork $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework/QtNetwork
+	cp 4.0 Current $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework/Versions
+
 	cp site.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings.conf
