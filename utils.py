@@ -185,7 +185,7 @@ class Backend:
                 virtual_box.machine.set_guest_property("share_" + str(usb[1]), usb[1])
                 logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
             self.usb_devices = usb_devices
-
+            
         # Write changes
         virtual_box.write()
         virtual_box.machine.write()

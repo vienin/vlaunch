@@ -261,8 +261,12 @@ def buttonbox(msg="",title=" ",choices=("Button1", "Button2", "Button3")
 	else:   
 		boxRoot = Tk()
 		boxRoot.withdraw()
-		# if (sys.platform != "win32") and hasattr(sys, 'frozen'):
-		# 	boxRoot.tk.call('console', 'hide')
+		
+	try: boxRoot.tk.call('console', 'hide')
+	except: pass
+
+	# if (sys.platform != "win32") and hasattr(sys, 'frozen'):
+	# 	boxRoot.tk.call('console', 'hide')
     
 	boxRoot.protocol('WM_DELETE_WINDOW', denyWindowManagerClose )
 
@@ -644,8 +648,13 @@ def __fillablebox(msg, title="", default="", argMaskCharacter=None,root=None):
 	else:   
 		boxRoot = Tk()
 		boxRoot.withdraw()
-		# if (sys.platform != "win32") and hasattr(sys, 'frozen'):
-		# 	boxRoot.tk.call('console', 'hide')
+
+	try:
+		boxRoot.tk.call('console', 'hide')
+	except: pass
+
+	# if (sys.platform != "win32") and hasattr(sys, 'frozen'):
+	# 	boxRoot.tk.call('console', 'hide')
 		
 	boxRoot.protocol('WM_DELETE_WINDOW', denyWindowManagerClose )
 	boxRoot.title(title)

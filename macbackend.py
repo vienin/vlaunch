@@ -32,6 +32,8 @@ class MacBackend(Backend):
             self.KEXTS = path.join(self.KEXTS, "Tiger")
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
+        self.disks = []
+        self.tmpdir = ""
 
     def get_model(self, dev):
         medianame = grep(commands.getoutput("/usr/sbin/diskutil info " + dev), "Media Name:")
@@ -74,8 +76,17 @@ class MacBackend(Backend):
         return path.expanduser('~'), "Mes documents Mac"
     
     def get_usb_devices(self):
-        try: return [[device, grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()[2]] for device in glob.glob("/dev/disk[0-9]s[0-9]") if grep(commands.getoutput("diskutil info " + device), "Protocol:").split()[1] == "USB" and len(grep(commands.getoutput("diskutil info " + device), "Volume Name:").split()) > 2 ]
-        except: return []
+        disks = []
+        try: 
+            for device in glob.glob("/dev/disk[0-9]s[0-9]"):
+                infos = commands.getoutput("diskutil info " + device)
+                if grep(infos, "Protocol:").split()[1] == "USB" and \
+                   len(grep(infos, "Volume Name:").split()) > 2 and \
+                   len(grep(infos, "Mount Point:").split()) > 2:
+                    disks.append((grep(infos, "Mount Point:").split()[2],
+                                  grep(infos, "Volume Name:").split()[2]))
+        except: raise # return []
+        return disks
 
     def restore_fstab(self):
         if path.exists('/etc/fstab'):
@@ -290,9 +301,27 @@ end timeout
             if self.tmpdir:
                 shutil.rmtree(self.tmpdir)
 
+    def check_usb_changes(self):
+        while True:
+            logging.debug("Waiting for VirtualBoxVM to start")
+            if grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
+                break
+            time.sleep(2)
+        while True:
+            logging.debug("Waiting for termination")
+            if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
+                break
+            disks = glob.glob("/dev/disk[0-9]")
+            if self.disks != disks:
+                self.check_usb_devices()
+                self.disks = disks
+            time.sleep(2)
+
     def run_vbox(self, command, env):
         self.splash.destroy()
-        self.call(command, env = env)
+        import thread
+        thread.start_new_thread(self.check_usb_changes, ())
+        self.call(command, env = env, cwd = conf.BIN)
 
     def find_resolution(self):
         return ""
