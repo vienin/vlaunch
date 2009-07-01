@@ -158,7 +158,7 @@ class Backend:
                     virtual_box.machine.set_resolution(resolution)
             
             virtual_box.machine.set_fullscreen()
-            virtual_box.machine.set_logo_image(path.join(conf.HOME, "ufo.bmp"))
+            virtual_box.machine.set_logo_image(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
 
             # manage shared folders
             virtual_box.machine.reset_shared_folders()

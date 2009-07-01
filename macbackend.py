@@ -257,7 +257,7 @@ end timeout
 
         self.check_privileges()
         self.is_ready()
-        self.splash = SplashScreen(self.tk, image=path.join(conf.HOME, "ufo.gif"))
+        self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")

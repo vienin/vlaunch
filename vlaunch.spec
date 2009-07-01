@@ -16,7 +16,27 @@ Requires:       kernel-vbox kernel-vbox-devel
 %define TARGET_PATH /media/UFO
 %define VM_NAME UFO
 
+%package generic
+Summary: Install specific files for generic distribution
+Group: Applications/System
+Requires: vlaunch = %{version}-%{release}
+
+%package polenumerique
+Summary: Install specific files for pole numerique distribution
+Group: Applications/System
+Requires: vlaunch = %{version}-%{release}
+
 %description
+vlaunch installs VirtualBox binaries and virtual machines configuration 
+files on the UFO vfat partition. 3 directories are installed, one for each 
+operating systems : Linux, Windows and MacOSX.
+
+%description generic
+vlaunch installs VirtualBox binaries and virtual machines configuration 
+files on the UFO vfat partition. 3 directories are installed, one for each 
+operating systems : Linux, Windows and MacOSX.
+
+%description polenumerique
 vlaunch installs VirtualBox binaries and virtual machines configuration 
 files on the UFO vfat partition. 3 directories are installed, one for each 
 operating systems : Linux, Windows and MacOSX.
@@ -87,17 +107,72 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc README COPYING
-%{TARGET_PATH}/Linux/
-%{TARGET_PATH}/Windows/
-%{TARGET_PATH}/Mac-Intel/
+%{TARGET_PATH}/Windows/tcl84.dll
+%{TARGET_PATH}/Windows/tix84.dll
+%{TARGET_PATH}/Windows/tk84.dll
+%{TARGET_PATH}/Windows/MSVCR71.dll
+%{TARGET_PATH}/Windows/ufo.exe
+%{TARGET_PATH}/Windows/tcl
+%{TARGET_PATH}/Windows/bin
+%{TARGET_PATH}/Windows/settings
+%{TARGET_PATH}/Windows/.VirtualBox/HardDisks
+%{TARGET_PATH}/Windows/.VirtualBox/Machines
+%{TARGET_PATH}/Windows/.VirtualBox/Isos
+%{TARGET_PATH}/Windows/.VirtualBox/VirtualBox.xml
+
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS/UFO
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS/python
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Info.plist
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Frameworks
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/lib
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/settings
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/UFO.py*
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/site.py*
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/ufo.icns
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/__boot__.py*
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/__error__.sh
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/VirtualBox.xml
+
+%{TARGET_PATH}/Linux/ufo
+%{TARGET_PATH}/Linux/bin
+%{TARGET_PATH}/Linux/settings
+%{TARGET_PATH}/Linux/.VirtualBox/HardDisks
+%{TARGET_PATH}/Linux/.VirtualBox/Machines
+%{TARGET_PATH}/Linux/.VirtualBox/Isos
+%{TARGET_PATH}/Linux/.VirtualBox/VirtualBox.xml
+
 "%{TARGET_PATH}/Kit de survie.pdf"
+
 /usr/bin/VBoxClientSymlink
 /etc/xdg/autostart/vboxclientsymlink.desktop
 /usr/bin/VBoxClientDnD
 /etc/xdg/autostart/vboxclientdnd.desktop
 
+%files generic
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.bmp
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.bmp
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.bmp
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.gif
+
+%files polenumerique
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-polenumerique.bmp
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-polenumerique.gif
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-polenumerique.bmp
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-polenumerique.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.bmp
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.gif
 
 %changelog
+* Wed Jul 1 2009 Kevin Pouget <kevin.pouget@agorabox.org>
+Split package for graphic specific files
+
 * Mon Jun 29 2009 Sylvain Baubeau <sylvain.baubeau@agorabox.org>
 Now uses VirtualBox OSE
 

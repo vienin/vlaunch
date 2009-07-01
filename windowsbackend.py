@@ -251,7 +251,7 @@ class WindowsBackend(Backend):
     def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
-        self.splash = SplashScreen(self.tk, image=path.join(conf.HOME, "ufo.gif"))
+        self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
             conf.VBOX_INSTALLED = True
