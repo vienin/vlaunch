@@ -85,7 +85,6 @@ umount iso
 rm -rf iso
 
 %build
-#TODO: probably compile au3 windows script
 make %{?_smp_mflags}
 
 
@@ -95,9 +94,62 @@ make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH} VM_NAME=%{VM_NAM
 
 
 %post
+python << EOF
+import augeas
+import os.path
+
+def add_to_sudoers(username, program, tag = "NOPASSWD"):
+    aug = augeas.Augeas()
+    specs = aug.match("/files/etc/sudoers/spec[*]/user")
+    for spec in specs:
+        user = aug.get(spec)
+        if user == username:
+            n = len(aug.match(os.path.dirname(spec) + "/host_group/command")) + 1
+            aug.set(os.path.dirname(spec) + "/host_group/command[" + str(n) + "]", program)
+            aug.set(os.path.dirname(spec) + "/host_group/command[" + str(n) + "]/tag", tag)
+            aug.save()
+            return
+        
+    open("/etc/sudoers", "a").write("%s\tALL=\t%s: %s\n" % (username, tag, program))
+
+def enable_default(name):
+    requiretty = aug.match("/files/etc/sudoers/*/requiretty")
+    if not requiretty:
+        aug.set("/files/etc/sudoers/Defaults[1000]/requiretty", "1")
+
+add_to_sudoers("%ufo", "/usr/bin/VBoxClientSymlink", "NOPASSWD")
+add_to_sudoers("%ufo", "/usr/bin/VBoxClientDnD", "NOPASSWD")
+EOF
 
 
 %preun
+python << EOF
+import augeas
+import os.path
+
+def del_from_sudoers(username, program):
+    aug = augeas.Augeas()
+    specs = aug.match("/files/etc/sudoers/*/user")
+    for spec in specs:
+        user = aug.get(spec)
+        if user == username:
+            commands = aug.match(os.path.dirname(spec) + "/host_group/command")
+            for command in commands:
+                if aug.get(command) == program:
+                    aug.remove(command)
+                    if not aug.match(os.path.dirname(spec) + "/host_group/command"):
+                        aug.remove(os.path.dirname(spec))
+                    aug.save()
+                    return
+
+def disable_default(name):
+    requiretty = aug.match("/files/etc/sudoers/*/requiretty")
+    if requiretty:
+        aug.remove(requiretty[0])
+
+del_from_sudoers("%ufo", "/usr/bin/VBoxClientSymlink")
+del_from_sudoers("%ufo", "/usr/bin/VBoxClientDnD")
+EOF
 
 
 %clean

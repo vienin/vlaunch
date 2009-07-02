@@ -13,7 +13,7 @@ from utils import *class LinuxBackend(Backend):    VBOXMANAGE_EXECUTABLE = "V
         while True:
             if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBox"), "grep", inverse=True):   
                 break
-            logging.debug("Checking for USB devices")
+            # logging.debug("Checking for USB devices")
             self.check_usb_devices()
             time.sleep(3)
     def run_vbox(self, command, env):        # For some reason, it doesn't work with 'call'        cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + " ".join(command)
