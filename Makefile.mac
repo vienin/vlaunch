@@ -1,0 +1,36 @@
+py2app:
+	if [ -f UFO.py ]; \
+	then \
+		ln -s launcher.py UFO.py; \
+	fi; \
+	rm -rf dist build
+	python setup-mac.py py2app
+
+pkg: py2app
+	mkdir -p dist/packagemaker/Applications
+	mv dist/UFO.app dist/packagemaker/Applications
+	/Developer/Tools/packagemaker -build -proj U.F.O\ Launcher.pmproj -p dist/U.F.O\ Launcher.pkg
+
+clean:
+	rm -rf dist/packagemaker
+
+mpkg:
+	/Developer/Tools/packagemaker -build -proj "U.F.O for Mac Intel hosts.pmproj" -p "dist/U.F.O for Intel Mac hosts.mpkg"
+
+mac: clean py2app pkg mpkg
+
+mac-launcher: clean py2app
+	if [ -z "$$VBOX_PATH" ]; \
+	then \
+		exit 1; \
+	fi; \
+	cp -R $$VBOX_PATH dist/UFO.app/Contents/Resources/VirtualBox.app
+	cp -R kexts dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts
+	mkdir dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework
+	cp -R /Library/Frameworks/QtCore.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework
+	cp -R /Library/Frameworks/QtGui.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework
+	cp -R /Library/Frameworks/QtNetwork.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework
+	rm -f dist/UFO.app/Contents/Resources/site.pyc
+	rm -rf dist/UFO.app/Contents/Resources/.VirtualBox
+	cd dist && tar cvzf mac-intel.tgz UFO.app
+	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization

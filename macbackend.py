@@ -85,7 +85,7 @@ class MacBackend(Backend):
                    len(grep(infos, "Mount Point:").split()) > 2:
                     disks.append((grep(infos, "Mount Point:").split()[2],
                                   grep(infos, "Volume Name:").split()[2]))
-        except: raise # return []
+        except: return []
         return disks
 
     def restore_fstab(self):
@@ -257,7 +257,6 @@ end timeout
 
         self.check_privileges()
         self.is_ready()
-        self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")
