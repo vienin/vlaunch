@@ -1,6 +1,6 @@
 Name:           vlaunch
 Version:        0.5
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Install files for virtualization on the UFO vfat partition
 
 BuildArch:      i386
@@ -16,6 +16,12 @@ Requires:       kernel-vbox kernel-vbox-devel python-augeas
 %define TARGET_PATH /media/UFO
 %define VM_NAME UFO
 
+%package guest
+Summary: Install guest part files
+Group: Applications/System
+Requires: VirtualBox-OSE-guest >= 2.2.4
+Obsoletes: vbox-additions
+
 %package generic
 Summary: Install specific files for generic distribution
 Group: Applications/System
@@ -26,10 +32,14 @@ Summary: Install specific files for pole numerique distribution
 Group: Applications/System
 Requires: vlaunch = %{version}-%{release}
 
+
 %description
 vlaunch installs VirtualBox binaries and virtual machines configuration 
 files on the UFO vfat partition. 3 directories are installed, one for each 
 operating systems : Linux, Windows and MacOSX.
+
+%description guest
+Installs guest binaries that provide guest part of custom VirtualBox-OSE features.
 
 %description generic
 vlaunch installs VirtualBox binaries and virtual machines configuration 
@@ -93,7 +103,7 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH} VM_NAME=%{VM_NAME}
 
 
-%post
+%post guest
 python << EOF
 import augeas
 import os.path
@@ -122,7 +132,7 @@ add_to_sudoers("%ufo", "/usr/bin/VBoxClientDnD", "NOPASSWD")
 EOF
 
 
-%preun
+%preun guest
 python << EOF
 import augeas
 import os.path
@@ -200,6 +210,7 @@ rm -rf $RPM_BUILD_ROOT
 
 "%{TARGET_PATH}/Kit de survie.pdf"
 
+%files guest
 /usr/bin/VBoxClientSymlink
 /etc/xdg/autostart/vboxclientsymlink.desktop
 /usr/bin/VBoxClientDnD
@@ -222,6 +233,9 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.gif
 
 %changelog
+* Fri Jul 3 2009 Kevin Pouget <kevin.pouget@agorabox.org>
+Split package for distinguate guest / hosts files 
+
 * Wed Jul 1 2009 Kevin Pouget <kevin.pouget@agorabox.org>
 Split package for graphic specific files
 
