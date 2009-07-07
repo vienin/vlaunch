@@ -13,6 +13,7 @@ import wmi
 import sys
 import logging
 import conf
+import tempfile
 import time
 import platform
 import Tkinter
@@ -28,6 +29,9 @@ class WindowsBackend(Backend):
         self.splash = None
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
+        self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..")
+        self.updater_path = path.join(ufo_dir, "Windows", "bin", "updater.exe")
+        self.shadow_updater_path = self.shadow_updater_executable = tempfile.mktemp(prefix="updater", suffix=".exe")
 
     def call(self, cmd, env = None, shell = True, cwd = None):
         return Backend.call(self, cmd, env, shell, cwd)
@@ -146,7 +150,7 @@ class WindowsBackend(Backend):
         if ret == win32con.IDYES: return button1
         else: return button2
 
-    def dialog_info(self, msg, title):
+    def dialog_info(self, title, msg):
         win32gui.MessageBox(None, msg, title, win32con.MB_OK)
 
     def get_device_size(self, name):
@@ -245,7 +249,7 @@ class WindowsBackend(Backend):
             msg += u"\n\nExécutez UFO en tant qu'administrateur en sélectionnant :\nClic droit -> Exécuter en tant qu'administrateur"
         else:
             msg += u"\n\nExécutez UFO en tant qu'administrateur en sélectionnant :\nClic droit -> Exécuter en tant qu'administrateur"
-        self.dialog_info(msg, u"Permissions insuffisantes")
+        self.dialog_info(title=u"Permissions insuffisantes", msg=msg)
         sys.exit(1)
 
     def prepare(self):

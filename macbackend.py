@@ -34,6 +34,11 @@ class MacBackend(Backend):
         self.tk.withdraw()
         self.disks = []
         self.tmpdir = ""
+        self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..")
+        self.updater_path = path.join(self.ufo_dir, "UFO.app", "Contents", "Resources", "Updater.app")
+        self.shadow_updater_path = tempfile.mktemp(prefix="Updater", suffix=".app")
+        self.shadow_updater_executable = path.join(self.shadow_updater_path,
+                                                  "Contents", "MacOS", "Updater")
 
     def get_model(self, dev):
         medianame = grep(commands.getoutput("/usr/sbin/diskutil info " + dev), "Media Name:")
@@ -96,7 +101,7 @@ class MacBackend(Backend):
 
     def dialog_question(self, msg, title, button1, button2):
         choices = [ button1, button2 ]
-        reply = easygui.buttonbox(msg, title, choices=choices, root=self.tk)
+        reply = easygui.buttonbox(msg=msg, title=title, choices=choices, root=self.tk)
         return reply
 
     """
@@ -118,13 +123,13 @@ class MacBackend(Backend):
              'tell app "UFO" to display dialog "%s" with title "%s" buttons "OK"' %
                 (msg, title) ])
         """
-        easygui.msgbox(msg, title, root=self.tk)
+        easygui.msgbox(msg=msg, title=title, root=self.tk)
             
     # generic dialog box for ask password 
     # params :
     # return : pass_string
     def dialog_password(self):
-        return easygui.passwordbox("Veuillez entrer le mot de passe de cet ordinateur", root=self.tk)
+        return easygui.passwordbox(msg="Veuillez entrer le mot de passe de cet ordinateur", root=self.tk)
 
         return subprocess.Popen([ "/usr/bin/osascript" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate("""
 with timeout of 300 seconds
@@ -203,7 +208,7 @@ end timeout
                 p = subprocess.Popen([ "sudo", "-S" ] + cmd, stdin=subprocess.PIPE, close_fds=True)
                 p.communicate(password)
                 if p.returncode:
-                    self.dialog_info("Erreur", "Erreur lors de la saisie du mot de passe")
+                    self.dialog_info(title="Erreur", msg="Erreur lors de la saisie du mot de passe")
                 # logging.debug("Exiting...")
                 sys.exit(0)
 

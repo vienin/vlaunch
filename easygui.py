@@ -270,6 +270,7 @@ def buttonbox(msg="",title=" ",choices=("Button1", "Button2", "Button3")
     
 	boxRoot.protocol('WM_DELETE_WINDOW', denyWindowManagerClose )
 
+	"""
 	screen_width = boxRoot.winfo_screenwidth()
 	screen_height = boxRoot.winfo_screenheight()
 	root_width = int((screen_width * 0.8))
@@ -277,7 +278,16 @@ def buttonbox(msg="",title=" ",choices=("Button1", "Button2", "Button3")
 	root_xpos = int((screen_width * 0.1))
 	root_ypos = int((screen_height * 0.05))
 	rootWindowPosition = "+" + str(root_xpos) + "+" + str(root_ypos)
+	"""
 
+	w = 400
+	h = 100
+	ws = boxRoot.winfo_screenwidth()
+	hs = boxRoot.winfo_screenheight()
+	x = (ws/2) - (w/2)
+	y = (hs/2) - (h/2)
+	rootWindowPosition = "%dx%d+%d+%d" % (w, h, x, y)
+	
 	boxRoot.title(title)
 	boxRoot.iconname('Dialog')
 	boxRoot.geometry(rootWindowPosition)
@@ -314,7 +324,7 @@ def buttonbox(msg="",title=" ",choices=("Button1", "Button2", "Button3")
 	boxRoot.deiconify()
 	boxRoot.mainloop()
 	boxRoot.destroy()
-	if root: root.deiconify()
+	# if root: root.deiconify()
 	return __replyButtonText
 
 

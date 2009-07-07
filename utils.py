@@ -281,9 +281,9 @@ class Backend:
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
-             self.dialog_info(u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
+             self.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
                               u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce lien http://downloads.virtualbox.org/virtualbox/",
-                              u"Binaires manquants")
+                              title=u"Binaires manquants")
              sys.exit(1)
 
         # redirect VBOX HOME directory
@@ -300,7 +300,7 @@ class Backend:
         if ret == conf.STATUS_NORMAL:
             logging.debug("awaited device found on " + str(conf.DEV))
             if self.prepare_device(conf.DEV):
-                self.dialog_info("Attention", u"Impossible de démonter le volume UFO, vérifiez qu'il n'est pas en cours d'utilisation.")
+                self.dialog_info(title="Attention", msg=u"Impossible de démonter le volume UFO, vérifiez qu'il n'est pas en cours d'utilisation.")
                 logging.debug("Unable to umount %s, exiting script" % (conf.DEV,))
                 sys.exit(1)
             create_vmdk = True

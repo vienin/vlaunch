@@ -3,6 +3,7 @@ import commands
 import conf
 import easygui
 import glob
+import tempfile
 import time
 from utils import *
 
@@ -12,6 +13,11 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         self.terminated = False
+        self.ufo_dir = path.normpath(path.join(
+                           path.realpath(path.dirname(sys.argv[0])), ".."))
+        self.updater_path = path.normpath(path.join(
+                           self.ufo_dir, "Linux", "bin", "updater.py"))
+        self.shadow_update_executable = self.shadow_updater_path = tempfile.mktemp(prefix="updater", suffix=".py")
 
     def getuuid(self, dev):
         return commands.getoutput("blkid -o value -s UUID " + dev)
@@ -85,12 +91,12 @@ class LinuxBackend(Backend):
             return [ path.join(conf.BIN, "VirtualBox") ]
 
     def dialog_info(self, title, msg):
-        easygui.msgbox(msg, title)
+        easygui.msgbox(msg=msg, title=title)
 
     def check_privileges(self):
         if os.geteuid() != 0:
-            dialog_info("Droits insuffisants",
-                        "Vos permissions ne sont pas suffisantes pour lancer UFO. " + \
+            dialog_info(title="Droits insuffisants",
+                        msg="Vos permissions ne sont pas suffisantes pour lancer UFO. " + \
                         "Veuillez entrer le mot de passe administrateur dans l'invite de " + \
                         "la console :")
             self.call([ "su", "-c", sys.executable ])
@@ -112,9 +118,6 @@ class LinuxBackend(Backend):
         choices = [ button1, button2 ]
         reply = easygui.buttonbox(msg, title, choices=choices)
         return reply
-
-    def dialog_info(self, title, msg):
-        easygui.msgbox(msg, title)
 
     def wait_for_termination(self):
         while True:

@@ -42,6 +42,7 @@ modelkey = "MODEL"
 rootuuidkey = "ROOTUUID"
 volumekey = "VOLUME"
 logkey = "LOG"
+versionkey = "VERSION"
 configurevmkey = "CONFIGUREVM"
 homekey = "HOME"
 binkey = "BIN"
@@ -76,7 +77,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                useservicekey : "0",
                                createsrvskey : "0",
                                startsrvskey : "0",
-                               uninstalldriverskey : "0"
+                               uninstalldriverskey : "0",
+                               versionkey : "0"
                              })
 cp.read([path.join(SCRIPT_DIR, "settings.conf"), path.join(SCRIPT_DIR, "settings", "settings.conf")])
 
@@ -91,6 +93,7 @@ STARTVM = int(cp.get(launchersection, startvmkey))
 NEEDDEV = int(cp.get(launchersection, needdevkey))
 DEBUG = int(cp.get(launchersection, debugkey))
 LOG = cp.get(launchersection, logkey)
+VERSION = int(cp.get(launchersection, versionkey))
 CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 
