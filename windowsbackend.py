@@ -30,7 +30,7 @@ class WindowsBackend(Backend):
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
         self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..")
-        self.updater_path = path.join(ufo_dir, "Windows", "bin", "updater.exe")
+        self.updater_path = path.join(self.ufo_dir, "Windows", "bin", "updater.exe")
         self.shadow_updater_path = self.shadow_updater_executable = tempfile.mktemp(prefix="updater", suffix=".exe")
 
     def call(self, cmd, env = None, shell = True, cwd = None):
