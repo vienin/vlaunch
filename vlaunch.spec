@@ -20,7 +20,6 @@ Requires:       kernel-vbox kernel-vbox-devel python-augeas
 Summary: Install guest part files
 Group: Applications/System
 Requires: VirtualBox-OSE-guest >= 2.2.4
-Obsoletes: vbox-additions
 
 %package generic
 Summary: Install specific files for generic distribution

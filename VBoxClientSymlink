@@ -106,7 +106,9 @@ while [ 1 ]; do
 		esac
 	done
 
+	sleep 5
 	mount_share_and_link $awaited_share_label $awaited_share_name
+	sleep 5
 done
 
 IFS=$ORIGIFS
