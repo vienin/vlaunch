@@ -199,6 +199,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/VirtualBox.xml
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/Updater.app
 
 %{TARGET_PATH}/Linux/ufo
 %{TARGET_PATH}/Linux/bin
