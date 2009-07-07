@@ -735,7 +735,7 @@ def __fillablebox(msg, title="", default="", argMaskCharacter=None,root=None):
 	boxRoot.mainloop()  # run it!
 
 	# -------- after the run has completed ----------------------------------
-	if root: root.deiconify()
+	# if root: root.deiconify()
 	boxRoot.destroy()  # button_click didn't destroy boxRoot, so we do it now
 	return __enterboxText
 

@@ -61,10 +61,10 @@ try:
             # I get Operation not permitted
             # os.execv(backend.shadow_updater_executable,
             #          [backend.shadow_updater_executable, backend.ufo_dir])
-            subprocess.Popen([ backend.shadow_updater_executable, backend.ufo_dir ], shell=False)
-            logging.debug("Exiting for good")
+            subprocess.Popen([ backend.shadow_updater_executable, backend.ufo_dir ])
             sys.exit(0)
-            
+except SystemExit:
+    sys.exit(0)
 except:
     logging.debug("Exception while updating")
 

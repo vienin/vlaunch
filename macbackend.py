@@ -34,8 +34,8 @@ class MacBackend(Backend):
         self.tk.withdraw()
         self.disks = []
         self.tmpdir = ""
-        self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..")
-        self.updater_path = path.join(self.ufo_dir, "UFO.app", "Contents", "Resources", "Updater.app")
+        self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")
+        self.updater_path = path.join(self.ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "Updater.app")
         self.shadow_updater_path = tempfile.mktemp(prefix="Updater", suffix=".app")
         self.shadow_updater_executable = path.join(self.shadow_updater_path,
                                                   "Contents", "MacOS", "Updater")
