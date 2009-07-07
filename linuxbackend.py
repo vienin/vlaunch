@@ -43,7 +43,7 @@ class LinuxBackend(Backend):
         return ""
 
     def prepare_device(self, disk):
-        self.call([ "umount", disk ])
+        self.call([ "umount", disk + "3" ])
 
     def get_device_size(self, dev):
         return int(open(path.join("/", "sys", "class", "block", path.basename(dev), "size")).read())
