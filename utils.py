@@ -14,6 +14,7 @@ import conf
 import shutil
 import tempfile
 from utils import *
+import uuid
 from Tkinter import Tk, Image, PhotoImage, Toplevel, FLAT, NW, Canvas
 import Tix
 
@@ -111,8 +112,8 @@ class Backend:
         
             vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
             logging.debug("Creating VMDK file %s with %s of size %d : " % (vmdk, conf.DEV, blockcount))
-            uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
-            virtual_box.set_raw_vmdk(conf.VMDK, uuid, conf.DRIVERANK)
+            vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
+            virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
     
         if conf.CONFIGUREVM:
             # compute reasonable memory size
@@ -122,7 +123,16 @@ class Backend:
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
             virtual_box.machine.set_ram_size(conf.RAMSIZE)
-        
+            
+            """
+            swap = 16 # conf.RAMSIZE
+            swap_vdi = tempfile.mktemp(prefix="swap", suffix=".vdi")
+            if self.call([ path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE),
+                        "createhd", "--filename", swap_vdi,
+                        "--size", str(swap), "--variant", "Fixed" ]) == 0:
+                virtual_box.set_vdi(swap_vdi, str(uuid.uuid4()), conf.DRIVERANK + 1)
+            """
+            
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
 

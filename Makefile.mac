@@ -27,6 +27,18 @@ mpkg:
 
 mac: clean py2app pkg mpkg
 
+update-key:
+	rm -rf /Volumes/UFO/Mac-Intel/UFO.app
+	cp -R dist/UFO.app /Volumes/UFO/Mac-Intel/
+	mkdir /Volumes/UFO/Mac-Intel/UFO.app/Contents/Resources/settings
+	cp settings.conf.mac /Volumes/UFO/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
+	cp -R .VirtualBox /Volumes/UFO/Mac-Intel/UFO.app/Contents/Resources/
+
+test:
+	mkdir dist/UFO.app/Contents/Resources/settings
+	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings/settings.conf
+	cp -R .VirtualBox dist/UFO.app/Contents/Resources/
+
 mac-launcher: clean py2app py2app-updater
 	if [ -z "$$VBOX_PATH" ]; \
 	then \
@@ -39,6 +51,9 @@ mac-launcher: clean py2app py2app-updater
 	cp -R /Library/Frameworks/QtCore.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework
 	cp -R /Library/Frameworks/QtGui.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework
 	cp -R /Library/Frameworks/QtNetwork.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework
+	strip -S dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/* dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/components/* || true
+	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/testcase 
+	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/tst* 
 	rm -f dist/UFO.app/Contents/Resources/site.pyc
 	rm -f dist/UFO.app/Contents/Resources/Updater.app/Contents/Resources/site.pyc
 	rm -rf dist/UFO.app/Contents/Resources/.VirtualBox

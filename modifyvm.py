@@ -278,6 +278,27 @@ class VBoxConfiguration:
 		self.machine.set_disk_at(uuid, order)
 		return 0
 
+	def set_vdi (self, filename, uuid, order):
+		disks = self.xml.getElementsByTagName('HardDisk')
+		if len(disks) > order:
+			element = disks[order]
+			element.setAttribute('location', filename)
+			element.setAttribute('uuid', '{' + uuid + '}')
+		elif len(disks) == order:
+			element = self.xml.getElementsByTagName('HardDisks')[0]
+			new_element = self.xml.createElement("HardDisk")
+			new_element.setAttribute('location', filename)
+			new_element.setAttribute('uuid', '{' + uuid + '}')
+			new_element.setAttribute('format', 'VDI')
+			new_element.setAttribute('type', 'Normal')
+			element.appendChild(new_element)
+		else:
+			print "disk order error"
+			return 1
+
+		self.machine.set_disk_at(uuid, order)
+		return 0
+
 	def write (self):
 		open(self.file, 'w').write(self.xml.toxml())
 

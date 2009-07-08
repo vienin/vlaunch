@@ -219,8 +219,13 @@ end timeout
 
         if not conf.READY:
             self.tmpdir = tempfile.mkdtemp(suffix="ufo")
-            logging.debug("Copying myself to " + self.tmpdir)
-            self.call([ "cp", "-P", "-R", conf.APP_PATH, self.tmpdir + "/"])
+            logging.debug("Copying myself from " + conf.APP_PATH + " to " + self.tmpdir)
+
+            # self.call([ "cp", "-P", "-R", conf.APP_PATH, self.tmpdir + "/"])
+            p1 = subprocess.Popen([ "tar", "-cf", "-", "-C", conf.APP_PATH, ".." ], stdout=subprocess.PIPE)
+            p2 = subprocess.Popen([ "tar", "xf", "-", "-C", self.tmpdir ], stdin=p1.stdout, stdout=subprocess.PIPE)
+            output = p2.communicate()[0]
+            
             logging.debug(" ".join([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ]))
             logging.shutdown()
             env = os.environ.copy()
@@ -261,6 +266,7 @@ end timeout
         if not conf.BIN: conf.BIN = path.join(conf.APP_PATH, "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
         self.check_privileges()
+        self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0]) 
         self.is_ready()
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
