@@ -1,6 +1,6 @@
 Name:           vlaunch
 Version:        0.5
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Install files for virtualization on the UFO vfat partition
 
 BuildArch:      i386
@@ -186,6 +186,9 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.gif
 
 %changelog
+* Wed Jul 8 2009 Sylvain Baubeau <sylvain.baubeau@agorabox.org>
+Use consolehelper to run program as root
+
 * Fri Jul 3 2009 Kevin Pouget <kevin.pouget@agorabox.org>
 Split package for distinguate guest / hosts files 
 
