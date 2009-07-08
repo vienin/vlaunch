@@ -127,12 +127,23 @@ class Backend:
             """
             swap = 16 # conf.RAMSIZE
             swap_vdi = tempfile.mktemp(prefix="swap", suffix=".vdi")
-            if self.call([ path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE),
+            # if self.call([ path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE),
+            #             "createhd", "--filename", swap_vdi,
+            #             "--size", str(swap), "--variant", "Fixed" ], env = self.env) == 0:
+            p = subprocess.Popen([ path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE),
                         "createhd", "--filename", swap_vdi,
-                        "--size", str(swap), "--variant", "Fixed" ]) == 0:
-                virtual_box.set_vdi(swap_vdi, str(uuid.uuid4()), conf.DRIVERANK + 1)
+                        "--size", str(swap), "--variant", "Fixed" ], env = self.env, stdout=subprocess.PIPE)
+            output, err = p.communicate()
+            print output, err
+            if p.returncode == 0:
+                swap_uuid = output[output.find("UUID: ") + 6:].strip()
+                import time
+                time.sleep(5)
+                logging.debug("Created VDI for swap")
+                print "Created VDI for swap"
+                virtual_box.set_vdi(swap_vdi, swap_uuid, conf.DRIVERANK + 1)
             """
-            
+
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
 

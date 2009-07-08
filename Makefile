@@ -2,10 +2,12 @@ NAME=vlaunch
 VERSION=0.5
 SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp ufo-*.gif README COPYING \
         Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
-        QtGuiVBox QtNetworkVBox VBoxClientSymlink vboxclientsymlink.desktop \
-        VBoxClientDnD vboxclientdnd.desktop Headers Current 4.0 QtCore QtGui \
+        QtGuiVBox QtNetworkVBox vboxclientsymlink.desktop \
+        vboxclientdnd.desktop Headers Current 4.0 QtCore QtGui \
         QtGui.Resources QtNetwork QtCore.framework QtGui.framework \
-        QtNetwork.framework
+        QtNetwork.framework \
+	VBoxClientDnD VBoxClientDnD.pam VBoxClientDnD.console \
+	VBoxClientSymlink VBoxClientSymlink.pam VBoxClientSymlink.console
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -101,13 +103,24 @@ install:
 	# Kit de survie
 	cp "Kit de survie.pdf" $(DESTDIR)$(TARGET_PATH)
 
+	mkdir -p $(DESTDIR)/etc/pam.d
+	install -p -m 644 VBoxClientSymlink.pam $(DESTDIR)/etc/pam.d/VBoxClientSymlink
+	install -p -m 644 VBoxClientDnD.pam $(DESTDIR)/etc/pam.d/VBoxClientDnD
+
+	mkdir -p $(DESTDIR)/etc/security/console.apps
+	install -p -m 644 VBoxClientSymlink.console $(DESTDIR)/etc/security/console.apps/VBoxClientSymlink
+	install -p -m 644 VBoxClientDnD.console $(DESTDIR)/etc/security/console.apps/VBoxClientDnD
+
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
+	ln -s consolehelper $(DESTDIR)/usr/bin/VBoxClientSymlink
+	ln -s consolehelper $(DESTDIR)/usr/bin/VBoxClientDnD
+	mkdir -p $(DESTDIR)/usr/sbin
 	mkdir -p $(DESTDIR)/etc/xdg/autostart
 	chmod +x VBoxClientSymlink
 	chmod +x VBoxClientDnD
-	cp VBoxClientSymlink $(DESTDIR)/usr/bin
+	cp VBoxClientSymlink $(DESTDIR)/usr/sbin
 	cp vboxclientsymlink.desktop $(DESTDIR)/etc/xdg/autostart
-	cp VBoxClientDnD $(DESTDIR)/usr/bin
+	cp VBoxClientDnD $(DESTDIR)/usr/sbin
 	cp vboxclientdnd.desktop $(DESTDIR)/etc/xdg/autostart
 	

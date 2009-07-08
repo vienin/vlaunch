@@ -280,8 +280,8 @@ class VBoxConfiguration:
 
 	def set_vdi (self, filename, uuid, order):
 		disks = self.xml.getElementsByTagName('HardDisk')
-		if len(disks) > order:
-			element = disks[order]
+                if len(disks) > order:
+                        element = disks[order]
 			element.setAttribute('location', filename)
 			element.setAttribute('uuid', '{' + uuid + '}')
 		elif len(disks) == order:
