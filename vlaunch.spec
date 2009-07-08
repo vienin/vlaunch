@@ -158,16 +158,16 @@ rm -rf $RPM_BUILD_ROOT
 "%{TARGET_PATH}/Kit de survie.pdf"
 
 %files guest
-%{_sysconfdir}/pam.d/VBoxClientDnD
-%{_sysconfdir}/pam.d/VBoxClientSymlink
-%{_sysconfdir}/security/console.apps/VBoxClientDnD
-%{_sysconfdir}/security/console.apps/VBoxClientSymlink
-%{_bindir}/VBoxClientSymlink
-%{_bindir}/VBoxClientDnD
-%{_sbindir}/VBoxClientSymlink
-%{_sbindir}/VBoxClientDnD
-%{_sysconfdir}/xdg/autostart/vboxclientsymlink.desktop
-%{_sysconfdir}/xdg/autostart/vboxclientdnd.desktop
+%{_sysconfdir}/pam.d/vbox-client-dnd
+%{_sysconfdir}/pam.d/vbox-client-symlink
+%{_sysconfdir}/security/console.apps/vbox-client-dnd
+%{_sysconfdir}/security/console.apps/vbox-client-symlink
+%{_bindir}/vbox-client-symlink
+%{_bindir}/vbox-client-dnd
+%{_sbindir}/vbox-client-symlink
+%{_sbindir}/vbox-client-dnd
+%{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
+%{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
 
 %files generic
 %{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.bmp

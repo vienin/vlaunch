@@ -2,12 +2,12 @@ NAME=vlaunch
 VERSION=0.5
 SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp ufo-*.gif README COPYING \
         Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
-        QtGuiVBox QtNetworkVBox vboxclientsymlink.desktop \
-        vboxclientdnd.desktop Headers Current 4.0 QtCore QtGui \
+        QtGuiVBox QtNetworkVBox vbox-client-symlink.desktop \
+        vbox-client-dnd.desktop Headers Current 4.0 QtCore QtGui \
         QtGui.Resources QtNetwork QtCore.framework QtGui.framework \
         QtNetwork.framework \
-	VBoxClientDnD VBoxClientDnD.pam VBoxClientDnD.console \
-	VBoxClientSymlink VBoxClientSymlink.pam VBoxClientSymlink.console
+	vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
+	vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -53,6 +53,7 @@ install:
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/MacOS
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/Resources
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/site.py
+	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/Updater.app/Contents/Resources/lib/python2.5/site.py
 	cp Resources MacOS $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/
 
 	find $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework -type l -exec unlink {} \;
@@ -73,10 +74,12 @@ install:
 	cp QtCore.framework QtGui.framework QtNetwork.framework $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
 
 	cp site.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/
+	cp site.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/Updater.app/Contents/Resources/lib/python2.5/
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings.conf
 	cp -f settings.conf.mac $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/site.pyc
+	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/Updater.app/Contents/Resources/site.pyc
 	cp -R tmp_vbox_home_macosx/Machines tmp_vbox_home_macosx/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	cp tmp_vbox_home_macosx/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines/UFO/UFO.xml.template
 	
@@ -104,23 +107,23 @@ install:
 	cp "Kit de survie.pdf" $(DESTDIR)$(TARGET_PATH)
 
 	mkdir -p $(DESTDIR)/etc/pam.d
-	install -p -m 644 VBoxClientSymlink.pam $(DESTDIR)/etc/pam.d/VBoxClientSymlink
-	install -p -m 644 VBoxClientDnD.pam $(DESTDIR)/etc/pam.d/VBoxClientDnD
+	install -p -m 644 vbox-client-symlink.pam $(DESTDIR)/etc/pam.d/vbox-client-symlink
+	install -p -m 644 vbox-client-dnd.pam $(DESTDIR)/etc/pam.d/vbox-client-dnd
 
 	mkdir -p $(DESTDIR)/etc/security/console.apps
-	install -p -m 644 VBoxClientSymlink.console $(DESTDIR)/etc/security/console.apps/VBoxClientSymlink
-	install -p -m 644 VBoxClientDnD.console $(DESTDIR)/etc/security/console.apps/VBoxClientDnD
+	install -p -m 644 vbox-client-symlink.console $(DESTDIR)/etc/security/console.apps/vbox-client-symlink
+	install -p -m 644 vbox-client-dnd.console $(DESTDIR)/etc/security/console.apps/vbox-client-dnd
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
-	ln -s consolehelper $(DESTDIR)/usr/bin/VBoxClientSymlink
-	ln -s consolehelper $(DESTDIR)/usr/bin/VBoxClientDnD
+	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-symlink
+	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-dnd
 	mkdir -p $(DESTDIR)/usr/sbin
 	mkdir -p $(DESTDIR)/etc/xdg/autostart
-	chmod +x VBoxClientSymlink
-	chmod +x VBoxClientDnD
-	cp VBoxClientSymlink $(DESTDIR)/usr/sbin
-	cp vboxclientsymlink.desktop $(DESTDIR)/etc/xdg/autostart
-	cp VBoxClientDnD $(DESTDIR)/usr/sbin
-	cp vboxclientdnd.desktop $(DESTDIR)/etc/xdg/autostart
+	chmod +x vbox-client-symlink
+	chmod +x vbox-client-dnd
+	cp vbox-client-symlink $(DESTDIR)/usr/sbin
+	cp vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart
+	cp vbox-client-dnd $(DESTDIR)/usr/sbin
+	cp vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	
