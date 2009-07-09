@@ -28,8 +28,7 @@ mount_share_and_link() {
 	fi
 }
 
-[ -z "$SUDO_UID" ] && USER_UID=`id -u $USER` || USER_UID=$SUDO_UID
-[ -z "$SUDO_USER" ] && USERNAME=$USER || USERNAME=$SUDO_USER
+[ -z "$USERHELPER_UID" ] && USER_UID=`id -u $USER` || USER_UID=$USERHELPER_UID
 
 # Set $IFS to end-of-line and coma
 ORIGIFS=$IFS
@@ -83,7 +82,7 @@ done
 # On MAC-OSX hosts, mount UFO part as real device
 host="${cmdline#*hostos=}"
 host="${host%% *}"
-[ "$host" == "macosx" ] && sudo -u $USERNAME gnome-mount --device /dev/sda1
+[ "$host" == "macosx" ] && sudo -u #$USER_UID gnome-mount --device /dev/sda1
 
 awaited_share_time="0"
 while [ 1 ]; do
