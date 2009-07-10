@@ -295,5 +295,10 @@ class WindowsBackend(Backend):
         self.call(command, env = env, shell=True)
         
     def get_free_size(self, path):
-        return 1000
+        logical_disks = self.WMI.Win32_LogicalDisk (Caption = path[0:2])
+        if not logical_disks:
+            return ""
+
+        return int(logical_disks[0].FreeSpace) / 1000000
+
 

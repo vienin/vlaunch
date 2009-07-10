@@ -211,7 +211,7 @@ class VirtualMachine:
 		open(self.file, 'w').write(self.xml.toxml().encode("utf-8"))
 
 class VBoxConfiguration:
-	xml	   = None
+	xml	  = None
 	machine   = None
 	
 	def __init__ (self, home_path, use_template = False):

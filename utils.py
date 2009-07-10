@@ -219,8 +219,9 @@ class Backend:
             virtual_box.machine.set_guest_property("swap", swap_dev)
                         
             free_size = self.get_free_size(self.tmp_swapdir)
-            swap_size = min(conf.SWAPSIZE, free_size)
-            virtual_box.machine.set_guest_property("swap_size", str(swap_size))
+            if free_size:
+                swap_size = min(conf.SWAPSIZE, free_size)
+                virtual_box.machine.set_guest_property("swap_size", str(swap_size))
             
         # Write changes
         virtual_box.write()
