@@ -5,6 +5,12 @@ py2app:
 	fi; \
 	rm -rf dist build
 	python setup-mac.py py2app
+	if [ -f update_launcher_mac.py ]; \
+	then \
+		ln -s update_launcher.py Updater.py; \
+	fi; \
+	rm -rf dist build
+	python setup-update-mac.py py2app
 
 py2app-updater:
 	if [ -f update_launcher_mac.py ]; \
@@ -57,5 +63,5 @@ mac-launcher: clean py2app py2app-updater
 	rm -f dist/UFO.app/Contents/Resources/site.pyc
 	rm -f dist/UFO.app/Contents/Resources/Updater.app/Contents/Resources/site.pyc
 	rm -rf dist/UFO.app/Contents/Resources/.VirtualBox
-	cd dist && tar cvzf mac-intel.tgz UFO.app
+	cd dist && tar cvzf mac-intel.tgz UFO.app UPDATER.app
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization

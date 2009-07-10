@@ -4,8 +4,10 @@ import conf
 import easygui
 import glob
 import tempfile
+import Tkinter
 import time
 from utils import *
+from shutil import copytree
 
 class LinuxBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
@@ -13,12 +15,17 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         self.terminated = False
+        self.tk = Tkinter.Tk()
+        self.tk.withdraw()
         self.ufo_dir = path.normpath(path.join(
                            path.realpath(path.dirname(sys.argv[0])), ".."))
-        self.updater_path = path.normpath(path.join(
-                           self.ufo_dir, "Linux", "bin", "updater.py"))
-        self.shadow_update_executable = self.shadow_updater_path = tempfile.mktemp(prefix="updater", suffix=".py")
+        self.updater_path = self.shadow_updater_path = path.normpath(path.join(self.ufo_dir, "Linux", "bin"))
+        self.updater_executable = self.shadow_updater_executable = path.normpath(path.join(self.updater_path,"updater.py"))
 
+    def prepare_update(self):
+        shutil.copytree(os.path.join(self.updater_path, "..", "settings"),
+                            os.path.join(self.shadow_updater_path, "settings"))
+        
     def getuuid(self, dev):
         return commands.getoutput("blkid -o value -s UUID " + dev)
 

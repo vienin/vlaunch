@@ -4,6 +4,8 @@ from ConfigParser import ConfigParser
 PWD = os.getcwd()
 SCRIPT_PATH = path.realpath(sys.argv[0])
 SCRIPT_DIR = path.dirname(path.realpath(sys.argv[0]))
+if (len(SCRIPT_DIR)-len(SCRIPT_DIR.rsplit("bin",1)[0]) == 3):
+    SCRIPT_DIR = SCRIPT_DIR.rsplit("bin",1)[0]
 SCRIPT_NAME = path.basename(sys.argv[0])
 
 APP_PATH = SCRIPT_DIR

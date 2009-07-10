@@ -18,6 +18,7 @@ import time
 import platform
 import Tkinter
 from utils import *
+from shutil import copyfile, copytree
 
 class WindowsBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage.exe"
@@ -29,9 +30,22 @@ class WindowsBackend(Backend):
         self.splash = None
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
-        self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..")
-        self.updater_path = path.join(self.ufo_dir, "Windows", "bin", "updater.exe")
-        self.shadow_updater_path = self.shadow_updater_executable = tempfile.mktemp(prefix="updater", suffix=".exe")
+        self.ufo_dir = path.normpath(path.join(path.realpath(path.dirname(sys.argv[0])), ".."))
+        self.updater_path = path.join(self.ufo_dir, "Windows", "bin")
+        self.updater_executable = path.join(self.ufo_dir, "Windows", "bin", "updater.exe")
+        self.shadow_updater_path = tempfile.mkdtemp(prefix="Updater")
+        self.shadow_updater_executable = path.join(self.shadow_updater_path, "updater.exe")
+
+    def prepare_update(self):
+        logging.debug("Copying " + self.updater_executable + " to " + self.shadow_updater_executable)
+        shutil.copyfile(self.updater_executable, self.shadow_updater_executable)
+        os.mkdir(path.join(self.shadow_updater_path, "logs"))
+        shutil.copyfile(path.normpath(path.join(self.updater_path, "..", ".VirtualBox", "ufo-update-download.gif")),
+                            path.join(self.shadow_updater_path, "ufo-update-download.gif"))
+        shutil.copyfile(path.normpath(path.join(self.updater_path, "..", ".VirtualBox","ufo-update-install.gif")),
+                            path.join(self.shadow_updater_path, "ufo-update-install.gif"))
+        shutil.copytree(path.normpath(path.join(self.updater_path, "..", "settings")),
+                            path.join(self.shadow_updater_path, "settings"))
 
     def call(self, cmd, env = None, shell = True, cwd = None):
         return Backend.call(self, cmd, env, shell, cwd)
@@ -146,11 +160,11 @@ class WindowsBackend(Backend):
         pass
 
     def dialog_question(self, msg, title, button1, button2):
-        ret = win32gui.MessageBox(None, title, msg, win32con.MB_YESNO)
+        ret = win32gui.MessageBox(None, msg, title, win32con.MB_YESNO)
         if ret == win32con.IDYES: return button1
         else: return button2
 
-    def dialog_info(self, title, msg):
+    def dialog_info(self, msg, title):
         win32gui.MessageBox(None, msg, title, win32con.MB_OK)
 
     def get_device_size(self, name):

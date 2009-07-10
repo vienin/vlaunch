@@ -42,6 +42,7 @@ class SplashScreen(Toplevel):
         """(master, image, timeout=1000) -> create a splash screen
         from specified image file.  Keep splashscreen up for timeout
         milliseconds"""
+        
         Toplevel.__init__(self, master, relief=FLAT, borderwidth=0)
         if master == None: master = Tk()
         self.main = master
@@ -53,7 +54,7 @@ class SplashScreen(Toplevel):
         self.after_idle(self.centerOnScreen)
 
         self.update()
-        self.after(timeout, self.destroy)
+        if (timeout != 0): self.after(timeout, self.destroy)
 
     def centerOnScreen(self):
         self.update_idletasks()
