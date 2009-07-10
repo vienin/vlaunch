@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, statvfs
 import commands
 import conf
 import easygui
@@ -139,4 +139,8 @@ class LinuxBackend(Backend):
         cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + " ".join(command)
         os.system(cmd)
         self.wait_for_termination()
+        
+    def get_free_size(self, path):
+        stats = os.statvfs(path)
+        return (stats[statvfs.F_BSIZE] * stats[statvfs.F_BFREE]) / 1000000
 

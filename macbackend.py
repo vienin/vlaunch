@@ -344,3 +344,7 @@ end timeout
 
     def find_resolution(self):
         return ""
+        
+    def get_free_size(self, path):
+        return 1000
+

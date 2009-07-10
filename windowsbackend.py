@@ -293,3 +293,7 @@ class WindowsBackend(Backend):
     def run_vbox(self, command, env):
         self.splash.destroy()
         self.call(command, env = env, shell=True)
+        
+    def get_free_size(self, path):
+        return 1000
+

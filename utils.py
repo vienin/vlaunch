@@ -116,24 +116,6 @@ class Backend:
             logging.debug("Creating VMDK file %s with %s of size %d : " % (vmdk, conf.DEV, blockcount))
             vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
             virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
-
-        if conf.SWAPFILE and conf.SWAPUUID:
-            self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
-            swap_rank = conf.DRIVERANK + 1
-            shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
-            virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
-            
-            swap_dev = ""
-            # Beurk, compute swap device for guest
-            if swap_rank == 1:
-                swap_dev = "sdb"
-            elif swap_rank == 2:
-                swap_dev = "sdc"
-            elif swap_rank == 3:
-                swap_dev = "sdd"
-            elif swap_rank == 4:
-                swap_dev = "sde"
-            virtual_box.machine.set_guest_property("swap", swap_dev)
             
         if conf.CONFIGUREVM:
             # compute reasonable memory size
@@ -226,6 +208,28 @@ class Backend:
                 virtual_box.machine.set_guest_property("share_" + str(usb[1]), usb[1])
                 logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
             self.usb_devices = usb_devices
+
+        if conf.SWAPFILE and conf.SWAPUUID:
+            self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
+            swap_rank = conf.DRIVERANK + 1
+            shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
+            virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
+            
+            # Beurk, compute swap device for guest
+            swap_dev = ""
+            if swap_rank == 1:
+                swap_dev = "sdb"
+            elif swap_rank == 2:
+                swap_dev = "sdc"
+            elif swap_rank == 3:
+                swap_dev = "sdd"
+            elif swap_rank == 4:
+                swap_dev = "sde"
+            virtual_box.machine.set_guest_property("swap", swap_dev)
+                        
+            free_size = self.get_free_size(self.tmp_swapdir)
+            swap_size = min(conf.SWAPSIZE, free_size)
+            virtual_box.machine.set_guest_property("swap_size", str(swap_size))
             
         # Write changes
         virtual_box.write()
