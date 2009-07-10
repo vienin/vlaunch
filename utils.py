@@ -365,5 +365,5 @@ class Backend:
                 shutil.rmtree(self.dnddir)
 
 	if self.tmp_swapdir:
-		shutil.rmtree(self.tmp_swapdir)
+		shutil.rmtree(path.join(self.tmp_swapdir, conf.SWAPFILE))
         self.cleanup(command)
