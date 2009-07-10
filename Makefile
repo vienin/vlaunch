@@ -24,10 +24,13 @@ install:
 	# build virtual machine xml setting files
 	# sleep 5 sec between each vm creation, instead of killing VBoxXp process
 	mkdir tmp_vbox_home_linux tmp_vbox_home_windows tmp_vbox_home_macosx  
-	./createvm.py -o `pwd`/tmp_vbox_home_linux -v $(VM_NAME)
+	./createswap.py -o `pwd`/tmp_vbox_home_linux -n ufo_swap.vdi -c settings.conf.linux
+	./createvm.py -o `pwd`/tmp_vbox_home_linux -v $(VM_NAME) 
 	sleep 5
+	./createswap.py -o `pwd`/tmp_vbox_home_windows -n ufo_swap.vdi -c settings.conf.win32
 	./createvm.py -o `pwd`/tmp_vbox_home_windows -v $(VM_NAME) -s WIN
 	sleep 5
+	./createswap.py -o `pwd`/tmp_vbox_home_macosx -n ufo_swap.vdi -c settings.conf.mac
 	./createvm.py -o `pwd`/tmp_vbox_home_macosx  -v $(VM_NAME) -s MAC
 	sleep 5
 	
@@ -39,6 +42,7 @@ install:
 	# cp $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf $(DESTDIR)$(TARGET_PATH)/Windows/settings/
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp  settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
+	cp tmp_vbox_home_windows/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
 	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp tmp_vbox_home_windows/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Machines/UFO/UFO.xml.template
 	
@@ -50,6 +54,7 @@ install:
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
+	cp tmp_vbox_home_macosx/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/MacOS
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/Resources
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/site.py
@@ -89,6 +94,7 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/logs
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
+	cp tmp_vbox_home_linux/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
 	cp modifyvm.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf

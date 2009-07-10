@@ -263,6 +263,7 @@ class VBoxConfiguration:
 			element = disks[order]
 			element.setAttribute('location', os.path.join("HardDisks", file_name))
 			element.setAttribute('uuid', '{' + uuid + '}')
+			element.setAttribute('format', 'VMDK')
 		elif len(disks) == order:
 			element = self.xml.getElementsByTagName('HardDisks')[0]
 			new_element = self.xml.createElement("HardDisk")
@@ -284,6 +285,7 @@ class VBoxConfiguration:
                         element = disks[order]
 			element.setAttribute('location', filename)
 			element.setAttribute('uuid', '{' + uuid + '}')
+			element.setAttribute('format', 'VDI')
 		elif len(disks) == order:
 			element = self.xml.getElementsByTagName('HardDisks')[0]
 			new_element = self.xml.createElement("HardDisk")

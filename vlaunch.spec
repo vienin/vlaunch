@@ -186,6 +186,9 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.gif
 
 %changelog
+* Tue Jul 9 2009 Kevin Pouget <kevin.pouget@agorabox.org>
+Add vdi swap process
+
 * Wed Jul 8 2009 Sylvain Baubeau <sylvain.baubeau@agorabox.org>
 Use consolehelper to run program as root
 

@@ -35,6 +35,8 @@ kioskmodekey = "KIOSKMODE"
 widthkey = "WIDTH"
 heightkey = "HEIGHT"
 driverankkey = "DRIVERANK"
+swapfile = "SWAPFILE"
+swapuuid = "SWAPUUID"
 needdevkey = "NEEDDEV"
 debugkey = "DEBUG"
 devkey = "DEV"
@@ -57,6 +59,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                vmkey : "UFO",
                                vmdkkey : "ufo_key.vmdk",
                                bootisokey : "UFO-VirtualBox-boot.img",
+                               swapuuid : "",
+                               swapfile : "ufo_swap.vdi",
                                nettypekey : "2",
                                hostnetkey : "",
                                macaddrkey : "",
@@ -110,6 +114,8 @@ MACADDR = cp.get(vmsection, macaddrkey)
 RAMSIZE = cp.get(vmsection, ramsizekey)
 KIOSKMODE = int(cp.get(vmsection, kioskmodekey))
 DRIVERANK = int(cp.get(vmsection, driverankkey))
+SWAPUUID  = cp.get(vmsection, swapuuid)
+SWAPFILE  = cp.get(vmsection, swapfile)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)

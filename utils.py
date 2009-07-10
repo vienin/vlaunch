@@ -83,6 +83,7 @@ class SplashScreen(Toplevel):
 class Backend:
     def __init__(self):
         self.usb_devices = []
+	self.tmp_swapdir = ""
 
     def call(self, cmd, env = None, shell = False, cwd = None):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
@@ -114,7 +115,25 @@ class Backend:
             logging.debug("Creating VMDK file %s with %s of size %d : " % (vmdk, conf.DEV, blockcount))
             vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
             virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
-    
+
+        if conf.SWAPFILE and conf.SWAPUUID:
+            self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
+            swap_rank = conf.DRIVERANK + 1
+            shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
+            virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
+            
+            swap_dev = ""
+            # Beurk, compute swap device for guest
+            if swap_rank == 1:
+                swap_dev = "sdb"
+            elif swap_rank == 2:
+                swap_dev = "sdc"
+            elif swap_rank == 3:
+                swap_dev = "sdd"
+            elif swap_rank == 4:
+                swap_dev = "sde"
+            virtual_box.machine.set_guest_property("swap", swap_dev)
+            
         if conf.CONFIGUREVM:
             # compute reasonable memory size
             if conf.RAMSIZE == "auto":
@@ -344,4 +363,7 @@ class Backend:
         logging.debug("Clean up")
         if self.dnddir:
                 shutil.rmtree(self.dnddir)
+
+	if self.tmp_swapdir:
+		shutil.rmtree(self.tmp_swapdir)
         self.cleanup(command)
