@@ -55,7 +55,7 @@ try:
                         msg=u"Lancement de la mise a jour. " \
                             u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A " \
                             u"AUCUN FICHIER SUR LA CLE. La mise a jour peut durer plusieurs minutes")
-    splash_down = SplashScreen(backend.tk, image=os.path.join(splash_dir, "ufo-update-download.gif"), timeout=0)
+    splash_down = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-download.gif"), timeout=0)
     url = "http://downloads.agorabox.org/launcher/launcher-" + svn_version + ".tar.bz2"
 
     logging.debug("Downloading " + url)
@@ -63,7 +63,7 @@ try:
     logging.debug("Downloaded as " + filename)
     splash_down.destroy()
 
-    splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "ufo-update-install.gif"),timeout=0)
+    splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-install.gif"),timeout=0)
     logging.debug("Extracting update")
     tgz = tarfile.open(filename)
     tgz.extractall(os.path.normcase(ufo_dir + "/"))

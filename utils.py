@@ -263,18 +263,18 @@ class Backend:
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
         
-            input = self.dialog_question(u"Attention",
-                                         u"Aucune clé UFO n'a été trouvée, réessayer ?",
-                                         u"Oui",
-                                         u"Non")
+            input = self.dialog_question(title=u"Attention",
+                                         msg=u"Aucune clé UFO n'a été trouvée, réessayer ?",
+                                         button1=u"Oui",
+                                         button2=u"Non")
         
             if input == "Non":
                 if conf.NEEDDEV: return conf.STATUS_EXIT
             
-                input = self.dialog_question(u"Attention",
-                                             u"Utiliser un compte invité ?",
-                                             u"Oui",
-                                             u"Quitter")
+                input = self.dialog_question(title=u"Attention",
+                                             msg=u"Utiliser un compte invité ?",
+                                             button1=u"Oui",
+                                             button2=u"Quitter")
             
                 if input == "Oui": return conf.STATUS_GUEST
                 return conf.STATUS_EXIT

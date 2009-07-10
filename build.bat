@@ -1,7 +1,11 @@
 del /F /Q /S dist build
 setup.py py2exe
 setup_updater.py py2exe
-copy settings.conf.win32 dist\settings.conf
+mkdir dist\settings
+copy settings.conf.win32 dist\settings\settings.conf
+copy ufo-generic.gif dist\.VirtualBox
+copy updater-install.gif dist\.VirtualBox
+copy updater-download.gif dist\.VirtualBox
 cd dist
 rename launcher.exe ufo.exe
 mkdir bin

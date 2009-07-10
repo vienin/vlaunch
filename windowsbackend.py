@@ -40,12 +40,12 @@ class WindowsBackend(Backend):
         logging.debug("Copying " + self.updater_executable + " to " + self.shadow_updater_executable)
         shutil.copyfile(self.updater_executable, self.shadow_updater_executable)
         os.mkdir(path.join(self.shadow_updater_path, "logs"))
-        shutil.copyfile(path.normpath(path.join(self.updater_path, "..", ".VirtualBox", "ufo-update-download.gif")),
-                            path.join(self.shadow_updater_path, "ufo-update-download.gif"))
-        shutil.copyfile(path.normpath(path.join(self.updater_path, "..", ".VirtualBox","ufo-update-install.gif")),
-                            path.join(self.shadow_updater_path, "ufo-update-install.gif"))
+        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-download.gif")),
+                        path.join(self.shadow_updater_path, "updater-download.gif"))
+        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-install.gif")),
+                        path.join(self.shadow_updater_path, "updater-install.gif"))
         shutil.copytree(path.normpath(path.join(self.updater_path, "..", "settings")),
-                            path.join(self.shadow_updater_path, "settings"))
+                        path.join(self.shadow_updater_path, "settings"))
 
     def call(self, cmd, env = None, shell = True, cwd = None):
         return Backend.call(self, cmd, env, shell, cwd)
