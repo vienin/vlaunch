@@ -46,7 +46,7 @@ class LinuxBackend(Backend):
         self.call([ "umount", disk + "3" ])
 
     def get_device_size(self, dev):
-        return int(open(path.join("/", "sys", "class", "block", path.basename(dev), "size")).read())
+        return int(open(path.join("/", "sys", "block", path.basename(dev), "size")).read())
 
     def find_network_device(self):
         if conf.NETTYPE == conf.NET_HOST and conf.HOSTNET != "":
