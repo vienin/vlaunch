@@ -215,16 +215,7 @@ class Backend:
             shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
             virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
             
-            # Beurk, compute swap device for guest
-            swap_dev = ""
-            if swap_rank == 1:
-                swap_dev = "sdb"
-            elif swap_rank == 2:
-                swap_dev = "sdc"
-            elif swap_rank == 3:
-                swap_dev = "sdd"
-            elif swap_rank == 4:
-                swap_dev = "sde"
+            swap_dev = chr(swap_rank + ord('a'))
             virtual_box.machine.set_guest_property("swap", swap_dev)
                         
             free_size = self.get_free_size(self.tmp_swapdir)
