@@ -62,13 +62,13 @@ try:
             exit = True
 except:
     logging.debug("Exception while updating")
-    print "exception while updating"
+    raise # print "exception while updating"
 
 if exit : sys.exit(0)
 
 try:
     if sys.platform == "linux2":
-        shutil.rmtree(path.join(backend.shadow_updater_path, "settings"))
+        rmtree(path.join(backend.shadow_updater_path, "settings"))
         print "Temporary settings file destroyed"
 except: pass
 
