@@ -116,6 +116,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc README COPYING
 %{TARGET_PATH}/autorun.inf
+%{TARGET_PATH}/.autorun
 %{TARGET_PATH}/.UFO.ico
 %{TARGET_PATH}/.background/ufo.png
 %{TARGET_PATH}/.DS_Store

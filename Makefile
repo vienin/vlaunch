@@ -8,7 +8,7 @@ SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp ufo-*.gif README COPYIN
         QtCore.framework QtGui.framework \
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
-        autorun.inf UFO.ico DS_Store .background
+        autorun.inf UFO.ico DS_Store .background .autorun
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -91,7 +91,8 @@ install:
 	cp -R tmp_vbox_home_macosx/Machines tmp_vbox_home_macosx/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	cp tmp_vbox_home_macosx/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines/UFO/UFO.xml.template
 
-	cp -R .background $(DESTDIR)$(TARGET_PATH)/
+	mkdir $(DESTDIR)$(TARGET_PATH)/.background
+	cp ufo.png $(DESTDIR)$(TARGET_PATH)/.background
 	cp DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
 	
 	# build linux tree
@@ -106,6 +107,7 @@ install:
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
 	cp -R tmp_vbox_home_linux/Machines tmp_vbox_home_linux/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp tmp_vbox_home_linux/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Machines/UFO/UFO.xml.template
+	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	
 	# installs Boot Isos
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Isos
