@@ -1,0 +1,4 @@
+[autorun]
+action=Lancer U.F.O
+icon=ufo.ico
+shellexecute=Windows\ufo.exe

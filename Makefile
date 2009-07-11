@@ -7,7 +7,8 @@ SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp ufo-*.gif README COPYIN
         QtGui.Resources QtNetwork QtCore.framework QtGui.framework \
         QtNetwork.framework \
 	vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
-	vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console
+	vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
+	autorun.inf UFO.ico
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -41,10 +42,11 @@ install:
 	tar xvzf windows.tgz -C $(DESTDIR)$(TARGET_PATH)/Windows/
 	# cp $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf $(DESTDIR)$(TARGET_PATH)/Windows/settings/
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
-	cp  settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
+	cp settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
 	cp tmp_vbox_home_windows/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
 	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp tmp_vbox_home_windows/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Machines/UFO/UFO.xml.template
+	cp autorun.inf UFO.ico $(DESTDIR)$(TARGET_PATH)/
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
