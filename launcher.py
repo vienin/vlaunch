@@ -1,6 +1,19 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
+
+if sys.platform == "win32":
+    from windowsbackend import *
+    backend = WindowsBackend()
+elif sys.platform == "darwin":
+    from macbackend import *
+    backend = MacBackend()
+elif sys.platform == "linux2":
+    from linuxbackend import *
+    backend = LinuxBackend()
+else:
+    raise "Unsupported platform"
+
 import logging
 import tempfile
 import os.path as path
@@ -24,25 +37,13 @@ print "SCRIPT_DIR", conf.SCRIPT_DIR
 print "SCRIPT_PATH", conf.SCRIPT_PATH
 print "APP_PATH", conf.APP_PATH
 
-if sys.platform == "win32":
-    from windowsbackend import *
-    backend = WindowsBackend()
-elif sys.platform == "darwin":
-    from macbackend import *
-    backend = MacBackend()
-elif sys.platform == "linux2":
-    from linuxbackend import *
-    backend = LinuxBackend()
-else:
-    raise "Unsupported platform"
-
 exit = False
 try:
     socket.setdefaulttimeout(5)
-    svn_version = int(urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read())
+    latest_version = float(urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read())
     logging.debug("Using launcher version : " + str(conf.VERSION))
-    logging.debug("Available version on the Net : " + str(svn_version))
-    if conf.VERSION < svn_version :
+    logging.debug("Available version on the Net : " + str(latest_version))
+    if conf.VERSION < latest_version :
         logging.debug("Updating to new version. Asking to the user...")
         input = backend.dialog_question(title=u"Mise à jour",
             msg=u"Une version plus récente du lanceur U.F.O est disponible, voulez vous la télécharger (Environ 100 Mo de téléchargement) ?",
@@ -52,17 +53,17 @@ try:
             # Run Updater and close launcher
             backend.prepare_update()
 
-            logging.debug("Launching updater " + backend.shadow_updater_executable + " " + str(svn_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
+            logging.debug("Launching updater " + backend.shadow_updater_executable + " " + str(latest_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
             # For some reason, does not work on Mac OS
             # I get Operation not permitted
             # os.execv(backend.shadow_updater_executable,
             #          [backend.shadow_updater_executable, backend.ufo_dir])
-            subprocess.Popen([ backend.shadow_updater_executable, str(svn_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
+            subprocess.Popen([ backend.shadow_updater_executable, str(latest_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
             logging.debug("Exiting for good")
             exit = True
 except:
     logging.debug("Exception while updating")
-    raise # print "exception while updating"
+    print "exception while updating"
 
 if exit : sys.exit(0)
 
@@ -73,3 +74,4 @@ try:
 except: pass
 
 backend.run()
+

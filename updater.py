@@ -30,10 +30,10 @@ if len(sys.argv) < 4:
     sys.exit(1)
 
 try:
-    svn_version = sys.argv[1]
+    latest_version = sys.argv[1]
     ufo_dir = sys.argv[2]
     current_dir = sys.argv[3]
-    logging.debug("args : " + svn_version + " " + ufo_dir + " " + current_dir)
+    logging.debug("args : " + latest_version + " " + ufo_dir + " " + current_dir)
 
     if sys.platform == "win32":
         launcher = os.path.join(ufo_dir, "Windows", "ufo.exe")
@@ -56,7 +56,7 @@ try:
                             u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A " \
                             u"AUCUN FICHIER SUR LA CLE. La mise a jour peut durer plusieurs minutes")
     splash_down = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-download.gif"), timeout=0)
-    url = "http://downloads.agorabox.org/launcher/launcher-" + svn_version + ".tar.bz2"
+    url = "http://downloads.agorabox.org/launcher/launcher-" + latest_version + ".tar.bz2"
 
     logging.debug("Downloading " + url)
     filename = urllib.urlretrieve(url)[0]
@@ -73,7 +73,7 @@ try:
         # Updating version
         cp = ConfigParser()
         cp.read([setting])
-        cp.set("launcher", "VERSION", svn_version)
+        cp.set("launcher", "VERSION", latest_version)
         cp.write(open(setting, "w"))
 
     splash_install.destroy()
@@ -81,7 +81,6 @@ try:
                         msg=u"Votre clé est à jour.")
 
 except:
-    raise
     backend.dialog_info(title=u"Erreur",
                         msg=u"La mise n'a jour n'a pas été realisée correctement.")
 

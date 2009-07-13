@@ -1,7 +1,24 @@
 import os, sys, statvfs
 import commands
 import conf
-import easygui
+import subprocess
+
+try:
+    import easygui
+except ImportError:
+    if os.geteuid() != 0:
+       if os.path.exists("/usr/bin/gksudo"):
+           os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo", sys.executable ] + sys.argv)
+       else:
+           subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
+                           env = { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" })
+
+    import platform
+    if platform.dist()[0] == "Ubuntu":
+        subprocess.call([ "apt-get", "-y", "install", "python-tk" ])
+        import easygui
+        reload(easygui)
+
 import glob
 import tempfile
 import Tkinter
@@ -71,7 +88,6 @@ class LinuxBackend(Backend):
         if path.exists("/dev/cdrom"):
             return "/dev/cdrom"
 
-
     def get_host_home(self):
         return path.expanduser('~'), "Mes documents Linux"
 
@@ -113,7 +129,15 @@ class LinuxBackend(Backend):
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
-
+        if os.geteuid() != 0:
+            if os.path.exists("/usr/bin/gksudo"):
+                os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo", sys.executable ] + sys.argv)
+            else:
+                env = os.environ.copy()
+                env.update( { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" } )
+                subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
+                                env = env)
+                                             
     def cleanup(self, command):
         pass
 
@@ -143,4 +167,18 @@ class LinuxBackend(Backend):
     def get_free_size(self, path):
         stats = os.statvfs(path)
         return (stats[statvfs.F_BSIZE] * stats[statvfs.F_BFREE]) / 1000000
+
+    def look_for_virtualbox(self):
+        logging.debug("Checking VirtualBox binaries")
+        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
+           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+            import platform
+            dist = platform.dist()
+            if dist[0] == "Ubuntu":
+                open("/etc/apt/sources.list", "a").write(
+                    "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (dist[2],))
+                os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | sudo apt-key add -")
+                subprocess.call([ "apt-get", "update" ])
+                subprocess.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
+        Backend.look_for_virtualbox(self)
 

@@ -141,3 +141,8 @@ install:
 	cp vbox-client-dnd $(DESTDIR)/usr/sbin
 	cp vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	
+updater:
+	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \
+	echo Revision: $$REV; \
+	mkdir update-$$REV; \
+	

@@ -15,8 +15,7 @@ import shutil
 import tempfile
 from utils import *
 import uuid
-from Tkinter import Tk, Image, PhotoImage, Toplevel, FLAT, NW, Canvas
-import Tix
+from splash import SplashScreen
 
 def grep(input, pattern, inverse=False):
     for line in input.split("\n"):
@@ -36,50 +35,6 @@ def append_to_end(filename, line):
     if lines and not lines[-1].strip():
         line += "\n" + line
     open(filename, 'a').write(line)
-
-class SplashScreen(Toplevel):
-    def __init__(self, master, image=None, timeout=1000):
-        """(master, image, timeout=1000) -> create a splash screen
-        from specified image file.  Keep splashscreen up for timeout
-        milliseconds"""
-        
-        Toplevel.__init__(self, master, relief=FLAT, borderwidth=0)
-        if master == None: master = Tk()
-        self.main = master
-        if self.main.master != None: # Why ?
-            self.main.master.withdraw()
-        self.main.withdraw()
-        self.overrideredirect(1)
-        self.image = PhotoImage(file=image)
-        self.after_idle(self.centerOnScreen)
-
-        self.update()
-        if (timeout != 0): self.after(timeout, self.destroy)
-
-    def centerOnScreen(self):
-        self.update_idletasks()
-        width, height = self.width, self.height = \
-                        self.image.width(), self.image.height()
-
-        xmax = self.winfo_screenwidth()
-        ymax = self.winfo_screenheight()
-
-        x0 = self.x0 = xmax/2 - width/2
-        y0 = self.y0 = ymax/2 - height/2
-        
-        self.geometry("%dx%d+%d+%d" % (width, height, x0, y0))
-        self.createWidgets()
-
-    def createWidgets(self):
-        self.canvas = Canvas(self, width=self.width, height=self.height)
-        self.canvas.create_image(0,0, anchor=NW, image=self.image)
-        self.canvas.pack()
-
-    def destroy(self):
-        # self.main.update()
-        # self.main.deiconify()
-        self.main.withdraw()
-        self.withdraw()
 
 class Backend:
     def __init__(self):
@@ -283,6 +238,17 @@ class Backend:
         self.call([ path.join(conf.BIN, "VBoxManage"), "guestproperty", "set", conf.VM,
                      name, value ], env = self.env)
 
+    def look_for_virtualbox(self):
+        # check virtualbox binaries
+        logging.debug("Checking VirtualBox binaries")
+        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
+           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+             logging.debug("Missing binaries in " + conf.BIN)
+             self.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
+                              u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce lien http://downloads.virtualbox.org/virtualbox/",
+                              title=u"Binaires manquants")
+             sys.exit(1)
+
     def check_usb_devices(self):
         # set removable media shared folders
         usb_devices = self.get_usb_devices()
@@ -313,15 +279,7 @@ class Backend:
         logging.debug("Preparing environment")
         self.prepare()
 
-        # check virtualbox binaries
-        logging.debug("Checking VirtualBox binaries")
-        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
-           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
-             logging.debug("Missing binaries in " + conf.BIN)
-             self.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
-                              u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce lien http://downloads.virtualbox.org/virtualbox/",
-                              title=u"Binaires manquants")
-             sys.exit(1)
+        self.look_for_virtualbox()
 
         # redirect VBOX HOME directory
         self.env = env = os.environ.copy()

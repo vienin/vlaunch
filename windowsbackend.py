@@ -57,7 +57,7 @@ class WindowsBackend(Backend):
             else:
                 command = [ path.join(conf.BIN, "VBoxManage.exe"), "startvm", conf.VM ]
         else:
-          command = [ path.join(conf.BIN, "VirtualBox.exe") ]
+            command = [ path.join(conf.BIN, "VirtualBox.exe") ]
         return command
 
     def start_services(self):

@@ -44,10 +44,10 @@ class MacBackend(Backend):
         logging.debug("Copying " + self.updater_path + " to " + self.shadow_updater_path)
         shutil.copytree(self.updater_path, self.shadow_updater_path)
         shutil.copytree(path.join(self.updater_path, "..", ".VirtualBox"),
-                            path.join(self.shadow_updater_path, "Contents", "Resources", ".VirtualBox"),
-                            ignore=ignore_patterns(("comp*", "Hard*", "Iso*", "Machine*", "ufo-pole*", "uuid", "Virt*", "xpti*")))
+                        path.join(self.shadow_updater_path, "Contents", "Resources", ".VirtualBox"),
+                        ignore=ignore_patterns(("comp*", "Hard*", "Iso*", "Machine*", "ufo-pole*", "uuid", "Virt*", "xpti*")))
         shutil.copytree(path.join(path.join(self.updater_path, "..", "settings"),
-                            path.join(self.shadow_updater_path, "Contents", "Resources", "settings")))
+                        path.join(self.shadow_updater_path, "Contents", "Resources", "settings")))
 
     def get_model(self, dev):
         medianame = grep(commands.getoutput("/usr/sbin/diskutil info " + dev), "Media Name:")
