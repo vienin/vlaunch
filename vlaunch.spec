@@ -125,6 +125,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/tk84.dll
 %{TARGET_PATH}/Windows/MSVCR71.dll
 %{TARGET_PATH}/Windows/ufo.exe
+%{TARGET_PATH}/Windows/ufo.exe.manifest
 %{TARGET_PATH}/Windows/tcl
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/settings
