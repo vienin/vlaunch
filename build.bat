@@ -1,4 +1,5 @@
 del /F /Q /S dist build
+copy launcher.py ufo.py
 setup.py py2exe
 setup_updater.py py2exe
 mkdir dist\settings
@@ -7,8 +8,9 @@ copy ufo-generic.gif dist\.VirtualBox
 copy ufo-generic.bmp dist\.VirtualBox
 copy updater-install.gif dist\.VirtualBox
 copy updater-download.gif dist\.VirtualBox
+mt  -manifest ufo.exe.manifest -outputresource:dist\ufo.exe;#1
 cd dist
-rename launcher.exe ufo.exe
+; rename launcher.exe ufo.exe
 mkdir bin
 xcopy /E /Y "E:\vbox\out\win.x86\release\bin\*" bin\
 move /Y updater.exe bin
