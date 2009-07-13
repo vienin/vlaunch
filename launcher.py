@@ -59,6 +59,7 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
                 #          [backend.shadow_updater_executable, backend.ufo_dir])
                 subprocess.Popen([ backend.shadow_updater_executable, str(latest_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
                 logging.debug("Exiting for good")
+                sys.exit(0)
     except SystemExit:
         sys.exit(0)
     except:

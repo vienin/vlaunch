@@ -133,6 +133,8 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/.VirtualBox/Machines
 %{TARGET_PATH}/Windows/.VirtualBox/Isos
 %{TARGET_PATH}/Windows/.VirtualBox/VirtualBox.xml
+%{TARGET_PATH}/Windows/.VirtualBox/updater-download.gif
+%{TARGET_PATH}/Windows/.VirtualBox/updater-install.gif
 
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS/UFO
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS/python
@@ -151,6 +153,8 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/VirtualBox.xml
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/Updater.app
 
 %{TARGET_PATH}/Linux/ufo
@@ -160,6 +164,8 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Linux/.VirtualBox/Machines
 %{TARGET_PATH}/Linux/.VirtualBox/Isos
 %{TARGET_PATH}/Linux/.VirtualBox/VirtualBox.xml
+%{TARGET_PATH}/Linux/.VirtualBox/updater-download.gif
+%{TARGET_PATH}/Linux/.VirtualBox/updater-install.gif
 
 "%{TARGET_PATH}/Kit de survie.pdf"
 
