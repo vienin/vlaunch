@@ -51,7 +51,7 @@ install:
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UPDATER.app/Contents/MacOS
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/Updater.app/Contents/MacOS
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
 	tar xvzf mac-intel.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
