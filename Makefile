@@ -1,6 +1,6 @@
 NAME=vlaunch
 VERSION=0.5
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp ufo-*.gif README COPYING \
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif README COPYING \
         Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
         QtGuiVBox QtNetworkVBox vbox-client-symlink.desktop \
         vbox-client-dnd.desktop Headers Current 4.0 QtCore QtGui \
@@ -44,7 +44,7 @@ install:
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
 	cp tmp_vbox_home_windows/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
-	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
+	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp tmp_vbox_home_windows/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Machines/UFO/UFO.xml.template
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/.UFO.ico
@@ -88,11 +88,11 @@ install:
 	cp -f settings.conf.mac $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/site.pyc
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/Updater.app/Contents/Resources/site.pyc
-	cp -R tmp_vbox_home_macosx/Machines tmp_vbox_home_macosx/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
+	cp -R tmp_vbox_home_macosx/Machines tmp_vbox_home_macosx/VirtualBox.xml ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	cp tmp_vbox_home_macosx/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines/UFO/UFO.xml.template
 
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
-	cp ufo.png $(DESTDIR)$(TARGET_PATH)/.background
+	cp .background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background
 	cp DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
 	
 	# build linux tree
@@ -103,9 +103,9 @@ install:
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp tmp_vbox_home_linux/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp modifyvm.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	cp modifyvm.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
-	cp -R tmp_vbox_home_linux/Machines tmp_vbox_home_linux/VirtualBox.xml ufo-*.bmp ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
+	cp -R tmp_vbox_home_linux/Machines tmp_vbox_home_linux/VirtualBox.xml ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp tmp_vbox_home_linux/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Machines/UFO/UFO.xml.template
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	
