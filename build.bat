@@ -4,6 +4,7 @@ setup_updater.py py2exe
 mkdir dist\settings
 copy settings.conf.win32 dist\settings\settings.conf
 copy ufo-generic.gif dist\.VirtualBox
+copy ufo-generic.bmp dist\.VirtualBox
 copy updater-install.gif dist\.VirtualBox
 copy updater-download.gif dist\.VirtualBox
 cd dist

@@ -26,6 +26,7 @@ class WindowsBackend(Backend):
     systemdir = win32api.GetSystemDirectory ()
 
     def __init__(self):
+        Backend.__init__(self)
         self.WMI = wmi.WMI()
         self.splash = None
         self.tk = Tkinter.Tk()

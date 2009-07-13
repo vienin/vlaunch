@@ -39,7 +39,7 @@ def append_to_end(filename, line):
 class Backend:
     def __init__(self):
         self.usb_devices = []
-	self.tmp_swapdir = ""
+        self.tmp_swapdir = ""
 
     def call(self, cmd, env = None, shell = False, cwd = None):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
@@ -319,6 +319,6 @@ class Backend:
         if self.dnddir:
                 shutil.rmtree(self.dnddir)
 
-	if self.tmp_swapdir:
-		os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
-        self.cleanup(command)
+        if self.tmp_swapdir:
+            os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
+            self.cleanup(command)

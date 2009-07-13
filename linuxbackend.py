@@ -31,6 +31,7 @@ class LinuxBackend(Backend):
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
 
     def __init__(self):
+        Backend.__init__(self)
         self.terminated = False
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
