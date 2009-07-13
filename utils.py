@@ -164,10 +164,13 @@ class Backend:
                 logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
             self.usb_devices = usb_devices
 
+        logging.debug("conf.SWAPFILE: " + conf.SWAPFILE + ", conf.SWAPUUID: " + conf.SWAPUUID)
         if conf.SWAPFILE and conf.SWAPUUID:
             self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
+            logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
             swap_rank = conf.DRIVERANK + 1
             shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
+            logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
             virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
             
             swap_dev = chr(swap_rank + ord('a'))
@@ -320,5 +323,5 @@ class Backend:
                 shutil.rmtree(self.dnddir)
 
         if self.tmp_swapdir:
-            os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
+            # os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
             self.cleanup(command)
