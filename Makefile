@@ -47,7 +47,7 @@ install:
 	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp tmp_vbox_home_windows/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Machines/UFO/UFO.xml.template
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
-	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/.UFO.ico
+	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS

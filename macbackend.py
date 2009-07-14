@@ -276,7 +276,10 @@ end timeout
         if not conf.BIN: conf.BIN = path.join(conf.APP_PATH, "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
         self.check_privileges()
-        self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0]) 
+        try:
+            self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0]) 
+        except:
+            logging.debug("Failed to create splash screen")
         self.is_ready()
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
@@ -338,7 +341,8 @@ end timeout
             time.sleep(2)
 
     def run_vbox(self, command, env):
-        self.splash.destroy()
+        if self.splash:
+            self.splash.destroy()
         import thread
         thread.start_new_thread(self.check_usb_changes, ())
         self.call(command, env = env, cwd = conf.BIN)

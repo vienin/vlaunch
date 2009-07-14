@@ -270,7 +270,10 @@ class WindowsBackend(Backend):
     def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
-        self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
+        try:
+            self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
+        except:
+            logging.debug("Failed to create splash screen")
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
             conf.VBOX_INSTALLED = True
@@ -292,7 +295,8 @@ class WindowsBackend(Backend):
             # os.unlink(path.join(self.systemdir, "drivers", "VBoxNetFlt.sys"))
 
     def run_vbox(self, command, env):
-        self.splash.destroy()
+        if self.splash:
+            self.splash.destroy()
         self.call(command, env = env, shell=True)
         
     def get_free_size(self, path):
