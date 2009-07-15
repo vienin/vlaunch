@@ -166,20 +166,23 @@ class Backend:
 
         logging.debug("conf.SWAPFILE: " + conf.SWAPFILE + ", conf.SWAPUUID: " + conf.SWAPUUID)
         if conf.SWAPFILE and conf.SWAPUUID:
-            self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
-            logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
-            swap_rank = conf.DRIVERANK + 1
-            shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
-            logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
-            virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
+            try:
+                self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
+                logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
+                swap_rank = conf.DRIVERANK + 1
+                shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
+                logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
+                virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
             
-            swap_dev = "sd" + chr(swap_rank + ord('a'))
-            virtual_box.machine.set_guest_property("swap", swap_dev)
+                swap_dev = "sd" + chr(swap_rank + ord('a'))
+                virtual_box.machine.set_guest_property("swap", swap_dev)
                         
-            free_size = self.get_free_size(self.tmp_swapdir)
-            if free_size:
-                swap_size = min(conf.SWAPSIZE, free_size)
-                virtual_box.machine.set_guest_property("swap_size", str(swap_size))
+                free_size = self.get_free_size(self.tmp_swapdir)
+                if free_size:
+                    swap_size = min(conf.SWAPSIZE, free_size)
+                    virtual_box.machine.set_guest_property("swap_size", str(swap_size))
+             except:
+                logging.debug("Exception while creating swap")
             
         # Write changes
         virtual_box.write()
