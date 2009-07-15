@@ -46,7 +46,7 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
         if conf.VERSION < latest_version :
             logging.debug("Updating to new version. Asking to the user...")
             input = backend.dialog_question(title=u"Mise à jour",
-                msg=u"Une version plus récente du lanceur U.F.O est disponible, voulez vous la télécharger (Environ 100 Mo de téléchargement) ?",
+                msg=u"Une version plus récente du lanceur U.F.O est disponible, voulez-vous la télécharger (Environ 100 Mo de téléchargement) ?",
                 button1=u"Oui", button2=u"Non")
             logging.debug("Got : " + str(input))
             if input == "Oui":
