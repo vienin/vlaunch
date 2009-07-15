@@ -173,7 +173,7 @@ class Backend:
             logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
             virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
             
-            swap_dev = chr(swap_rank + ord('a'))
+            swap_dev = "sd" + chr(swap_rank + ord('a'))
             virtual_box.machine.set_guest_property("swap", swap_dev)
                         
             free_size = self.get_free_size(self.tmp_swapdir)
