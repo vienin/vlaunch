@@ -1,6 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import logging
+import conf
 import sys
+import os.path as path
+import tempfile
+
+format = "%(asctime)s %(levelname)s %(message)s"
+try:
+    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, conf.LOG))
+    logging.debug("Logging to " + path.join(conf.SCRIPT_DIR, conf.LOG))
+except:
+    try:
+        temp = path.join(tempfile.gettempdir(), "launcher.log")
+        logging.basicConfig(format=format, level=logging.DEBUG,
+                            filename=temp)
+        logging.debug("Logging to " + temp)
+    except:
+        print "Could not redirect log to file"
 
 if sys.platform == "win32":
     from windowsbackend import *
@@ -14,24 +31,10 @@ elif sys.platform == "linux2":
 else:
     raise "Unsupported platform"
 
-import logging
-import tempfile
-import os.path as path
-import conf
 import urllib
 from shutil import rmtree
 import socket
 import subprocess
-
-format = "%(asctime)s %(levelname)s %(message)s"
-try:
-    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, conf.LOG))
-except:
-    try:
-        logging.basicConfig(format=format, level=logging.DEBUG,
-                            filename=path.join(tempfile.gettempdir(), "launcher.log"))
-    except:
-        print "Could not redirect log to file"
 
 print "SCRIPT_DIR", conf.SCRIPT_DIR
 print "SCRIPT_PATH", conf.SCRIPT_PATH

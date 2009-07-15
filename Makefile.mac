@@ -57,5 +57,5 @@ mac-launcher: clean py2app py2app-updater
 	rm -f dist/UFO.app/Contents/Resources/site.pyc
 	rm -f dist/UFO.app/Contents/Resources/Updater.app/Contents/Resources/site.pyc
 	rm -rf dist/UFO.app/Contents/Resources/.VirtualBox
-	cd dist && tar cvzf mac-intel.tgz UFO.app Updater.app
+	cd dist && tar cvzf mac-intel.tgz UFO.app
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization

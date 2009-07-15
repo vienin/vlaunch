@@ -1,17 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging
+try: logging.basicConfig(filename="updater.log", level=logging.DEBUG)
+except: logging.basicConfig(level=logging.DEBUG)
+
+import os
+logging.debug("Current directory: " + os.getcwd())
+
 import urllib
 import sys
 import tarfile
-import os
-import logging
 from utils import SplashScreen
 import subprocess
 from ConfigParser import ConfigParser
-
-try: logging.basicConfig(filename="updater.log", level=logging.DEBUG)
-except: logging.basicConfig(level=logging.DEBUG)
 
 if sys.platform == "win32":
     from windowsbackend import *
@@ -40,7 +42,7 @@ try:
         splash_dir = current_dir
     elif sys.platform == "darwin":
         launcher = os.path.join(ufo_dir, "Mac-Intel", "UFO.app", "Contents", "MacOS", "UFO")
-        splash_dir = os.path.join(current_dir, ".VirtualBox")
+        splash_dir = os.path.join(current_dir, "Contents", "Resources", ".VirtualBox")
     elif sys.platform == "linux2":
         launcher = os.path.join(ufo_dir, "Linux", "ufo")
         splash_dir = os.path.join(current_dir, "..", ".VirtualBox")
@@ -83,7 +85,6 @@ try:
                         msg=u"Votre clé est à jour.")
 
 except:
-    raise
     backend.dialog_info(title=u"Erreur",
                         msg=u"La mise n'a jour n'a pas été realisée correctement.")
 

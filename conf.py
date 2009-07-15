@@ -85,7 +85,14 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                uninstalldriverskey : "0",
                                versionkey : "0"
                              })
-cp.read([path.join(SCRIPT_DIR, "settings.conf"), path.join(SCRIPT_DIR, "settings", "settings.conf")])
+                             
+try:
+    cp.read([path.join(SCRIPT_DIR, "settings.conf"),
+             path.join(SCRIPT_DIR, "settings", "settings.conf"),
+             path.join(SCRIPT_DIR, "..", "settings", "settings.conf")])
+except:
+    print "Could not read settings.conf"
+    raise
 
 HOME = cp.get(globalsection, homekey)
 VMDK = cp.get(globalsection, vmdkkey)
