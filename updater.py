@@ -64,13 +64,15 @@ try:
     splash_down.destroy()
 
     splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-install.gif"),timeout=0)
-    logging.debug("Extracting update")
+    logging.debug("Extracting update to " + ufo_dir + "/")
     tgz = tarfile.open(filename)
     tgz.extractall(os.path.normcase(ufo_dir + "/"))
     tgz.close()
 
+    logging.debug("Updating version in settings.conf files")
     for setting in settings:
         # Updating version
+        logging.debug("Updating " + setting)
         cp = ConfigParser()
         cp.read([setting])
         cp.set("launcher", "VERSION", latest_version)
