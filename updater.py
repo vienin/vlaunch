@@ -64,9 +64,9 @@ try:
     splash_down.destroy()
 
     splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-install.gif"),timeout=0)
-    logging.debug("Extracting update to " + ufo_dir + "/")
+    logging.debug("Extracting update to " + ufo_dir)
     tgz = tarfile.open(filename)
-    tgz.extractall(os.path.normcase(ufo_dir + "/"))
+    tgz.extractall(os.path.normcase(ufo_dir))
     tgz.close()
 
     logging.debug("Updating version in settings.conf files")
@@ -83,6 +83,7 @@ try:
                         msg=u"Votre clé est à jour.")
 
 except:
+    raise
     backend.dialog_info(title=u"Erreur",
                         msg=u"La mise n'a jour n'a pas été realisée correctement.")
 

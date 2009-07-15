@@ -181,7 +181,7 @@ class Backend:
                 if free_size:
                     swap_size = min(conf.SWAPSIZE, free_size)
                     virtual_box.machine.set_guest_property("swap_size", str(swap_size))
-             except:
+            except:
                 logging.debug("Exception while creating swap")
             
         # Write changes
