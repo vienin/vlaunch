@@ -40,12 +40,19 @@ class Backend:
     def __init__(self):
         self.usb_devices = []
         self.tmp_swapdir = ""
+        self.puel = False
 
-    def call(self, cmd, env = None, shell = False, cwd = None):
+    def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
-        retcode = subprocess.call(cmd, env = env, shell = shell, cwd = cwd)
-        logging.debug("Returned : " + str(retcode))
-        return retcode
+        if output:
+            p = subprocess.Popen(cmd, env = env, shell = shell, cwd = cwd, stdout=subprocess.PIPE)
+            output = p.communicate()
+            logging.debug("Returned : " + str(p.returncode))
+            return p.returncode, output
+        else:
+            retcode = subprocess.call(cmd, env = env, shell = shell, cwd = cwd)
+            logging.debug("Returned : " + str(retcode))
+            return retcode
 
     def find_network_device(self):
         if not conf.HOSTNET:

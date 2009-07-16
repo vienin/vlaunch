@@ -48,8 +48,8 @@ class WindowsBackend(Backend):
         shutil.copytree(path.normpath(path.join(self.updater_path, "..", "settings")),
                         path.join(self.shadow_updater_path, "settings"))
 
-    def call(self, cmd, env = None, shell = True, cwd = None):
-        return Backend.call(self, cmd, env, shell, cwd)
+    def call(self, cmd, env = None, shell = True, cwd = None, output=False):
+        return Backend.call(self, cmd, env, shell, cwd, output)
 
     def build_command(self):
         if conf.STARTVM:
@@ -65,21 +65,58 @@ class WindowsBackend(Backend):
         if conf.CREATESRVS:
             logging.debug("Creating services :")
 
-            if self.call([ "sc", "create", "PortableVBoxDRV",
+            """
+            services = self.WMI.Win32_Service(name="PortableVBoxDrv")
+            logging.debug("WMI services: " + str(services))
+            if services:
+                logging.debug("Service PortableVBoxDrv exists")
+                if services[0].State == "Running":
+                    logging.debug("Service PortableVBoxDrv is running")
+                else:
+                    logging.debug("Removing PortableVBoxDrv")
+                    elf.call([ "sc", "delete", "PortableVBoxDrv" ], shell=True)
+
+            if self.call([ "sc", "create", "PortableVBoxDrv",
                       "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
-                      "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDRV" ], shell=True) == 5:
+                      "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
                 return 1
-            
-            #self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
-            #                   "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSBMon" ], shell=True)
+            """
+        
+            logging.debug("Checking if service PortableVBoxDrv exists")
+            retcode, output = self.call([ "sc", "query", "PortableVBoxDrv" ], shell=True, output=True)
+            if retcode == 0:
+                logging.debug("Service PortableVBoxDrv exists")
+                lines = output[0].split("\n")
+                for line in lines:
+                    splt = line.split()
+                    if "STATE" in splt:
+                        logging.debug("State " + splt[-1])
+                        if splt[-1] == "STOPPED":
+                            logging.debug("Removing PortableVBoxDrv")
+                            self.call([ "sc", "delete", "PortableVBoxDrv" ], shell=True)
+                            retcode = 1
+                        elif splt[-1] == "RUNNING":
+                            logging.debug("Service PortableVBoxDrv is running")
+                        else:
+                            retcode = 1
+
+            if retcode:
+                if self.call([ "sc", "create", "PortableVBoxDrv",
+                               "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
+                               "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
+                    return 1
+
+            if self.puel:
+                self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
+                                   "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSBMon" ], shell=True)
                          
-            #try:
-            #    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
-            #    if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
-            #        self.call(["sc", "create", "VBoxUSB", "binpath=", path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
-            #                    "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSB" ], shell=True)
-            #except:
-            #    logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
+                try:
+                    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
+                    if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
+                        self.call(["sc", "create", "VBoxUSB", "binpath=", path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
+                                    "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSB" ], shell=True)
+                except:
+                    logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
     
         if conf.STARTSRVS:
             logging.debug("Starting services :")
@@ -87,7 +124,8 @@ class WindowsBackend(Backend):
             if self.call([ "sc", "start", "PortableVBoxDRV" ], shell=True) in [ 1060, 5 ]:
                return 1
 
-            # self.call([ "sc", "start", "PortableVBoxUSBMon" ], shell=True)
+            if self.puel:
+                self.call([ "sc", "start", "PortableVBoxUSBMon" ], shell=True)
 
         logging.debug("Re-registering server:")
 
@@ -115,22 +153,27 @@ class WindowsBackend(Backend):
 
     def stop_services(self):
         if conf.STARTSRVS:
-            self.call([ "sc", "stop", "PortableVBoxDRV" ], shell=True)
-            # self.call([ "sc", "stop", "PortableVBoxUSBMon" ], shell=True)
+            # self.call([ "sc", "stop", "PortableVBoxDRV" ], shell=True)
+            if self.puel:
+                self.call([ "sc", "stop", "PortableVBoxUSBMon" ], shell=True)
             self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/unregserver" ], shell=True)
             self.call([ "regsvr32.exe", "/S", "/U", path.join(conf.BIN, "VBoxC.dll") ], shell=True)
 
         if conf.CREATESRVS:
-            self.call([ "sc", "delete", "PortableVBoxDRV" ], shell=True)
-            # self.call([ "sc", "delete", "PortableVBoxUSBMon" ], shell=True)
+            pass
+            # Do not delete service because some Windows reports "service mark as deleted"
+            # self.call([ "sc", "delete", "PortableVBoxDRV" ], shell=True)
+            if self.puel:
+                self.call([ "sc", "delete", "PortableVBoxUSBMon" ], shell=True)
 
-        # try:
-        #     key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
-        #     if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
-        #         self.call([ "sc", "stop", "VBoxUSB" ], shell=True)
-        #         self.call([ "sc", "delete", "VBoxUSB" ], shell=True)
-        # except:
-        #     logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
+        if self.puel:
+            try:
+                key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
+                if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
+                    self.call([ "sc", "stop", "VBoxUSB" ], shell=True)
+                    self.call([ "sc", "delete", "VBoxUSB" ], shell=True)
+            except:
+                logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
 
     def find_device_by_uuid(self, dev_uuid):
         return ""
@@ -290,7 +333,7 @@ class WindowsBackend(Backend):
         if conf.NETTYPE == conf.NET_HOST and not conf.VBOX_INSTALLED and conf.UNINSTALLDRIVERS:
             self.call(["regsvr32.exe", "/S", "/U", path.join(self.systemdir, "VBoxNetFltNotify.dll")])
             self.call([path.join(conf.BIN, "snetcfg_x86.exe"), "-v", "-u", "sun_VBoxNetFlt"])
-            self.call(["sc", "delete", "VBoxNetFlt" ])
+            # self.call(["sc", "delete", "VBoxNetFlt" ])
             # os.unlink(path.join(self.systemdir, "VBoxNetFltNotify.dll"))
             # os.unlink(path.join(self.systemdir, "drivers", "VBoxNetFlt.sys"))
 
