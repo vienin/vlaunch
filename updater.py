@@ -86,7 +86,7 @@ try:
 
 except:
     backend.dialog_info(title=u"Erreur",
-                        msg=u"La mise n'a jour n'a pas été realisée correctement.")
+                        msg=u"La mise à jour n'a pas été réalisée correctement.")
 
 logging.debug("Restarting UFO launcher : " + launcher)
 subprocess.Popen([ launcher ])

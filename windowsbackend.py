@@ -28,16 +28,29 @@ class WindowsBackend(Backend):
     def __init__(self):
         Backend.__init__(self)
         self.WMI = wmi.WMI()
+        self.check_process()
         self.splash = None
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
+
+    def check_process(self):
+        logging.debug("Checking process")
+        processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="updater.exe")
+        for i in processes :
+            try : processes.remove("")
+            except : pass
+        logging.debug("ufo process : "+str(processes))
+        if len(processes)>1 :
+            logging.debug("ufo launched twice!! Exiting")
+            sys.exit(0)
+
+    def prepare_update(self):
         self.ufo_dir = path.normpath(path.join(path.realpath(path.dirname(sys.argv[0])), ".."))
         self.updater_path = path.join(self.ufo_dir, "Windows", "bin")
         self.updater_executable = path.join(self.ufo_dir, "Windows", "bin", "updater.exe")
         self.shadow_updater_path = tempfile.mkdtemp(prefix="Updater")
         self.shadow_updater_executable = path.join(self.shadow_updater_path, "updater.exe")
-
-    def prepare_update(self):
+        
         logging.debug("Copying " + self.updater_executable + " to " + self.shadow_updater_executable)
         shutil.copyfile(self.updater_executable, self.shadow_updater_executable)
         os.mkdir(path.join(self.shadow_updater_path, "logs"))

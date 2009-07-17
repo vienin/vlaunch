@@ -27,6 +27,7 @@ class MacBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
+        self.check_process()
         self.KEXTS = "kexts"
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
@@ -35,13 +36,26 @@ class MacBackend(Backend):
         self.tk.withdraw()
         self.disks = []
         self.tmpdir = ""
+
+    def check_process(self):
+        logging.debug("Checking process")
+        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep updater").split("\n")
+        for i in processes :
+            try : processes.remove("")
+            except : pass
+        logging.debug("ufo process : "+str(processes))
+        if len(processes)>1 :
+            logging.debug("ufo launched twice!! Exiting")
+            sys.exit(0)
+
+
+    def prepare_update(self):
         self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")
         self.updater_path = path.join(self.ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "Updater.app")
         self.shadow_updater_path = tempfile.mktemp(prefix="Updater", suffix=".app")
         self.shadow_updater_executable = path.join(self.shadow_updater_path,
                                                   "Contents", "MacOS", "Updater")
-
-    def prepare_update(self):
+                                                  
         logging.debug("Copying " + self.updater_path + " to " + self.shadow_updater_path)
         shutil.copytree(self.updater_path, self.shadow_updater_path)
         shutil.copytree(path.join(self.updater_path, "..", ".VirtualBox"),

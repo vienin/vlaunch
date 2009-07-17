@@ -2,7 +2,11 @@ import os, sys, statvfs
 import commands
 import conf
 import subprocess
+<<<<<<< .mine
+import logging
+=======
 import platform
+>>>>>>> .r994
 
 def get_su_command(): 
     if os.path.exists("/usr/bin/gksudo"):
@@ -46,15 +50,28 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
+        self.check_process()
         self.terminated = False
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
+
+    def check_process(self):
+        logging.debug("Checking process")
+        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep updater").split("\n")
+        for i in processes :
+            try : processes.remove("")
+            except : pass
+        logging.debug("ufo process : "+str(processes))
+        if len(processes)>1 :
+            logging.debug("ufo launched twice!! Exiting")
+            sys.exit(0)
+
+    def prepare_update(self):
         self.ufo_dir = path.normpath(path.join(
                            path.realpath(path.dirname(sys.argv[0])), ".."))
         self.updater_path = self.shadow_updater_path = path.normpath(path.join(self.ufo_dir, "Linux", "bin"))
         self.updater_executable = self.shadow_updater_executable = path.normpath(path.join(self.updater_path,"updater.py"))
-
-    def prepare_update(self):
+        
         shutil.copytree(os.path.join(self.updater_path, "..", "settings"),
                             os.path.join(self.shadow_updater_path, "settings"))
         
