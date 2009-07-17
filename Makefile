@@ -8,7 +8,7 @@ SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif
         QtCore.framework QtGui.framework \
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
-        autorun.inf UFO.ico DS_Store .background .autorun
+        autorun.inf UFO.ico DS_Store .background .autorun ufo.app
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -95,6 +95,7 @@ install:
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
 	cp .background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background
 	cp DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
+	cp ufo.app $(DESTDIR)$(TARGET_PATH)/
 	
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks

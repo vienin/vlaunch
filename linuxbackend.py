@@ -25,8 +25,10 @@ except ImportError:
        elif os.path.exists("/usr/bin/kdesudo"):
            os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo", sys.executable ] + sys.argv)
        else:
-           subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
-                           env = { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" })
+           os.environ["SUDO_ASKPASS"] = "/media/UFO/Linux/bin/ask-password"
+           os.execv("sudo", [ "sudo", "-A", sys.executable ] + sys.argv)
+           # subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
+           #                 env = { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" })
 
     if platform.dist()[0] == "Ubuntu" or \
        (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
@@ -166,10 +168,12 @@ class LinuxBackend(Backend):
                 print [ "/usr/bin/kdesudo", sys.executable ] + sys.argv
                 os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo", sys.executable ] + sys.argv)
             else:
-                env = os.environ.copy()
-                env.update( { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" } )
-                subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
-                                env = env)
+                # env = os.environ.copy()
+                # env.update( { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" } )
+                os.environ["SUDO_ASKPASS"] = "/media/UFO/Linux/bin/ask-password"
+                os.execv("/usr/bin/sudo", [ "sudo", "-A", sys.executable ] + sys.argv)
+                # subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
+                #                 env = env)
                                              
     def cleanup(self, command):
         pass
