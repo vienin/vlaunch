@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-try: logging.basicConfig(filename="ufo-updater.log", level=logging.DEBUG)
+try: logging.basicConfig(filename="updater.log", level=logging.DEBUG)
 except: logging.basicConfig(level=logging.DEBUG)
 
 import os
