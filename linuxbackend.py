@@ -50,7 +50,6 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        self.check_process()
         self.terminated = False
         self.tk = Tkinter.Tk()
         self.tk.withdraw()

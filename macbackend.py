@@ -27,7 +27,6 @@ class MacBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        self.check_process()
         self.KEXTS = "kexts"
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":

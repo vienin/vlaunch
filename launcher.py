@@ -31,6 +31,8 @@ elif sys.platform == "linux2":
 else:
     raise "Unsupported platform"
 
+backend.check_process()
+
 import urllib
 from shutil import rmtree
 import socket

@@ -28,7 +28,6 @@ class WindowsBackend(Backend):
     def __init__(self):
         Backend.__init__(self)
         self.WMI = wmi.WMI()
-        self.check_process()
         self.splash = None
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
