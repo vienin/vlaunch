@@ -2,11 +2,8 @@ import os, sys, statvfs
 import commands
 import conf
 import subprocess
-<<<<<<< .mine
 import logging
-=======
 import platform
->>>>>>> .r994
 
 def get_su_command(): 
     if os.path.exists("/usr/bin/gksudo"):
