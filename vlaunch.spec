@@ -156,7 +156,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/VirtualBox.xml
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.gif
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/Updater.app
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/Ufo-updater.app
 %dir %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/logs
 
 %{TARGET_PATH}/Linux/ufo

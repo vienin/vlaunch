@@ -54,7 +54,7 @@ class LinuxBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep updater").split("\n")
+        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep ufo-updater").split("\n")
         for i in processes :
             try : processes.remove("")
             except : pass
@@ -67,7 +67,7 @@ class LinuxBackend(Backend):
         self.ufo_dir = path.normpath(path.join(
                            path.realpath(path.dirname(sys.argv[0])), ".."))
         self.updater_path = self.shadow_updater_path = path.normpath(path.join(self.ufo_dir, "Linux", "bin"))
-        self.updater_executable = self.shadow_updater_executable = path.normpath(path.join(self.updater_path,"updater.py"))
+        self.updater_executable = self.shadow_updater_executable = path.normpath(path.join(self.updater_path,"ufo-updater.py"))
         
         shutil.copytree(os.path.join(self.updater_path, "..", "settings"),
                             os.path.join(self.shadow_updater_path, "settings"))

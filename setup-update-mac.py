@@ -7,7 +7,7 @@ plist = dict(
     CFBundleIconFile=NAME
 )
 
-APP = [ "Updater.py" ]
+APP = [ "Ufo_updater.py" ]
 DATA_FILES = [ ]
 OPTIONS = {'argv_emulation' : False }
 

@@ -35,7 +35,7 @@ class WindowsBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="updater.exe")
+        processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="ufo-updater.exe")
         for i in processes :
             try : processes.remove("")
             except : pass
@@ -47,9 +47,9 @@ class WindowsBackend(Backend):
     def prepare_update(self):
         self.ufo_dir = path.normpath(path.join(path.realpath(path.dirname(sys.argv[0])), ".."))
         self.updater_path = path.join(self.ufo_dir, "Windows", "bin")
-        self.updater_executable = path.join(self.ufo_dir, "Windows", "bin", "updater.exe")
-        self.shadow_updater_path = tempfile.mkdtemp(prefix="Updater")
-        self.shadow_updater_executable = path.join(self.shadow_updater_path, "updater.exe")
+        self.updater_executable = path.join(self.ufo_dir, "Windows", "bin", "ufo-updater.exe")
+        self.shadow_updater_path = tempfile.mkdtemp(prefix="Ufo-updater")
+        self.shadow_updater_executable = path.join(self.shadow_updater_path, "ufo-updater.exe")
         
         logging.debug("Copying " + self.updater_executable + " to " + self.shadow_updater_executable)
         shutil.copyfile(self.updater_executable, self.shadow_updater_executable)

@@ -14,7 +14,7 @@ cd dist
 ; rename launcher.exe ufo.exe
 mkdir bin
 xcopy /E /Y "E:\vbox\out\win.x86\release\bin\*" bin\
-move /Y updater.exe bin
+move /Y ufo-updater.exe bin
 mkdir bin\drivers
 mkdir bin\drivers\VBoxDrv
 mkdir bin\drivers\network

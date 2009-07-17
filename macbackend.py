@@ -39,7 +39,7 @@ class MacBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep updater").split("\n")
+        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep ufo-updater").split("\n")
         for i in processes :
             try : processes.remove("")
             except : pass
@@ -51,10 +51,10 @@ class MacBackend(Backend):
 
     def prepare_update(self):
         self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")
-        self.updater_path = path.join(self.ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "Updater.app")
-        self.shadow_updater_path = tempfile.mktemp(prefix="Updater", suffix=".app")
+        self.updater_path = path.join(self.ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "Ufo-updater.app")
+        self.shadow_updater_path = tempfile.mktemp(prefix="Ufo-updater", suffix=".app")
         self.shadow_updater_executable = path.join(self.shadow_updater_path,
-                                                  "Contents", "MacOS", "Updater")
+                                                  "Contents", "MacOS", "Ufo-updater")
                                                   
         logging.debug("Copying " + self.updater_path + " to " + self.shadow_updater_path)
         shutil.copytree(self.updater_path, self.shadow_updater_path)
