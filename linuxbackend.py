@@ -56,7 +56,7 @@ class LinuxBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("pgrep ufo").split("\n") #ufo et ufo-updater seront comptes
+        processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater\\)\\?\\( \\|$\\)'").split("\n")
         for i in processes :
             try : processes.remove("")
             except : pass

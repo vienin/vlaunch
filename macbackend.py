@@ -38,12 +38,9 @@ class MacBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep Ufo-updater").split("\n")
-        for i in processes :
-            try : processes.remove("")
-            except : pass
-        logging.debug("ufo process : "+str(processes))
-        if len(processes)>1 :
+        processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater\\)\\?\\( \\|$\\)'").split("\n")
+        logging.debug("ufo process : " + str(processes))
+        if len(processes) > 1:
             logging.debug("ufo launched twice!! Exiting")
             sys.exit(0)
 

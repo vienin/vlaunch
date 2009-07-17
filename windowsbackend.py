@@ -35,9 +35,6 @@ class WindowsBackend(Backend):
     def check_process(self):
         logging.debug("Checking process")
         processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="ufo-updater.exe")
-        for i in processes :
-            try : processes.remove("")
-            except : pass
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
             logging.debug("ufo launched twice!! Exiting")
