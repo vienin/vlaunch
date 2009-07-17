@@ -1,4 +1,5 @@
 import os, sys, statvfs
+import os.path as path
 import commands
 import conf
 import subprocess
@@ -56,7 +57,7 @@ class LinuxBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep ufo-updater").split("\n")
+        processes = commands.getoutput("pgrep ufo").split("\n") #ufo et ufo-updater seront comptes
         for i in processes :
             try : processes.remove("")
             except : pass

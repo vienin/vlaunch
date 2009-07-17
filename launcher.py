@@ -55,7 +55,7 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
             if input == "Oui":
                 # Run Updater and close launcher
                 backend.prepare_update()
-                logging.debug("Launching updater " + backend.shadow_updater_executable + " " + str(latest_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
+                logging.debug("Launching updater : " + backend.shadow_updater_executable + " " + str(latest_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
                 # For some reason, does not work on Mac OS
                 # I get Operation not permitted
                 # os.execv(backend.shadow_updater_executable,
@@ -70,7 +70,7 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
 
 try:
     if sys.platform == "linux2":
-        rmtree(path.join(backend.shadow_updater_path, "settings"))
+        rmtree(path.join(conf.SCRIPT_DIR,"bin", "settings"))
         print "Temporary settings file destroyed"
 except: pass
 
