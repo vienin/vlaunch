@@ -39,7 +39,7 @@ class MacBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep ufo-updater").split("\n")
+        processes = commands.getoutput("pgrep ufo").split("\n") + commands.getoutput("pgrep Ufo-updater").split("\n")
         for i in processes :
             try : processes.remove("")
             except : pass
