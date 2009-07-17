@@ -129,6 +129,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/tcl
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/settings
+%dir %{TARGET_PATH}/Windows/logs
 %{TARGET_PATH}/Windows/.VirtualBox/HardDisks
 %{TARGET_PATH}/Windows/.VirtualBox/Machines
 %{TARGET_PATH}/Windows/.VirtualBox/Isos
@@ -156,10 +157,12 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/Updater.app
+%dir %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/logs
 
 %{TARGET_PATH}/Linux/ufo
 %{TARGET_PATH}/Linux/bin
 %{TARGET_PATH}/Linux/settings
+%dir %{TARGET_PATH}/Linux/logs
 %{TARGET_PATH}/Linux/.VirtualBox/HardDisks
 %{TARGET_PATH}/Linux/.VirtualBox/Machines
 %{TARGET_PATH}/Linux/.VirtualBox/Isos

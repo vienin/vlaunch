@@ -18,7 +18,7 @@ mount_share_and_link() {
 	mountpoint "$target/$share_label"
 	if [ $? -ne 0 ]; then
 		echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$USER_UID,rw\""
-		mountvboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw"
+		mountvboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw,mode=755"
 	fi
 	
 	if [ $? -eq 0 ]; then

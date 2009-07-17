@@ -2,19 +2,33 @@ import os, sys, statvfs
 import commands
 import conf
 import subprocess
+import platform
 
+def get_su_command(): 
+    if os.path.exists("/usr/bin/gksudo"):
+        return "/usr/bin/gksudo"                   
+    elif os.path.exists("/usr/bin/kdesudo"):   
+        return "/usr/bin/kdesudo"
+    else:
+        return "sudo"
+
+def get_linux_release():
+    pass
+                                    
 try:
     import easygui
 except ImportError:
     if os.geteuid() != 0:
        if os.path.exists("/usr/bin/gksudo"):
            os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo", sys.executable ] + sys.argv)
+       elif os.path.exists("/usr/bin/kdesudo"):
+           os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo", sys.executable ] + sys.argv)
        else:
            subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
                            env = { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" })
 
-    import platform
-    if platform.dist()[0] == "Ubuntu":
+    if platform.dist()[0] == "Ubuntu" or \
+       (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
         subprocess.call([ "apt-get", "-y", "install", "python-tk" ])
         import easygui
         reload(easygui)
@@ -90,7 +104,8 @@ class LinuxBackend(Backend):
             return "/dev/cdrom"
 
     def get_host_home(self):
-        return path.expanduser('~'), "Mes documents Linux"
+        user = "~" + os.getenv("SUDO_USER", "")
+        return path.expanduser(user), "Mes documents Linux"
 
     def get_usb_devices(self):
         if os.path.exists('/dev/disk/by-id'):
@@ -133,6 +148,9 @@ class LinuxBackend(Backend):
         if os.geteuid() != 0:
             if os.path.exists("/usr/bin/gksudo"):
                 os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo", sys.executable ] + sys.argv)
+            elif os.path.exists("/usr/bin/kdesudo"):
+                print [ "/usr/bin/kdesudo", sys.executable ] + sys.argv
+                os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo", sys.executable ] + sys.argv)
             else:
                 env = os.environ.copy()
                 env.update( { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" } )
@@ -175,9 +193,11 @@ class LinuxBackend(Backend):
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
             import platform
             dist = platform.dist()
-            if dist[0] == "Ubuntu":
+            if dist[0] == "Ubuntu" or \
+               (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
+                dist = "hardy"
                 open("/etc/apt/sources.list", "a").write(
-                    "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (dist[2],))
+                    "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (dist,))
                 os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | sudo apt-key add -")
                 subprocess.call([ "apt-get", "update" ])
                 subprocess.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
