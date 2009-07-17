@@ -93,6 +93,7 @@ class WindowsBackend(Backend):
         
             logging.debug("Checking if service PortableVBoxDrv exists")
             retcode, output = self.call([ "sc", "query", "PortableVBoxDrv" ], shell=True, output=True)
+            create_service = True
             if retcode == 0:
                 logging.debug("Service PortableVBoxDrv exists")
                 lines = output[0].split("\n")
@@ -103,13 +104,11 @@ class WindowsBackend(Backend):
                         if splt[-1] == "STOPPED":
                             logging.debug("Removing PortableVBoxDrv")
                             self.call([ "sc", "delete", "PortableVBoxDrv" ], shell=True)
-                            retcode = 1
                         elif splt[-1] == "RUNNING":
                             logging.debug("Service PortableVBoxDrv is running")
-                        else:
-                            retcode = 1
+                            create_service = False
 
-            if retcode:
+            if create_service:
                 if self.call([ "sc", "create", "PortableVBoxDrv",
                                "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
                                "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
