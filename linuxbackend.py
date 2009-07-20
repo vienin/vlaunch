@@ -14,26 +14,50 @@ def get_su_command():
     else:
         return "sudo"
 
+def run_as_root(command):
+    if os.geteuid() != 0:
+       if os.path.exists("/usr/bin/gksudo"):
+           os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo" ] + command)
+       elif os.path.exists("/usr/bin/kdesudo"):
+           os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo" ] + command)
+       else:
+           dist, version, codename = platform.dist()
+           version = float(version)
+           if dist == "fedora" and version >= 10:
+               if not os.path.exists("/usr/bin/beesu"):
+                   subprocess.call( [ "pkcon", "install", "beesu" ] )
+               os.execv("/usr/bin/beesu", [ "beesu" ] + command)
+           if os.isatty(0):
+               graphical_ask_pass = False
+               os.environ["SUDO_ASKPASS"] = path.join(conf.BIN, "ask-password")
+               try:
+                   p = subprocess.Popen([ "sudo", "-V" ], stdout=subprocess.PIPE)
+                   version = p.communicate()[0].split("\n")[0].split()[2]
+                   if version >= "1.7.1":
+                       graphical_ask_pass = True
+               except:
+                   raise
+               if graphical_ask_pass:
+                   os.execv("/usr/bin/sudo", [ "sudo", "-A" ] + command)
+               else:
+                   os.execv("/usr/bin/xterm", [ "xterm", "-e", "sudo " + " ".join(command) ])
+           else:
+                   os.execv("/usr/bin/xterm", [ "xterm", "-e", "su -c " + " ".join(command) ])
+            
+
 def get_linux_release():
     pass
                                     
 try:
     import easygui
 except ImportError:
-    if os.geteuid() != 0:
-       if os.path.exists("/usr/bin/gksudo"):
-           os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo", sys.executable ] + sys.argv)
-       elif os.path.exists("/usr/bin/kdesudo"):
-           os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo", sys.executable ] + sys.argv)
-       else:
-           os.environ["SUDO_ASKPASS"] = "/media/UFO/Linux/bin/ask-password"
-           os.execv("sudo", [ "sudo", "-A", sys.executable ] + sys.argv)
-           # subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
-           #                 env = { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" })
-
     if platform.dist()[0] == "Ubuntu" or \
        (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
-        subprocess.call([ "apt-get", "-y", "install", "python-tk" ])
+        run_as_root([ "apt-get", "-y", "install", "python-tk" ])
+        import easygui
+        reload(easygui)
+    elif platform.dist()[0] == "fedora":
+        subprocess.call( [ "pkcon", "install", "tkinter" ] )
         import easygui
         reload(easygui)
 
@@ -161,19 +185,7 @@ class LinuxBackend(Backend):
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
-        if os.geteuid() != 0:
-            if os.path.exists("/usr/bin/gksudo"):
-                os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo", sys.executable ] + sys.argv)
-            elif os.path.exists("/usr/bin/kdesudo"):
-                print [ "/usr/bin/kdesudo", sys.executable ] + sys.argv
-                os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo", sys.executable ] + sys.argv)
-            else:
-                # env = os.environ.copy()
-                # env.update( { "SUDO_ASKPASS" : "/media/UFO/Linux/bin/ask-password" } )
-                os.environ["SUDO_ASKPASS"] = "/media/UFO/Linux/bin/ask-password"
-                os.execv("/usr/bin/sudo", [ "sudo", "-A", sys.executable ] + sys.argv)
-                # subprocess.call([ "sudo", "-A", sys.executable ] + sys.argv,
-                #                 env = env)
+        run_as_root([ sys.executable ] + sys.argv)
                                              
     def cleanup(self, command):
         pass
