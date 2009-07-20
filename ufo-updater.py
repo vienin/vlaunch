@@ -1,11 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import logging
-try: logging.basicConfig(filename="ufo-updater.log", level=logging.DEBUG)
-except: logging.basicConfig(level=logging.DEBUG)
 import os
-logging.debug("Current directory: " + os.getcwd())
+format = "%(asctime)s %(levelname)s Updater %(message)s"
+try: logging.basicConfig(format=format, filename=os.path.join("logs", "launcher.log"), level=logging.DEBUG)
+except: logging.basicConfig(level=logging.DEBUG)
+logging.debug("Current directory : " + os.getcwd())
 
 import urllib
 import sys
@@ -29,7 +29,7 @@ else:
 if len(sys.argv) < 4:
     print "Wrong number of arguments"
     sys.exit(1)
-
+    
 try:
     latest_version = sys.argv[1]
     ufo_dir = sys.argv[2]
