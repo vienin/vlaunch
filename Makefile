@@ -1,5 +1,5 @@
 NAME=vlaunch
-VERSION=0.5.1
+VERSION=0.5
 SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif README COPYING \
         Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
         QtGuiVBox QtNetworkVBox vbox-client-symlink.desktop \

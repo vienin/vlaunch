@@ -162,7 +162,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %{TARGET_PATH}/Linux/ufo
 %{TARGET_PATH}/Linux/bin
-%{TARGET_PATH}/Linux/bin/ask-password
 %{TARGET_PATH}/Linux/settings
 %dir %{TARGET_PATH}/Linux/logs
 %{TARGET_PATH}/Linux/.VirtualBox/HardDisks
