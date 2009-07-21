@@ -8,7 +8,7 @@ SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif
         QtCore.framework QtGui.framework \
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
-        autorun.inf UFO.ico DS_Store .background .autorun ufo.app
+        autorun.inf UFO.ico DS_Store .background .autorun ufo.app ask-password
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -105,7 +105,7 @@ install:
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp tmp_vbox_home_linux/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp modifyvm.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	cp modifyvm.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py ask-password $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
 	cp -R tmp_vbox_home_linux/Machines tmp_vbox_home_linux/VirtualBox.xml ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp tmp_vbox_home_linux/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Machines/UFO/UFO.xml.template
