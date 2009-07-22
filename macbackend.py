@@ -41,8 +41,13 @@ class MacBackend(Backend):
         processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater\\)\\?\\( \\|$\\)'").split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1:
-            logging.debug("ufo launched twice!! Exiting")
-            sys.exit(0)
+            pids=[]
+            for i in processes : pids+=[i.strip().split(" ")[0]]
+            for i in xrange(len(pids)-1) :
+                if commands.getoutput("ps -p "+pids[-1]+" -o ppid").split("\n")[-1] in pids : pids.remove(pids[-1])
+            if len(pids)>1: 
+                logging.debug("ufo launched twice!! Exiting")
+                sys.exit(0)
 
 
     def prepare_update(self):
