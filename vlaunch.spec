@@ -1,5 +1,5 @@
 Name:           vlaunch
-Version:        0.5
+Version:        0.5.1
 Release:        3%{?dist}
 Summary:        Install files for virtualization on the UFO vfat partition
 

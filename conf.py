@@ -105,7 +105,7 @@ STARTVM = int(cp.get(launchersection, startvmkey))
 NEEDDEV = int(cp.get(launchersection, needdevkey))
 DEBUG = int(cp.get(launchersection, debugkey))
 LOG = cp.get(launchersection, logkey)
-VERSION = float(cp.get(launchersection, versionkey))
+VERSION = cp.get(launchersection, versionkey)
 CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 
