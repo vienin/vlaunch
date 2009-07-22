@@ -45,7 +45,7 @@ print "APP_PATH", conf.APP_PATH
 if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
     try:
         socket.setdefaulttimeout(5)
-        latest_version = float(urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read())
+        latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()
         logging.debug("Using launcher version : " + str(conf.VERSION))
         logging.debug("Available version on the Net : " + str(latest_version))
         lastest_version = map(int, latest_version.split('.'))
