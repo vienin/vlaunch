@@ -48,7 +48,7 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
         latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()
         logging.debug("Using launcher version : " + str(conf.VERSION))
         logging.debug("Available version on the Net : " + str(latest_version))
-        lastest_version = map(int, latest_version.split('.'))
+        latest_version = map(int, latest_version.split('.'))
         local_version = map(int, conf.VERSION.split('.'))
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to the user...")
