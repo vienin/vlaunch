@@ -42,7 +42,8 @@ print "SCRIPT_DIR", conf.SCRIPT_DIR
 print "SCRIPT_PATH", conf.SCRIPT_PATH
 print "APP_PATH", conf.APP_PATH
 
-if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
+if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
+   not "--no-update" in sys.argv:
     try:
         socket.setdefaulttimeout(5)
         latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()
@@ -67,6 +68,8 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
                 subprocess.Popen([ backend.shadow_updater_executable, ".".join(latest_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
                 logging.debug("Exiting for good")
                 sys.exit(0)
+            else:
+                backend.no_update = True
     except SystemExit:
         sys.exit(0)
     except:

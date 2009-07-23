@@ -41,6 +41,7 @@ class Backend:
         self.usb_devices = []
         self.tmp_swapdir = ""
         self.puel = False
+        self.no_update = False
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))

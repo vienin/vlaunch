@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os, sys, statvfs
 import os.path as path
 import commands
@@ -26,7 +28,8 @@ def run_as_root(command):
            if dist == "fedora" and version >= 10:
                if not os.path.exists("/usr/bin/beesu"):
                    subprocess.call( [ "pkcon", "install", "beesu" ] )
-               os.execv("/usr/bin/beesu", [ "beesu" ] + command)
+               if os.path.exists("/usr/bin/beesu"):
+                   os.execv("/usr/bin/beesu", [ "beesu" ] + command)
            if os.isatty(0):
                graphical_ask_pass = False
                os.environ["SUDO_ASKPASS"] = path.join(conf.BIN, "ask-password")
@@ -44,22 +47,41 @@ def run_as_root(command):
            else:
                    os.execv("/usr/bin/xterm", [ "xterm", "-e", "su -c " + " ".join(command) ])
             
-
-def get_linux_release():
-    pass
+def get_distro():
+    if os.path.exists("/usr/bin/lsb_release"):
+        return (subprocess.Popen( [ 'lsb_release', '--short', '-i' ], stdout=subprocess.PIPE).communicate()[0],
+                subprocess.Popen( [ 'lsb_release', '--short', '-r' ], stdout=subprocess.PIPE).communicate()[0],
+                subprocess.Popen( [ 'lsb_release', '--short', '-c' ], stdout=subprocess.PIPE).communicate()[0])
+    else:
+        return platform.dist()
+    
+    # if platform.dist()[0] == "Ubuntu" or \
+    #    (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
+    #     distro = "Ubuntu"
+    # else:
+    #     return platform.dist()[0]
                                     
 try:
     import easygui
 except ImportError:
-    if platform.dist()[0] == "Ubuntu" or \
-       (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
+    distro, release, codename = get_distro()
+    if distro == "Ubuntu":
         run_as_root([ "apt-get", "-y", "install", "python-tk" ])
         import easygui
         reload(easygui)
-    elif platform.dist()[0] == "fedora":
+    elif distro == "Fedora" or os.path.exists('/usr/bin/pkcon'):
         subprocess.call( [ "pkcon", "install", "tkinter" ] )
         import easygui
         reload(easygui)
+    else:
+        msg = 'Votre distribution Linux n\'est pas officiellement ' \
+               'supportée.\nVeuillez installer les packages python-tk et VirtualBox.'
+        if os.path.exists("/usr/bin/zenity"):
+            subprocess.call( [ "zenity", "--info",
+                               '--text="' + msg + '"' ] )
+        else:
+            print msg
+        sys.exit(1)
 
 import glob
 import tempfile
@@ -81,14 +103,16 @@ class LinuxBackend(Backend):
     def check_process(self):
         logging.debug("Checking process")
         processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'").split("\n")
-        logging.debug("ufo process : "+str(processes))
-        if len(processes)>1 :
-            pids=[]
-            for i in processes : pids+=[i.strip().split(" ")[0]]
-            for i in xrange(len(pids)-1) :
-                if commands.getoutput("ps -p "+pids[-1]+" -o ppid").split("\n")[-1] in pids : pids.remove(pids[-1])
-            if len(pids)>1: 
-                logging.debug("ufo launched twice!! Exiting")
+        logging.debug("ufo process : " + str(processes))
+        if len(processes) > 1 :
+            pids = [ i.strip().split(" ")[0] for i in processes ]
+            i = len(pids) - 1
+            while i >= 0:
+                if commands.getoutput("ps -p " + pids[i] + " -o ppid").split("\n")[-1].strip() in pids:
+                    del pids[i]
+                i -= 1
+            if len(pids) > 1: 
+                logging.debug("U.F.O was launched twice ! Exiting")
                 sys.exit(0)
 
     def prepare_update(self):
@@ -187,7 +211,7 @@ class LinuxBackend(Backend):
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
-        run_as_root([ sys.executable ] + sys.argv)
+        run_as_root([ sys.executable ] + sys.argv + [ "--no-update" ])
                                              
     def cleanup(self, command):
         pass
@@ -223,13 +247,10 @@ class LinuxBackend(Backend):
         logging.debug("Checking VirtualBox binaries")
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
-            import platform
-            dist = platform.dist()
-            if dist[0] == "Ubuntu" or \
-               (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
-                dist = "hardy"
+            distro, release, codename = get_distro()
+            if distro == "Ubuntu":
                 open("/etc/apt/sources.list", "a").write(
-                    "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (dist,))
+                    "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (codename.lower(),))
                 os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | sudo apt-key add -")
                 subprocess.call([ "apt-get", "update" ])
                 subprocess.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
