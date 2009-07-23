@@ -40,6 +40,7 @@ class Backend:
     def __init__(self):
         self.usb_devices = []
         self.tmp_swapdir = ""
+        self.tmp_overlaydir = ""
         self.puel = False
         self.no_update = False
 
@@ -89,26 +90,6 @@ class Backend:
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
             virtual_box.machine.set_ram_size(conf.RAMSIZE)
             
-            """
-            swap = 16 # conf.RAMSIZE
-            swap_vdi = tempfile.mktemp(prefix="swap", suffix=".vdi")
-            # if self.call([ path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE),
-            #             "createhd", "--filename", swap_vdi,
-            #             "--size", str(swap), "--variant", "Fixed" ], env = self.env) == 0:
-            p = subprocess.Popen([ path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE),
-                        "createhd", "--filename", swap_vdi,
-                        "--size", str(swap), "--variant", "Fixed" ], env = self.env, stdout=subprocess.PIPE)
-            output, err = p.communicate()
-            print output, err
-            if p.returncode == 0:
-                swap_uuid = output[output.find("UUID: ") + 6:].strip()
-                import time
-                time.sleep(5)
-                logging.debug("Created VDI for swap")
-                print "Created VDI for swap"
-                virtual_box.set_vdi(swap_vdi, swap_uuid, conf.DRIVERANK + 1)
-            """
-
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
 
@@ -177,7 +158,8 @@ class Backend:
             try:
                 self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
                 logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
-                swap_rank = conf.DRIVERANK + 1
+                conf.DRIVERANK += 1
+                swap_rank = conf.DRIVERANK
                 shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
                 logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
                 virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
@@ -191,7 +173,28 @@ class Backend:
                     virtual_box.machine.set_guest_property("swap_size", str(swap_size))
             except:
                 logging.debug("Exception while creating swap")
-            
+        
+        logging.debug("conf.OVERLAYFILE: " + conf.OVERLAYFILE + ", conf.OVERLAYUUID: " + conf.OVERLAYUUID)
+        if conf.OVERLAYFILE and conf.OVERLAYUUID:
+            try:
+                self.tmp_ovelaydir = tempfile.mkdtemp(suffix="ufo-overlay")
+                logging.debug("self.tmp_overlaydir = " + self.tmp_overlaydir);
+                conf.DRIVERANK += 1
+                overlay_rank = conf.DRIVERANK
+                shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE), path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
+                logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE) + ", " + path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
+                virtual_box.set_vdi (path.join(self.tmp_overlaydir, conf.OVERLAYFILE), conf.OVERLAYUUID, overlay_rank)
+
+                # TODO:
+                # Set guest prop about max size of the overlay to 
+                # to set apropriate quota within guest side.
+                #
+                # free_size = self.get_free_size(self.tmp_overlaydir)
+                # if free_size:
+                #     virtual_box.machine.set_guest_property("overlay_quota", ...)
+            except:
+                logging.debug("Exception while creating overlay")
+
         # Write changes
         virtual_box.write()
         virtual_box.machine.write()
@@ -331,8 +334,12 @@ class Backend:
 
         logging.debug("Clean up")
         if self.dnddir:
-                shutil.rmtree(self.dnddir)
+            shutil.rmtree(self.dnddir)
 
         if self.tmp_swapdir:
-            # os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
-            self.cleanup(command)
+            os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
+
+        if self.tmp_overlaydir:
+            os.unlink(path.join(self.tmp_overalydir, conf.OVERLAYFILE))
+            
+        self.cleanup(command)

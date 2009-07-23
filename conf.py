@@ -37,6 +37,8 @@ driverankkey = "DRIVERANK"
 swapfile = "SWAPFILE"
 swapuuid = "SWAPUUID"
 swapsize = "SWAPSIZE"
+overlayfile = "OVERLAYFILE"
+overlayuuid = "OVERLAYUUID"
 needdevkey = "NEEDDEV"
 debugkey = "DEBUG"
 devkey = "DEV"
@@ -62,6 +64,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                swapuuid : "",
                                swapfile : "ufo_swap.vdi",
                                swapsize : "512",
+                               overlayfile : "ufo_overlay.vdi"
+                               overlayuuid : ""
                                nettypekey : "2",
                                hostnetkey : "",
                                macaddrkey : "",
@@ -125,6 +129,8 @@ DRIVERANK = int(cp.get(vmsection, driverankkey))
 SWAPUUID  = cp.get(vmsection, swapuuid)
 SWAPFILE  = cp.get(vmsection, swapfile)
 SWAPSIZE  = int(cp.get(vmsection, swapsize))
+OVERLAYUUID  = cp.get(vmsection, overlayuuid)
+OVERLAYFILE  = cp.get(vmsection, overlayfile)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)
