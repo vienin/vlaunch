@@ -59,12 +59,12 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()):
             if input == "Oui":
                 # Run Updater and close launcher
                 backend.prepare_update()
-                logging.debug("Launching updater : " + backend.shadow_updater_executable + " " + str(latest_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
+                logging.debug("Launching updater : " + backend.shadow_updater_executable + " " + ".".join(latest_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
                 # For some reason, does not work on Mac OS
                 # I get Operation not permitted
                 # os.execv(backend.shadow_updater_executable,
                 #          [backend.shadow_updater_executable, backend.ufo_dir])
-                subprocess.Popen([ backend.shadow_updater_executable, str(latest_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
+                subprocess.Popen([ backend.shadow_updater_executable, ".".join(latest_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
                 logging.debug("Exiting for good")
                 sys.exit(0)
     except SystemExit:
