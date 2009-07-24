@@ -176,6 +176,8 @@ class LinuxBackend(Backend):
             p1 = subprocess.Popen([ "getent", "passwd", os.getenv("USERHELPER_UID") ], stdout=subprocess.PIPE)
             p2 = subprocess.Popen([ "cut", "-f", "1", "-d", ":" ], stdin=p1.stdout, stdout=subprocess.PIPE)
             user = p2.communicate()[0].strip()
+        else:
+            user = os.getenv("USER")
         return path.expanduser("~" + user), "Mes documents Linux"
 
     def get_usb_devices(self):
