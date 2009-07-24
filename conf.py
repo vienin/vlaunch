@@ -64,8 +64,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                swapuuid : "",
                                swapfile : "ufo_swap.vdi",
                                swapsize : "512",
-                               overlayfile : "ufo_overlay.vdi"
-                               overlayuuid : ""
+                               overlayfile : "ufo_overlay.vdi",
+                               overlayuuid : "",
                                nettypekey : "2",
                                hostnetkey : "",
                                macaddrkey : "",
