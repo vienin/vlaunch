@@ -15,6 +15,8 @@ Requires:       kernel-vbox kernel-vbox-devel python-augeas
 
 %define TARGET_PATH /media/UFO
 %define VM_NAME UFO
+%define OVERLAY_DEV_UUID b07ac827-ce0c-4741-ae81-1f234377b4b5
+%define OVERLAY_DEV_TYPE ext4-no_journal-no_huge_files
 
 %package guest
 Summary: Install guest part files
@@ -57,6 +59,7 @@ wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
 wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
 wget http://kickstart.agorabox.org/private/virtualization/fake_vmdk.tgz
 wget -O "Kit de survie.pdf" http://ufo.agorabox.fr/sites/myufo/media/files/KIT_DE_SURVIE_BETA.pdf
+wget -O "ufo_overlay.vdi" http://kickstart.agorabox.org/private/virtualization/ufo_overlay-%{OVERLAY_DEV_TYPE}-UUID=%{OVERLAY_DEV_UUID}.vdi
 
 rm -rf iso
 mkdir iso

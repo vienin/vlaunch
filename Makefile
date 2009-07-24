@@ -15,7 +15,6 @@ ARCHIVE=$(DIR).tar.gz
 SPECFILE=$(NAME).spec
 URL=http://www.glumol.com/chicoutimi/vlaunch
 
-OVERLAYSIZE=2000
 
 ifneq ($(findstring ../Makefile.mk,$(wildcard ../Makefile.mk)), )
 	include ../Makefile.mk
@@ -28,18 +27,21 @@ install:
 	# sleep 5 sec between each vm creation, instead of killing VBoxXp process
 	mkdir tmp_vbox_home_linux tmp_vbox_home_windows tmp_vbox_home_macosx  
 	./createvdi.py -o `pwd`/tmp_vbox_home_linux -n ufo_swap.vdi -c settings.conf.linux -t "swap"
-	./createvdi.py -o `pwd`/tmp_vbox_home_linux -n ufo_overlay.vdi -c settings.conf.linux -s ${OVERLAYSIZE} -t "overlay"
+	cp ufo_overlay.vdi ufo_overlay_linux.vdi
+	./createvdi.py -c settings.conf.linux -n ufo_overlay_linux.vdi -t "overlay" --conf-only
 	./createvm.py -o `pwd`/tmp_vbox_home_linux -v $(VM_NAME) 
 	sleep 5
 	./createvdi.py -o `pwd`/tmp_vbox_home_windows -n ufo_swap.vdi -c settings.conf.win32 -t "swap"
-	./createvdi.py -o `pwd`/tmp_vbox_home_windows -n ufo_overlay.vdi -c settings.conf.win32 -s ${OVERLAYSIZE} -t "overlay"
+	cp ufo_overlay.vdi ufo_overlay_windows.vdi
+	./createvdi.py -c settings.conf.win32 -n ufo_overlay_windows.vdi -t "overlay" --conf-only
 	./createvm.py -o `pwd`/tmp_vbox_home_windows -v $(VM_NAME) -s WIN
 	sleep 5
 	./createvdi.py -o `pwd`/tmp_vbox_home_macosx -n ufo_swap.vdi -c settings.conf.mac -t "swap"
-	./createvdi.py -o `pwd`/tmp_vbox_home_macosx -n ufo_overlay.vdi -c settings.conf.mac -s ${OVERLAYSIZE} -t "overlay"
+	cp ufo_overlay.vdi ufo_overlay_mac.vdi
+	./createvdi.py -c settings.conf.mac -n ufo_overlay_mac.vdi -t "overlay" --conf-only
 	./createvm.py -o `pwd`/tmp_vbox_home_macosx  -v $(VM_NAME) -s MAC
 	sleep 5
-	
+
 	# build windows tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/settings
@@ -48,7 +50,8 @@ install:
 	# cp $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf $(DESTDIR)$(TARGET_PATH)/Windows/settings/
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
-	cp tmp_vbox_home_windows/HardDisks/ufo_*.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
+	cp tmp_vbox_home_windows/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
+	cp ufo_overlay_windows.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/ufo_overlay.vdi
 	cp -R tmp_vbox_home_windows/Machines tmp_vbox_home_windows/VirtualBox.xml ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp tmp_vbox_home_windows/Machines/UFO/UFO.xml $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Machines/UFO/UFO.xml.template
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
@@ -63,7 +66,8 @@ install:
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/logs
-	cp tmp_vbox_home_macosx/HardDisks/ufo_*.vdi $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
+	cp tmp_vbox_home_macosx/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
+	cp ufo_overlay_mac.vdi $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/ufo_overlay.vdi
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/MacOS
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Resources/VirtualBoxVM.app/Contents/Resources
 	unlink $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/lib/python2.5/site.py
@@ -108,7 +112,8 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/logs
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
-	cp tmp_vbox_home_linux/HardDisks/ufo_*.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
+	cp tmp_vbox_home_linux/HardDisks/ufo_swap.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
+	cp ufo_overlay_linux.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks/ufo_overlay.vdi
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
 	cp modifyvm.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py ask-password $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
