@@ -170,7 +170,12 @@ class LinuxBackend(Backend):
             return "/dev/cdrom"
 
     def get_host_home(self):
-        user = "~" + os.getenv("SUDO_USER", "")
+        if os.environ.has_key("SUDO_USER"):
+            user = "~" + os.getenv("SUDO_USER", "")
+        elif os.environ.has_key("USERHELPER_UID"):
+            p1 = subprocess.Popen([ "getent", "passwd", os.getenv("USERHELPER_UID" ], stdout=subprocess.PIPE)
+            p2 = subprocess.Popen([ "cut", "-f", "1", "-d", ":" ], stdin=p1.stdout, stdout=PIPE)
+            user = p2.communicate()[0]
         return path.expanduser(user), "Mes documents Linux"
 
     def get_usb_devices(self):
