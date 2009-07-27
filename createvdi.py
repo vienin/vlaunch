@@ -57,8 +57,8 @@ if options.confonly == False:
 
 if options.conf:
     if options.confonly:
-	    # generate a new uuid
-        uuid_output = commands.getoutput("VBoxManage -nologo internalcommands sethduuid ufo_overlay.vdi")
+        # generate a new uuid
+        uuid_output = commands.getoutput("VBoxManage -nologo internalcommands sethduuid " + options.name)
         uuid = uuid_output[uuid_output.find("UUID changed to: ") + len("UUID changed to: "):]
     else:
         uuid = output[output.find("UUID: ") + 6:].strip()

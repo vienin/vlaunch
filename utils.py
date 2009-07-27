@@ -177,7 +177,7 @@ class Backend:
         logging.debug("conf.OVERLAYFILE: " + conf.OVERLAYFILE + ", conf.OVERLAYUUID: " + conf.OVERLAYUUID)
         if conf.OVERLAYFILE and conf.OVERLAYUUID:
             try:
-                self.tmp_ovelaydir = tempfile.mkdtemp(suffix="ufo-overlay")
+                self.tmp_overlaydir = tempfile.mkdtemp(suffix="ufo-overlay")
                 logging.debug("self.tmp_overlaydir = " + self.tmp_overlaydir);
                 conf.DRIVERANK += 1
                 overlay_rank = conf.DRIVERANK
@@ -340,6 +340,6 @@ class Backend:
             os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
 
         if self.tmp_overlaydir:
-            os.unlink(path.join(self.tmp_overalydir, conf.OVERLAYFILE))
+            os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
             
         self.cleanup(command)

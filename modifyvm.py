@@ -12,12 +12,12 @@ from optparse import OptionParser
 class VirtualMachine:
 	# virtual machine id
 	name = ''
-	xml	 = None		
+	xml  = None		
 
 	# setable attributes
 	fullscreen  = True
-	ram_size	= ''
-	dvd_imag	= ''
+	ram_size    = ''
+	dvd_imag    = ''
 	logo_image  = ''
 	net_adapter = ''
 	mac_address = ''
@@ -45,8 +45,11 @@ class VirtualMachine:
 			new_image.setAttribute('uuid', '{' + uuid + '}')
 			new_element.appendChild(new_image)
 			new_element.setAttribute('type', 'HardDisk')
-			new_element.setAttribute('port', '0')
-			new_element.setAttribute('device', str(order))
+                        # device 1, port 0 is busy by cd-rom...
+                        if order >= 2:
+                                order += 1
+			new_element.setAttribute('port', str(order//2))
+			new_element.setAttribute('device', str(order % 2))
 			element.appendChild(new_element)
 
 	def disable_dvd(self):
@@ -211,8 +214,8 @@ class VirtualMachine:
 		open(self.file, 'w').write(self.xml.toxml().encode("utf-8"))
 
 class VBoxConfiguration:
-	xml	  = None
-	machine   = None
+	xml     = None
+	machine = None
 	
 	def __init__ (self, home_path, use_template = False):
 		self.home_path = home_path
