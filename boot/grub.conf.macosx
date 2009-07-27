@@ -13,4 +13,4 @@ splashimage=/boot/grub/agorabox-splash.xpm.gz
 hiddenmenu
 title U.F.O (optimized for VirtualBox)
 	root (hd0,2)
-	kernel /boot/vmlinuz-virtualbox ro root=0803 hostos=macosx rhgb quiet udevtimeout=1 4
+	kernel /boot/vmlinuz-virtualbox ro root=0803 overlay=ext4=UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5 hostos=macosx rhgb quiet udevtimeout=1 4

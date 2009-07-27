@@ -11,7 +11,7 @@ Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
-Requires:       kernel-vbox kernel-vbox-devel python-augeas
+Requires:       kernel-vbox python-augeas
 
 %define TARGET_PATH /media/UFO
 %define VM_NAME UFO
