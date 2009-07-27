@@ -73,6 +73,8 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
     except SystemExit:
         sys.exit(0)
     except:
+        # raise
+        logging.debug("Unexpected error: " + str(sys.exc_info()[0]))
         logging.debug("Exception while updating")
 
 try:
