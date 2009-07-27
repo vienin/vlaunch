@@ -333,6 +333,8 @@ class Backend:
         self.run_vbox(command, env)
 
         logging.debug("Clean up")
+        self.cleanup(command)
+
         if self.dnddir:
             shutil.rmtree(self.dnddir)
 
@@ -341,5 +343,3 @@ class Backend:
 
         if self.tmp_overlaydir:
             os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
-            
-        self.cleanup(command)
