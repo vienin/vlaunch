@@ -25,6 +25,7 @@ vmsection = "vm"
 startvmkey = "STARTVM"
 vmkey = "VM"
 vmdkkey = "VMDK"
+partskey = "PARTS"
 bootisokey = "BOOTISO"
 nettypekey = "NETTYPE"
 hostnetkey = "HOSTNET"
@@ -50,7 +51,6 @@ versionkey = "VERSION"
 configurevmkey = "CONFIGUREVM"
 homekey = "HOME"
 binkey = "BIN"
-vmdkkey = "VMDK"
 useservicekey = "USESERVICE"
 createsrvskey = "CREATESRVS"
 startsrvskey = "STARTSRVS"
@@ -60,6 +60,7 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                startvmkey : "1",
                                vmkey : "UFO",
                                vmdkkey : "ufo_key.vmdk",
+                               partskey : "all",
                                bootisokey : "UFO-VirtualBox-boot.img",
                                swapuuid : "",
                                swapfile : "ufo_swap.vdi",
@@ -99,8 +100,8 @@ except:
     raise
 
 HOME = cp.get(globalsection, homekey)
+BIN  = cp.get(globalsection, binkey)
 VMDK = cp.get(globalsection, vmdkkey)
-BIN = cp.get(globalsection, binkey)
 
 USESERVICE = int(cp.get(launchersection, useservicekey))
 CREATESRVS = int(cp.get(launchersection, createsrvskey))
@@ -114,6 +115,7 @@ CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 
 DEV = cp.get(rawdisksection, devkey)
+PARTS = cp.get(rawdisksection, partskey)
 ROOTUUID = cp.get(rawdisksection, rootuuidkey)
 VOLUME = cp.get(rawdisksection, volumekey)
 MODEL = cp.get(rawdisksection, modelkey)

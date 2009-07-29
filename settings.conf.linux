@@ -8,6 +8,7 @@ height=full
 
 [rawdisk]
 VOLUME=UFO
+PARTS=2,3,4
 
 [launcher]
 DEBUG=0

@@ -73,14 +73,30 @@ class Backend:
     
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.VMDK and create_vmdk:
-            logging.debug("Getting size of " + conf.DEV)
-            blockcount = self.get_device_size(conf.DEV)
-        
             vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
-            logging.debug("Creating VMDK file %s with %s of size %d : " % (vmdk, conf.DEV, blockcount))
-            vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
+            if conf.PARTS == "all":
+                logging.debug("Getting size of " + conf.DEV)
+                blockcount = self.get_device_size(conf.DEV)
+                logging.debug("Creating VMDK file %s with %s of size %d: " % (vmdk, conf.DEV, blockcount))
+                vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
+
+            else:
+                logging.debug("Creating vbox VMDK file %s with %s, partitions %s: " % (vmdk, conf.DEV, conf.PARTS))
+                if os.path.exists(vmdk):
+                    os.unlink(vmdk)
+                if os.path.exists(vmdk[:len(vmdk) - 5] + "-pt.vmdk"):
+                    os.unlink(vmdk[:len(vmdk) - 5] + "-pt.vmdk")
+
+                self.create_vbox_raw_vmdk(vmdk, conf.DEV, conf.PARTS)
+
+                logging.debug("Killing resilient VirtualBox")
+                self.kill_resilient_vbox()
+
+                uuid_line = grep(open(vmdk).read(), "ddb.uuid.image")
+                vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1 ]
+
             virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
-            
+
         if conf.CONFIGUREVM:
             # compute reasonable memory size
             if conf.RAMSIZE == "auto":

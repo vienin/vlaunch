@@ -196,23 +196,30 @@ end timeout
     # params : dev_string
     # return : 0 if device is ready
     def prepare_device(self, disk):
-        if conf.MOBILE:
-            if path.exists("/etc/fstab"):
-                shutil.copyfile("/etc/fstab", "/etc/fstab.bak")
+        # TODO:
+        # Use chflags cmd insteadof fstab workaround 
+        # when conf.PARTS == "all".
+        # Also use chflags to avoid system mounts 
+        # other volume than UFO, if they are mountable. 
+        if conf.PARTS == "all":
+            if conf.MOBILE:
+                if path.exists("/etc/fstab"):
+                    shutil.copyfile("/etc/fstab", "/etc/fstab.bak")
     
-        for partition in glob.glob(disk + "s*"):
-            volname = grep(commands.getoutput("diskutil info " + partition), "Volume Name:").split()
-            if not volname or len(volname) < 3: continue
-            volname = volname[2]
-            fstype = grep(commands.getoutput("diskutil info " + partition), "File System:").split()
-            if fstype:
-                fstype = fstype[2]
-                fstype = { "MS-DOS" : "msdos", "Ext2" : "ext2", "Ext3" : "ext3" }.get(fstype, fstype)
-                logging.debug('echo "LABEL=%s none %s rw,noauto" >> /etc/fstab' % (volname, fstype))
-                if conf.MOBILE:
-                    append_to_end("/etc/fstab", "LABEL=%s none %s rw,noauto\n" % (volname, fstype))
-                retcode = self.call([ "diskutil", "unmount", partition ])
-                if not retcode: return retcode
+            for partition in glob.glob(disk + "s*"):
+                volname = grep(commands.getoutput("diskutil info " + partition), "Volume Name:").split()
+                if not volname or len(volname) < 3: continue
+                volname = volname[2]
+                fstype = grep(commands.getoutput("diskutil info " + partition), "File System:").split()
+                if fstype:
+                    fstype = fstype[2]
+                    fstype = { "MS-DOS" : "msdos", "Ext2" : "ext2", "Ext3" : "ext3" }.get(fstype, fstype)
+                    logging.debug('echo "LABEL=%s none %s rw,noauto" >> /etc/fstab' % (volname, fstype))
+                    if conf.MOBILE:
+                        append_to_end("/etc/fstab", "LABEL=%s none %s rw,noauto\n" % (volname, fstype))
+                    retcode = self.call([ "diskutil", "unmount", partition ])
+                    if not retcode: return retcode
+            return 0
         return 0
 
     def check_privileges(self):
@@ -238,8 +245,10 @@ end timeout
                 sys.exit(0)
 
     def is_ready(self):
-        # test if i need to mode at another location
-        if not conf.APP_PATH.startswith("/Volumes"):
+        # test if i need to move at another location
+        if conf.APP_PATH.startswith("/Volumes") and conf.PARTS == "all":
+            conf.READY = 0
+        else:
             conf.READY = 1
 
         if not conf.READY:
@@ -312,13 +321,14 @@ end timeout
             self.load_kexts()
 
     def cleanup(self, command):
-        if conf.MOBILE:
+        if conf.MOBILE and conf.PARTS == "all":
             self.restore_fstab()
     
         if not conf.VBOX_INSTALLED:
             os.unlink("/Applications/VirtualBox.app")
         
-        self.call([ "diskutil", "mountDisk", conf.DEV ])
+        if conf.PARTS == "all":
+            self.call([ "diskutil", "mountDisk", conf.DEV ])
     
         # clean host
         command = path.basename(command[0])
@@ -328,7 +338,7 @@ end timeout
                     break
                 time.sleep(2)
 
-        if conf.MOBILE:
+        if conf.MOBILE and conf.PARTS == "all":
             shutil.copyfile(conf.LOG, path.join(tempfile.gettempdir(), path.basename(conf.LOG)))
             logging.debug("Got VBOX_USER_HOME from parent : " + str(os.environ.get("VBOX_USER_HOME")))
             if os.environ.has_key("VBOX_USER_HOME"):
@@ -367,4 +377,8 @@ end timeout
         
     def get_free_size(self, path):
         return 1000
+
+    def create_vbox_raw_vmdk(self, vmdk, dev, parts):
+        return self.call([ path.join(conf.BIN, "VBoxManage"), "internalcommands", "createrawvmdk", "-filename", 
+                    vmdk, "-rawdisk",  dev, "-partitions", parts, "-relative" ], env = self.env)
 

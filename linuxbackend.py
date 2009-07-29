@@ -149,6 +149,7 @@ class LinuxBackend(Backend):
 
     def prepare_device(self, disk):
         self.call([ "umount", disk + "3" ])
+        self.call([ "umount", disk + "4" ])
 
     def get_device_size(self, dev):
         return int(open(path.join("/", "sys", "block", path.basename(dev), "size")).read())
@@ -262,4 +263,8 @@ class LinuxBackend(Backend):
                 subprocess.call([ "apt-get", "update" ])
                 subprocess.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
         Backend.look_for_virtualbox(self)
+
+    def create_vbox_raw_vmdk(self, vmdk, dev, parts):
+        return self.call([ path.join(conf.BIN, "VBoxManage"), "internalcommands", "createrawvmdk", "-filename", 
+                    vmdk, "-rawdisk",  dev, "-partitions", parts, "-relative" ], env = self.env)
 

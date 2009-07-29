@@ -357,4 +357,7 @@ class WindowsBackend(Backend):
 
         return int(logical_disks[0].FreeSpace) / 1000000
 
+    def create_vbox_raw_vmdk(self, vmdk, dev, parts):
+        return self.call([ path.join(conf.BIN, "VBoxManage"), "internalcommands", "createrawvmdk", "-filename", 
+                    vmdk, "-rawdisk",  dev, "-partitions", parts], env = self.env)
 
