@@ -23,6 +23,10 @@ endif
 all:
 
 install:
+	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf.linux'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf.linux', 'w'))"
+	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf.win32'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf.win32', 'w'))"
+	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf.mac'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf.mac', 'w'))"
+
 	# build virtual machine xml setting files
 	# sleep 5 sec between each vm creation, instead of killing VBoxXp process
 	mkdir tmp_vbox_home_linux tmp_vbox_home_windows tmp_vbox_home_macosx  
