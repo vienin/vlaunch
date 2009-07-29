@@ -43,7 +43,7 @@ os.environ["VBOX_USER_HOME"] = options.home
 # create vm
 print ("VBoxManage createvm -name " + options.vm + " -ostype Fedora -register")
 os.system("VBoxManage createvm -name " + options.vm + " -ostype Fedora -register")
-os.system("VBoxManage modifyvm " + options.vm + " -boot1 disk -boot2 none -boot3 none -vram 32 -memory 1024 -nictype1 82540EM -biosbootmenu disabled -audio pulse") # -usb on -usbehci on
+os.system("VBoxManage modifyvm " + options.vm + " -ioapic on -boot1 disk -boot2 none -boot3 none -vram 32 -memory 1024 -nictype1 82540EM -biosbootmenu disabled -audio pulse") # -usb on -usbehci on
 
 # add disk
 if options.hd != "":
