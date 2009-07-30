@@ -265,6 +265,6 @@ class LinuxBackend(Backend):
         Backend.look_for_virtualbox(self)
 
     def create_vbox_raw_vmdk(self, vmdk, dev, parts):
-        return self.call([ path.join(conf.BIN, "VBoxManage"), "internalcommands", "createrawvmdk", "-filename", 
+        return self.call([ path.join(conf.BIN, "VBoxManage"), "-nologo", "internalcommands", "createrawvmdk", "-filename", 
                     vmdk, "-rawdisk",  dev, "-partitions", parts, "-relative" ], env = self.env)
 
