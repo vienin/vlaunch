@@ -25,14 +25,14 @@ def run_as_root(command):
        else:
            dist, version, codename = platform.dist()
            version = float(version)
-           if dist == "fedora" and version >= 10:
+           if dist in ("fedora", "redhat") and version >= 10:
                if not os.path.exists("/usr/bin/beesu"):
                    subprocess.call( [ "pkcon", "install", "beesu" ] )
                if os.path.exists("/usr/bin/beesu"):
                    os.execv("/usr/bin/beesu", [ "beesu" ] + command)
            if os.isatty(0):
                graphical_ask_pass = False
-               os.environ["SUDO_ASKPASS"] = path.join(conf.BIN, "ask-password")
+               os.environ["SUDO_ASKPASS"] = path.join(conf.SCRIPT_DIR, "bin", "ask-password")
                try:
                    p = subprocess.Popen([ "sudo", "-V" ], stdout=subprocess.PIPE)
                    version = p.communicate()[0].split("\n")[0].split()[2]
