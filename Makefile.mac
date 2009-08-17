@@ -9,14 +9,14 @@ py2app:
 py2app-updater:
 	if [ -f update_launcher_mac.py ]; \
 	then \
-		ln -s update_launcher.py Ufo-updater.py; \
+		ln -s update_launcher.py ufo-updater.py; \
 	fi; \
 	python setup-update-mac.py py2app
 
 pkg: py2app
 	mkdir -p dist/packagemaker/Applications
 	mv dist/UFO.app dist/packagemaker/Applications
-	mv dist/Ufo-updater.app dist/packagemaker/Applications
+	mv dist/ufo-updater.app dist/packagemaker/Applications
 	/Developer/Tools/packagemaker -build -proj U.F.O\ Launcher.pmproj -p dist/U.F.O\ Launcher.pkg
 
 clean:
@@ -44,7 +44,7 @@ mac-launcher: clean py2app py2app-updater
 	then \
 		exit 1; \
 	fi; \
-	mv dist/Ufo-updater.app dist/UFO.app/Contents/Resources/
+	mv dist/ufo-updater.app dist/UFO.app/Contents/Resources/
 	cp -R $$VBOX_PATH dist/UFO.app/Contents/Resources/VirtualBox.app
 	cp -R kexts dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts
 	mkdir dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework
@@ -55,7 +55,7 @@ mac-launcher: clean py2app py2app-updater
 	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/testcase 
 	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/tst* 
 	rm -f dist/UFO.app/Contents/Resources/site.pyc
-	rm -f dist/UFO.app/Contents/Resources/Ufo-updater.app/Contents/Resources/site.pyc
+	rm -f dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Resources/site.pyc
 	rm -rf dist/UFO.app/Contents/Resources/.VirtualBox
 	cd dist && tar cvzf mac-intel.tgz UFO.app
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization

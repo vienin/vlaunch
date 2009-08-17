@@ -42,7 +42,7 @@ class Backend:
         self.tmp_swapdir = ""
         self.tmp_overlaydir = ""
         self.puel = False
-        self.no_update = False
+        self.do_not_update = False
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))

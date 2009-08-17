@@ -38,17 +38,18 @@ class MacBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater\\)\\?\\( \\|$\\)'").split("\n")
+        processes = commands.getoutput("ps ax -o pid,command | grep -i '\\/ufo\\(-updater\\)\\?\\( \\|$\\)'").split("\n")
         logging.debug("ufo process : " + str(processes))
-        if len(processes) > 1:
-            pids=[]
-            for i in processes : pids+=[i.strip().split(" ")[0]]
-            for i in xrange(len(pids)-1) :
-                if commands.getoutput("ps -p "+pids[-1]+" -o ppid").split("\n")[-1] in pids : pids.remove(pids[-1])
-            if len(pids)>1: 
-                logging.debug("ufo launched twice!! Exiting")
+        if len(processes) > 1 :
+            pids = [ i.strip().split(" ")[0] for i in processes ]
+            i = len(pids) - 1
+            while i >= 0:
+                if commands.getoutput("ps -p " + pids[i] + " -o ppid").split("\n")[-1].strip() in pids:
+                    del pids[i]
+                i -= 1
+            if len(pids) > 1: 
+                logging.debug("U.F.O was launched twice ! Exiting")
                 sys.exit(0)
-
 
     def prepare_update(self):
         self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")
@@ -114,7 +115,7 @@ class MacBackend(Backend):
                    len(grep(infos, "Volume Name:").split()) > 2 and \
                    len(grep(infos, "Mount Point:").split()) > 2:
                     disks.append((grep(infos, "Mount Point:").split()[2],
-                                  grep(infos, "Volume Name:").split()[2]))
+                                  " ".join(grep(infos, "Volume Name:").split()[2:])))
         except: return []
         return disks
 
@@ -224,6 +225,7 @@ end timeout
 
     def check_privileges(self):
         if os.geteuid() != 0:
+            logging.debug("Asking user password")
             password = self.dialog_password()
             if conf.USESERVICE:
                 self.call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
@@ -234,6 +236,7 @@ end timeout
                     cmd = [ path.join(path.dirname(sys.executable), "UFO") ]
                 else:
                     cmd = [ sys.executable ] + sys.argv
+                cmd += [ "--no-update" ]
                 logging.debug(" ".join([ "sudo", "-S" ] + cmd))
                 logging.debug("Sudoing and exiting")
                 logging.shutdown()

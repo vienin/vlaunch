@@ -69,7 +69,7 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
                 logging.debug("Exiting for good")
                 sys.exit(0)
             else:
-                backend.no_update = True
+                backend.do_not_update = True
     except SystemExit:
         sys.exit(0)
     except:
