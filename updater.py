@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-try: logging.basicConfig(filename="updater.log", level=logging.DEBUG)
+try: logging.basicConfig(filename="/tmp/updater.log", level=logging.DEBUG)
 except: logging.basicConfig(level=logging.DEBUG)
 
 import os
@@ -85,6 +85,13 @@ try:
                         msg=u"Votre clé est à jour.")
 
 except:
+    print "TOTO"
+    logging.debug("Exception")
+    import traceback
+    info = sys.exc_info()
+    logging.debug("Error while updating: " + str(info[1]))
+    logging.debug("".join(traceback.format_tb(info[2])))
+                                            
     backend.dialog_info(title=u"Erreur",
                         msg=u"La mise à jour n'a pas été réalisée correctement.")
 

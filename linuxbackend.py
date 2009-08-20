@@ -16,6 +16,30 @@ def get_su_command():
     else:
         return "sudo"
 
+def zenityfy(cmd, msg = []):
+    if os.path.exists("/usr/bin/zenity"):
+        logging.debug("Zenitify " + " ".join(cmd))
+        p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        if msg: msg = [ "--text", msg ]
+        p2 = subprocess.Popen([ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg, stdin=p1.stdout)
+        p2.communicate()
+    else:
+        subprocess.call(cmd)
+
+def get_distro():
+    if os.path.exists("/usr/bin/lsb_release"):
+        return (subprocess.Popen( [ 'lsb_release', '--short', '-i' ], stdout=subprocess.PIPE).communicate()[0].strip(),
+                subprocess.Popen( [ 'lsb_release', '--short', '-r' ], stdout=subprocess.PIPE).communicate()[0].strip(),
+                subprocess.Popen( [ 'lsb_release', '--short', '-c' ], stdout=subprocess.PIPE).communicate()[0].strip())
+    else:
+        return platform.dist()
+    
+    # if platform.dist()[0] == "Ubuntu" or \
+    #    (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
+    #     distro = "Ubuntu"
+    # else:
+    #     return platform.dist()[0]
+                                    
 def run_as_root(command):
     if os.geteuid() != 0:
        if os.path.exists("/usr/bin/gksudo"):
@@ -23,11 +47,15 @@ def run_as_root(command):
        elif os.path.exists("/usr/bin/kdesudo"):
            os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo" ] + command)
        else:
-           dist, version, codename = platform.dist()
+           dist, version, codename = get_distro()
            version = float(version)
-           if dist in ("fedora", "redhat") and version >= 10:
+           if dist in ("Fedora", "redhat") and version >= 10:
                if not os.path.exists("/usr/bin/beesu"):
-                   subprocess.call( [ "pkcon", "install", "beesu" ] )
+                   msg = "Veuillez patientez pendant l'installation de composants\nnécessaires au lancement d'UFO"
+                   if os.path.exists("/usr/bin/gpk-install-package-name"):
+                       zenityfy([ "/usr/bin/gpk-install-package-name", "beesu" ], msg)
+                   else:
+                       zenityfy([ "/usr/bin/pkcon", "install", "beesu" ], msg)
                if os.path.exists("/usr/bin/beesu"):
                    os.execv("/usr/bin/beesu", [ "beesu" ] + command)
            if os.isatty(0):
@@ -42,25 +70,8 @@ def run_as_root(command):
                    raise
                if graphical_ask_pass:
                    os.execv("/usr/bin/sudo", [ "sudo", "-A" ] + command)
-               else:
-                   os.execv("/usr/bin/xterm", [ "xterm", "-e", "sudo " + " ".join(command) ])
-           else:
-                   os.execv("/usr/bin/xterm", [ "xterm", "-e", "su -c " + " ".join(command) ])
+           os.execv("/usr/bin/xterm", [ "xterm", "-e", "su -c " + " ".join(command) ])
             
-def get_distro():
-    if os.path.exists("/usr/bin/lsb_release"):
-        return (subprocess.Popen( [ 'lsb_release', '--short', '-i' ], stdout=subprocess.PIPE).communicate()[0],
-                subprocess.Popen( [ 'lsb_release', '--short', '-r' ], stdout=subprocess.PIPE).communicate()[0],
-                subprocess.Popen( [ 'lsb_release', '--short', '-c' ], stdout=subprocess.PIPE).communicate()[0])
-    else:
-        return platform.dist()
-    
-    # if platform.dist()[0] == "Ubuntu" or \
-    #    (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
-    #     distro = "Ubuntu"
-    # else:
-    #     return platform.dist()[0]
-                                    
 try:
     import easygui
 except ImportError:
@@ -69,8 +80,8 @@ except ImportError:
         run_as_root([ "apt-get", "-y", "install", "python-tk" ])
         import easygui
         reload(easygui)
-    elif distro == "Fedora" or os.path.exists('/usr/bin/pkcon'):
-        subprocess.call( [ "pkcon", "install", "tkinter" ] )
+    elif distro == "fedora" or os.path.exists('/usr/bin/pkcon'):
+        zenitify([ "pkcon", "install", "tkinter" ])
         import easygui
         reload(easygui)
     else:
@@ -259,9 +270,30 @@ class LinuxBackend(Backend):
             if distro == "Ubuntu":
                 open("/etc/apt/sources.list", "a").write(
                     "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (codename.lower(),))
-                os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | sudo apt-key add -")
+                os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
                 subprocess.call([ "apt-get", "update" ])
                 subprocess.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
+            elif distro == "Fedora":
+                logging.debug("Installing Agorabox repository for VirtualBox")
+                zenityfy([ "yum", "-y", "install", "yum-priorities" ], "Installation du plugin Yum : yum-priorities")
+                subprocess.call([ "rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm" ])
+                kernel = "kernel"
+                if os.uname()[2].endswith("PAE"):
+                    kernel += "-PAE"
+                logging.debug("Kernel is: " + kernel)
+                logging.debug("Installing VirtualBox")
+                zenityfy([ "yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma" ])
+                version = commands.getoutput('rpm -q --queryformat "%{VERSION}" VirtualBox-OSE')
+                kmod_dir = "VirtualBox-OSE-kmod-" + version
+                import tempfile
+                logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,))
+                subprocess.call([ "tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,) ],
+                                cwd = tempfile.gettempdir())
+                tmpdir = tempfile.gettempdir() + "/" + kmod_dir
+                if not os.path.exists(tmpdir): os.mkdir(tmpdir)
+                ret = subprocess.call([ "make" ], cwd = tmpdir)
+                logging.debug("make returned %d", (ret,))
+                
         Backend.look_for_virtualbox(self)
 
     def create_vbox_raw_vmdk(self, vmdk, dev, parts):

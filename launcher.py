@@ -60,12 +60,15 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
             if input == "Oui":
                 # Run Updater and close launcher
                 backend.prepare_update()
-                logging.debug("Launching updater : " + backend.shadow_updater_executable + " " + ".".join(latest_version) + " " + backend.ufo_dir + " " + backend.shadow_updater_path )
+                cmd = [ backend.shadow_updater_executable,
+                        ".".join(map(str, latest_version)),
+                        backend.ufo_dir, backend.shadow_updater_path ]
+                logging.debug("Launching updater : " + " ".join(cmd))
                 # For some reason, does not work on Mac OS
                 # I get Operation not permitted
                 # os.execv(backend.shadow_updater_executable,
                 #          [backend.shadow_updater_executable, backend.ufo_dir])
-                subprocess.Popen([ backend.shadow_updater_executable, ".".join(latest_version), backend.ufo_dir, backend.shadow_updater_path ], shell=False)
+                subprocess.Popen(cmd, shell=False)
                 logging.debug("Exiting for good")
                 sys.exit(0)
             else:
@@ -74,7 +77,10 @@ if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
         sys.exit(0)
     except:
         # raise
-        logging.debug("Unexpected error: " + str(sys.exc_info()[0]))
+        import traceback
+        info = sys.exc_info()
+        logging.debug("Unexpected error: " + str(info[1]))
+        logging.debug("".join(traceback.format_tb(info[2])))
         logging.debug("Exception while updating")
 
 try:
