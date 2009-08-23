@@ -26,6 +26,7 @@ startvmkey = "STARTVM"
 vmkey = "VM"
 vmdkkey = "VMDK"
 partskey = "PARTS"
+bootfloppykey = "BOOTFLOPPY"
 bootisokey = "BOOTISO"
 nettypekey = "NETTYPE"
 hostnetkey = "HOSTNET"
@@ -55,13 +56,16 @@ useservicekey = "USESERVICE"
 createsrvskey = "CREATESRVS"
 startsrvskey = "STARTSRVS"
 uninstalldriverskey = "UNINSTALLDRIVERS"
+noupdatekey = "NOUPDATE"
+livecdkey = "LIVECD"
 
 cp = ConfigParser(defaults = { logkey : "launcher.log",
                                startvmkey : "1",
                                vmkey : "UFO",
                                vmdkkey : "ufo_key.vmdk",
                                partskey : "all",
-                               bootisokey : "UFO-VirtualBox-boot.img",
+                               bootfloppykey : "UFO-VirtualBox-boot.img",
+                               bootisokey : "",
                                swapuuid : "",
                                swapfile : "ufo_swap.vdi",
                                swapsize : "512",
@@ -88,16 +92,20 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                createsrvskey : "0",
                                startsrvskey : "0",
                                uninstalldriverskey : "0",
-                               versionkey : "0"
+                               versionkey : "0",
+                               noupdatekey : "0",
+                               livecdkey : "0"
                              })
                              
 try:
-    cp.read([path.join(SCRIPT_DIR, "settings.conf"),
+    settings = cp.read([path.join(SCRIPT_DIR, "settings.conf"),
              path.join(SCRIPT_DIR, "settings", "settings.conf"),
              path.join(SCRIPT_DIR, "..", "settings", "settings.conf")])
 except:
     print "Could not read settings.conf"
     raise
+
+print "Using configuration file:", settings[0]
 
 HOME = cp.get(globalsection, homekey)
 BIN  = cp.get(globalsection, binkey)
@@ -113,6 +121,8 @@ LOG = cp.get(launchersection, logkey)
 VERSION = cp.get(launchersection, versionkey)
 CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
+NOUPDATE = int(cp.get(launchersection, noupdatekey))
+LIVECD = int(cp.get(launchersection, livecdkey))
 
 DEV = cp.get(rawdisksection, devkey)
 PARTS = cp.get(rawdisksection, partskey)
@@ -121,6 +131,7 @@ VOLUME = cp.get(rawdisksection, volumekey)
 MODEL = cp.get(rawdisksection, modelkey)
 
 VM = cp.get(vmsection, vmkey)
+BOOTFLOPPY = cp.get(vmsection, bootfloppykey)
 BOOTISO = cp.get(vmsection, bootisokey)
 NETTYPE = int(cp.get(vmsection, nettypekey))
 HOSTNET = cp.get(vmsection, hostnetkey)

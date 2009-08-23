@@ -230,7 +230,8 @@ class VBoxConfiguration:
 
 	def set_dvd_image (self, image_name):
 		uuid = str(uuid_lib.uuid4())
-		dvds = self.xml.getElementsByTagName('Image')
+		dvdimages = self.xml.getElementsByTagName('DVDImages')[0]
+		dvds = dvdimages.getElementsByTagName('Image')
 		if len(dvds) >= 1:
 			element = dvds[0]
 			element.setAttribute('location', os.path.join(self.home_path, "Isos", image_name))

@@ -5,6 +5,10 @@ import conf
 import sys
 import os.path as path
 import tempfile
+import urllib
+from shutil import rmtree
+import socket
+import subprocess
 
 format = "%(asctime)s %(levelname)s %(message)s"
 try:
@@ -33,16 +37,11 @@ else:
 
 backend.check_process()
 
-import urllib
-from shutil import rmtree
-import socket
-import subprocess
-
 print "SCRIPT_DIR", conf.SCRIPT_DIR
 print "SCRIPT_PATH", conf.SCRIPT_PATH
 print "APP_PATH", conf.APP_PATH
 
-if not conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
+if not conf.NOUPDATE and conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
    not "--no-update" in sys.argv:
     try:
         socket.setdefaulttimeout(5)
@@ -89,5 +88,6 @@ try:
         print "Temporary settings file destroyed"
 except: pass
 
-backend.run()
+if __name__ == "__main__":
+    backend.run()
 

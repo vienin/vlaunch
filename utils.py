@@ -66,7 +66,9 @@ class Backend:
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
 
     def configure_virtual_machine(self, create_vmdk = True):
-        if not conf.VMDK and not conf.CONFIGUREVM: return
+        if not conf.VMDK and not conf.CONFIGUREVM:
+            logging.debug("Skipping configuration of the VM")
+            return
 
         virtual_box = modifyvm.VBoxConfiguration(conf.HOME, use_template = True)            
         virtual_box.set_machine(conf.VM, use_template = True)
@@ -93,7 +95,7 @@ class Backend:
                 self.kill_resilient_vbox()
 
                 uuid_line = grep(open(vmdk).read(), "ddb.uuid.image")
-                vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1 ]
+                vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1]
 
             virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
 
@@ -121,18 +123,24 @@ class Backend:
                     virtual_box.machine.set_mac_address(conf.MACADDR)
 
             # attach boot iso
-            if conf.BOOTISO:
-                logging.debug("Using boot floppy image " + conf.BOOTISO)
-                virtual_box.set_floppy_image (conf.BOOTISO)
+            if conf.BOOTFLOPPY:
+                logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
+                virtual_box.set_floppy_image (conf.BOOTFLOPPY)
                 virtual_box.machine.set_boot_device ('Floppy')
+            if conf.BOOTISO:
+                logging.debug("Using boot iso image " + conf.BOOTISO)
+                virtual_box.set_dvd_image (conf.BOOTISO)
+                if not conf.LIVECD:
+                    virtual_box.machine.set_boot_device ('DVD')
             else:
+                dvd = self.get_dvd_device()
+                logging.debug("Using dvd " + str(dvd))
+                virtual_box.machine.set_dvd_direct(dvd)
+
+            if not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")
                 virtual_box.machine.set_boot_device ('HardDisk')
             
-            dvd = self.get_dvd_device()
-            logging.debug("Using dvd " + str(dvd))
-            virtual_box.machine.set_dvd_direct(dvd)
-
             if conf.WIDTH and conf.HEIGHT:
                 resolution = str(conf.WIDTH) + "x" + str(conf.HEIGHT)
                 if conf.WIDTH == "full" and conf.HEIGHT == "full":
