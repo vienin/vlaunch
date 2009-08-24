@@ -85,7 +85,6 @@ try:
                         msg=u"Votre clé est à jour.")
 
 except:
-    print "TOTO"
     logging.debug("Exception")
     import traceback
     info = sys.exc_info()
