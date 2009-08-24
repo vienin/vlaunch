@@ -75,6 +75,10 @@ class Backend:
     
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.VMDK and create_vmdk:
+            rank = conf.DRIVERANK
+            if conf.LIVECD:
+                rank += 1
+            
             vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
             if conf.PARTS == "all":
                 logging.debug("Getting size of " + conf.DEV)
@@ -97,7 +101,7 @@ class Backend:
                 uuid_line = grep(open(vmdk).read(), "ddb.uuid.image")
                 vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1]
 
-            virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
+            virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, rank)
 
         if conf.CONFIGUREVM:
             # compute reasonable memory size
@@ -137,9 +141,13 @@ class Backend:
                 logging.debug("Using dvd " + str(dvd))
                 virtual_box.machine.set_dvd_direct(dvd)
 
-            if not conf.BOOTISO and not conf.BOOTFLOPPY:
+            if conf.LIVECD or not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")
                 virtual_box.machine.set_boot_device ('HardDisk')
+                
+            if conf.LIVECD:
+                logging.debug("Setting bootdisk for Live CD at rank %d" % (conf.DRIVERANK,))
+                virtual_box.set_vdi (conf.BOOTDISK, conf.BOOTDISKUUID, conf.DRIVERANK)
             
             if conf.WIDTH and conf.HEIGHT:
                 resolution = str(conf.WIDTH) + "x" + str(conf.HEIGHT)

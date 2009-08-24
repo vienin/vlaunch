@@ -5,15 +5,17 @@ BIN=/usr/lib/virtualbox
 [vm]
 width=full
 height=full
-bootfloppy=UFO-VirtualBox-boot.img
+BOOTISO=UFO.iso
+BOOTDISK=HardDisks/bootdisk.vdi
+BOOTDISKUUID=bed47518-6bd0-4d1c-a953-e85f41962d04
 
 [rawdisk]
 VOLUME=UFO
-PARTS=2,3,4
 
 [launcher]
+LIVECD=1
 DEBUG=0
-STARTVM=1
+STARTVM=0
 CREATESRVS=0
 STARTSRVS=0
 NEEDDEV=1

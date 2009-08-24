@@ -58,13 +58,15 @@ startsrvskey = "STARTSRVS"
 uninstalldriverskey = "UNINSTALLDRIVERS"
 noupdatekey = "NOUPDATE"
 livecdkey = "LIVECD"
+bootdiskkey = "BOOTDISK"
+bootdiskuuidkey = "BOOTDISKUUID"
 
 cp = ConfigParser(defaults = { logkey : "launcher.log",
                                startvmkey : "1",
                                vmkey : "UFO",
                                vmdkkey : "ufo_key.vmdk",
                                partskey : "all",
-                               bootfloppykey : "UFO-VirtualBox-boot.img",
+                               bootfloppykey : "",
                                bootisokey : "",
                                swapuuid : "",
                                swapfile : "ufo_swap.vdi",
@@ -94,7 +96,9 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                uninstalldriverskey : "0",
                                versionkey : "0",
                                noupdatekey : "0",
-                               livecdkey : "0"
+                               livecdkey : "0",
+                               bootdiskuuidkey : "",
+                               bootdiskkey : ""
                              })
                              
 try:
@@ -144,6 +148,8 @@ SWAPFILE  = cp.get(vmsection, swapfile)
 SWAPSIZE  = int(cp.get(vmsection, swapsize))
 OVERLAYUUID  = cp.get(vmsection, overlayuuid)
 OVERLAYFILE  = cp.get(vmsection, overlayfile)
+BOOTDISK = cp.get(vmsection, bootdiskkey)
+BOOTDISKUUID = cp.get(vmsection, bootdiskuuidkey)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)
