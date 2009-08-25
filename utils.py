@@ -1,7 +1,5 @@
 # -*- coding: iso8859-15 -*-
 
-#import modifyvm
-
 import logging
 import commands
 import glob
@@ -107,9 +105,6 @@ class Backend:
             logging.debug("Skipping configuration of the VM")
             self.vbox.close_session()
             return
-
-        #virtual_box = modifyvm.VBoxConfiguration(conf.HOME, use_template = True)            
-        #virtual_box.set_machine(conf.VM, use_template = True)
     
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.VMDK and create_vmdk:
@@ -122,7 +117,6 @@ class Backend:
                 logging.debug("Getting size of " + conf.DEV)
                 blockcount = self.get_device_size(conf.DEV)
                 logging.debug("Creating VMDK file %s with %s of size %d: " % (vmdk, conf.DEV, blockcount))
-                #vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
                 createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
 
             else:
@@ -135,67 +129,49 @@ class Backend:
                 # TODO: add this feature to createrawvmdk.createrawvmdk()
                 self.create_vbox_raw_vmdk(vmdk, conf.DEV, conf.PARTS)
 
-                #uuid_line = grep(open(vmdk).read(), "ddb.uuid.image")
-                #vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1]
-            #virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
             self.vbox.current_machine.attach_harddisk(vmdk, conf.DRIVERANK)
 
         if conf.CONFIGUREVM:
             # compute reasonable memory size
             if conf.RAMSIZE == "auto":
-                #freeram = self.get_free_ram()
                 freeram = self.vbox.host.get_free_ram()
                 conf.RAMSIZE = 2 * freeram / 3
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
-            #virtual_box.machine.set_ram_size(conf.RAMSIZE)
             self.vbox.current_machine.set_ram_size(conf.RAMSIZE)
             
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
             if conf.NETTYPE == conf.NET_NAT:
                 logging.debug(conf.SCRIPT_NAME + ": using nat networking")
-                #virtual_box.machine.set_net_adapter_to_nat()
                 self.vbox.current_machine.set_network_adapter(attach_type = 'NAT')
 
             elif conf.NETTYPE == conf.NET_HOST:
                 # setting network interface to host
                 logging.debug("Using net bridge on " + net_name)
-                #virtual_box.machine.set_net_adapter_to_host(net_name)
-                #if conf.MACADDR:
-                #    virtual_box.machine.set_mac_address(conf.MACADDR)
                 self.vbox.current_machine.set_network_adapter(attach_type = 'Bridged', mac_address = conf.MACADDR)
 
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
-                #virtual_box.set_floppy_image (conf.BOOTFLOPPY)
-                #virtual_box.machine.set_boot_device ('Floppy')
                 self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Isos", conf.BOOTFLOPPY))
                 self.vbox.current_machine.set_boot_device('Floppy') 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                #virtual_box.set_dvd_image (conf.BOOTISO)
                 self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Isos", conf.BOOTISO))
                 if not conf.LIVECD:
-                    #virtual_box.machine.set_boot_device ('DVD')
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
-                #dvd = self.get_dvd_device()
                 logging.debug("Using host dvd drive")
-                #virtual_box.machine.set_dvd_direct(dvd)
-                
                 # TODO: find host DVD drive from IHost                
                 # self.vbox.current_machine.attach_dvd(host_drive = True)
 
             if conf.LIVECD or not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")
-                #virtual_box.machine.set_boot_device ('HardDisk')
                 self.vbox.current_machine.set_boot_device('HardDisk') 
                 
             if conf.LIVECD:
                 logging.debug("Setting bootdisk for Live CD at rank %d" % (conf.DRIVERANK,))
-                #virtual_box.set_vdi (conf.BOOTDISK, conf.BOOTDISKUUID, conf.DRIVERANK)
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
                 
             if conf.WIDTH and conf.HEIGHT:
@@ -206,25 +182,17 @@ class Backend:
                     self.vbox.current_machine.set_resolution(resolution)
             
             self.vbox.current_machine.set_fullscreen()
-            #virtual_box.machine.set_logo_image(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
             self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
-
-            # manage shared folders
-            #virtual_box.machine.reset_shared_folders()
-            #virtual_box.machine.reset_share_properties()
         
             # set host home shared folder
             if not conf.USESERVICE:
                 share_name = "hosthome"
                 home_path, displayed_name = self.get_host_home()
-                #virtual_box.machine.set_shared_folder(share_name, home_path)
-                #virtual_box.machine.set_guest_property("share_" + share_name, displayed_name)
                 self.vbox.current_machine.add_shared_folder(share_name, home_path, writable = True)
                 self.vbox.current_machine.set_guest_property("share_" + share_name, displayed_name)
                 logging.debug("Setting shared folder : " + home_path + ", " + displayed_name)
                 
                 self.dnddir = tempfile.mkdtemp(suffix="ufodnd")
-                #virtual_box.machine.set_shared_folder("DnD", self.dnddir)
                 self.vbox.current_machine.add_shared_folder("DnD", self.dnddir, writable = True)
                 logging.debug("Setting shared folder : " + self.dnddir + ", DnD")
         
@@ -233,8 +201,6 @@ class Backend:
             for usb in usb_devices:
                 if usb[1] == None:
                     continue
-                #virtual_box.machine.set_shared_folder(usb[1], usb[0])
-                #virtual_box.machine.set_guest_property("share_" + str(usb[1]), usb[1])
                 self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
                 self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
                 logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
@@ -249,17 +215,14 @@ class Backend:
                 swap_rank = conf.DRIVERANK
                 shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
                 logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
-                #virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
-                #virtual_box.machine.set_guest_property("swap", swap_dev)
                 self.vbox.current_machine.set_guest_property("swap", swap_dev)
                         
                 free_size = self.get_free_size(self.tmp_swapdir)
                 if free_size:
                     swap_size = min(conf.SWAPSIZE, free_size)
-                    #virtual_box.machine.set_guest_property("swap_size", str(swap_size))
                     self.vbox.current_machine.set_guest_property("swap_size", str(swap_size))
             except:
                 logging.debug("Exception while creating swap")
@@ -273,7 +236,6 @@ class Backend:
                 overlay_rank = conf.DRIVERANK
                 shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE), path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
                 logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE) + ", " + path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
-                #virtual_box.set_vdi (path.join(self.tmp_overlaydir, conf.OVERLAYFILE), conf.OVERLAYUUID, overlay_rank)
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_overlaydir, conf.OVERLAYFILE), overlay_rank)
 
                 # TODO:
@@ -286,9 +248,6 @@ class Backend:
             except:
                 logging.debug("Exception while creating overlay")
 
-        # Write changes
-        #virtual_box.write()
-        #virtual_box.machine.write()
         self.vbox.close_session()
 
     def find_device(self):
@@ -358,8 +317,6 @@ class Backend:
                 continue
             if usb in self.usb_devices:
                 continue
-            #self.add_shared_folder(usb[1], usb[0])
-            #self.set_guest_property("share_" + str(usb[1]), usb[1])
             self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = "True")
             self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
             logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
