@@ -167,7 +167,9 @@ class VBoxHypervisor(Hypervisor):
         return 0
 
     def license_agreed(self):
-        return self.vbox.getExtraData("GUI/LicenseAgreed") == "7"
+        if self.vbox.getExtraData("GUI/LicenseAgreed"):
+            return 1
+        return 0 
 
 class VBoxMachine(VirtualMachine):
 

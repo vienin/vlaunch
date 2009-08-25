@@ -375,11 +375,11 @@ class Backend:
         self.wait_for_termination()
 
     def remove_settings_files(self):
-        #if self.vbox.license_agreed():
-        #    cp = ConfigParser()
-        #    cp.read(conf.conf_file)
-        #    cp.set("launcher", "LICENSE", "1")
-        #    cp.write(open(conf.conf_file, "w"))
+        if self.vbox.license_agreed():
+            cp = ConfigParser()
+            cp.read(conf.conf_file)
+            cp.set("launcher", "LICENSE", "1")
+            cp.write(open(conf.conf_file, "w"))
         shutil.rmtree(path.join(conf.HOME, "Machines"))
         os.unlink(path.join(conf.HOME, "VirtualBox.xml"))
 
