@@ -289,13 +289,16 @@ end timeout
         # Kill resident com server
         self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
 
-    def build_command(self):
-        if conf.STARTVM:
-            # VBoxSDL do not exist for Mac...
-            return [ path.join(conf.BIN, "VirtualBoxVM"), "-startvm", conf.VM ]
-            # return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]
-        else:
-            return [ path.join(conf.BIN, "VirtualBox") ]
+    def audio_driver(self):
+        return "CoreAudio"
+
+    def vbox_gui_command(self):
+        #if conf.STARTVM:
+        # VBoxSDL do not exist for Mac...
+        #    return [ path.join(conf.BIN, "VirtualBoxVM"), "-startvm", conf.VM ]
+        # return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]
+        #else:
+        return [ path.join(conf.BIN, "VirtualBox") ]
 
     def prepare(self):
         # Ajusting paths
@@ -323,7 +326,7 @@ end timeout
         
             self.load_kexts()
 
-    def cleanup(self, command):
+    def cleanup(self):
         if conf.MOBILE and conf.PARTS == "all":
             self.restore_fstab()
     
@@ -332,14 +335,6 @@ end timeout
         
         if conf.PARTS == "all":
             self.call([ "diskutil", "mountDisk", conf.DEV ])
-    
-        # clean host
-        command = path.basename(command[0])
-        if command.lower() != "Virtualbox".lower():
-            while True:
-                if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
-                    break
-                time.sleep(2)
 
         if conf.MOBILE and conf.PARTS == "all":
             shutil.copyfile(conf.LOG, path.join(tempfile.gettempdir(), path.basename(conf.LOG)))
@@ -351,6 +346,18 @@ end timeout
                                 os.path.join(os.environ["VBOX_USER_HOME"], "VirtualBox.xml"))
             if self.tmpdir:
                 shutil.rmtree(self.tmpdir)
+
+    def wait_for_termination(self):
+        #import thread
+        #thread.start_new_thread(self.check_usb_changes, ())
+        while wait:
+            if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
+                break
+            disks = glob.glob("/dev/disk[0-9]")
+            if self.disks != disks:
+                self.check_usb_devices()
+                self.disks = disks
+            time.sleep(2)
 
     def check_usb_changes(self):
         while True:
@@ -369,10 +376,6 @@ end timeout
             time.sleep(2)
 
     def run_vbox(self, command, env):
-        if self.splash:
-            self.splash.destroy()
-        import thread
-        thread.start_new_thread(self.check_usb_changes, ())
         self.call(command, env = env, cwd = conf.BIN)
 
     def find_resolution(self):

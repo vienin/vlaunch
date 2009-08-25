@@ -14,7 +14,6 @@ BuildRequires:	python /usr/bin/VirtualBox
 Requires:       kernel-vbox python-augeas
 
 %define TARGET_PATH /media/UFO
-%define VM_NAME UFO
 %define OVERLAY_DEV_UUID b07ac827-ce0c-4741-ae81-1f234377b4b5
 %define OVERLAY_DEV_TYPE ext4-no_journal-no_huge_files
 
@@ -102,7 +101,7 @@ make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH} VM_NAME=%{VM_NAME}
+make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH}
 
 
 %post guest
@@ -135,9 +134,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/settings
 %dir %{TARGET_PATH}/Windows/logs
 %{TARGET_PATH}/Windows/.VirtualBox/HardDisks
-%{TARGET_PATH}/Windows/.VirtualBox/Machines
 %{TARGET_PATH}/Windows/.VirtualBox/Isos
-%{TARGET_PATH}/Windows/.VirtualBox/VirtualBox.xml
 %{TARGET_PATH}/Windows/.VirtualBox/updater-download.gif
 %{TARGET_PATH}/Windows/.VirtualBox/updater-install.gif
 
@@ -155,9 +152,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/__error__.sh
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Machines
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/VirtualBox.xml
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/ufo-updater.app
@@ -168,9 +163,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Linux/settings
 %dir %{TARGET_PATH}/Linux/logs
 %{TARGET_PATH}/Linux/.VirtualBox/HardDisks
-%{TARGET_PATH}/Linux/.VirtualBox/Machines
 %{TARGET_PATH}/Linux/.VirtualBox/Isos
-%{TARGET_PATH}/Linux/.VirtualBox/VirtualBox.xml
 %{TARGET_PATH}/Linux/.VirtualBox/updater-download.gif
 %{TARGET_PATH}/Linux/.VirtualBox/updater-install.gif
 

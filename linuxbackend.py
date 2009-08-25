@@ -108,12 +108,17 @@ class LinuxBackend(Backend):
     def __init__(self):
         Backend.__init__(self)
         self.terminated = False
+        self.splash = None
         self.tk = Tkinter.Tk()
         self.tk.withdraw()
 
     def check_process(self):
+        #self.call("ls", env = os.environ)
         logging.debug("Checking process")
-        processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'").split("\n")
+        p1 = subprocess.Popen(["ps", "ax", "-o", "pid,command"], stdout=subprocess.PIPE)
+        p2 = subprocess.Popen(["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"], stdin=p1.stdout, stdout=subprocess.PIPE)
+        processes = p2.communicate()[0]
+        #processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'").split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
@@ -204,15 +209,18 @@ class LinuxBackend(Backend):
             return commands.getoutput('/usr/bin/xrandr | grep "*"').split()[0]
         return ""
 
-    def build_command(self):
-        if conf.STARTVM:
-            if conf.KIOSKMODE:
-                return [ path.join(conf.BIN, "VBoxSDL"),  "-vm", conf.VM, "-termacpi", "-fullscreen",
-                      "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys",  "fnpqrs" ]
-            else:
-                return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]
-        else:
-            return [ path.join(conf.BIN, "VirtualBox") ]
+    def audio_driver(self):
+        return "Pulse"
+
+    def vbox_gui_command(self):
+        #if conf.STARTVM:
+        #    if conf.KIOSKMODE:
+        #        return [ path.join(conf.BIN, "VBoxSDL"),  "-vm", conf.VM, "-termacpi", "-fullscreen",
+        #              "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys",  "fnpqrs" ]
+        #    else:
+        #        return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]
+        #else:
+        return [ path.join(conf.BIN, "VirtualBox") ]
 
     def dialog_info(self, title, msg):
         easygui.msgbox(msg=msg, title=title)
@@ -227,12 +235,13 @@ class LinuxBackend(Backend):
             sys.exit(0)
 
     def prepare(self):
+        self.call("ls")
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
         run_as_root([ sys.executable ] + sys.argv + [ "--no-update" ])
                                              
-    def cleanup(self, command):
+    def cleanup(self):
         pass
 
     def kill_resilient_vbox(self):
@@ -256,7 +265,6 @@ class LinuxBackend(Backend):
         # For some reason, it doesn't work with 'call'
         cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + " ".join(command)
         os.system(cmd)
-        self.wait_for_termination()
         
     def get_free_size(self, path):
         stats = os.statvfs(path)

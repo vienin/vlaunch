@@ -1,5 +1,7 @@
 # -*- coding: iso8859-15 -*-
 
+#import modifyvm
+
 import logging
 import commands
 import glob
@@ -7,7 +9,6 @@ import shutil
 import os, os.path as path
 import sys
 import subprocess
-import modifyvm
 import createrawvmdk
 import os
 import conf
@@ -16,6 +17,8 @@ import tempfile
 from utils import *
 import uuid
 from splash import SplashScreen
+from ConfigParser import ConfigParser
+from ufovboxapi import VBoxHypervisor
 
 def grep(input, pattern, inverse=False):
     for line in input.split("\n"):
@@ -44,6 +47,12 @@ class Backend:
         self.puel = False
         self.do_not_update = False
 
+        # redirect VBOX HOME directory
+        os.environ.update({ "VBOX_USER_HOME" : conf.HOME, "VBOX_PROGRAM_PATH" : conf.BIN })
+        self.env = env = os.environ.copy()
+
+        self.vbox = VBoxHypervisor()
+
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
         if output:
@@ -65,13 +74,42 @@ class Backend:
         vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
 
+    def create_virtual_machine(self, create_vmdk = True):
+        self.vbox.create_machine(conf.VM, conf.OS)
+        self.vbox.open_machine(conf.VM)
+
+        self.vbox.current_machine.set_bios_params(acpi_enabled = True, ioapic_enabled = True)
+        self.vbox.current_machine.set_vram_size(32)
+        self.vbox.current_machine.set_network_adapter(adapter_type = "I82540EM")
+        self.vbox.current_machine.disable_boot_menu()
+        self.vbox.current_machine.set_audio_adapter(self.audio_driver())
+        
+        if conf.LICENSE == 1:
+            self.vbox.set_extra_data("GUI/LicenseAgreed", "7")
+
+        self.vbox.set_extra_data("GUI/MaxGuestResolution", "any")
+        self.vbox.set_extra_data("GUI/Input/AutoCapture", "true")
+        self.vbox.set_extra_data("GUI/TrayIcon/Enabled", "false")
+        self.vbox.set_extra_data("GUI/UpdateCheckCount", "2")
+        self.vbox.set_extra_data("GUI/UpdateDate", "never")
+        self.vbox.set_extra_data("GUI/SuppressMessages", ",remindAboutAutoCapture,confirmInputCapture," + 
+                                 "remindAboutMouseIntegrationOn,remindAboutMouseIntegrationOff," + 
+                                 "remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen")
+
+        self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
+        self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
+        self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
+        self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
+        self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
+
     def configure_virtual_machine(self, create_vmdk = True):
         if not conf.VMDK and not conf.CONFIGUREVM:
             logging.debug("Skipping configuration of the VM")
+            self.vbox.close_session()
             return
 
-        virtual_box = modifyvm.VBoxConfiguration(conf.HOME, use_template = True)            
-        virtual_box.set_machine(conf.VM, use_template = True)
+        #virtual_box = modifyvm.VBoxConfiguration(conf.HOME, use_template = True)            
+        #virtual_box.set_machine(conf.VM, use_template = True)
     
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.VMDK and create_vmdk:
@@ -84,7 +122,8 @@ class Backend:
                 logging.debug("Getting size of " + conf.DEV)
                 blockcount = self.get_device_size(conf.DEV)
                 logging.debug("Creating VMDK file %s with %s of size %d: " % (vmdk, conf.DEV, blockcount))
-                vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
+                #vmdk_uuid = createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
+                createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount)
 
             else:
                 logging.debug("Creating vbox VMDK file %s with %s, partitions %s: " % (vmdk, conf.DEV, conf.PARTS))
@@ -93,86 +132,100 @@ class Backend:
                 if os.path.exists(vmdk[:len(vmdk) - 5] + "-pt.vmdk"):
                     os.unlink(vmdk[:len(vmdk) - 5] + "-pt.vmdk")
 
+                # TODO: add this feature to createrawvmdk.createrawvmdk()
                 self.create_vbox_raw_vmdk(vmdk, conf.DEV, conf.PARTS)
 
-                logging.debug("Killing resilient VirtualBox")
-                self.kill_resilient_vbox()
-
-                uuid_line = grep(open(vmdk).read(), "ddb.uuid.image")
-                vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1]
-
-            virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, rank)
+                #uuid_line = grep(open(vmdk).read(), "ddb.uuid.image")
+                #vmdk_uuid = uuid_line[len("ddb.uuid.image= "):len(uuid_line) -1]
+            #virtual_box.set_raw_vmdk(conf.VMDK, vmdk_uuid, conf.DRIVERANK)
+            self.vbox.current_machine.attach_harddisk(vmdk, conf.DRIVERANK)
 
         if conf.CONFIGUREVM:
             # compute reasonable memory size
             if conf.RAMSIZE == "auto":
-                freeram = self.get_free_ram()
+                #freeram = self.get_free_ram()
+                freeram = self.vbox.host.get_free_ram()
                 conf.RAMSIZE = 2 * freeram / 3
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
-            virtual_box.machine.set_ram_size(conf.RAMSIZE)
+            #virtual_box.machine.set_ram_size(conf.RAMSIZE)
+            self.vbox.current_machine.set_ram_size(conf.RAMSIZE)
             
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
-
             if conf.NETTYPE == conf.NET_NAT:
                 logging.debug(conf.SCRIPT_NAME + ": using nat networking")
-                virtual_box.machine.set_net_adapter_to_nat()
+                #virtual_box.machine.set_net_adapter_to_nat()
+                self.vbox.current_machine.set_network_adapter(attach_type = 'NAT')
 
             elif conf.NETTYPE == conf.NET_HOST:
                 # setting network interface to host
                 logging.debug("Using net bridge on " + net_name)
-                virtual_box.machine.set_net_adapter_to_host(net_name)
-                if conf.MACADDR:
-                    virtual_box.machine.set_mac_address(conf.MACADDR)
+                #virtual_box.machine.set_net_adapter_to_host(net_name)
+                #if conf.MACADDR:
+                #    virtual_box.machine.set_mac_address(conf.MACADDR)
+                self.vbox.current_machine.set_network_adapter(attach_type = 'Bridged', mac_address = conf.MACADDR)
 
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
-                virtual_box.set_floppy_image (conf.BOOTFLOPPY)
-                virtual_box.machine.set_boot_device ('Floppy')
+                #virtual_box.set_floppy_image (conf.BOOTFLOPPY)
+                #virtual_box.machine.set_boot_device ('Floppy')
+                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Isos", conf.BOOTFLOPPY))
+                self.vbox.current_machine.set_boot_device('Floppy') 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                virtual_box.set_dvd_image (conf.BOOTISO)
+                #virtual_box.set_dvd_image (conf.BOOTISO)
+                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Isos", conf.BOOTISO))
                 if not conf.LIVECD:
-                    virtual_box.machine.set_boot_device ('DVD')
+                    #virtual_box.machine.set_boot_device ('DVD')
+                    self.vbox.current_machine.set_boot_device('DVD') 
             else:
-                dvd = self.get_dvd_device()
-                logging.debug("Using dvd " + str(dvd))
-                virtual_box.machine.set_dvd_direct(dvd)
+                #dvd = self.get_dvd_device()
+                logging.debug("Using host dvd drive")
+                #virtual_box.machine.set_dvd_direct(dvd)
+                
+                # TODO: find host DVD drive from IHost                
+                # self.vbox.current_machine.attach_dvd(host_drive = True)
 
             if conf.LIVECD or not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")
-                virtual_box.machine.set_boot_device ('HardDisk')
+                #virtual_box.machine.set_boot_device ('HardDisk')
+                self.vbox.current_machine.set_boot_device('HardDisk') 
                 
             if conf.LIVECD:
                 logging.debug("Setting bootdisk for Live CD at rank %d" % (conf.DRIVERANK,))
-                virtual_box.set_vdi (conf.BOOTDISK, conf.BOOTDISKUUID, conf.DRIVERANK)
-            
+                #virtual_box.set_vdi (conf.BOOTDISK, conf.BOOTDISKUUID, conf.DRIVERANK)
+                self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
+                
             if conf.WIDTH and conf.HEIGHT:
                 resolution = str(conf.WIDTH) + "x" + str(conf.HEIGHT)
                 if conf.WIDTH == "full" and conf.HEIGHT == "full":
                     resolution = self.find_resolution()
                 if resolution != "":
-                    virtual_box.machine.set_resolution(resolution)
+                    self.vbox.current_machine.set_resolution(resolution)
             
-            virtual_box.machine.set_fullscreen()
-            virtual_box.machine.set_logo_image(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
+            self.vbox.current_machine.set_fullscreen()
+            #virtual_box.machine.set_logo_image(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
+            self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
 
             # manage shared folders
-            virtual_box.machine.reset_shared_folders()
-            virtual_box.machine.reset_share_properties()
+            #virtual_box.machine.reset_shared_folders()
+            #virtual_box.machine.reset_share_properties()
         
             # set host home shared folder
             if not conf.USESERVICE:
                 share_name = "hosthome"
                 home_path, displayed_name = self.get_host_home()
-                virtual_box.machine.set_shared_folder(share_name, home_path)
-                virtual_box.machine.set_guest_property("share_" + share_name, displayed_name)
+                #virtual_box.machine.set_shared_folder(share_name, home_path)
+                #virtual_box.machine.set_guest_property("share_" + share_name, displayed_name)
+                self.vbox.current_machine.add_shared_folder(share_name, home_path, writable = True)
+                self.vbox.current_machine.set_guest_property("share_" + share_name, displayed_name)
                 logging.debug("Setting shared folder : " + home_path + ", " + displayed_name)
                 
                 self.dnddir = tempfile.mkdtemp(suffix="ufodnd")
-                virtual_box.machine.set_shared_folder("DnD", self.dnddir)
+                #virtual_box.machine.set_shared_folder("DnD", self.dnddir)
+                self.vbox.current_machine.add_shared_folder("DnD", self.dnddir, writable = True)
                 logging.debug("Setting shared folder : " + self.dnddir + ", DnD")
         
             # set removable media shared folders
@@ -180,13 +233,15 @@ class Backend:
             for usb in usb_devices:
                 if usb[1] == None:
                     continue
-                virtual_box.machine.set_shared_folder(usb[1], usb[0])
-                virtual_box.machine.set_guest_property("share_" + str(usb[1]), usb[1])
+                #virtual_box.machine.set_shared_folder(usb[1], usb[0])
+                #virtual_box.machine.set_guest_property("share_" + str(usb[1]), usb[1])
+                self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
+                self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
                 logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
             self.usb_devices = usb_devices
 
-        logging.debug("conf.SWAPFILE: " + conf.SWAPFILE + ", conf.SWAPUUID: " + conf.SWAPUUID)
-        if conf.SWAPFILE and conf.SWAPUUID:
+        logging.debug("conf.SWAPFILE: " + conf.SWAPFILE)
+        if conf.SWAPFILE:
             try:
                 self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
                 logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
@@ -194,20 +249,23 @@ class Backend:
                 swap_rank = conf.DRIVERANK
                 shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
                 logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
-                virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
-            
+                #virtual_box.set_vdi (path.join(self.tmp_swapdir, conf.SWAPFILE), conf.SWAPUUID, swap_rank)
+                self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
+
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
-                virtual_box.machine.set_guest_property("swap", swap_dev)
+                #virtual_box.machine.set_guest_property("swap", swap_dev)
+                self.vbox.current_machine.set_guest_property("swap", swap_dev)
                         
                 free_size = self.get_free_size(self.tmp_swapdir)
                 if free_size:
                     swap_size = min(conf.SWAPSIZE, free_size)
-                    virtual_box.machine.set_guest_property("swap_size", str(swap_size))
+                    #virtual_box.machine.set_guest_property("swap_size", str(swap_size))
+                    self.vbox.current_machine.set_guest_property("swap_size", str(swap_size))
             except:
                 logging.debug("Exception while creating swap")
         
-        logging.debug("conf.OVERLAYFILE: " + conf.OVERLAYFILE + ", conf.OVERLAYUUID: " + conf.OVERLAYUUID)
-        if conf.OVERLAYFILE and conf.OVERLAYUUID:
+        logging.debug("conf.OVERLAYFILE: " + conf.OVERLAYFILE)
+        if conf.OVERLAYFILE:
             try:
                 self.tmp_overlaydir = tempfile.mkdtemp(suffix="ufo-overlay")
                 logging.debug("self.tmp_overlaydir = " + self.tmp_overlaydir);
@@ -215,7 +273,8 @@ class Backend:
                 overlay_rank = conf.DRIVERANK
                 shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE), path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
                 logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE) + ", " + path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
-                virtual_box.set_vdi (path.join(self.tmp_overlaydir, conf.OVERLAYFILE), conf.OVERLAYUUID, overlay_rank)
+                #virtual_box.set_vdi (path.join(self.tmp_overlaydir, conf.OVERLAYFILE), conf.OVERLAYUUID, overlay_rank)
+                self.vbox.current_machine.attach_harddisk(path.join(self.tmp_overlaydir, conf.OVERLAYFILE), overlay_rank)
 
                 # TODO:
                 # Set guest prop about max size of the overlay to 
@@ -228,8 +287,9 @@ class Backend:
                 logging.debug("Exception while creating overlay")
 
         # Write changes
-        virtual_box.write()
-        virtual_box.machine.write()
+        #virtual_box.write()
+        #virtual_box.machine.write()
+        self.vbox.close_session()
 
     def find_device(self):
         found = 0
@@ -279,14 +339,6 @@ class Backend:
     
         return conf.STATUS_EXIT
 
-    def add_shared_folder(self, share_name, host_path):
-        self.call([ path.join(conf.BIN, "VBoxManage"), "sharedfolder", "add", conf.VM,
-                     "--name", share_name, "--hostpath", host_path, "--transient" ], env = self.env)
-                     
-    def set_guest_property(self, name, value):
-        self.call([ path.join(conf.BIN, "VBoxManage"), "guestproperty", "set", conf.VM,
-                     name, value ], env = self.env)
-
     def look_for_virtualbox(self):
         # check virtualbox binaries
         logging.debug("Checking VirtualBox binaries")
@@ -306,36 +358,45 @@ class Backend:
                 continue
             if usb in self.usb_devices:
                 continue
-            self.add_shared_folder(usb[1], usb[0])
-            self.set_guest_property("share_" + str(usb[1]), usb[1])
+            #self.add_shared_folder(usb[1], usb[0])
+            #self.set_guest_property("share_" + str(usb[1]), usb[1])
+            self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = "True")
+            self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
             logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
         self.usb_devices = usb_devices
+
+    def run_virtual_machine(self, env):
+        if self.splash:
+            self.splash.destroy()
+        if conf.STARTVM:
+            self.vbox.current_machine.start()
+        else:
+            self.run_vbox(self.vbox_gui_command(), env)
+        self.wait_for_termination()
+
+    def remove_settings_files(self):
+        #if self.vbox.license_agreed():
+        #    cp = ConfigParser()
+        #    cp.read(conf.conf_file)
+        #    cp.set("launcher", "LICENSE", "1")
+        #    cp.write(open(conf.conf_file, "w"))
+        shutil.rmtree(path.join(conf.HOME, "Machines"))
+        os.unlink(path.join(conf.HOME, "VirtualBox.xml"))
 
     def run(self):
         if not path.isabs(conf.HOME):
             conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
-    
+
         if not path.isabs(conf.BIN):
             conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
 
+        logging.debug("Preparing environment")
         logging.debug("APP path: " + conf.APP_PATH)
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
-
-        logging.debug("Killing resilient VirtualBox")
-        self.kill_resilient_vbox()
-
-        logging.debug("Preparing environment")
         self.prepare()
 
         self.look_for_virtualbox()
-
-        # redirect VBOX HOME directory
-        self.env = env = os.environ.copy()
-        env.update({ "VBOX_USER_HOME" : conf.HOME, "VBOX_PROGRAM_PATH" : conf.BIN })
-
-        command = self.build_command()
-        logging.debug("preparing to spawn command: " + " ".join(command) + " with environment " + str(env))
 
         # generate raw vmdk for usb key
         create_vmdk = False
@@ -358,14 +419,18 @@ class Backend:
             sys.exit(1)
 
         logging.debug("Configuring Virtual Machine")
+        self.create_virtual_machine()
+
+        logging.debug("Configuring Virtual Machine")
         self.configure_virtual_machine(create_vmdk = create_vmdk)
 
         # launch vm
         logging.debug("Launching Virtual Machine")
-        self.run_vbox(command, env)
+        self.run_virtual_machine(self.env)
 
         logging.debug("Clean up")
-        self.cleanup(command)
+        self.remove_settings_files()
+        self.cleanup()
 
         if self.dnddir:
             shutil.rmtree(self.dnddir)

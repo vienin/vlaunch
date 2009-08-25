@@ -19,7 +19,7 @@ def set_xml_attr (xmlfile, element, attr, value):
 usage = "%prog -v vm_name -o vbox_user_home (full path) [ -s WIN|MAC ][ -f virtual_disk_file -t virtual_disk_format (VDI|VMDK)]"
 description = "Create a virtual box user home with specified vm"
 version="%prog 0.1"
-    
+
 # Define options
 parser = OptionParser(usage=usage, description=description, version=version)
 parser.add_option("-o", "--vbox-user-home", dest="home", default="",
@@ -32,8 +32,8 @@ parser.add_option("-t", "--disk-format", dest="type", default="VMDK",
                   help="virtual disk format")
 parser.add_option("-s", "--os", dest="os", default="LIN",
                   help="target os type") 
-(options, args) = parser.parse_args()		
-		  
+(options, args) = parser.parse_args()
+
 if options.vm == "" or options.home == "":
 	parser.error("You must specify a vbox uer home and the machine name")
 

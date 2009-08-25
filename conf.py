@@ -2,7 +2,7 @@ import os, os.path as path, sys
 from ConfigParser import ConfigParser
 
 SCRIPT_PATH = path.realpath(sys.argv[0])
-SCRIPT_DIR = path.dirname(path.realpath(sys.argv[0]))
+SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 SCRIPT_NAME = path.basename(sys.argv[0])
 
 APP_PATH = SCRIPT_DIR
@@ -24,6 +24,7 @@ rawdisksection = "rawdisk"
 vmsection = "vm"
 startvmkey = "STARTVM"
 vmkey = "VM"
+oskey = "OS"
 vmdkkey = "VMDK"
 partskey = "PARTS"
 bootfloppykey = "BOOTFLOPPY"
@@ -37,10 +38,8 @@ widthkey = "WIDTH"
 heightkey = "HEIGHT"
 driverankkey = "DRIVERANK"
 swapfile = "SWAPFILE"
-swapuuid = "SWAPUUID"
 swapsize = "SWAPSIZE"
 overlayfile = "OVERLAYFILE"
-overlayuuid = "OVERLAYUUID"
 needdevkey = "NEEDDEV"
 debugkey = "DEBUG"
 devkey = "DEV"
@@ -49,6 +48,7 @@ rootuuidkey = "ROOTUUID"
 volumekey = "VOLUME"
 logkey = "LOG"
 versionkey = "VERSION"
+licensekey = "LICENSE"
 configurevmkey = "CONFIGUREVM"
 homekey = "HOME"
 binkey = "BIN"
@@ -64,15 +64,14 @@ bootdiskuuidkey = "BOOTDISKUUID"
 cp = ConfigParser(defaults = { logkey : "launcher.log",
                                startvmkey : "1",
                                vmkey : "UFO",
+                               oskey : "Fedora",
                                vmdkkey : "ufo_key.vmdk",
                                partskey : "all",
                                bootfloppykey : "",
                                bootisokey : "",
-                               swapuuid : "",
                                swapfile : "ufo_swap.vdi",
                                swapsize : "512",
                                overlayfile : "ufo_overlay.vdi",
-                               overlayuuid : "",
                                nettypekey : "2",
                                hostnetkey : "",
                                macaddrkey : "",
@@ -95,6 +94,7 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                startsrvskey : "0",
                                uninstalldriverskey : "0",
                                versionkey : "0",
+                               licensekey : "0",
                                noupdatekey : "0",
                                livecdkey : "0",
                                bootdiskuuidkey : "",
@@ -105,11 +105,12 @@ try:
     settings = cp.read([path.join(SCRIPT_DIR, "settings.conf"),
              path.join(SCRIPT_DIR, "settings", "settings.conf"),
              path.join(SCRIPT_DIR, "..", "settings", "settings.conf")])
+    conf_file = settings[0]
 except:
     print "Could not read settings.conf"
     raise
 
-print "Using configuration file:", settings[0]
+print "Using configuration file:", conf_file
 
 HOME = cp.get(globalsection, homekey)
 BIN  = cp.get(globalsection, binkey)
@@ -123,6 +124,7 @@ NEEDDEV = int(cp.get(launchersection, needdevkey))
 DEBUG = int(cp.get(launchersection, debugkey))
 LOG = cp.get(launchersection, logkey)
 VERSION = cp.get(launchersection, versionkey)
+LICENSE = int(cp.get(launchersection, licensekey))
 CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 NOUPDATE = int(cp.get(launchersection, noupdatekey))
@@ -135,6 +137,7 @@ VOLUME = cp.get(rawdisksection, volumekey)
 MODEL = cp.get(rawdisksection, modelkey)
 
 VM = cp.get(vmsection, vmkey)
+OS = cp.get(vmsection, oskey)
 BOOTFLOPPY = cp.get(vmsection, bootfloppykey)
 BOOTISO = cp.get(vmsection, bootisokey)
 NETTYPE = int(cp.get(vmsection, nettypekey))
@@ -143,10 +146,8 @@ MACADDR = cp.get(vmsection, macaddrkey)
 RAMSIZE = cp.get(vmsection, ramsizekey)
 KIOSKMODE = int(cp.get(vmsection, kioskmodekey))
 DRIVERANK = int(cp.get(vmsection, driverankkey))
-SWAPUUID  = cp.get(vmsection, swapuuid)
 SWAPFILE  = cp.get(vmsection, swapfile)
 SWAPSIZE  = int(cp.get(vmsection, swapsize))
-OVERLAYUUID  = cp.get(vmsection, overlayuuid)
 OVERLAYFILE  = cp.get(vmsection, overlayfile)
 BOOTDISK = cp.get(vmsection, bootdiskkey)
 BOOTDISKUUID = cp.get(vmsection, bootdiskuuidkey)

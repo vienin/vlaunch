@@ -60,15 +60,19 @@ class WindowsBackend(Backend):
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
         return Backend.call(self, cmd, env, shell, cwd, output)
 
-    def build_command(self):
-        if conf.STARTVM:
-            if conf.KIOSKMODE:
-                command = [ path.join(conf.BIN, "VBoxSDL.exe"), "-vm", conf.VM, "-termacpi", "-fullscreen", "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys", "fnpqrs" ]
-            else:
-                command = [ path.join(conf.BIN, "VBoxManage.exe"), "startvm", conf.VM ]
-        else:
-            command = [ path.join(conf.BIN, "VirtualBox.exe") ]
-        return command
+    def audio_driver(self):
+        return "DirectSound"
+
+    def vbox_gui_command(self):
+        #if conf.STARTVM:
+        #    if conf.KIOSKMODE:
+        #        command = [ path.join(conf.BIN, "VBoxSDL.exe"), "-vm", conf.VM, "-termacpi", "-fullscreen", "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys", "fnpqrs" ]
+        #    else:
+        #        command = [ path.join(conf.BIN, "VBoxManage.exe"), "startvm", conf.VM ]
+        #else:
+        #    command = [ path.join(conf.BIN, "VirtualBox.exe") ]
+        #return command
+        return [ path.join(conf.BIN, "VirtualBox.exe") ]
 
     def start_services(self):
         if conf.CREATESRVS:
@@ -153,7 +157,7 @@ class WindowsBackend(Backend):
             processes = self.WMI.Win32_Process(name=process)
             self.check_usb_devices()
 
-    def processes_wait_close(self):
+    def wait_for_termination(self):
         self.process_wait_close("VBoxSDL.exe")
         self.process_wait_close("VirtualBox.exe")
         self.process_wait_close("VBoxManage.exe")
@@ -335,8 +339,7 @@ class WindowsBackend(Backend):
             logging.debug("Insufficient rights")
             self.rights_error()
 
-    def cleanup(self, command):
-        self.processes_wait_close()
+    def cleanup(self):
         self.stop_services()
         if conf.NETTYPE == conf.NET_HOST and not conf.VBOX_INSTALLED and conf.UNINSTALLDRIVERS:
             self.call(["regsvr32.exe", "/S", "/U", path.join(self.systemdir, "VBoxNetFltNotify.dll")])
@@ -346,8 +349,6 @@ class WindowsBackend(Backend):
             # os.unlink(path.join(self.systemdir, "drivers", "VBoxNetFlt.sys"))
 
     def run_vbox(self, command, env):
-        if self.splash:
-            self.splash.destroy()
         self.call(command, env = env, shell=True)
         
     def get_free_size(self, path):
