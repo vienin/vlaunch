@@ -80,7 +80,7 @@ class Backend:
         self.vbox.current_machine.set_vram_size(32)
         self.vbox.current_machine.set_network_adapter(adapter_type = "I82540EM")
         self.vbox.current_machine.disable_boot_menu()
-        self.vbox.current_machine.set_audio_adapter(self.audio_driver())
+        self.vbox.current_machine.set_audio_adapter(self.HOST_AUDIO_DRIVER)
         
         if conf.LICENSE == 1:
             self.vbox.set_extra_data("GUI/LicenseAgreed", "7")
@@ -113,6 +113,8 @@ class Backend:
                 rank += 1
             
             vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
+            if os.path.exists(vmdk):
+                    os.unlink(vmdk)
             if conf.PARTS == "all":
                 logging.debug("Getting size of " + conf.DEV)
                 blockcount = self.get_device_size(conf.DEV)
@@ -121,13 +123,14 @@ class Backend:
 
             else:
                 logging.debug("Creating vbox VMDK file %s with %s, partitions %s: " % (vmdk, conf.DEV, conf.PARTS))
-                if os.path.exists(vmdk):
-                    os.unlink(vmdk)
                 if os.path.exists(vmdk[:len(vmdk) - 5] + "-pt.vmdk"):
                     os.unlink(vmdk[:len(vmdk) - 5] + "-pt.vmdk")
 
-                # TODO: add this feature to createrawvmdk.createrawvmdk()
-                self.create_vbox_raw_vmdk(vmdk, conf.DEV, conf.PARTS)
+                device_parts = self.get_device_parts(conf.DEV)
+                for current_part in device_parts:
+                    device_parts.get(current_part).append(str(current_part) in conf.PARTS.split(','))
+                blockcount = self.get_device_size(conf.DEV)
+                createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, device_parts, self.RELATIVE_VMDK_POLICY)
 
             self.vbox.current_machine.attach_harddisk(vmdk, conf.DRIVERANK)
 
@@ -328,7 +331,7 @@ class Backend:
         if conf.STARTVM:
             self.vbox.current_machine.start()
         else:
-            self.run_vbox(self.vbox_gui_command(), env)
+            self.run_vbox(path.join(conf.BIN, "VirtualBox"), env)
         self.wait_for_termination()
 
     def remove_settings_files(self):

@@ -23,6 +23,10 @@ from shutil import copyfile, copytree
 class WindowsBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage.exe"
     VIRTUALBOX_EXECUTABLE = "VirtualBox.exe"
+
+    HOST_AUDIO_DRIVER = "DirectSound"
+
+    RELATIVE_VMDK_POLICY = False
     systemdir = win32api.GetSystemDirectory ()
 
     def __init__(self):
@@ -59,20 +63,6 @@ class WindowsBackend(Backend):
 
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
         return Backend.call(self, cmd, env, shell, cwd, output)
-
-    def audio_driver(self):
-        return "DirectSound"
-
-    def vbox_gui_command(self):
-        #if conf.STARTVM:
-        #    if conf.KIOSKMODE:
-        #        command = [ path.join(conf.BIN, "VBoxSDL.exe"), "-vm", conf.VM, "-termacpi", "-fullscreen", "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys", "fnpqrs" ]
-        #    else:
-        #        command = [ path.join(conf.BIN, "VBoxManage.exe"), "startvm", conf.VM ]
-        #else:
-        #    command = [ path.join(conf.BIN, "VirtualBox.exe") ]
-        #return command
-        return [ path.join(conf.BIN, "VirtualBox.exe") ]
 
     def start_services(self):
         if conf.CREATESRVS:
@@ -189,7 +179,22 @@ class WindowsBackend(Backend):
 
     def find_device_by_uuid(self, dev_uuid):
         return ""
-    
+
+    def get_device_parts(self, device_name):
+        disks = self.WMI.Win32_DiskDrive(Name = device_name)
+        if not disks:
+            return {}
+        
+        partitions = disks[0].associators(wmi_association_class="Win32_LogicalDiskToPartition")
+        if not partitions:
+            return {}
+
+        device_parts = {}
+        for part in partitions:
+            part_info = [ device_name, part.NumberOfBlocks ]
+            device_parts.update({ part.Index : part_info })
+        return device_parts
+
     def find_device_by_volume(self, dev_volume):
         logical_disks = self.WMI.Win32_LogicalDisk (VolumeName = dev_volume)
         if not logical_disks:
@@ -223,7 +228,9 @@ class WindowsBackend(Backend):
     def dialog_info(self, msg, title):
         win32gui.MessageBox(None, msg, title, win32con.MB_OK)
 
-    def get_device_size(self, name):
+    def get_device_size(self, name, partition = 0):
+        assert partition == 0
+
         import win32file
         import win32con
         import winioctlcon
@@ -357,8 +364,4 @@ class WindowsBackend(Backend):
             return ""
 
         return int(logical_disks[0].FreeSpace) / 1000000
-
-    def create_vbox_raw_vmdk(self, vmdk, dev, parts):
-        return self.call([ path.join(conf.BIN, "VBoxManage"), "-nologo", "internalcommands", "createrawvmdk", "-filename", 
-                    vmdk, "-rawdisk",  dev, "-partitions", parts], env = self.env)
 

@@ -105,6 +105,10 @@ class LinuxBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
 
+    HOST_AUDIO_DRIVER = "Pulse"
+
+    RELATIVE_VMDK_POLICY = True
+
     def __init__(self):
         Backend.__init__(self)
         self.terminated = False
@@ -166,9 +170,21 @@ class LinuxBackend(Backend):
     def prepare_device(self, disk):
         self.call([ "umount", disk + "3" ])
         self.call([ "umount", disk + "4" ])
+    
+    def get_device_parts(self, dev):
+        parts = glob.glob(dev + '[0-9]')
+        device_parts = {}
+        for part in parts:
+            part_number = int(part[len(part)-1:])
+            part_info = [ part, self.get_device_size(dev, part_number) ]
+            device_parts.update({ part_number : part_info })
+        return device_parts
 
-    def get_device_size(self, dev):
-        return int(open(path.join("/", "sys", "block", path.basename(dev), "size")).read())
+    def get_device_size(self, dev, partition = 0):
+        if partition > 0:
+            return int(open(path.join("/", "sys", "block", path.basename(dev), path.basename(dev) + str(partition), "size")).read())
+        else:
+            return int(open(path.join("/", "sys", "block", path.basename(dev), "size")).read())
 
     def find_network_device(self):
         if conf.NETTYPE == conf.NET_HOST and conf.HOSTNET != "":
@@ -209,19 +225,6 @@ class LinuxBackend(Backend):
             return commands.getoutput('/usr/bin/xrandr | grep "*"').split()[0]
         return ""
 
-    def audio_driver(self):
-        return "Pulse"
-
-    def vbox_gui_command(self):
-        #if conf.STARTVM:
-        #    if conf.KIOSKMODE:
-        #        return [ path.join(conf.BIN, "VBoxSDL"),  "-vm", conf.VM, "-termacpi", "-fullscreen",
-        #              "-fullscreenresize", "-nofstoggle", "-noresize", "-nohostkeys",  "fnpqrs" ]
-        #    else:
-        #        return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]
-        #else:
-        return [ path.join(conf.BIN, "VirtualBox") ]
-
     def dialog_info(self, title, msg):
         easygui.msgbox(msg=msg, title=title)
 
@@ -235,7 +238,6 @@ class LinuxBackend(Backend):
             sys.exit(0)
 
     def prepare(self):
-        self.call("ls")
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
@@ -303,8 +305,4 @@ class LinuxBackend(Backend):
                 logging.debug("make returned %d", (ret,))
                 
         Backend.look_for_virtualbox(self)
-
-    def create_vbox_raw_vmdk(self, vmdk, dev, parts):
-        return self.call([ path.join(conf.BIN, "VBoxManage"), "-nologo", "internalcommands", "createrawvmdk", "-filename", 
-                    vmdk, "-rawdisk",  dev, "-partitions", parts, "-relative" ], env = self.env)
 

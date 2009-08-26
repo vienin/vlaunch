@@ -25,6 +25,10 @@ class MacBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
 
+    HOST_AUDIO_DRIVER = "CoreAudio"
+
+    RELATIVE_VMDK_POLICY = True
+
     def __init__(self):
         Backend.__init__(self)
         self.KEXTS = "kexts"
@@ -174,7 +178,18 @@ with timeout of 300 seconds
 end timeout
 """)
 
-    def get_device_size(self, dev):
+    def get_device_parts(self, dev):
+        parts = glob.glob(dev + 's[0-9]')
+        device_parts = {}
+        for part in parts:
+            part_number = int(part[len(part)-1:])
+            part_info = [ part, self.get_device_size(dev, part_number) ]
+            device_parts.update({ part_number : part_info })
+        return device_parts
+
+    def get_device_size(self, dev, partition = 0):
+        if partition > 0:
+            dev = dev + "s" + str(partition)
         fd = os.open(dev, os.O_RDONLY)
   
         DKIOCGETBLOCKSIZE = 1074029592
@@ -289,17 +304,6 @@ end timeout
         # Kill resident com server
         self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
 
-    def audio_driver(self):
-        return "CoreAudio"
-
-    def vbox_gui_command(self):
-        #if conf.STARTVM:
-        # VBoxSDL do not exist for Mac...
-        #    return [ path.join(conf.BIN, "VirtualBoxVM"), "-startvm", conf.VM ]
-        # return [ path.join(conf.BIN, "VBoxManage"), "startvm", conf.VM ]
-        #else:
-        return [ path.join(conf.BIN, "VirtualBox") ]
-
     def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, "Contents", "Resources", ".VirtualBox")
@@ -383,8 +387,4 @@ end timeout
         
     def get_free_size(self, path):
         return 1000
-
-    def create_vbox_raw_vmdk(self, vmdk, dev, parts):
-        return self.call([ path.join(conf.BIN, "VBoxManage"), "-nologo", "internalcommands", "createrawvmdk", "-filename", 
-                    vmdk, "-rawdisk",  dev, "-partitions", parts, "-relative" ], env = self.env)
 
