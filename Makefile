@@ -1,6 +1,6 @@
 NAME=vlaunch
 VERSION=0.5.1
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif README COPYING vboxapi\
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif README COPYING vboxapi sdk\
         Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
         QtGuiVBox QtNetworkVBox vbox-client-symlink.desktop \
         vbox-client-dnd.desktop Headers Current 4.0 QtCore QtGui \
@@ -97,7 +97,7 @@ install:
 	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp -R vboxapi ufovboxapi.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py ask-password $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py ask-password $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
 	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
