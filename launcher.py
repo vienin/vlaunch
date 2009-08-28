@@ -2,6 +2,7 @@
 
 import logging
 import conf
+import os
 import sys
 import os.path as path
 import tempfile
@@ -22,6 +23,13 @@ except:
         logging.debug("Logging to " + temp)
     except:
         print "Could not redirect log to file"
+
+if conf.LIVECD:
+    if not os.path.exists(conf.BOOTISO):
+        import gui_pyqt
+        if gui_pyqt.download_file("http://kickstart.agorabox.org/private/UFO.iso",
+                               filename=conf.BOOTISO):
+            sys.exit(0)
 
 if sys.platform == "win32":
     from windowsbackend import *

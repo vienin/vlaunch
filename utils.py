@@ -286,6 +286,7 @@ class Backend:
                                          button1=u"Oui",
                                          button2=u"Non")
         
+            """
             if input == "Non":
                 if conf.NEEDDEV: return conf.STATUS_EXIT
             
@@ -296,6 +297,7 @@ class Backend:
             
                 if input == "Oui": return conf.STATUS_GUEST
                 return conf.STATUS_EXIT
+            """
         
             try_times -= 1
     
