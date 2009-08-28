@@ -255,7 +255,10 @@ class VBoxMachine(VirtualMachine):
         if disk_rank >= 2:
             disk_rank += 1
         try:
-            if self.hypervisor.vbox.version >= "2.1.0" and self.hypervisor.vbox.version < "2.2.0":
+            if self.hypervisor.vbox.version >= "2.2.0":
+                self.machine.attachHardDisk(disk.id, "IDE", 
+                                            disk_rank // 2, disk_rank % 2)
+            elif self.hypervisor.vbox.version >= "2.1.0":
                 self.machine.attachHardDisk2(disk.id, VirtualBoxReflectionInfo().StorageBus_IDE, 
                                              disk_rank // 2, disk_rank % 2)
             else:
