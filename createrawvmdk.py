@@ -38,7 +38,7 @@ def createrawvmdk (target_path, device_name, device_size, partitions = {}, relat
     device_size = int(device_size)
     cylinders = min(device_size / 16 / 63, 16383)
 
-    vmdk_file = open(target_path, 'w')
+    vmdk_file = open(target_path, 'a')
     
     # write header
     if partitions == {}:

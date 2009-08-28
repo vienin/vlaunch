@@ -70,7 +70,7 @@ class VirtualMachine:
         pass
     def set_guest_property(self, key, value):
         pass
-    def set_network_adapter(self, attach_type, adapter_type, mac_address):
+    def set_network_adapter(self, attach_type, adapter_type, host_adapter, mac_address):
         pass
     def set_audio_adapter(self, audio_driver, audio_controller):
         pass
@@ -100,7 +100,9 @@ class VBoxHypervisor(Hypervisor):
             print 'Unknown OS type:',os_type
             return 1
         try:
-            self.vbox.registerMachine(self.vbox.createMachine(machine_name, os_type, base_dir, ""))
+            self.vbox.registerMachine(
+                self.vbox.createMachine(machine_name, os_type, base_dir, 
+                                        "00000000-0000-0000-0000-000000000000"))
         except Exception, e:
             print e
             return 1
@@ -112,7 +114,7 @@ class VBoxHypervisor(Hypervisor):
                 self.session = self.vm_manager.openMachineSession(machine.id)
                 self.current_machine = VBoxMachine(self, self.session.machine)
                 return 0
-		return 1
+        return 1
     
     def close_session(self):
         self.current_machine.machine.saveSettings()
@@ -135,8 +137,11 @@ class VBoxHypervisor(Hypervisor):
 
     def add_harddisk(self, location):
         try:
-            disk = self.vbox.openHardDisk(location, 
-                VirtualBoxReflectionInfo().AccessMode_ReadOnly, False, '', False, '')
+            if int(self.vbox.version[0:1]) >= 3:
+                disk = self.vbox.openHardDisk(location, VirtualBoxReflectionInfo().AccessMode_ReadOnly,
+                                              False, '', False, '')
+            else:
+                disk = self.vbox.openHardDisk(location, VirtualBoxReflectionInfo().AccessMode_ReadOnly)
         except Exception, e:
             print e
             return None
@@ -374,7 +379,7 @@ class VBoxMachine(VirtualMachine):
             self.machine.saveSettings()
         return 0
 
-    def set_network_adapter(self, attach_type = '', adapter_type = '', mac_address = '', save = False):
+    def set_network_adapter(self, attach_type = '', adapter_type = '', mac_address = '', host_adapter = '', save = False):
         assert adapter_type == "Null" or adapter_type == "Am79C970A" or \
             adapter_type == "I82540EM" or adapter_type == "I82543GC" or \
             adapter_type == "I82545EM" or adapter_type == "Am79C973" or \
@@ -385,24 +390,28 @@ class VBoxMachine(VirtualMachine):
         result_code = 0
         try:
             if adapter_type != '':
-                self.machine.getNetworkAdapter(1).adapterType = \
+                self.machine.getNetworkAdapter(0).adapterType = \
                     getattr(VirtualBoxReflectionInfo(), "NetworkAdapterType_" + adapter_type)
         except Exception, e:
             print e
             result_code = 1
         try:
             if mac_address != '':
-                self.machine.getNetworkAdapter(1).MACAddress = mac_address
+                self.machine.getNetworkAdapter(0).MACAddress = mac_address
         except Exception, e:
             print e
             result_code = 2
         try:
             if attach_type == "NAT":
-                self.machine.getNetworkAdapter(1).attachToNAT()
+                self.machine.getNetworkAdapter(0).attachToNAT()
             elif attach_type =="Bridged":
-                self.machine.getNetworkAdapter(1).attachToBridgedInterface()
+                assert host_adapter != ''
+                if mac_address:
+                    self.machine.getNetworkAdapter(0).MACAddress = mac_address
+                self.machine.getNetworkAdapter(0).hostInterface = host_adapter
+                self.machine.getNetworkAdapter(0).attachToBridgedInterface()
             elif attach_type =="None":
-                self.machine.getNetworkAdapter(1).detach()
+                self.machine.getNetworkAdapter(0).detach()
         except Exception, e:
             print e
             result_code = 3

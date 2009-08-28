@@ -16,6 +16,12 @@ from utils import *
 import uuid
 from splash import SplashScreen
 from ConfigParser import ConfigParser
+
+os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
+                    "VBOX_PROGRAM_PATH" : conf.BIN, 
+                    "PYTHONPATH"        : conf.BIN,
+                    "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk") })
+
 from ufovboxapi import VBoxHypervisor
 
 def grep(input, pattern, inverse=False):
@@ -44,11 +50,7 @@ class Backend:
         self.tmp_overlaydir = ""
         self.puel = False
         self.do_not_update = False
-
-        # redirect VBOX HOME directory
-        os.environ.update({ "VBOX_USER_HOME" : conf.HOME, "VBOX_PROGRAM_PATH" : conf.BIN })
-        self.env = env = os.environ.copy()
-
+        self.env = os.environ.copy()
         self.vbox = VBoxHypervisor()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
@@ -64,7 +66,7 @@ class Backend:
             return retcode
 
     def find_network_device(self):
-        if not conf.HOSTNET:
+        if not conf.HOSTNET:    
             return conf.NET_NAT
         return conf.NET_HOST
 
@@ -114,7 +116,7 @@ class Backend:
             
             vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
             if os.path.exists(vmdk):
-                    os.unlink(vmdk)
+                os.unlink(vmdk)
             if conf.PARTS == "all":
                 logging.debug("Getting size of " + conf.DEV)
                 blockcount = self.get_device_size(conf.DEV)
@@ -152,8 +154,9 @@ class Backend:
             elif conf.NETTYPE == conf.NET_HOST:
                 # setting network interface to host
                 logging.debug("Using net bridge on " + net_name)
-                self.vbox.current_machine.set_network_adapter(attach_type = 'Bridged', mac_address = conf.MACADDR)
-
+                self.vbox.current_machine.set_network_adapter(attach_type = 'Bridged', 
+                                                              host_adapter = conf.HOSTNET, 
+                                                              mac_address = conf.MACADDR)
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
