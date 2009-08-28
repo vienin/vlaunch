@@ -35,6 +35,10 @@ if sys.platform == "win32":
     from windowsbackend import *
     backend = WindowsBackend()
 elif sys.platform == "darwin":
+    sys.path.append("sdk/bindings/xpcom/python")
+    import sip
+    import xpcom, xpcom.vboxxpcom
+    import PyQt4.QtGui
     from macbackend import *
     backend = MacBackend()
 elif sys.platform == "linux2":
