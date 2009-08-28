@@ -17,6 +17,8 @@ import uuid
 from splash import SplashScreen
 from ConfigParser import ConfigParser
 
+import time
+
 os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
                     "VBOX_PROGRAM_PATH" : conf.BIN, 
                     "PYTHONPATH"        : conf.BIN,
@@ -45,12 +47,20 @@ def append_to_end(filename, line):
 
 class Backend:
     def __init__(self):
+        if not path.isabs(conf.HOME):
+            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
+        if not path.isabs(conf.BIN):
+            conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
+
         self.usb_devices = []
         self.tmp_swapdir = ""
         self.tmp_overlaydir = ""
         self.puel = False
         self.do_not_update = False
         self.env = os.environ.copy()
+
+        #self.kill_resilient_vbox()
+        #self.remove_settings_files()
         self.vbox = VBoxHypervisor()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
@@ -83,7 +93,7 @@ class Backend:
         self.vbox.current_machine.set_network_adapter(adapter_type = "I82540EM")
         self.vbox.current_machine.disable_boot_menu()
         self.vbox.current_machine.set_audio_adapter(self.HOST_AUDIO_DRIVER)
-        
+
         if conf.LICENSE == 1:
             self.vbox.set_extra_data("GUI/LicenseAgreed", "7")
 
@@ -107,7 +117,7 @@ class Backend:
             logging.debug("Skipping configuration of the VM")
             self.vbox.close_session()
             return
-    
+
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.VMDK and create_vmdk:
             rank = conf.DRIVERANK
@@ -139,7 +149,10 @@ class Backend:
         if conf.CONFIGUREVM:
             # compute reasonable memory size
             if conf.RAMSIZE == "auto":
-                freeram = self.vbox.host.get_free_ram()
+                if self.vbox.vbox.version >= "2.1.0":
+                    freeram = self.vbox.host.get_free_ram()
+                else:
+                    freeram = self.get_free_ram()
                 conf.RAMSIZE = 2 * freeram / 3
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
@@ -219,8 +232,7 @@ class Backend:
                 logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
                 conf.DRIVERANK += 1
                 swap_rank = conf.DRIVERANK
-                shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
-                logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.SWAPFILE) + ", " + path.join(self.tmp_swapdir, conf.SWAPFILE))
+                shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
@@ -240,8 +252,7 @@ class Backend:
                 logging.debug("self.tmp_overlaydir = " + self.tmp_overlaydir);
                 conf.DRIVERANK += 1
                 overlay_rank = conf.DRIVERANK
-                shutil.copyfile (path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE), path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
-                logging.debug(" shutil.copyfile ( " + path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE) + ", " + path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
+                shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE), path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_overlaydir, conf.OVERLAYFILE), overlay_rank)
 
                 # TODO:
@@ -289,7 +300,6 @@ class Backend:
                                          button1=u"Oui",
                                          button2=u"Non")
         
-            """
             if input == "Non":
                 if conf.NEEDDEV: return conf.STATUS_EXIT
             
@@ -300,7 +310,6 @@ class Backend:
             
                 if input == "Oui": return conf.STATUS_GUEST
                 return conf.STATUS_EXIT
-            """
         
             try_times -= 1
     
@@ -340,21 +349,30 @@ class Backend:
         self.wait_for_termination()
 
     def remove_settings_files(self):
+        if os.path.exists(path.join(conf.HOME, "VirtualBox.xml")):
+            os.unlink(path.join(conf.HOME, "VirtualBox.xml"))
+        if os.path.exists(path.join(conf.HOME, "Machines")):
+            shutil.rmtree(path.join(conf.HOME, "Machines"))
+
+    def global_cleanup(self):
         if self.vbox.license_agreed():
             cp = ConfigParser()
             cp.read(conf.conf_file)
             cp.set("launcher", "LICENSE", "1")
             cp.write(open(conf.conf_file, "w"))
-        shutil.rmtree(path.join(conf.HOME, "Machines"))
-        os.unlink(path.join(conf.HOME, "VirtualBox.xml"))
+
+        self.remove_settings_files()
+
+        if self.dnddir:
+            shutil.rmtree(self.dnddir)
+        if self.tmp_swapdir:
+            os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
+        if self.tmp_overlaydir:
+            os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
+        
+        self.cleanup()
 
     def run(self):
-        if not path.isabs(conf.HOME):
-            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
-
-        if not path.isabs(conf.BIN):
-            conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
-
         logging.debug("Preparing environment")
         logging.debug("APP path: " + conf.APP_PATH)
         logging.debug("BIN path: " + conf.BIN)
@@ -370,7 +388,6 @@ class Backend:
         if ret == conf.STATUS_NORMAL:
             logging.debug("awaited device found on " + str(conf.DEV))
             if self.prepare_device(conf.DEV):
-                self.dialog_info(title="Attention", msg=u"Impossible de démonter le volume UFO, vérifiez qu'il n'est pas en cours d'utilisation.")
                 logging.debug("Unable to umount %s, exiting script" % (conf.DEV,))
                 sys.exit(1)
             create_vmdk = True
@@ -394,14 +411,5 @@ class Backend:
         self.run_virtual_machine(self.env)
 
         logging.debug("Clean up")
-        self.remove_settings_files()
-        self.cleanup()
+        self.global_cleanup()
 
-        if self.dnddir:
-            shutil.rmtree(self.dnddir)
-
-        if self.tmp_swapdir:
-            os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
-
-        if self.tmp_overlaydir:
-            os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))

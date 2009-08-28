@@ -265,7 +265,7 @@ class LinuxBackend(Backend):
 
     def run_vbox(self, command, env):
         # For some reason, it doesn't work with 'call'
-        cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + " ".join(command)
+        cmd = "VBOX_USER_HOME=" + env["VBOX_USER_HOME"] + " VBOX_PROGRAM_PATH=" + env["VBOX_PROGRAM_PATH"] + " " + command
         os.system(cmd)
         
     def get_free_size(self, path):

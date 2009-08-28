@@ -4,6 +4,7 @@
 # export VBOX_PROGRAM_PATH=/usr/lib/virtualbox/ PYTHONPATH=..:$VBOX_PROGRAM_PATH
 
 import uuid as uuid_lib
+import traceback
 
 from vboxapi import VirtualBoxManager
 from vboxapi import VirtualBoxReflectionInfo
@@ -88,21 +89,33 @@ class VBoxHypervisor(Hypervisor):
         self.current_machine = None
         self.session = None
 
+        self.vbox.saveSettings()
+
     def __del__(self):
         self.vbox.saveSettings()
         self.vm_manager.deinit()
         del self.vm_manager
 
     def create_machine(self, machine_name, os_type, base_dir = ''):
+        if self.vbox.version < "2.1.0" and os_type == "Fedora":
+            os_type = "fedoracore"
         try:
             self.vbox.getGuestOSType(os_type)
         except Exception, e:
             print 'Unknown OS type:',os_type
             return 1
         try:
-            self.vbox.registerMachine(
-                self.vbox.createMachine(machine_name, os_type, base_dir, 
-                                        "00000000-0000-0000-0000-000000000000"))
+            if self.vbox.version >= "2.1.0":
+                self.vbox.registerMachine(
+                    self.vbox.createMachine(machine_name, os_type, base_dir, 
+                                            "00000000-0000-0000-0000-000000000000"))
+            else:
+                if base_dir == '':
+                    base_dir = 'Machines'
+                machine = self.vbox.createMachine(base_dir, machine_name,
+                                                  "00000000-0000-0000-0000-000000000000")
+                machine.OSTypeId = os_type
+                self.vbox.registerMachine(machine)         
         except Exception, e:
             print e
             return 1
@@ -133,15 +146,24 @@ class VBoxHypervisor(Hypervisor):
         return 0
 
     def get_machines(self):
-        return self.vm_manager.getArray(self.vm_manager.vbox, 'machines')
+        if self.vbox.version < "2.2.0":
+            attr = 'machines2'
+        else:
+            attr = 'machines'
+        return self.vm_manager.getArray(self.vm_manager.vbox, attr)
 
     def add_harddisk(self, location):
         try:
-            if int(self.vbox.version[0:1]) >= 3:
+            if self.vbox.version >= "3.0.0":
                 disk = self.vbox.openHardDisk(location, VirtualBoxReflectionInfo().AccessMode_ReadOnly,
                                               False, '', False, '')
-            else:
+            elif self.vbox.version >= "2.2.0":
                 disk = self.vbox.openHardDisk(location, VirtualBoxReflectionInfo().AccessMode_ReadOnly)
+            elif self.vbox.version >= "2.1.0":
+                disk = self.vbox.openHardDisk2(location)
+            else:
+                disk = self.vbox.openHardDisk(location)
+                self.vbox.registerHardDisk(disk)
         except Exception, e:
             print e
             return None
@@ -151,6 +173,8 @@ class VBoxHypervisor(Hypervisor):
         uuid = str(uuid_lib.uuid4())
         try:
             dvd = self.vbox.openDVDImage(location, uuid)
+            if self.vbox.version < "2.1.0":
+                self.vbox.registerDVDImage(dvd)
         except Exception, e:
             print e
             return None
@@ -160,6 +184,8 @@ class VBoxHypervisor(Hypervisor):
         uuid = str(uuid_lib.uuid4())
         try:
             floppy = self.vbox.openFloppyImage(location, uuid)
+            if self.vbox.version < "2.1.0":
+                self.vbox.registerFloppyImage(floppy)
         except Exception, e:
             print e
             return None
@@ -229,7 +255,12 @@ class VBoxMachine(VirtualMachine):
         if disk_rank >= 2:
             disk_rank += 1
         try:
-            self.machine.attachHardDisk(disk.id, "IDE", disk_rank // 2, disk_rank % 2)
+            if self.hypervisor.vbox.version >= "2.1.0" and self.hypervisor.vbox.version < "2.2.0":
+                self.machine.attachHardDisk2(disk.id, VirtualBoxReflectionInfo().StorageBus_IDE, 
+                                             disk_rank // 2, disk_rank % 2)
+            else:
+                self.machine.attachHardDisk(disk.id, VirtualBoxReflectionInfo().StorageBus_IDE, 
+                                            disk_rank // 2, disk_rank % 2)
         except Exception, e:
             print e
             return 1
@@ -264,8 +295,12 @@ class VBoxMachine(VirtualMachine):
             if floppy == None:
                 return 1
 
-        self.machine.floppyDrive.enabled = True
-        self.machine.floppyDrive.mountImage(floppy.id)
+        if self.hypervisor.vbox.version >= "2.1.0":
+            self.machine.floppyDrive.enabled = True
+            self.machine.floppyDrive.mountImage(floppy.id)
+        else:
+            self.machine.FloppyDrive.enabled = True
+            self.machine.FloppyDrive.mountImage(floppy.id)
         if save:
             self.machine.saveSettings()
         return 0
@@ -409,7 +444,10 @@ class VBoxMachine(VirtualMachine):
                 if mac_address:
                     self.machine.getNetworkAdapter(0).MACAddress = mac_address
                 self.machine.getNetworkAdapter(0).hostInterface = host_adapter
-                self.machine.getNetworkAdapter(0).attachToBridgedInterface()
+		if self.hypervisor.vbox.version < "2.2.0":
+                    self.machine.getNetworkAdapter(0).attachToHostInterface()
+                else:
+                    self.machine.getNetworkAdapter(0).attachToBridgedInterface()
             elif attach_type =="None":
                 self.machine.getNetworkAdapter(0).detach()
         except Exception, e:
