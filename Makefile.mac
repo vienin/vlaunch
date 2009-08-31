@@ -51,6 +51,7 @@ mac-launcher: clean py2app py2app-updater
 	cp -R /Library/Frameworks/QtCore.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework
 	cp -R /Library/Frameworks/QtGui.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework
 	cp -R /Library/Frameworks/QtNetwork.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework
+	for file in `ls dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file; done
 	strip -S dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/* dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/components/* || true
 	mv dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VBoxPython{2_3.so,.so}
 	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/testcase 
