@@ -39,6 +39,7 @@ install:
 	cp settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
 	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
+	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
 	
@@ -83,6 +84,7 @@ install:
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/site.pyc
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/ufo-updater.app/Contents/Resources/site.pyc
 	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
+	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
 	cp .background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background
@@ -100,6 +102,7 @@ install:
 	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py splash.py ask-password $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
 	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
+	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	
 	# installs Boot Isos

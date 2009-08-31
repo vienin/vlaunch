@@ -60,8 +60,10 @@ class Backend:
         self.do_not_update = False
         self.env = os.environ.copy()
 
-        #self.kill_resilient_vbox()
-        #self.remove_settings_files()
+        self.kill_resilient_vbox()
+        self.remove_settings_files()
+        os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround"))
+
         self.vbox = VBoxHypervisor()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
@@ -361,9 +363,6 @@ class Backend:
             cp.read(conf.conf_file)
             cp.set("launcher", "LICENSE", "1")
             cp.write(open(conf.conf_file, "w"))
-
-        self.remove_settings_files()
-
         if self.dnddir:
             shutil.rmtree(self.dnddir)
         if self.tmp_swapdir:

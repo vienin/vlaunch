@@ -38,7 +38,6 @@ if platform.system() == 'Darwin':
 
 cglue = None
 for m in candidates:
-   print "Trying " + m
    try:
       cglue =  __import__(m)
       break
