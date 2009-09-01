@@ -47,17 +47,41 @@ mac-launcher: clean py2app py2app-updater
 	mv dist/ufo-updater.app dist/UFO.app/Contents/Resources/
 	cp -R $$VBOX_PATH dist/UFO.app/Contents/Resources/VirtualBox.app
 	# cp -R kexts dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts
-	mkdir dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework
-	cp -R /Library/Frameworks/QtCore.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtCore.framework
-	cp -R /Library/Frameworks/QtGui.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtGui.framework
-	cp -R /Library/Frameworks/QtNetwork.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Framework/QtNetwork.framework
-	for file in `ls dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file; done
+	mkdir -p dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts/Tiger
+	cp -R $$VBOX_PATH/../*.kext dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts
+	mv dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts/VBoxDrvTiger.kext dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts/Tiger
+	mkdir dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks
+	cp -R /Library/Frameworks/QtCore.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCore.framework
+	cp -f /Library/Frameworks/Python.framework/Python dist/UFO.app/Contents/Frameworks/Python.framework/Versions/2.5/Python
+	cp -f /Library/Frameworks/Python.framework/Python dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/Python.framework/Versions/2.5/Python
+	cp -R /Library/Frameworks/QtGui.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework
+	cp -R /Library/Frameworks/QtNetwork.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetwork.framework
+	for file in `ls dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
 	strip -S dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/* dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/components/* || true
 	mv dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VBoxPython{2_3.so,.so}
 	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/testcase 
 	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/tst* 
 	rm -f dist/UFO.app/Contents/Resources/site.pyc
 	rm -f dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Resources/site.pyc
-	rm -rf dist/UFO.app/Contents/Resources/.VirtualBox
+	mkdir -p dist/UFO.app/Contents/Resources/.VirtualBox
 	cd dist && tar cvzf mac-intel.tgz UFO.app
-	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
+	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-testing.tgz
+	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
+	do \
+	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
+	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Frameworks/$$qt; \
+	    ln -s ../../../../VirtualBox.app/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
+	done
+	cp vboxpython-workaround.py *.gif *.bmp dist/UFO.app/Contents/Resources/.VirtualBox
+
+testing: mac-launcher
+	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings.conf; \
+	if [ ! -d dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks ]; \
+	then \
+	    mkdir dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks; \
+	fi; \
+	mkdir -p dist/UFO.app/Contents/Resources/.VirtualBox/Isos
+	cp UFO-VirtualBox-boot.img dist/UFO.app/Contents/Resources/.VirtualBox/Isos
+	cp ufo_swap.vdi ufo_overlay.vdi dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks
+	cd dist && tar cvzf mac-intel.tgz UFO.app
+	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-runnable.tgz

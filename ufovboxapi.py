@@ -6,9 +6,6 @@
 import uuid as uuid_lib
 import traceback
 
-from vboxapi import VirtualBoxManager
-from vboxapi import VirtualBoxReflectionInfo
-
 class Host:
 
     def get_total_ram(self):
@@ -81,7 +78,11 @@ class VirtualMachine:
 class VBoxHypervisor(Hypervisor):
 
     def __init__(self):
+        from vboxapi import VirtualBoxManager
+        from vboxapi import VirtualBoxReflectionInfo
+
         self.vm_manager = VirtualBoxManager(None, None)
+        self.constants = VirtualBoxReflectionInfo()
         self.mgr  = self.vm_manager.mgr
         self.vbox = self.vm_manager.vbox
         self.host = VBoxHost(self.vm_manager.vbox.host)
@@ -155,10 +156,10 @@ class VBoxHypervisor(Hypervisor):
     def add_harddisk(self, location):
         try:
             if self.vbox.version >= "3.0.0":
-                disk = self.vbox.openHardDisk(location, VirtualBoxReflectionInfo().AccessMode_ReadOnly,
+                disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly,
                                               False, '', False, '')
             elif self.vbox.version >= "2.2.0":
-                disk = self.vbox.openHardDisk(location, VirtualBoxReflectionInfo().AccessMode_ReadOnly)
+                disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly)
             elif self.vbox.version >= "2.1.0":
                 disk = self.vbox.openHardDisk2(location)
             else:
@@ -259,10 +260,10 @@ class VBoxMachine(VirtualMachine):
                 self.machine.attachHardDisk(disk.id, "IDE", 
                                             disk_rank // 2, disk_rank % 2)
             elif self.hypervisor.vbox.version >= "2.1.0":
-                self.machine.attachHardDisk2(disk.id, VirtualBoxReflectionInfo().StorageBus_IDE, 
+                self.machine.attachHardDisk2(disk.id, self.hypervisor.constants.StorageBus_IDE, 
                                              disk_rank // 2, disk_rank % 2)
             else:
-                self.machine.attachHardDisk(disk.id, VirtualBoxReflectionInfo().StorageBus_IDE, 
+                self.machine.attachHardDisk(disk.id, self.hypervisor.constants.StorageBus_IDE, 
                                             disk_rank // 2, disk_rank % 2)
         except Exception, e:
             print e
@@ -330,7 +331,7 @@ class VBoxMachine(VirtualMachine):
 
     def set_boot_device(self, device_type, save = False):
         assert device_type == "HardDisk" or device_type == "DVD" or device_type == "Floppy"
-        self.machine.setBootOrder(1, getattr(VirtualBoxReflectionInfo(), "DeviceType_" + device_type))
+        self.machine.setBootOrder(1, getattr(self.hypervisor.constants, "DeviceType_" + device_type))
         if save:
             self.machine.saveSettings()
         return 0
@@ -353,7 +354,7 @@ class VBoxMachine(VirtualMachine):
 
     def disable_boot_menu(self, save = False):
         self.machine.BIOSSettings.bootMenuMode = \
-            VirtualBoxReflectionInfo().BIOSBootMenuMode_Disabled
+            self.hypervisor.constants.BIOSBootMenuMode_Disabled
 
     def set_ram_size(self, ram_size, save = False):
         try:
@@ -385,9 +386,9 @@ class VBoxMachine(VirtualMachine):
 
         self.machine.audioAdapter.enabled = True
         self.machine.audioAdapter.audioController = \
-            getattr(VirtualBoxReflectionInfo(), "AudioControllerType_" + audio_controller)
+            getattr(self.hypervisor.constants, "AudioControllerType_" + audio_controller)
         self.machine.audioAdapter.audioDriver = \
-            getattr(VirtualBoxReflectionInfo(), "AudioDriverType_" + audio_driver)
+            getattr(self.hypervisor.constants, "AudioDriverType_" + audio_driver)
         if save:
             self.machine.saveSettings()
         return 0
@@ -429,7 +430,7 @@ class VBoxMachine(VirtualMachine):
         try:
             if adapter_type != '':
                 self.machine.getNetworkAdapter(0).adapterType = \
-                    getattr(VirtualBoxReflectionInfo(), "NetworkAdapterType_" + adapter_type)
+                    getattr(self.hypervisor.constants, "NetworkAdapterType_" + adapter_type)
         except Exception, e:
             print e
             result_code = 1

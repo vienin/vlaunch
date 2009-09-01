@@ -59,24 +59,35 @@ class Backend:
         self.puel = False
         self.do_not_update = False
         self.env = os.environ.copy()
+        
+        "self.check_process()"
 
-        self.kill_resilient_vbox()
+        "self.kill_resilient_vbox()"
         self.remove_settings_files()
+<<<<<<< .mine
+=======
         os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
-
-        self.vbox = VBoxHypervisor()
+>>>>>>> .r1150
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
         if output:
-            p = subprocess.Popen(cmd, env = env, shell = shell, cwd = cwd, stdout=subprocess.PIPE)
-            output = p.communicate()
-            logging.debug("Returned : " + str(p.returncode))
-            return p.returncode, output
+            try:
+                p = subprocess.Popen(cmd, env = env, shell = shell, cwd = cwd, stdout=subprocess.PIPE)
+                output = p.communicate()
+                logging.debug("Returned : " + str(p.returncode))
+                return p.returncode, output
+            except:
+                logging.debug("Exception while subprocess.Popen")
+                return 1
         else:
-            retcode = subprocess.call(cmd, env = env, shell = shell, cwd = cwd)
-            logging.debug("Returned : " + str(retcode))
-            return retcode
+            try:
+                retcode = subprocess.call(cmd, env = env, shell = shell, cwd = cwd)
+                logging.debug("Returned : " + str(retcode))
+                return retcode
+            except:
+                logging.debug("Exception while subprocess.call")
+                return 1
 
     def find_network_device(self):
         if not conf.HOSTNET:    
@@ -88,6 +99,11 @@ class Backend:
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
 
     def create_virtual_machine(self, create_vmdk = True):
+        logging.debug("Creating VBoxHypervisor")
+        self.vbox = VBoxHypervisor()
+        logging.debug("VBoxHypervisor successfully created")
+	
+        logging.debug("Creating VM")
         self.vbox.create_machine(conf.VM, conf.OS)
         self.vbox.open_machine(conf.VM)
 
@@ -114,6 +130,7 @@ class Backend:
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
+        logging.debug("VM successfully initialized")
 
     def configure_virtual_machine(self, create_vmdk = True):
         if not conf.VMDK and not conf.CONFIGUREVM:
@@ -377,6 +394,8 @@ class Backend:
         logging.debug("APP path: " + conf.APP_PATH)
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
+        #os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
+
         self.prepare()
 
         self.look_for_virtualbox()
@@ -399,6 +418,8 @@ class Backend:
         elif ret == conf.STATUS_EXIT:
             logging.debug("no device found, do not start machine")
             sys.exit(1)
+
+        # os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
 
         logging.debug("Configuring Virtual Machine")
         self.create_virtual_machine()

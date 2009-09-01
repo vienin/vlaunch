@@ -21,3 +21,7 @@ except:
 if __name__ == "__main__":
     dialog_info("Titre", "Message")
     print dialog_question("Titre", "Message")
+    print dialog_password()
+    splash = SplashScreen(image="ufo-generic.bmp")
+    import time
+    time.sleep(5)

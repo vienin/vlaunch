@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui, QtCore, QtNetwork
-import sys
+import sys, os
 
 app = QtGui.QApplication(sys.argv)
 main = QtGui.QMainWindow()
@@ -40,8 +40,15 @@ def dialog_question(title, msg, button1="Yes", button2="No"):
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
 
-def dialog_password(root=None):
-    return easygui.passwordbox(msg="Veuillez entrer le mot de passe de cet ordinateur", root=root)
+def dialog_password(msg=None):
+    dlg = QtGui.QInputDialog(desktop)
+    dlg.setTextEchoMode(QtGui.QLineEdit.Password)
+    if not msg:
+        msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
+    dlg.setLabelText(msg)
+    dlg.setWindowTitle(u"Autorisations nécessaires")
+    dlg.exec_()
+    return dlg.textValue()
 
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, parent=None):
@@ -164,4 +171,13 @@ def download_file(url, filename):
     downloadWin = DownloadWindow(url=url, filename=filename)
     downloadWin.show()
     return downloadWin.exec_()
+
+class SplashScreen:
+    def __init__(self, image):
+        pixmap = QtGui.QPixmap(image)
+        self.splash = QtGui.QSplashScreen(pixmap)
+        self.splash.show()
+
+    def destroy(self):
+        self.splash.close()
 

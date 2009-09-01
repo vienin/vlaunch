@@ -8,7 +8,7 @@ import subprocess
 import logging
 import conf
 import shutil
-import easygui
+import gui
 import tempfile
 import time
 from utils import *
@@ -130,8 +130,7 @@ class MacBackend(Backend):
             shutil.copyfile("/etc/fstab.bak", "/etc/fstab")
 
     def dialog_question(self, msg, title, button1, button2):
-        choices = [ button1, button2 ]
-        reply = easygui.buttonbox(msg=msg, title=title, choices=choices, root=self.tk)
+        reply = gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
         return reply
 
     """
@@ -153,13 +152,13 @@ class MacBackend(Backend):
              'tell app "UFO" to display dialog "%s" with title "%s" buttons "OK"' %
                 (msg, title) ])
         """
-        easygui.msgbox(msg=msg, title=title, root=self.tk)
+        gui.dialog_info(msg=msg, title=title)
             
     # generic dialog box for ask password 
     # params :
     # return : pass_string
     def dialog_password(self):
-        return easygui.passwordbox(msg="Veuillez entrer le mot de passe de cet ordinateur", root=self.tk)
+        return gui.dialog_password()
 
         return subprocess.Popen([ "/usr/bin/osascript" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate("""
 with timeout of 300 seconds
@@ -183,7 +182,7 @@ end timeout
         device_parts = {}
         for part in parts:
             part_number = int(part[len(part)-1:])
-            part_info = [ part, self.get_device_size(dev, part_number) ]
+            part_info = [ part, self.get_device_size(dev[:5] + "r" + dev[5:], part_number) ]
             device_parts.update({ part_number : part_info })
         return device_parts
 
@@ -292,13 +291,20 @@ end timeout
     def load_kexts(self):
         # loading kernel extentions
         KEXTS = path.join(conf.BIN, self.KEXTS)
-
+        tmpdir = tempfile.mkdtemp()
+        
         if self.OS_VERSION < "9":
             modules = [ "VBoxDrvTiger.kext" ]
         else:
             modules = [ "VBoxDrv.kext", "VBoxNetFlt.kext" ]
 
-        self.call(["/sbin/kextload"] + map(lambda x: path.join(KEXTS, x), modules))
+        for module in modules:
+            modulepath = path.join(tmpdir, module)
+            shutil.copytree(path.join(KEXTS, module), modulepath)
+            self.call(["chmod", "-R", "644", modulepath ])
+            self.call(["chown", "-R", "0:0", modulepath ])
+
+        self.call(["/sbin/kextload"] + map(lambda x: path.join(tmpdir, x), modules))
 
     def kill_resilient_vbox(self):
         # Kill resident com server
@@ -311,9 +317,10 @@ end timeout
 
         self.check_privileges()
         try:
-            self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0]) 
+            self.splash = gui.SplashScreen(image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
         except:
             logging.debug("Failed to create splash screen")
+            raise
         self.is_ready()
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
@@ -354,7 +361,7 @@ end timeout
     def wait_for_termination(self):
         #import thread
         #thread.start_new_thread(self.check_usb_changes, ())
-        while wait:
+        while True:
             if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
                 break
             disks = glob.glob("/dev/disk[0-9]")

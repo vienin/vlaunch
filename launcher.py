@@ -35,9 +35,15 @@ if sys.platform == "win32":
     from windowsbackend import *
     backend = WindowsBackend()
 elif sys.platform == "darwin":
-    sys.path.append("sdk/bindings/xpcom/python")
+    logging.debug("Adding " + conf.BIN + " to sys.path")
+    sys.path.append(conf.BIN)
+    logging.debug("Importing SIP")
     import sip
-    import xpcom, xpcom.vboxxpcom
+    logging.debug("Importing xpcom")
+    import xpcom
+    logging.debug("Importing xpcom.vboxxpcom")
+    import xpcom.vboxxpcom
+    logging.debug("Import PyQt4")
     import PyQt4.QtGui
     from macbackend import *
     backend = MacBackend()
@@ -46,8 +52,6 @@ elif sys.platform == "linux2":
     backend = LinuxBackend()
 else:
     raise "Unsupported platform"
-
-backend.check_process()
 
 print "SCRIPT_DIR", conf.SCRIPT_DIR
 print "SCRIPT_PATH", conf.SCRIPT_PATH
