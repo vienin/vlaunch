@@ -169,9 +169,9 @@ rm -rf $RPM_BUILD_ROOT
 
 "%{TARGET_PATH}/Kit de survie.pdf"
 
-%{TARGET_PATH}/Linux/.VirtualBox/vboxpython-workaround.py
-%{TARGET_PATH}/Windows/.VirtualBox/vboxpython-workaround.py
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/vboxpython-workaround.py
+%{TARGET_PATH}/Linux/.VirtualBox/vboxpython-workaround.py*
+%{TARGET_PATH}/Windows/.VirtualBox/vboxpython-workaround.py*
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/vboxpython-workaround.py*
 
 %files guest
 %{_sysconfdir}/pam.d/vbox-client-dnd

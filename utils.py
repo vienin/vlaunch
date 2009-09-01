@@ -62,7 +62,7 @@ class Backend:
 
         self.kill_resilient_vbox()
         self.remove_settings_files()
-        os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround"))
+        os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
 
         self.vbox = VBoxHypervisor()
 
