@@ -64,10 +64,6 @@ class Backend:
 
         "self.kill_resilient_vbox()"
         self.remove_settings_files()
-<<<<<<< .mine
-=======
-        os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
->>>>>>> .r1150
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
