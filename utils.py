@@ -96,26 +96,26 @@ except:
 
 class Backend(object):
     def __init__(self):
-        if not path.isabs(conf.HOME):
-            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
-        if not path.isabs(conf.BIN):
-            conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
-
         self.usb_devices = []
         self.tmp_swapdir = ""
         self.tmp_overlaydir = ""
         self.puel = False
         self.do_not_update = False
+        self.splash = None
+        self.env = self.update_env()
+
+    def update_env(self):
+        if not path.isabs(conf.HOME):
+            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
+        if not path.isabs(conf.BIN):
+            conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
 
         os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
                             "VBOX_PROGRAM_PATH" : conf.BIN, 
                             "PYTHONPATH"        : conf.BIN,
                             "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk") })
         sys.path.append(conf.BIN)
-        self.env = os.environ.copy()
-        self.splash = None
-        
-        self.check_process()
+        return os.environ.copy()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         return call(cmd, env = env, shell = shell, cwd = cwd, output = output)
@@ -431,12 +431,12 @@ class Backend(object):
         self.cleanup()
 
     def run(self):
-        logging.debug("Preparing environment")
         logging.debug("APP path: " + conf.APP_PATH)
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
 
-        # self.kill_resilient_vbox()
+        # prepare environement
+        logging.debug("Preparing environment")
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()
@@ -460,16 +460,16 @@ class Backend(object):
             logging.debug("no device found, do not start machine")
             sys.exit(1)
 
-        logging.debug("Configuring Virtual Machine")
+        # build virtual machine as host capabilities
+        logging.debug("Creating Virtual Machine")
         self.create_virtual_machine()
-
-        logging.debug("Configuring Virtual Machine")
         self.configure_virtual_machine(create_vmdk = create_vmdk)
 
         # launch vm
         logging.debug("Launching Virtual Machine")
         self.run_virtual_machine(self.env)
 
+        # clean environement
         logging.debug("Clean up")
         self.global_cleanup()
 

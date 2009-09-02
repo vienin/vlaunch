@@ -52,10 +52,6 @@ elif sys.platform == "darwin":
     sys.path.append(conf.BIN)
     logging.debug("Importing SIP")
     import sip
-    logging.debug("Importing xpcom")
-    #import xpcom
-    logging.debug("Importing xpcom.vboxxpcom")
-    #import xpcom.vboxxpcom
     logging.debug("Import PyQt4")
     import PyQt4.QtGui
     from macbackend import *
@@ -67,9 +63,7 @@ elif sys.platform == "linux2":
 else:
     raise "Unsupported platform"
 
-print "SCRIPT_DIR", conf.SCRIPT_DIR
-print "SCRIPT_PATH", conf.SCRIPT_PATH
-print "APP_PATH", conf.APP_PATH
+backend.check_process()
 
 if not conf.NOUPDATE and conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
    not "--respawn" in sys.argv:

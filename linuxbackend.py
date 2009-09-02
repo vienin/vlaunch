@@ -216,12 +216,8 @@ class LinuxBackend(Backend):
 
     def find_resolution(self):
         if path.exists("/usr/bin/xrandr"):
-            # p1 = subprocess.Popen([ "/usr/bin/xrandr" ], stdout=subprocess.PIPE)
-            # p2 = subprocess.Popen([ "grep", "*" ], stdin=p1.stdout, stdout=subprocess.PIPE, shell=False)
-            # return p2.communicate()[0].split()[0]
             try:
                 return self.call([ [ "/usr/bin/xrandr" ], [ "grep", "*" ] ], output=True)[1].split()[0]
-                # output = self.call([ "ls" ], output=True)[1]
             except:
                 raise
         return ""

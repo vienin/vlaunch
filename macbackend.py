@@ -12,7 +12,6 @@ import gui
 import tempfile
 import time
 from utils import *
-import Tkinter
 
 conf.APP_PATH = path.dirname(path.dirname(conf.SCRIPT_DIR))
 conf.MOBILE = not conf.USESERVICE
@@ -246,7 +245,6 @@ end timeout
                 self.call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
                 sys.exit(0)
             else:
-                self.call([ "sudo" , "-k" ])
                 if path.basename(sys.executable) == "python":
                     cmd = [ path.join(path.dirname(sys.executable), "UFO") ]
                 else:
@@ -358,8 +356,6 @@ end timeout
                 shutil.rmtree(self.tmpdir)
 
     def wait_for_termination(self):
-        #import thread
-        #thread.start_new_thread(self.check_usb_changes, ())
         while True:
             if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
                 break
@@ -386,8 +382,6 @@ end timeout
             time.sleep(2)
 
     def run_vbox(self, command, env):
-        print env
-        #os.system(os.path.join(conf.BIN, command))
         self.call(command, env = env, cwd = conf.BIN)
 
     def find_resolution(self):
