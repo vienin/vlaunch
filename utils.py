@@ -44,15 +44,13 @@ def append_to_end(filename, line):
     open(filename, 'a').write(line)
 
 try:
-    from PyQt4 import QtCore
+    from PyQt4 import QtCore_ # This 'backend' was supposed to work...
     def call(cmds, env = None, shell = False, cwd = None, output = False):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
         procs = []
-        print "Settings commands"
         for cmd in cmds:
-            print "Creating process"
             proc = QtCore.QProcess()
             if cwd:
                 proc.setWorkingDirectory = cwd
@@ -66,36 +64,41 @@ try:
         for proc, cmd in procs:
             proc.start(cmd[0], cmd[1:])
         
-        print "Wait"
-        success = lastproc.waitForFinished(500)
-        print "Success ?", success
+        success = lastproc.waitForFinished(-1)
         if success:
             if output:
-                return proc.readAllStandardOutput(), proc.exitCode()
+                return proc.exitCode(), proc.readAllStandardOutput()
             return proc.exitCode()
         return -1
 
 except:
-    raise
-    def call(cmd, env = None, shell = False, cwd = None, output = False):
-        logging.debug(" ".join(cmd) + " with environment : " + str(env))
-        if output:
-            try:
-                p = subprocess.Popen(cmd, env = env, shell = shell, cwd = cwd, stdout=subprocess.PIPE)
-                output = p.communicate()
-                logging.debug("Returned : " + str(p.returncode))
-                return p.returncode, output
-            except:
-                logging.debug("Exception while subprocess.Popen")
-                return 1
+    def call(cmds, env = None, shell = False, cwd = None, output = False):
+        if type(cmds[0]) == str:
+            cmds = [ cmds ]
+        lastproc = None
+        procs = []
+        for i, cmd in enumerate(cmds):
+            logging.debug(" ".join(cmd) + " with environment : " + str(env))
+            if lastproc:
+                stdin = lastproc.stdout
+            else:
+                stdin = None
+            stdout = None
+            if (len(cmds) and i != len(cmds) - 1):
+                stdout = subprocess.PIPE
+            if output and i == len(cmds) - 1:
+                stdout = subprocess.PIPE
+            proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout)
+            lastproc = proc
+
+        if output or len(cmds):
+            output = lastproc.communicate()[0]
+            logging.debug("Returned : " + str(lastproc.returncode))
+            return lastproc.returncode, output
         else:
-            try:
-                retcode = subprocess.call(cmd, env = env, shell = shell, cwd = cwd)
-                logging.debug("Returned : " + str(retcode))
-                return retcode
-            except:
-                logging.debug("Exception while subprocess.call")
-                return 1
+            retcode = lastproc.wait()
+            logging.debug("Returned : " + str(retcode))
+            return retcode
 
 class Backend(object):
     def __init__(self):

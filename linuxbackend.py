@@ -116,16 +116,18 @@ class LinuxBackend(Backend):
     def check_process(self):
         #self.call("ls", env = os.environ)
         logging.debug("Checking process")
-        p1 = subprocess.Popen(["ps", "ax", "-o", "pid,command"], stdout=subprocess.PIPE)
-        p2 = subprocess.Popen(["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"], stdin=p1.stdout, stdout=subprocess.PIPE)
-        processes = p2.communicate()[0]
+        # p1 = subprocess.Popen(["ps", "ax", "-o", "pid,command"], stdout=subprocess.PIPE)
+        # p2 = subprocess.Popen(["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"], stdin=p1.stdout, stdout=subprocess.PIPE)
+        # processes = p2.communicate()[0]
+        processes = self.call([ ["ps", "ax", "-o", "pid,command"],
+                                ["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"] ], output = True)[1]
         #processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'").split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
             i = len(pids) - 1
             while i >= 0:
-                if subprocess.Popen(["ps", "-p", pids[i], "-o", "ppid"], stdout=subprocess.PIPE).communicate()[0].split("\n")[-1].strip() in pids:
+                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[0].split("\n")[-1].strip() in pids:
                     del pids[i]
                 i -= 1
             if len(pids) > 1: 
@@ -219,23 +221,14 @@ class LinuxBackend(Backend):
 
     def find_resolution(self):
         if path.exists("/usr/bin/xrandr"):
-            print "XRANDR"
             # p1 = subprocess.Popen([ "/usr/bin/xrandr" ], stdout=subprocess.PIPE)
             # p2 = subprocess.Popen([ "grep", "*" ], stdin=p1.stdout, stdout=subprocess.PIPE, shell=False)
             # return p2.communicate()[0].split()[0]
             try:
-                # return self.call([ [ "/usr/bin/xrandr" ], [ "grep", "*" ] ], output=True)[0].split()[0]
-                print "BEFORE"
-                output = self.call([ "ls" ], output=True)
-                print "AFTER"
-                lines = output.split("\n")
-                for line in lines:
-                    if '*' in line:
-                        print "IMPROBABLE"
-                        return line
+                return self.call([ [ "/usr/bin/xrandr" ], [ "grep", "*" ] ], output=True)[1].split()[0]
+                # output = self.call([ "ls" ], output=True)[1]
             except:
-                print "EXCEPT ???"
-        print "QUIT FIND RES"
+                raise
         return ""
 
     def dialog_info(self, title, msg):

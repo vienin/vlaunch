@@ -25,14 +25,15 @@ except:
         print "Could not redirect log to file"
 
 if conf.LIVECD:
-    iso_url = "http://kickstart.agorabox.org/private/UFO.iso"
-
+    iso_url = "http://kickstart.agorabox.org/private/VBoxRT.dll" # UFO.iso"
     download = True
     if path.exists(conf.BOOTISO):
         length = int(urllib.urlopen(iso_url).headers['content-length'])
         if length == os.stat(conf.BOOTISO).st_size:
             logging.debug("Found complete ISO file. Do not download it.")
             download = False
+        else:
+            logging.debug("Found incomplete file '%s' of size %d (%d expected)" % (conf.BOOTISO, os.stat(conf.BOOTISO).st_size, length))
         
     if not "--respawn" in sys.argv and download:
         import gui_pyqt

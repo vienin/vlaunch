@@ -3,13 +3,11 @@
 from PyQt4 import QtGui, QtCore, QtNetwork
 import sys, os
 
-"""
 app = QtGui.QApplication(sys.argv)
 desktop = app.desktop()
 screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())
-"""
 
 def create_app():
     global app
@@ -192,7 +190,7 @@ class DownloadWindow(QtGui.QDialog):
         self.progressDialog.setValue(bytesRead)   
 
 def download_file(url, filename):
-    downloadWin = DownloadWindow(url=url, filename=filename, parent=main)
+    downloadWin = DownloadWindow(url=url, filename=filename) # , parent=main)
     downloadWin.show()
     return downloadWin.exec_()
 
