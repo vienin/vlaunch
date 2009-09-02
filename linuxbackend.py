@@ -7,6 +7,7 @@ import conf
 import subprocess
 import logging
 import platform
+import gui
 
 def get_su_command(): 
     if os.path.exists("/usr/bin/gksudo"):
@@ -226,7 +227,7 @@ class LinuxBackend(Backend):
         return ""
 
     def dialog_info(self, title, msg):
-        easygui.msgbox(msg=msg, title=title)
+        gui.msgbox(msg=msg, title=title)
 
     def check_privileges(self):
         if os.geteuid() != 0:
@@ -251,9 +252,7 @@ class LinuxBackend(Backend):
         self.call([ "killall", "-9", "VBoxSVC" ])
 
     def dialog_question(self, title, msg, button1, button2):
-        choices = [ button1, button2 ]
-        reply = easygui.buttonbox(msg, title, choices=choices)
-        return reply
+        return gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
 
     def wait_for_termination(self):
         while True:

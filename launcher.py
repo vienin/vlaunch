@@ -27,7 +27,7 @@ except:
 if conf.LIVECD:
     if not os.path.exists(conf.BOOTISO):
         import gui_pyqt
-        if gui_pyqt.download_file("http://kickstart.agorabox.org/private/UFO.iso",
+        if gui_pyqt.download_file("http://kickstart.agorabox.org/private/QtGui4.dll", # UFO.iso",
                                filename=conf.BOOTISO):
             sys.exit(0)
 
@@ -48,8 +48,9 @@ elif sys.platform == "darwin":
     from macbackend import *
     backend = MacBackend()
 elif sys.platform == "linux2":
-    from linuxbackend import *
+    from linuxbackend import LinuxBackend
     backend = LinuxBackend()
+    subprocess.call(["ls", "/"])
 else:
     raise "Unsupported platform"
 
@@ -98,11 +99,11 @@ if not conf.NOUPDATE and conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
         logging.debug("".join(traceback.format_tb(info[2])))
         logging.debug("Exception while updating")
 
-try:
-    if sys.platform == "linux2":
-        rmtree(path.join(conf.SCRIPT_DIR,"bin", "settings"))
-        print "Temporary settings file destroyed"
-except: pass
+    try:
+        if sys.platform == "linux2":
+            rmtree(path.join(conf.SCRIPT_DIR,"bin", "settings"))
+            print "Temporary settings file destroyed"
+    except: pass
 
 if __name__ == "__main__":
     backend.run()

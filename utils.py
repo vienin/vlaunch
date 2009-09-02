@@ -12,12 +12,9 @@ import os
 import conf
 import shutil
 import tempfile
-from utils import *
 import uuid
 from splash import SplashScreen
 from ConfigParser import ConfigParser
-
-import time
 
 os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
                     "VBOX_PROGRAM_PATH" : conf.BIN, 
@@ -46,7 +43,7 @@ def append_to_end(filename, line):
         line += "\n" + line
     open(filename, 'a').write(line)
 
-class Backend:
+class Backend(object):
     def __init__(self):
         if not path.isabs(conf.HOME):
             conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
@@ -60,10 +57,7 @@ class Backend:
         self.do_not_update = False
         self.env = os.environ.copy()
         
-        "self.check_process()"
-
-        "self.kill_resilient_vbox()"
-        self.remove_settings_files()
+        self.check_process()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
@@ -160,7 +154,7 @@ class Backend:
                 blockcount = self.get_device_size(conf.DEV)
                 createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, device_parts, self.RELATIVE_VMDK_POLICY)
 
-            self.vbox.current_machine.attach_harddisk(vmdk, conf.DRIVERANK)
+            self.vbox.current_machine.attach_harddisk(vmdk, rank)
 
         if conf.CONFIGUREVM:
             # compute reasonable memory size
@@ -392,9 +386,11 @@ class Backend:
         logging.debug("HOME path: " + conf.HOME)
         #os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
 
-        self.prepare()
+        "self.kill_resilient_vbox()"
 
+        self.prepare()
         self.look_for_virtualbox()
+        self.remove_settings_files()
 
         # generate raw vmdk for usb key
         create_vmdk = False

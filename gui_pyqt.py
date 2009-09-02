@@ -3,10 +3,16 @@
 from PyQt4 import QtGui, QtCore, QtNetwork
 import sys, os
 
-app = QtGui.QApplication(sys.argv)
-main = QtGui.QMainWindow()
-desktop = app.desktop()
-screenRect = desktop.screenGeometry(desktop.primaryScreen())
+def create_app():
+    app = QtGui.QApplication(sys.argv)
+    # desktop = app.desktop()
+    # screenRect = desktop.screenGeometry(desktop.primaryScreen())
+    # main = QtGui.QMainWindow()
+    return app
+
+def destroy_app(app):
+    app.exit()
+    app = None     
 
 class OurMessageBox(QtGui.QMessageBox):
     def setMinimumSize(self, width, height):
@@ -18,36 +24,45 @@ class OurMessageBox(QtGui.QMessageBox):
             self.setFixedSize(*self._minSize)
 
 def create_message_box(title, msg, width = 200, height = 100, buttons = QtGui.QMessageBox.Ok):
-    msgbox = OurMessageBox(desktop)
+    darwin = sys.platform == "darwin"
+    msgbox = OurMessageBox(None)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
-    msgbox.setMinimumSize(width, height)
+    if darwin:
+        msgbox.setMinimumSize(width, height)
+        msgbox.setGeometry((screenRect.width() - width) / 2,
+                           (screenRect.height() - height) / 2,
+                           width, height)
     msgbox.setSizeGripEnabled(True)
     msgbox.setStandardButtons(buttons)
 
-    msgbox.setGeometry((screenRect.width() - width) / 2,
-                       (screenRect.height() - height) / 2,
-                       width, height)
     return msgbox
 
 def dialog_info(title, msg):
+    app = create_app()
     # QtGui.QMessageBox.information(main, title, msg)
     msgbox = create_message_box(title=title, msg=msg)
     msgbox.exec_()
+    destroy_app(app)
 
 def dialog_question(title, msg, button1="Yes", button2="No"):
-    reply = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+    app = create_app()
+    msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width = 500)
+    reply = msgbox.exec_()
+    destroy_app(app)
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
 
 def dialog_password(msg=None):
-    dlg = QtGui.QInputDialog(desktop)
+    app = create_app()
+    dlg = QtGui.QInputDialog()
     dlg.setTextEchoMode(QtGui.QLineEdit.Password)
     if not msg:
         msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
     dlg.setLabelText(msg)
     dlg.setWindowTitle(u"Autorisations nécessaires")
     dlg.exec_()
+    destroy_app(app)
     return dlg.textValue()
 
 class DownloadWindow(QtGui.QDialog):
@@ -59,6 +74,7 @@ class DownloadWindow(QtGui.QDialog):
         self.outFile = None
         self.httpGetId = 0
         self.httpRequestAborted = False
+        self.finished = False
 
         self.statusLabel = QtGui.QLabel(self.tr(u"Un live U.F.O est nécessaire pour continuer. \n"   
                                                 u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
@@ -98,6 +114,9 @@ class DownloadWindow(QtGui.QDialog):
         self.setWindowTitle(self.tr(u"Téléchargement de l'image"))
 
     def downloadFile(self):
+        if self.finished:
+            self.close()
+
         fileName = self.fileName
         self.outFile = QtCore.QFile(fileName)
         if not self.outFile.open(QtCore.QIODevice.WriteOnly):
@@ -142,10 +161,9 @@ class DownloadWindow(QtGui.QDialog):
             QtGui.QMessageBox.information(self, self.tr("HTTP"),
                     self.tr(u"Le téléchargement a échoué. Vérifiez votre connexion Internet."))
         else:
+            self.finished = True
             self.statusLabel.setText(self.tr(u"Téléchargement terminé. Cliquez sur 'Démarrer' pour continuer."))
             self.downloadButton.setText(u"Démarrer")
-            self.statusLabel.setText(self.tr(u"Veuillez patienter pendant le "   
-                                             u"téléchargement de l'image."))
 
         self.downloadButton.setEnabled(True)
         self.outFile = None
