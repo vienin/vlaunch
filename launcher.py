@@ -25,10 +25,20 @@ except:
         print "Could not redirect log to file"
 
 if conf.LIVECD:
-    if not os.path.exists(conf.BOOTISO):
+    iso_url = "http://kickstart.agorabox.org/private/UFO.iso"
+
+    download = True
+    if path.exists(conf.BOOTISO):
+        length = int(urllib.urlopen(iso_url).headers['content-length'])
+        if length == os.stat(conf.BOOTISO).st_size:
+            logging.debug("Found complete ISO file. Do not download it.")
+            download = False
+        
+    if not "--respawn" in sys.argv and download:
         import gui_pyqt
-        if gui_pyqt.download_file("http://kickstart.agorabox.org/private/QtGui4.dll", # UFO.iso",
-                               filename=conf.BOOTISO):
+        res = gui_pyqt.download_file(iso_url, # UFO.iso",
+                                     filename=conf.BOOTISO)
+        if not res:
             sys.exit(0)
 
 if sys.platform == "win32":
@@ -59,7 +69,7 @@ print "SCRIPT_PATH", conf.SCRIPT_PATH
 print "APP_PATH", conf.APP_PATH
 
 if not conf.NOUPDATE and conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
-   not "--no-update" in sys.argv:
+   not "--respawn" in sys.argv:
     try:
         socket.setdefaulttimeout(5)
         latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()

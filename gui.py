@@ -20,9 +20,9 @@ except:
 
 if __name__ == "__main__":
     dialog_question("Titre", "Message")
-    dialog_question("Titre", "Message")
     dialog_info("Titre", "Message")
     print dialog_password()
+    download_file("http://www.glumol.com", "toto")
     splash = SplashScreen(image="ufo-generic.bmp")
     import time
     time.sleep(5)

@@ -3,16 +3,24 @@
 from PyQt4 import QtGui, QtCore, QtNetwork
 import sys, os
 
+"""
+app = QtGui.QApplication(sys.argv)
+desktop = app.desktop()
+screenRect = desktop.screenGeometry(desktop.primaryScreen())
+main = QtGui.QMainWindow(desktop)
+main.resize(screenRect.width(), screenRect.height())
+"""
+
 def create_app():
+    global app
     app = QtGui.QApplication(sys.argv)
-    # desktop = app.desktop()
-    # screenRect = desktop.screenGeometry(desktop.primaryScreen())
-    # main = QtGui.QMainWindow()
-    return app
+    # After this line, subprocess needs to be patch as in Ubuntu
+    # http://svn.python.org/view?view=rev&revision=65475
+    # http://twistedmatrix.com/trac/ticket/733
 
 def destroy_app(app):
     app.exit()
-    app = None     
+    app = None
 
 class OurMessageBox(QtGui.QMessageBox):
     def setMinimumSize(self, width, height):
@@ -25,10 +33,10 @@ class OurMessageBox(QtGui.QMessageBox):
 
 def create_message_box(title, msg, width = 200, height = 100, buttons = QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"
-    msgbox = OurMessageBox(None)
+    msgbox = OurMessageBox(main)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
-    if darwin:
+    if False: # darwin:
         msgbox.setMinimumSize(width, height)
         msgbox.setGeometry((screenRect.width() - width) / 2,
                            (screenRect.height() - height) / 2,
@@ -46,16 +54,13 @@ def dialog_info(title, msg):
     destroy_app(app)
 
 def dialog_question(title, msg, button1="Yes", button2="No"):
-    app = create_app()
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width = 500)
     reply = msgbox.exec_()
-    destroy_app(app)
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
 
 def dialog_password(msg=None):
-    app = create_app()
-    dlg = QtGui.QInputDialog()
+    dlg = QtGui.QInputDialog(main)
     dlg.setTextEchoMode(QtGui.QLineEdit.Password)
     if not msg:
         msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
@@ -115,7 +120,7 @@ class DownloadWindow(QtGui.QDialog):
 
     def downloadFile(self):
         if self.finished:
-            self.close()
+            self.accept()
 
         fileName = self.fileName
         self.outFile = QtCore.QFile(fileName)
@@ -127,6 +132,7 @@ class DownloadWindow(QtGui.QDialog):
 
         self.http.setHost(QtCore.QUrl(self.url).host())
 
+        # request = self.http.request(self.url)
         self.httpGetId = self.http.get(self.url, self.outFile)
 
         self.progressDialog.setWindowTitle(self.tr(u"Téléchargement de l'image"))
@@ -186,7 +192,7 @@ class DownloadWindow(QtGui.QDialog):
         self.progressDialog.setValue(bytesRead)   
 
 def download_file(url, filename):
-    downloadWin = DownloadWindow(url=url, filename=filename)
+    downloadWin = DownloadWindow(url=url, filename=filename, parent=main)
     downloadWin.show()
     return downloadWin.exec_()
 

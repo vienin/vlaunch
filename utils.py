@@ -13,7 +13,7 @@ import conf
 import shutil
 import tempfile
 import uuid
-from splash import SplashScreen
+import gui
 from ConfigParser import ConfigParser
 
 os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
@@ -43,23 +43,41 @@ def append_to_end(filename, line):
         line += "\n" + line
     open(filename, 'a').write(line)
 
-class Backend(object):
-    def __init__(self):
-        if not path.isabs(conf.HOME):
-            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
-        if not path.isabs(conf.BIN):
-            conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
+try:
+    from PyQt4 import QtCore
+    def call(cmds, env = None, shell = False, cwd = None, output = False):
+        if type(cmds[0]) == str:
+            cmds = [ cmds ]
+        lastproc = None
+        procs = []
+        print "Settings commands"
+        for cmd in cmds:
+            print "Creating process"
+            proc = QtCore.QProcess()
+            if cwd:
+                proc.setWorkingDirectory = cwd
+            if env:
+                proc.setEnvironment(env)
+            if lastproc:
+                lastproc.setStandardOutputProcess(proc)
+            lastproc = proc
+            procs.append((proc, cmd))
 
-        self.usb_devices = []
-        self.tmp_swapdir = ""
-        self.tmp_overlaydir = ""
-        self.puel = False
-        self.do_not_update = False
-        self.env = os.environ.copy()
+        for proc, cmd in procs:
+            proc.start(cmd[0], cmd[1:])
         
-        self.check_process()
+        print "Wait"
+        success = lastproc.waitForFinished(500)
+        print "Success ?", success
+        if success:
+            if output:
+                return proc.readAllStandardOutput(), proc.exitCode()
+            return proc.exitCode()
+        return -1
 
-    def call(self, cmd, env = None, shell = False, cwd = None, output = False):
+except:
+    raise
+    def call(cmd, env = None, shell = False, cwd = None, output = False):
         logging.debug(" ".join(cmd) + " with environment : " + str(env))
         if output:
             try:
@@ -79,6 +97,26 @@ class Backend(object):
                 logging.debug("Exception while subprocess.call")
                 return 1
 
+class Backend(object):
+    def __init__(self):
+        if not path.isabs(conf.HOME):
+            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
+        if not path.isabs(conf.BIN):
+            conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
+
+        self.usb_devices = []
+        self.tmp_swapdir = ""
+        self.tmp_overlaydir = ""
+        self.puel = False
+        self.do_not_update = False
+        self.env = os.environ.copy()
+        self.splash = None
+        
+        self.check_process()
+
+    def call(self, cmd, env = None, shell = False, cwd = None, output = False):
+        return call(cmd, env = env, shell = shell, cwd = cwd, output = output)
+
     def find_network_device(self):
         if not conf.HOSTNET:    
             return conf.NET_NAT
@@ -87,6 +125,16 @@ class Backend(object):
     def write_fake_vmdk(self, dev):
         vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
+
+    def create_splash_screen(self):
+        if images:
+            self.splash = gui.SplashScreen(self.tk, images[0])
+        else:
+            logging.debug("Found no image for splash screen")
+
+    def destroy_splash_screen(self):
+        if self.splash:
+            self.splash.destroy()
 
     def create_virtual_machine(self, create_vmdk = True):
         logging.debug("Creating VBoxHypervisor")
@@ -386,8 +434,7 @@ class Backend(object):
         logging.debug("HOME path: " + conf.HOME)
         #os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
 
-        "self.kill_resilient_vbox()"
-
+        # self.kill_resilient_vbox()
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()

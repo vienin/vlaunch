@@ -16,7 +16,6 @@ import conf
 import tempfile
 import time
 import platform
-import Tkinter
 from utils import *
 from shutil import copyfile, copytree
 
@@ -32,16 +31,13 @@ class WindowsBackend(Backend):
     def __init__(self):
         Backend.__init__(self)
         self.WMI = wmi.WMI()
-        self.splash = None
-        self.tk = Tkinter.Tk()
-        self.tk.withdraw()
 
     def check_process(self):
         logging.debug("Checking process")
         processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="ufo-updater.exe")
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
-            logging.debug("ufo launched twice!! Exiting")
+            logging.debug("UFO launched twice. Exiting")
             sys.exit(0)
 
     def prepare_update(self):
@@ -332,10 +328,7 @@ class WindowsBackend(Backend):
     def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
-        try:
-            self.splash = SplashScreen(self.tk, image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
-        except:
-            logging.debug("Failed to create splash screen")
+        images = glob.glob(path.join(conf.HOME, "ufo-*.gif"))
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
             conf.VBOX_INSTALLED = True

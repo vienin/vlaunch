@@ -2,6 +2,9 @@ import easygui
 from Tkinter import Tk, Image, PhotoImage, Toplevel, FLAT, NW, Canvas
 import Tix
 
+tk = Tkinter.Tk()
+tk.withdraw()
+
 def dialog_info(title, msg):
     easygui.msgbox(msg=msg, title=title)
 

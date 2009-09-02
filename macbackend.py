@@ -52,7 +52,7 @@ class MacBackend(Backend):
                     del pids[i]
                 i -= 1
             if len(pids) > 1: 
-                logging.debug("U.F.O was launched twice ! Exiting")
+                logging.debug("U.F.O launched twice. Exiting")
                 sys.exit(0)
 
     def prepare_update(self):
@@ -250,7 +250,7 @@ end timeout
                     cmd = [ path.join(path.dirname(sys.executable), "UFO") ]
                 else:
                     cmd = [ sys.executable ] + sys.argv
-                cmd += [ "--no-update" ]
+                cmd += [ "--respawn" ]
                 logging.debug(" ".join([ "sudo", "-S" ] + cmd))
                 logging.debug("Sudoing and exiting")
                 logging.shutdown()

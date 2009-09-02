@@ -97,7 +97,6 @@ except ImportError:
 
 import glob
 import tempfile
-import Tkinter
 import time
 from utils import *
 from shutil import copytree
@@ -113,9 +112,6 @@ class LinuxBackend(Backend):
     def __init__(self):
         Backend.__init__(self)
         self.terminated = False
-        self.splash = None
-        self.tk = Tkinter.Tk()
-        self.tk.withdraw()
 
     def check_process(self):
         #self.call("ls", env = os.environ)
@@ -129,11 +125,11 @@ class LinuxBackend(Backend):
             pids = [ i.strip().split(" ")[0] for i in processes ]
             i = len(pids) - 1
             while i >= 0:
-                if commands.getoutput("ps -p " + pids[i] + " -o ppid").split("\n")[-1].strip() in pids:
+                if subprocess.Popen(["ps", "-p", pids[i], "-o", "ppid"], stdout=subprocess.PIPE).communicate()[0].split("\n")[-1].strip() in pids:
                     del pids[i]
                 i -= 1
             if len(pids) > 1: 
-                logging.debug("U.F.O was launched twice ! Exiting")
+                logging.debug("U.F.O launched twice. Exiting")
                 sys.exit(0)
 
     def prepare_update(self):
@@ -146,7 +142,7 @@ class LinuxBackend(Backend):
                             os.path.join(self.shadow_updater_path, "settings"))
         
     def getuuid(self, dev):
-        return commands.getoutput("blkid -o value -s UUID " + dev)
+        return self.getoutput([ "blkid", "-o", "value", "-s", "UUID", dev ])
 
     def find_device_by_uuid(self, dev_uuid):
         for device in glob.glob("/dev/sd*[0-9]"):
@@ -223,7 +219,23 @@ class LinuxBackend(Backend):
 
     def find_resolution(self):
         if path.exists("/usr/bin/xrandr"):
-            return commands.getoutput('/usr/bin/xrandr | grep "*"').split()[0]
+            print "XRANDR"
+            # p1 = subprocess.Popen([ "/usr/bin/xrandr" ], stdout=subprocess.PIPE)
+            # p2 = subprocess.Popen([ "grep", "*" ], stdin=p1.stdout, stdout=subprocess.PIPE, shell=False)
+            # return p2.communicate()[0].split()[0]
+            try:
+                # return self.call([ [ "/usr/bin/xrandr" ], [ "grep", "*" ] ], output=True)[0].split()[0]
+                print "BEFORE"
+                output = self.call([ "ls" ], output=True)
+                print "AFTER"
+                lines = output.split("\n")
+                for line in lines:
+                    if '*' in line:
+                        print "IMPROBABLE"
+                        return line
+            except:
+                print "EXCEPT ???"
+        print "QUIT FIND RES"
         return ""
 
     def dialog_info(self, title, msg):
@@ -242,7 +254,7 @@ class LinuxBackend(Backend):
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
-        run_as_root([ sys.executable ] + sys.argv + [ "--no-update" ])
+        run_as_root([ sys.executable ] + sys.argv + [ "--respawn" ])
                                              
     def cleanup(self):
         pass
