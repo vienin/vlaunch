@@ -11,7 +11,7 @@ APP = [ "UFO.py" ]
 # dict(script = 'UFO.py', plist = plist) ]
 #APP = [ 'launcher.py', 'mac.py' ]
 DATA_FILES = [ ]
-OPTIONS = {'argv_emulation' : False, 'iconfile' : 'ufo.icns', 'includes': ['xpcom', 'xpcom.vboxxpcom'] }
+OPTIONS = {'argv_emulation' : False, 'iconfile' : 'ufo.icns', 'includes': ['xpcom', 'xpcom.vboxxpcom', 'sip'] }
 
 setup(
     app=APP,

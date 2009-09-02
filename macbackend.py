@@ -42,13 +42,14 @@ class MacBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking process")
-        processes = commands.getoutput("ps ax -o pid,command | grep -i '\\/ufo\\(-updater\\)\\?\\( \\|$\\)'").split("\n")
+        processes = self.call([ ["ps", "ax", "-o", "pid,command"],
+                                ["grep", "'\\/ufo\\(-updater\\)\\?\\( \\|$\\)'"] ], output = True)[1].split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
             i = len(pids) - 1
             while i >= 0:
-                if commands.getoutput("ps -p " + pids[i] + " -o ppid").split("\n")[-1].strip() in pids:
+                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].split("\n")[-1].strip() in pids:
                     del pids[i]
                 i -= 1
             if len(pids) > 1: 
@@ -251,14 +252,12 @@ end timeout
                 else:
                     cmd = [ sys.executable ] + sys.argv
                 cmd += [ "--respawn" ]
-                logging.debug(" ".join([ "sudo", "-S" ] + cmd))
                 logging.debug("Sudoing and exiting")
                 logging.shutdown()
                 p = subprocess.Popen([ "sudo", "-S" ] + cmd, stdin=subprocess.PIPE, close_fds=True)
-                p.communicate(password)
+                p.communicate(str(password))
                 if p.returncode:
                     self.dialog_info(title="Erreur", msg="Erreur lors de la saisie du mot de passe")
-                # logging.debug("Exiting...")
                 sys.exit(0)
 
     def is_ready(self):
@@ -387,6 +386,8 @@ end timeout
             time.sleep(2)
 
     def run_vbox(self, command, env):
+        print env
+        #os.system(os.path.join(conf.BIN, command))
         self.call(command, env = env, cwd = conf.BIN)
 
     def find_resolution(self):

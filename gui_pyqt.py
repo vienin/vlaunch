@@ -45,11 +45,8 @@ def create_message_box(title, msg, width = 200, height = 100, buttons = QtGui.QM
     return msgbox
 
 def dialog_info(title, msg):
-    app = create_app()
-    # QtGui.QMessageBox.information(main, title, msg)
     msgbox = create_message_box(title=title, msg=msg)
     msgbox.exec_()
-    destroy_app(app)
 
 def dialog_question(title, msg, button1="Yes", button2="No"):
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width = 500)
@@ -65,7 +62,6 @@ def dialog_password(msg=None):
     dlg.setLabelText(msg)
     dlg.setWindowTitle(u"Autorisations nécessaires")
     dlg.exec_()
-    destroy_app(app)
     return dlg.textValue()
 
 class DownloadWindow(QtGui.QDialog):

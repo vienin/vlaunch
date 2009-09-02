@@ -132,6 +132,7 @@ class VBoxHypervisor(Hypervisor):
     
     def close_session(self):
         self.current_machine.machine.saveSettings()
+        self.vbox.saveSettings()
         if self.session == None:
             return 1
         self.session.close()

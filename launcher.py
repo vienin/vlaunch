@@ -15,12 +15,14 @@ format = "%(asctime)s %(levelname)s %(message)s"
 try:
     logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, conf.LOG))
     logging.debug("Logging to " + path.join(conf.SCRIPT_DIR, conf.LOG))
+    print "Logging to " + path.join(conf.SCRIPT_DIR, conf.LOG)
 except:
     try:
         temp = path.join(tempfile.gettempdir(), "launcher.log")
         logging.basicConfig(format=format, level=logging.DEBUG,
                             filename=temp)
         logging.debug("Logging to " + temp)
+        print "Logging to " + temp
     except:
         print "Could not redirect log to file"
 
@@ -51,9 +53,9 @@ elif sys.platform == "darwin":
     logging.debug("Importing SIP")
     import sip
     logging.debug("Importing xpcom")
-    import xpcom
+    #import xpcom
     logging.debug("Importing xpcom.vboxxpcom")
-    import xpcom.vboxxpcom
+    #import xpcom.vboxxpcom
     logging.debug("Import PyQt4")
     import PyQt4.QtGui
     from macbackend import *

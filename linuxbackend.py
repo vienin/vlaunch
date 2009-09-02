@@ -114,20 +114,15 @@ class LinuxBackend(Backend):
         self.terminated = False
 
     def check_process(self):
-        #self.call("ls", env = os.environ)
         logging.debug("Checking process")
-        # p1 = subprocess.Popen(["ps", "ax", "-o", "pid,command"], stdout=subprocess.PIPE)
-        # p2 = subprocess.Popen(["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"], stdin=p1.stdout, stdout=subprocess.PIPE)
-        # processes = p2.communicate()[0]
         processes = self.call([ ["ps", "ax", "-o", "pid,command"],
-                                ["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"] ], output = True)[1]
-        #processes = commands.getoutput("ps ax -o pid,command | grep '\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'").split("\n")
+                                ["grep", "'\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)'"] ], output = True)[1].split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
             i = len(pids) - 1
             while i >= 0:
-                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[0].split("\n")[-1].strip() in pids:
+                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].split("\n")[-1].strip() in pids:
                     del pids[i]
                 i -= 1
             if len(pids) > 1: 

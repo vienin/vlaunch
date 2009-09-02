@@ -16,12 +16,6 @@ import uuid
 import gui
 from ConfigParser import ConfigParser
 
-os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
-                    "VBOX_PROGRAM_PATH" : conf.BIN, 
-                    "PYTHONPATH"        : conf.BIN,
-                    "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk") })
-sys.path.append(conf.BIN)
-
 from ufovboxapi import VBoxHypervisor
 
 def grep(input, pattern, inverse=False):
@@ -112,6 +106,12 @@ class Backend(object):
         self.tmp_overlaydir = ""
         self.puel = False
         self.do_not_update = False
+
+        os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
+                            "VBOX_PROGRAM_PATH" : conf.BIN, 
+                            "PYTHONPATH"        : conf.BIN,
+                            "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk") })
+        sys.path.append(conf.BIN)
         self.env = os.environ.copy()
         self.splash = None
         
@@ -435,7 +435,6 @@ class Backend(object):
         logging.debug("APP path: " + conf.APP_PATH)
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
-        #os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
 
         # self.kill_resilient_vbox()
         self.prepare()
@@ -460,8 +459,6 @@ class Backend(object):
         elif ret == conf.STATUS_EXIT:
             logging.debug("no device found, do not start machine")
             sys.exit(1)
-
-        # os.system(sys.executable + " " + os.path.join(conf.HOME, "vboxpython-workaround.py"))
 
         logging.debug("Configuring Virtual Machine")
         self.create_virtual_machine()
