@@ -34,8 +34,6 @@ class MacBackend(Backend):
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
             self.KEXTS = path.join(self.KEXTS, "Tiger")
-        self.tk = Tkinter.Tk()
-        self.tk.withdraw()
         self.disks = []
         self.tmpdir = ""
 
