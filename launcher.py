@@ -65,8 +65,7 @@ else:
 
 backend.check_process()
 
-if not conf.NOUPDATE and conf.SCRIPT_DIR.startswith(tempfile.gettempdir()) and \
-   not "--respawn" in sys.argv:
+if not conf.NOUPDATE and not "--respawn" in sys.argv:
     try:
         socket.setdefaulttimeout(5)
         latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()
