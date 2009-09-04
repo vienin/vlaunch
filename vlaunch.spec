@@ -138,8 +138,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/.VirtualBox/updater-download.gif
 %{TARGET_PATH}/Windows/.VirtualBox/updater-install.gif
 
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS/UFO
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS/python
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Info.plist
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Frameworks

@@ -59,6 +59,6 @@ class myPy2Exe(BuildExe):
 setup(zipfile = None,
       options = {'py2exe': {'bundle_files': 1, 'includes': ['sip'] }},
       windows = [{'script': "ufo.py", "icon_resources" : [(1, "UFO.ico")]}],
-      cmdclass={'py2exe':myPy2Exe},
+      # cmdclass={'py2exe':myPy2Exe},
       data_files=data_files,
 )
