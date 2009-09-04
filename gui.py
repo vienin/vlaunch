@@ -5,7 +5,7 @@ if __name__ == "__main__":
 
 try:
     from gui_pyqt import *
-    logging.debug("Using PyQt backend")
+    logging.warning("Using PyQt backend")
 except:
     try:
         from gui_tk import *

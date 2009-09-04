@@ -1,10 +1,8 @@
 import fcntl
 import struct
-import commands
 import glob
 import sys
 import os, os.path as path
-import subprocess
 import logging
 import conf
 import shutil
@@ -56,7 +54,7 @@ class MacBackend(Backend):
     def prepare_update(self):
         self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")
         self.updater_path = path.join(self.ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "Ufo-updater.app")
-        self.shadow_updater_path = tempfile.mktemp(prefix="Ufo-updater", suffix=".app")
+        self.shadow_updater_path = tempfile.mktemp(prefix="ufo-updater", suffix=".app")
         self.shadow_updater_executable = path.join(self.shadow_updater_path,
                                                   "Contents", "MacOS", "Ufo-updater")
                                                   
@@ -69,7 +67,7 @@ class MacBackend(Backend):
                         path.join(self.shadow_updater_path, "Contents", "Resources", "settings"))
 
     def get_model(self, dev):
-        medianame = grep(commands.getoutput("/usr/sbin/diskutil info " + dev), "Media Name:")
+        medianame = grep(self.call(["/usr/sbin/diskutil", "info", dev), "Media Name:")
         if medianame:
             return medianame[medianame.find(':') + 1:]
 
@@ -77,7 +75,7 @@ class MacBackend(Backend):
         return ""
     
     def find_device_by_volume(self, dev_volume):
-        output = grep(commands.getoutput("diskutil list"), " " + dev_volume + " ").split()
+        output = grep(self.call([ "diskutil", "list" ], output=True)[1], " " + dev_volume + " ").split()
         if output:
             return "/dev/" + output[-1][:-2]
         return ""
@@ -92,7 +90,7 @@ class MacBackend(Backend):
 
     def get_free_ram(self):
         maxmem = 384
-        mem = grep(commands.getoutput("top -l 1"), "PhysMem:").split()
+        mem = grep(self.call([ "top", "-l", "1" ], output=True)[1], "PhysMem:").split()
         for ind, val in enumerate(mem):
             if ind > 0 and val in [ "inactive", "free", "free." ]:
                 val = mem[ind - 1]
@@ -112,7 +110,7 @@ class MacBackend(Backend):
         disks = []
         try: 
             for device in glob.glob("/dev/disk[0-9]s[0-9]"):
-                infos = commands.getoutput("diskutil info " + device)
+                infos = self.call([ "diskutil", "info", device ], output=True)[1]
                 if grep(infos, "Protocol:").split()[1] == "USB" and \
                    len(grep(infos, "Volume Name:").split()) > 2 and \
                    len(grep(infos, "Mount Point:").split()) > 2:
@@ -131,25 +129,7 @@ class MacBackend(Backend):
         reply = gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
         return reply
 
-    """
-    output, err = subprocess.call(
-        ["/usr/bin/osascript", "-e",
-         'tell application "UFO" to display dialog "%s" with title "%s" buttons {"%s", "%s"} default button 2' %
-            (msg, title, button1, button2)])
-    match = "button returned:"
-    ind = output.find(match)
-    if ind != -1:
-        return output[ind + len(match):]
-    return ""
-    """
-
     def dialog_info(self, title, msg):
-        """
-        subprocess.call(
-            ["/usr/bin/osascript", "-e",
-             'tell app "UFO" to display dialog "%s" with title "%s" buttons "OK"' %
-                (msg, title) ])
-        """
         gui.dialog_info(msg=msg, title=title)
             
     # generic dialog box for ask password 
@@ -157,23 +137,6 @@ class MacBackend(Backend):
     # return : pass_string
     def dialog_password(self):
         return gui.dialog_password()
-
-        return subprocess.Popen([ "/usr/bin/osascript" ], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate("""
-with timeout of 300 seconds
-  tell app "UFO"
-    activate
-    set Input to display dialog "Entrez votre mot de passe:"
-     with title "Mot de passe"
-     with icon caution
-     default answer ""
-     buttons {"Annuler", "OK"}
-     default button 2
-     with hidden answer
-    giving up after 295
-    return text returned of Input as string
-  end tell
-end timeout
-""")
 
     def get_device_parts(self, dev):
         parts = glob.glob(dev + 's[0-9]')
@@ -220,10 +183,10 @@ end timeout
                     shutil.copyfile("/etc/fstab", "/etc/fstab.bak")
     
             for partition in glob.glob(disk + "s*"):
-                volname = grep(commands.getoutput("diskutil info " + partition), "Volume Name:").split()
+                volname = grep(self.call([ "diskutil", "info", partition ], output=True)[1], "Volume Name:").split()
                 if not volname or len(volname) < 3: continue
                 volname = volname[2]
-                fstype = grep(commands.getoutput("diskutil info " + partition), "File System:").split()
+                fstype = grep(self.call([ "diskutil", "info", partition ], output=True)[1], "File System:").split()
                 if fstype:
                     fstype = fstype[2]
                     fstype = { "MS-DOS" : "msdos", "Ext2" : "ext2", "Ext3" : "ext3" }.get(fstype, fstype)
@@ -250,9 +213,7 @@ end timeout
                 cmd += [ "--respawn" ]
                 logging.debug("Sudoing and exiting")
                 logging.shutdown()
-                p = subprocess.Popen([ "sudo", "-S" ] + cmd, stdin=subprocess.PIPE, close_fds=True)
-                p.communicate(str(password))
-                if p.returncode:
+                if self.call([ "sudo", "-S" ] + cmd, input = str(password)):
                     self.dialog_info(title="Erreur", msg="Erreur lors de la saisie du mot de passe")
                 sys.exit(0)
 
@@ -267,18 +228,15 @@ end timeout
             self.tmpdir = tempfile.mkdtemp(suffix="ufo")
             logging.debug("Copying myself from " + conf.APP_PATH + " to " + self.tmpdir)
 
-            # self.call([ "cp", "-P", "-R", conf.APP_PATH, self.tmpdir + "/"])
-            p1 = subprocess.Popen([ "tar", "-cf", "-", "-C", conf.APP_PATH, ".." ], stdout=subprocess.PIPE)
-            p2 = subprocess.Popen([ "tar", "xf", "-", "-C", self.tmpdir ], stdin=p1.stdout, stdout=subprocess.PIPE)
-            output = p2.communicate()[0]
-            
+            output = self.call([ [ "tar", "-cf", "-", "-C", conf.APP_PATH, ".." ], 
+                                 [ "tar", "xf", "-", "-C", self.tmpdir ] ], output = True)[1]
+
             logging.debug(" ".join([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ]))
             logging.shutdown()
+
             env = os.environ.copy()
             env["VBOX_USER_HOME"] = conf.HOME
-            subprocess.Popen([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ],
-                env = env, close_fds=True)
-            # logging.debug("Exiting for good")
+            self.call([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ], env = env)
             sys.exit(0)
 
         logging.debug("Ready")
@@ -355,23 +313,7 @@ end timeout
 
     def wait_for_termination(self):
         while True:
-            if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
-                break
-            disks = glob.glob("/dev/disk[0-9]")
-            if self.disks != disks:
-                self.check_usb_devices()
-                self.disks = disks
-            time.sleep(2)
-
-    def check_usb_changes(self):
-        while True:
-            logging.debug("Waiting for VirtualBoxVM to start")
-            if grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
-                break
-            time.sleep(2)
-        while True:
-            logging.debug("Waiting for termination")
-            if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBoxVM"), "grep", inverse=True):
+            if not grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM"), "grep", inverse=True):
                 break
             disks = glob.glob("/dev/disk[0-9]")
             if self.disks != disks:

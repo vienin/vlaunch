@@ -2,9 +2,7 @@
 
 import os, sys, statvfs
 import os.path as path
-import commands
 import conf
-import subprocess
 import logging
 import platform
 import gui
@@ -20,26 +18,21 @@ def get_su_command():
 def zenityfy(cmd, msg = []):
     if os.path.exists("/usr/bin/zenity"):
         logging.debug("Zenitify " + " ".join(cmd))
-        p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         if msg: msg = [ "--text", msg ]
-        p2 = subprocess.Popen([ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg, stdin=p1.stdout)
-        p2.communicate()
+        self.call([ [ cmd ], [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
+        #p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        #p2 = subprocess.Popen([ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg, stdin=p1.stdout)
+        #p2.communicate()
     else:
-        subprocess.call(cmd)
+        self.call([ cmd ])
 
 def get_distro():
     if os.path.exists("/usr/bin/lsb_release"):
-        return (subprocess.Popen( [ 'lsb_release', '--short', '-i' ], stdout=subprocess.PIPE).communicate()[0].strip(),
-                subprocess.Popen( [ 'lsb_release', '--short', '-r' ], stdout=subprocess.PIPE).communicate()[0].strip(),
-                subprocess.Popen( [ 'lsb_release', '--short', '-c' ], stdout=subprocess.PIPE).communicate()[0].strip())
+        return (self.call([ 'lsb_release', '--short', '-i' ], output=True)[1].strip(),
+                self.call([ 'lsb_release', '--short', '-r' ], output=True)[1].strip(),
+                self.call([ 'lsb_release', '--short', '-c' ], output=True)[1].strip())
     else:
         return platform.dist()
-    
-    # if platform.dist()[0] == "Ubuntu" or \
-    #    (os.path.exists("/etc/lsb-release") and "Ubuntu" in open('/etc/lsb-release').read()):
-    #     distro = "Ubuntu"
-    # else:
-    #     return platform.dist()[0]
                                     
 def run_as_root(command):
     if os.geteuid() != 0:
@@ -63,8 +56,7 @@ def run_as_root(command):
                graphical_ask_pass = False
                os.environ["SUDO_ASKPASS"] = path.join(conf.SCRIPT_DIR, "bin", "ask-password")
                try:
-                   p = subprocess.Popen([ "sudo", "-V" ], stdout=subprocess.PIPE)
-                   version = p.communicate()[0].split("\n")[0].split()[2]
+                   version = self.call([ "sudo", "-V" ], output=True)[1].split("\n")[0].split()[2]
                    if version >= "1.7.1":
                        graphical_ask_pass = True
                except:
@@ -89,8 +81,7 @@ except ImportError:
         msg = 'Votre distribution Linux n\'est pas officiellement ' \
                'supportée.\nVeuillez installer les packages python-tk et VirtualBox.'
         if os.path.exists("/usr/bin/zenity"):
-            subprocess.call( [ "zenity", "--info",
-                               '--text="' + msg + '"' ] )
+            self.call([ "zenity", "--info", '--text="' + msg + '"' ])
         else:
             print msg
         sys.exit(1)
@@ -200,9 +191,11 @@ class LinuxBackend(Backend):
         if os.environ.has_key("SUDO_USER"):
             user = os.getenv("SUDO_USER", "")
         elif os.environ.has_key("USERHELPER_UID"):
-            p1 = subprocess.Popen([ "getent", "passwd", os.getenv("USERHELPER_UID") ], stdout=subprocess.PIPE)
-            p2 = subprocess.Popen([ "cut", "-f", "1", "-d", ":" ], stdin=p1.stdout, stdout=subprocess.PIPE)
-            user = p2.communicate()[0].strip()
+            user = self.call([ [ "getent", "passwd", os.getenv("USERHELPER_UID") ], 
+                               [ "cut", "-f", "1", "-d", ":" ] ], output=True)[1].strip()
+            #p1 = subprocess.Popen([ "getent", "passwd", os.getenv("USERHELPER_UID") ], stdout=subprocess.PIPE)
+            #p2 = subprocess.Popen([ "cut", "-f", "1", "-d", ":" ], stdin=p1.stdout, stdout=subprocess.PIPE)
+            #user = p2.communicate()[0].strip()
         else:
             user = os.getenv("USER")
         return path.expanduser("~" + user), "Mes documents Linux"
@@ -252,7 +245,7 @@ class LinuxBackend(Backend):
 
     def wait_for_termination(self):
         while True:
-            if not grep(grep(commands.getoutput("ps ax -o pid,command"), "VirtualBox"), "grep", inverse=True):   
+            if not grep(grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBox"), "grep", inverse=True):   
                 break
             # logging.debug("Checking for USB devices")
             self.check_usb_devices()
@@ -276,27 +269,26 @@ class LinuxBackend(Backend):
                 open("/etc/apt/sources.list", "a").write(
                     "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (codename.lower(),))
                 os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
-                subprocess.call([ "apt-get", "update" ])
-                subprocess.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
+                self.call([ "apt-get", "update" ])
+                self.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
             elif distro == "Fedora":
                 logging.debug("Installing Agorabox repository for VirtualBox")
                 zenityfy([ "yum", "-y", "install", "yum-priorities" ], "Installation du plugin Yum : yum-priorities")
-                subprocess.call([ "rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm" ])
+                self.call([ "rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm" ])
                 kernel = "kernel"
                 if os.uname()[2].endswith("PAE"):
                     kernel += "-PAE"
                 logging.debug("Kernel is: " + kernel)
                 logging.debug("Installing VirtualBox")
                 zenityfy([ "yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma" ])
-                version = commands.getoutput('rpm -q --queryformat "%{VERSION}" VirtualBox-OSE')
+                version = self.call([ "rpm", "-q", "--queryformat", "\"%{VERSION}\"", "VirtualBox-OSE" ], output=True)[1]
                 kmod_dir = "VirtualBox-OSE-kmod-" + version
-                import tempfile
                 logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,))
-                subprocess.call([ "tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,) ],
+                self.call([ "tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,) ],
                                 cwd = tempfile.gettempdir())
                 tmpdir = tempfile.gettempdir() + "/" + kmod_dir
                 if not os.path.exists(tmpdir): os.mkdir(tmpdir)
-                ret = subprocess.call([ "make" ], cwd = tmpdir)
+                ret = self.call([ "make" ], cwd = tmpdir)
                 logging.debug("make returned %d", (ret,))
                 
         Backend.look_for_virtualbox(self)

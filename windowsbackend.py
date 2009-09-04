@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
-# Author        : Kevin Pouget 
-# Version       : 1.1
-# Description   : Search any UFO key among usb devices, build appropriate .vmdk file, and start virtual machine.
 
 import _winreg
-# Ideally, we should use easygui, but it causes problems with py2exe
-# import easygui
 import win32gui, win32con, win32api
-import subprocess
 import os, os.path as path
 import wmi
 import sys
@@ -77,7 +71,8 @@ class WindowsBackend(Backend):
 
             if self.call([ "sc", "create", "PortableVBoxDrv",
                       "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
-                      "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
+                      "type=", "kernel", "start=", "demand", "error=", "normal", 
+                      "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
                 return 1
             """
         
@@ -101,18 +96,24 @@ class WindowsBackend(Backend):
             if create_service:
                 if self.call([ "sc", "create", "PortableVBoxDrv",
                                "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
-                               "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
+                               "type=", "kernel", "start=", "demand", "error=", "normal", 
+                               "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
                     return 1
 
             if self.puel:
-                self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
-                                   "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSBMon" ], shell=True)
+                self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", 
+                             path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
+                             "type=", "kernel", "start=", "demand", "error=", "normal", 
+                             "displayname=", "PortableVBoxUSBMon" ], shell=True)
                          
                 try:
-                    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
+                    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 
+                                          "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
                     if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
-                        self.call(["sc", "create", "VBoxUSB", "binpath=", path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
-                                    "type=", "kernel", "start=", "demand", "error=", "normal", "displayname=", "PortableVBoxUSB" ], shell=True)
+                        self.call(["sc", "create", "VBoxUSB", "binpath=", 
+                                   path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
+                                   "type=", "kernel", "start=", "demand", "error=", "normal", 
+                                   "displayname=", "PortableVBoxUSB" ], shell=True)
                 except:
                     logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
     
@@ -258,8 +259,8 @@ class WindowsBackend(Backend):
             protocolpath = path.join(conf.BIN, "drivers", "network", "netflt")
             snetcfg = path.join(conf.BIN, "snetcfg_x86.exe")
             self.call([snetcfg, "-v", "-u", "sun_VBoxNetFlt"], shell=True)
-            self.call([snetcfg, "-v", "-l", "drivers\\network\\netflt\\VBoxNetFlt.inf", # path.join(protocolpath, "VBoxNetFlt.inf"),
-                   "-m", "drivers\\network\\netflt\\VBoxNetFlt_m.inf", #  path.join("drivers", "network", "netflt", "miniport", "VBoxNetFlt_m.inf"),
+            self.call([snetcfg, "-v", "-l", "drivers\\network\\netflt\\VBoxNetFlt.inf",
+                   "-m", "drivers\\network\\netflt\\VBoxNetFlt_m.inf",
                    "-c", "s", "-i", "sun_VBoxNetFlt"], shell=True, cwd=conf.BIN)
             shutil.copy(path.join(protocolpath, "VBoxNetFltNotify.dll"), self.systemdir)
             shutil.copy(path.join(protocolpath, "VBoxNetFlt.sys"), path.join(self.systemdir, "drivers"))

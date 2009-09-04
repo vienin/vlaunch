@@ -59,7 +59,6 @@ elif sys.platform == "darwin":
 elif sys.platform == "linux2":
     from linuxbackend import LinuxBackend
     backend = LinuxBackend()
-    subprocess.call(["ls", "/"])
 else:
     raise "Unsupported platform"
 

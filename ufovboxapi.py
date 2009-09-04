@@ -5,6 +5,7 @@
 
 import uuid as uuid_lib
 import traceback
+import logging
 
 class Host:
 
@@ -15,7 +16,7 @@ class Host:
 
 class Hypervisor:
 
-    def create_machine(self, machine_name, os_type, base_dir = ''):
+    def create_machine(self, machine_name, os_type, base_dir):
         pass
     def open_machine(self, machine_name):
         pass
@@ -103,7 +104,7 @@ class VBoxHypervisor(Hypervisor):
         try:
             self.vbox.getGuestOSType(os_type)
         except Exception, e:
-            print 'Unknown OS type:',os_type
+            logging.debug("Unknown OS type: " + os_type)
             return 1
         try:
             if self.vbox.version >= "2.1.0":
@@ -118,7 +119,7 @@ class VBoxHypervisor(Hypervisor):
                 machine.OSTypeId = os_type
                 self.vbox.registerMachine(machine)         
         except Exception, e:
-            print e
+            logging.debug(e)
             return 1
         return 0
 
@@ -167,7 +168,7 @@ class VBoxHypervisor(Hypervisor):
                 disk = self.vbox.openHardDisk(location)
                 self.vbox.registerHardDisk(disk)
         except Exception, e:
-            print e
+            logging.debug(e)
             return None
         return disk
 
@@ -178,7 +179,7 @@ class VBoxHypervisor(Hypervisor):
             if self.vbox.version < "2.1.0":
                 self.vbox.registerDVDImage(dvd)
         except Exception, e:
-            print e
+            logging.debug(e)
             return None
         return dvd
 
@@ -189,7 +190,7 @@ class VBoxHypervisor(Hypervisor):
             if self.vbox.version < "2.1.0":
                 self.vbox.registerFloppyImage(floppy)
         except Exception, e:
-            print e
+            logging.debug(e)
             return None
         return floppy
 
@@ -231,11 +232,10 @@ class VBoxMachine(VirtualMachine):
 
     def set_variable(self, variable_expr, variable_value, save = False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value
-        print "Executing",expr
         try:
             exec expr
         except Exception, e:
-            print 'failed: ',e
+            logging.debug(e)
             return 1
         if save:
             self.machine.saveSettings()
@@ -246,7 +246,7 @@ class VBoxMachine(VirtualMachine):
             disk_rank = self.current_disk_rank
             self.current_disk_rank += 1
         if disk_rank >= 3:
-            print "Maximum IDE disk rank is 2, " + str(disk_rank) + " given"
+            logging.debug("Maximum IDE disk rank is 2, " + str(disk_rank) + " given")
             return 1
         try:
             disk = self.hypervisor.vbox.findHardDisk(location)
@@ -267,7 +267,7 @@ class VBoxMachine(VirtualMachine):
                 self.machine.attachHardDisk(disk.id, self.hypervisor.constants.StorageBus_IDE, 
                                             disk_rank // 2, disk_rank % 2)
         except Exception, e:
-            print e
+            logging.debug(e)
             return 1
         if save:
             self.machine.saveSettings()
@@ -314,7 +314,7 @@ class VBoxMachine(VirtualMachine):
         try:
             self.machine.createSharedFolder(name, host_path, writable)
         except Exception, e:
-            print e
+            logging.debug(e)
             return 1
         if save:
             self.machine.saveSettings()
@@ -324,7 +324,7 @@ class VBoxMachine(VirtualMachine):
         try:
             self.machine.removeSharedFolder(name)
         except Exception, e:
-            print e
+            logging.debug(e)
             return 1
         if save:
             self.machine.saveSettings()
@@ -361,7 +361,7 @@ class VBoxMachine(VirtualMachine):
         try:
             self.machine.memorySize = ram_size
         except Exception, e:
-            print e
+            logging.debug(e)
             return 1
         if save:
             self.machine.saveSettings()
@@ -371,7 +371,7 @@ class VBoxMachine(VirtualMachine):
         try:
             self.machine.VRAMSize = vram_size
         except Exception, e:
-            print e
+            logging.debug(e)
             return 1
         if save:
             self.machine.saveSettings()
@@ -433,13 +433,13 @@ class VBoxMachine(VirtualMachine):
                 self.machine.getNetworkAdapter(0).adapterType = \
                     getattr(self.hypervisor.constants, "NetworkAdapterType_" + adapter_type)
         except Exception, e:
-            print e
+            logging.debug(e)
             result_code = 1
         try:
             if mac_address != '':
                 self.machine.getNetworkAdapter(0).MACAddress = mac_address
         except Exception, e:
-            print e
+            logging.debug(e)
             result_code = 2
         try:
             if attach_type == "NAT":
@@ -456,7 +456,7 @@ class VBoxMachine(VirtualMachine):
             elif attach_type =="None":
                 self.machine.getNetworkAdapter(0).detach()
         except Exception, e:
-            print e
+            logging.debug(e)
             result_code = 3
         if save:
             self.machine.saveSettings()

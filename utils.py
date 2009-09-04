@@ -38,7 +38,7 @@ def append_to_end(filename, line):
     open(filename, 'a').write(line)
 
 try:
-    from PyQt4 import QtCore_ # This 'backend' was supposed to work...
+    from PyQt4 import QtCore # This 'backend' was supposed to work...
     def call(cmds, env = None, shell = False, cwd = None, output = False):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
@@ -66,7 +66,7 @@ try:
         return -1
 
 except:
-    def call(cmds, env = None, shell = False, cwd = None, output = False):
+    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
@@ -89,6 +89,10 @@ except:
             output = lastproc.communicate()[0]
             logging.debug("Returned : " + str(lastproc.returncode))
             return lastproc.returncode, output
+        elif input:
+            lastproc.communicate(input)[0]
+            logging.debug("Returned : " + str(lastproc.returncode))
+            return lastproc.returncode
         else:
             retcode = lastproc.wait()
             logging.debug("Returned : " + str(retcode))
@@ -115,6 +119,7 @@ class Backend(object):
                             "PYTHONPATH"        : conf.BIN,
                             "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk") })
         sys.path.append(conf.BIN)
+        sys.path.append(os.path.join(conf.SCRIPT_DIR, "bin"))
         return os.environ.copy()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False):
