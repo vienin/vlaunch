@@ -270,10 +270,10 @@ class MacBackend(Backend):
 
         self.check_privileges()
         try:
-            self.splash = gui.SplashScreen(image=glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0])
+            logging.debug("Creating splash screen")
+            self.splash = self.create_splash_screen()
         except:
             logging.debug("Failed to create splash screen")
-            raise
         self.is_ready()
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):

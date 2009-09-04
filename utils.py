@@ -135,8 +135,9 @@ class Backend(object):
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
 
     def create_splash_screen(self):
+        images = glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0]
         if images:
-            self.splash = gui.SplashScreen(self.tk, images[0])
+            self.splash = gui.SplashScreen(images[0])
         else:
             logging.debug("Found no image for splash screen")
 
@@ -406,8 +407,7 @@ class Backend(object):
         self.usb_devices = usb_devices
 
     def run_virtual_machine(self, env):
-        if self.splash:
-            self.splash.destroy()
+        self.destroy_splash_screen()
         if conf.STARTVM:
             self.vbox.current_machine.start()
         else:

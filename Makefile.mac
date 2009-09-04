@@ -65,7 +65,7 @@ mac-launcher: clean py2app py2app-updater
 	rm -f dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Resources/site.pyc
 	mkdir -p dist/UFO.app/Contents/Resources/.VirtualBox
 	cd dist && tar cvzf mac-intel.tgz UFO.app
-	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-testing.tgz
+	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
