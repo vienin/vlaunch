@@ -67,7 +67,7 @@ class MacBackend(Backend):
                         path.join(self.shadow_updater_path, "Contents", "Resources", "settings"))
 
     def get_model(self, dev):
-        medianame = grep(self.call(["/usr/sbin/diskutil", "info", dev), "Media Name:")
+        medianame = grep(self.call(["/usr/sbin/diskutil", "info", dev]), "Media Name:")
         if medianame:
             return medianame[medianame.find(':') + 1:]
 
@@ -313,7 +313,7 @@ class MacBackend(Backend):
 
     def wait_for_termination(self):
         while True:
-            if not grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM"), "grep", inverse=True):
+            if not grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM", inverse=True):
                 break
             disks = glob.glob("/dev/disk[0-9]")
             if self.disks != disks:

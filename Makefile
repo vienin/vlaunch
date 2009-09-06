@@ -128,3 +128,5 @@ updater:
 	echo Revision: $$REV; \
 	mkdir update-$$REV; \
 	
+live:
+	pyinstaller-1.3/Build.py live.spec

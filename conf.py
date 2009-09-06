@@ -104,7 +104,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
 try:
     settings = cp.read([path.join(SCRIPT_DIR, "settings.conf"),
              path.join(SCRIPT_DIR, "settings", "settings.conf"),
-             path.join(SCRIPT_DIR, "..", "settings", "settings.conf")])
+             path.join(SCRIPT_DIR, "..", "settings", "settings.conf"),
+             path.join(os.environ["_MEIPASS2"], "settings.conf")])
     conf_file = settings[0]
 except:
     print "Could not read settings.conf"
