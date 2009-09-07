@@ -1015,6 +1015,9 @@ class Popen(object):
                 except OSError, e:
                     if e.errno == errno.EINTR:
                         continue
+                    elif e.errno == errno.ECHILD:
+                        """Here we lose return code..."""
+                        return 0, 0
                     else:
                         raise
 
