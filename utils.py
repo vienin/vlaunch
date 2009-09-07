@@ -38,7 +38,7 @@ def append_to_end(filename, line):
     open(filename, 'a').write(line)
 
 try:
-    from PyQt4 import QtCore # This 'backend' was supposed to work...
+    from PyQt4 import QtCore_ # This 'backend' was supposed to work...
     def call(cmds, env = None, shell = False, cwd = None, output = False):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
@@ -432,7 +432,7 @@ class Backend(object):
             os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
         if self.tmp_overlaydir:
             os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
-        
+        self.kill_resilient_vbox()
         self.cleanup()
 
     def run(self):

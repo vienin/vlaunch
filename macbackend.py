@@ -28,6 +28,7 @@ class MacBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
+        gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "..", "..", "UFO.ico"))
         self.KEXTS = "kexts"
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
@@ -36,20 +37,35 @@ class MacBackend(Backend):
         self.tmpdir = ""
 
     def check_process(self):
-        logging.debug("Checking process")
+        logging.debug("Checking UFO process")
         processes = self.call([ ["ps", "ax", "-o", "pid,command"],
-                                ["grep", "'\\/ufo\\(-updater\\)\\?\\( \\|$\\)'"] ], output = True)[1].split("\n")
+                                ["grep", "\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)"] ], output = True)[1].strip().split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
             i = len(pids) - 1
             while i >= 0:
-                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].split("\n")[-1].strip() in pids:
+                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].strip().split("\n")[-1] in pids:
                     del pids[i]
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
+                gui.dialog_info(title=u"Impossible de lancer UFO",
+                                error=True,
+                                msg=u"UFO semble déjà en cours d'utilisation. \n" \
+                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
                 sys.exit(0)
+
+        logging.debug("Checking VBoxXPCOMIPCD process")
+        if self.call([ ["ps", "ax", "-o", "pid,command"],
+                       ["grep", "VBoxXPCOMIPCD"],
+                       ["grep", "-v", "grep" ] ], output = True)[1]:
+            logging.debug("VBoxXPCOMIPCD is still running. Exiting")
+            gui.dialog_info(title=u"Impossible de lancer UFO",
+                            error=True,
+                            msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
+                                u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
+            sys.exit(0)
 
     def prepare_update(self):
         self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")

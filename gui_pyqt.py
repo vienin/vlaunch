@@ -9,6 +9,9 @@ screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())
 
+def set_icon(icon_path):
+    QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
+
 def create_app():
     global app
     app = QtGui.QApplication(sys.argv)
@@ -44,12 +47,17 @@ def create_message_box(title, msg, width = 200, height = 100, buttons = QtGui.QM
 
     return msgbox
 
-def dialog_info(title, msg):
+def dialog_info(title, msg, error = False):
     msgbox = create_message_box(title=title, msg=msg)
+    if error:
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
+    else:
+        msgbox.setIcon(QtGui.QMessageBox.Information)
     msgbox.exec_()
 
 def dialog_question(title, msg, button1="Yes", button2="No"):
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width = 500)
+    msgbox.setIcon(QtGui.QMessageBox.Question)
     reply = msgbox.exec_()
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
@@ -57,8 +65,9 @@ def dialog_question(title, msg, button1="Yes", button2="No"):
 def dialog_password(msg=None):
     dlg = QtGui.QInputDialog(main)
     dlg.setTextEchoMode(QtGui.QLineEdit.Password)
+    msgbox.setIcon(QtGui.QMessageBox.Warning)
     if not msg:
-        msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
+        msg = u"Veuillez entrer le mot de passe de l'utilisateur \"" + os.environ["USER"] + "\""
     dlg.setLabelText(msg)
     dlg.setWindowTitle(u"Autorisations nécessaires")
     dlg.exec_()
