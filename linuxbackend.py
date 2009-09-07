@@ -119,9 +119,9 @@ class LinuxBackend(Backend):
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                gui.dialog_info(title= u"Impossible de lancer UFO",
-                                error=True,
-                                msg=u"UFO semble déjà en cours d'utilisation. \n" \
+                self.dialog_info(title= u"Impossible de lancer UFO",
+                                 error=True,
+                                 msg=u"UFO semble déjà en cours d'utilisation. \n" \
                                     u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
                 sys.exit(0)
 
@@ -130,10 +130,10 @@ class LinuxBackend(Backend):
                        ["grep", "VBoxXPCOMIPCD"],
                        ["grep", "-v", "grep" ] ], output = True)[1]:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            gui.dialog_info(title=u"Impossible de lancer UFO",
-                            error=True,
-                            msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
+            self.dialog_info(title=u"Impossible de lancer UFO",
+                             error=True,
+                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
+                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
             sys.exit(0)
 
 
@@ -229,8 +229,8 @@ class LinuxBackend(Backend):
                 raise
         return ""
 
-    def dialog_info(self, title, msg):
-        gui.msgbox(msg=msg, title=title)
+    def dialog_info(self, title, msg, error = False):
+        gui.msgbox(msg=msg, title=title, error=error)
 
     def check_privileges(self):
         if os.geteuid() != 0:

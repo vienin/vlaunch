@@ -219,12 +219,10 @@ class WindowsBackend(Backend):
         pass
 
     def dialog_question(self, msg, title, button1, button2):
-        ret = win32gui.MessageBox(None, msg, title, win32con.MB_YESNO)
-        if ret == win32con.IDYES: return button1
-        else: return button2
+        return gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
 
-    def dialog_info(self, msg, title):
-        win32gui.MessageBox(None, msg, title, win32con.MB_OK)
+    def dialog_info(self, msg, title, error = False):
+        gui.msgbox(msg=msg, title=title, error=error)
 
     def get_device_size(self, name, partition = 0):
         assert partition == 0

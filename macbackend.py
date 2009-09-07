@@ -50,10 +50,10 @@ class MacBackend(Backend):
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                gui.dialog_info(title=u"Impossible de lancer UFO",
-                                error=True,
-                                msg=u"UFO semble déjà en cours d'utilisation. \n" \
-                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
+                self.dialog_info(title=u"Impossible de lancer UFO",
+                                 error=True,
+                                 msg=u"UFO semble déjà en cours d'utilisation. \n" \
+                                     u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
                 sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
@@ -61,10 +61,10 @@ class MacBackend(Backend):
                        ["grep", "VBoxXPCOMIPCD"],
                        ["grep", "-v", "grep" ] ], output = True)[1]:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            gui.dialog_info(title=u"Impossible de lancer UFO",
-                            error=True,
-                            msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
+            self.dialog_info(title=u"Impossible de lancer UFO",
+                             error=True,
+                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
+                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
             sys.exit(0)
 
     def prepare_update(self):
@@ -145,8 +145,8 @@ class MacBackend(Backend):
         reply = gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
         return reply
 
-    def dialog_info(self, title, msg):
-        gui.dialog_info(msg=msg, title=title)
+    def dialog_info(self, title, msg, error = False):
+        gui.dialog_info(msg=msg, title=title; error=error)
             
     # generic dialog box for ask password 
     # params :
