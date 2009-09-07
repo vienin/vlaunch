@@ -146,7 +146,7 @@ class MacBackend(Backend):
         return reply
 
     def dialog_info(self, title, msg, error = False):
-        gui.dialog_info(msg=msg, title=title; error=error)
+        gui.dialog_info(msg=msg, title=title, error=error)
             
     # generic dialog box for ask password 
     # params :

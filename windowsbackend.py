@@ -129,8 +129,8 @@ class WindowsBackend(Backend):
 
         logging.debug("Re-registering server:")
 
-        self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/reregserver" ], shell=True)
-        self.call([ "regsvr32.exe", "/S", path.join(conf.BIN, "VBoxC.dll") ], shell=True)
+        self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/reregserver" ], cwd = conf.BIN, shell=True)
+        self.call([ "regsvr32.exe", "/S", path.join(conf.BIN, "VBoxC.dll") ], cwd = conf.BIN, shell=True)
         self.call([ "rundll32.exe", "/S", path.join(conf.BIN, "VBoxRT.dll"), "RTR3Init" ], cwd = conf.BIN, shell=True)
     
         return 0

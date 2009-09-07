@@ -38,6 +38,7 @@ if conf.LIVECD:
             logging.debug("Found incomplete file '%s' of size %d (%d expected)" % (conf.BOOTISO, os.stat(conf.BOOTISO).st_size, length))
         
     if not "--respawn" in sys.argv and download:
+        sys.path.append(conf.BIN)
         import gui_pyqt
         res = gui_pyqt.download_file(iso_url, # UFO.iso",
                                      filename=conf.BOOTISO)
