@@ -50,10 +50,11 @@ class MacBackend(Backend):
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                self.dialog_info(title=u"Impossible de lancer UFO",
+                gui.dialog_info(title=u"Impossible de lancer UFO",
                                  error=True,
                                  msg=u"UFO semble déjà en cours d'utilisation. \n" \
-                                     u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
+                                     u"Veuillez fermer toutes les fenêtres UFO, et" \
+                                     u"relancer le programme.")
                 sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
@@ -61,10 +62,11 @@ class MacBackend(Backend):
                        ["grep", "VBoxXPCOMIPCD"],
                        ["grep", "-v", "grep" ] ], output = True)[1]:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            self.dialog_info(title=u"Impossible de lancer UFO",
+            gui.dialog_info(title=u"Impossible de lancer UFO",
                              error=True,
                              msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
+                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, " \
+                                 u"et relancer le programme.")
             sys.exit(0)
 
     def prepare_update(self):
@@ -206,7 +208,7 @@ class MacBackend(Backend):
             tries = 0
             while tries < 3:
                 logging.debug("Asking user password")
-                password, ok = self.dialog_password(rcode=True)
+                password, ok = gui.dialog_password(rcode=True)
                 if ok != 1:
                     ret = -1
                     break
@@ -217,7 +219,7 @@ class MacBackend(Backend):
                 if ret == 0:
                     break
                 else:
-                    self.dialog_info(title="Erreur", 
+                    gui.dialog_info(title="Erreur", 
                                      msg="Erreur lors de la saisie du mot de passe", 
                                      error=True)
                     tries += 1
@@ -332,6 +334,7 @@ class MacBackend(Backend):
                 shutil.rmtree(self.tmpdir)
 
     def wait_for_termination(self):
+        self.destroy_splash_screen()    
         while True:
             if not grep(grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM"), "grep", inverse=True):
                 break

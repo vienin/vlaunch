@@ -473,8 +473,6 @@ class Backend(object):
         self.create_virtual_machine()
         self.configure_virtual_machine(create_vmdk = create_vmdk)
 
-        self.destroy_splash_screen()
-
         # launch vm
         logging.debug("Launching Virtual Machine")
         self.run_virtual_machine(self.env)

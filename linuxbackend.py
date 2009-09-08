@@ -119,7 +119,7 @@ class LinuxBackend(Backend):
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                self.dialog_info(title= u"Impossible de lancer UFO",
+                gui.dialog_info(title= u"Impossible de lancer UFO",
                                  error=True,
                                  msg=u"UFO semble déjà en cours d'utilisation. \n" \
                                     u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
@@ -130,7 +130,7 @@ class LinuxBackend(Backend):
                        ["grep", "VBoxXPCOMIPCD"],
                        ["grep", "-v", "grep" ] ], output = True)[1]:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            self.dialog_info(title=u"Impossible de lancer UFO",
+            gui.dialog_info(title=u"Impossible de lancer UFO",
                              error=True,
                              msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
                                  u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
@@ -229,9 +229,6 @@ class LinuxBackend(Backend):
                 raise
         return ""
 
-    def dialog_info(self, title, msg, error = False):
-        gui.msgbox(msg=msg, title=title, error=error)
-
     def check_privileges(self):
         if os.geteuid() != 0:
             dialog_info(title="Droits insuffisants",
@@ -253,9 +250,6 @@ class LinuxBackend(Backend):
     def kill_resilient_vbox(self):
         self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
         self.call([ "killall", "-9", "VBoxSVC" ])
-
-    def dialog_question(self, title, msg, button1, button2):
-        return gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
 
     def wait_for_termination(self):
         while True:
