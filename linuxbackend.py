@@ -6,6 +6,11 @@ import conf
 import logging
 import platform
 import gui
+import glob
+import tempfile
+import utils
+from utils import *
+from shutil import copytree
 
 def get_su_command(): 
     if os.path.exists("/usr/bin/gksudo"):
@@ -19,15 +24,15 @@ def zenityfy(cmd, msg = []):
     if os.path.exists("/usr/bin/zenity"):
         logging.debug("Zenitify " + " ".join(cmd))
         if msg: msg = [ "--text", msg ]
-        self.call([ [ cmd ], [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
+        utils.call([ [ cmd ], [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
     else:
-        self.call([ cmd ])
+        utils.call([ cmd ])
 
 def get_distro():
     if os.path.exists("/usr/bin/lsb_release"):
-        return (self.call([ 'lsb_release', '--short', '-i' ], output=True)[1].strip(),
-                self.call([ 'lsb_release', '--short', '-r' ], output=True)[1].strip(),
-                self.call([ 'lsb_release', '--short', '-c' ], output=True)[1].strip())
+        return (utils.call([ 'lsb_release', '--short', '-i' ], output=True)[1].strip(),
+                utils.call([ 'lsb_release', '--short', '-r' ], output=True)[1].strip(),
+                utils.call([ 'lsb_release', '--short', '-c' ], output=True)[1].strip())
     else:
         return platform.dist()
                                     
@@ -53,7 +58,7 @@ def run_as_root(command):
                graphical_ask_pass = False
                os.environ["SUDO_ASKPASS"] = path.join(conf.SCRIPT_DIR, "bin", "ask-password")
                try:
-                   version = self.call([ "sudo", "-V" ], output=True)[1].split("\n")[0].split()[2]
+                   version = utils.call([ "sudo", "-V" ], output=True)[1].split("\n")[0].split()[2]
                    if version >= "1.7.1":
                        graphical_ask_pass = True
                except:
@@ -82,11 +87,6 @@ except ImportError:
         else:
             print msg
         sys.exit(1)
-
-import glob
-import tempfile
-from utils import *
-from shutil import copytree
 
 class LinuxBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
