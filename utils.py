@@ -82,7 +82,10 @@ except:
                 stdout = subprocess.PIPE
             if output and i == len(cmds) - 1:
                 stdout = subprocess.PIPE
-            proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, fork=fork)
+            if fork:
+                proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout)
+            else:
+                proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, fork=fork)
             lastproc = proc
 
         if output or len(cmds):

@@ -230,7 +230,9 @@ class MacBackend(Backend):
                 if ret == 0:
                     break
                 else:
-                    self.dialog_info(title="Erreur", msg="Erreur lors de la saisie du mot de passe", error=True)
+                    self.dialog_info(title="Erreur", 
+                                     msg="Erreur lors de la saisie du mot de passe", 
+                                     error=True)
                     tries += 1
 
             if ret == 0:
@@ -241,16 +243,11 @@ class MacBackend(Backend):
                 cmd += [ "--respawn" ]
                 logging.debug("Sudoing and execv")
                 logging.shutdown()
-                #os.execvpe(executable, args, env)
                 self.call([ "sudo" ] + cmd, fork=False)
                 logging.debug("Should not be displayed....")
                 sys.exit(0)
             
             sys.exit(0)
-            #if conf.USESERVICE:
-            #    self.call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
-            #    sys.exit(0)
-            #else:
 
     def is_ready(self):
         # test if i need to move at another location
