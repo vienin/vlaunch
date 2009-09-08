@@ -98,7 +98,6 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        self.create_splash_screen()
         gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.terminated = False
 
@@ -240,6 +239,7 @@ class LinuxBackend(Backend):
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
         run_as_root([ sys.executable ] + sys.argv + [ "--respawn" ])
+        self.create_splash_screen()
                                              
     def cleanup(self):
         pass
