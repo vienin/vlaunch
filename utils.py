@@ -138,8 +138,9 @@ class Backend(object):
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
 
     def create_splash_screen(self):
-        images = glob.glob(path.join(conf.HOME, "ufo-*.gif"))
+        images = glob.glob(path.join(conf.HOME, "ufo-*.bmp"))
         if images:
+            logging.debug("Creating splash screen with image " + images[0])
             self.splash = gui.SplashScreen(images[0])
         else:
             logging.debug("Found no image for splash screen")
@@ -153,12 +154,15 @@ class Backend(object):
         logging.debug("Creating VBoxHypervisor")
         self.vbox = VBoxHypervisor()
         logging.debug("VBoxHypervisor successfully created")
-	
+
         logging.debug("Creating VM")
         self.vbox.create_machine(conf.VM, conf.OS)
         self.vbox.open_machine(conf.VM)
 
-        self.vbox.current_machine.set_bios_params(acpi_enabled = True, ioapic_enabled = True)
+        if sys.platform == "win32":
+            self.vbox.current_machine.set_bios_params(acpi_enabled = True, ioapic_enabled = False)
+        else:
+            self.vbox.current_machine.set_bios_params(acpi_enabled = True, ioapic_enabled = True)
         self.vbox.current_machine.set_vram_size(32)
         self.vbox.current_machine.set_network_adapter(adapter_type = "I82540EM")
         self.vbox.current_machine.disable_boot_menu()
@@ -366,21 +370,15 @@ class Backend(object):
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
         
-            input = self.dialog_question(title=u"Attention",
+            if not conf.LIVECD:
+                input = gui.dialog_question(title=u"Attention",
                                          msg=u"Aucune clé UFO n'a été trouvée, réessayer ?",
                                          button1=u"Oui",
                                          button2=u"Non")
         
-            if input == "Non":
-                if conf.NEEDDEV: return conf.STATUS_EXIT
-            
-                input = self.dialog_question(title=u"Attention",
-                                             msg=u"Utiliser un compte invité ?",
-                                             button1=u"Oui",
-                                             button2=u"Quitter")
-            
-                if input == "Oui": return conf.STATUS_GUEST
-                return conf.STATUS_EXIT
+                if input == "Non":
+                    if conf.NEEDDEV: return conf.STATUS_EXIT
+                    return conf.STATUS_EXIT
         
             try_times -= 1
     
@@ -392,7 +390,7 @@ class Backend(object):
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
-             self.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
+             gui.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
                               u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce lien http://downloads.virtualbox.org/virtualbox/",
                               title=u"Binaires manquants")
              sys.exit(1)
@@ -411,7 +409,6 @@ class Backend(object):
         self.usb_devices = usb_devices
 
     def run_virtual_machine(self, env):
-        self.destroy_splash_screen()
         if conf.STARTVM:
             self.vbox.current_machine.start()
         else:
@@ -475,6 +472,8 @@ class Backend(object):
         logging.debug("Creating Virtual Machine")
         self.create_virtual_machine()
         self.configure_virtual_machine(create_vmdk = create_vmdk)
+
+        self.destroy_splash_screen()
 
         # launch vm
         logging.debug("Launching Virtual Machine")

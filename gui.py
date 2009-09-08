@@ -23,6 +23,6 @@ if __name__ == "__main__":
     dialog_info("Titre", "Message")
     print dialog_password()
     download_file("http://www.glumol.com", "toto")
-    splash = SplashScreen(image="ufo-generic.bmp")
+    splash = SplashScreen(image="ufo-generic.gif")
     import time
     time.sleep(5)

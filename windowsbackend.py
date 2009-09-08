@@ -24,6 +24,7 @@ class WindowsBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
+        self.create_splash_screen()
         gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.WMI = wmi.WMI()
 
@@ -33,7 +34,7 @@ class WindowsBackend(Backend):
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
             logging.debug("UFO launched twice. Exiting")
-            self.dialog_info(title= u"Impossible de lancer UFO",
+            gui.dialog_info(title= u"Impossible de lancer UFO",
                              error=True,
                              msg=u"UFO semble déjà en cours d'utilisation. \n" \
                                  u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
@@ -43,7 +44,7 @@ class WindowsBackend(Backend):
         processes = self.WMI.Win32_Process(name="VBoxSVC.exe")
         if len(processes)>1 :
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            self.dialog_info(title=u"Impossible de lancer UFO",
+            gui.dialog_info(title=u"Impossible de lancer UFO",
                              error=True,
                              msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
                                  u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
@@ -232,12 +233,6 @@ class WindowsBackend(Backend):
     def prepare_device(self, dev):
         pass
 
-    def dialog_question(self, msg, title, button1, button2):
-        return gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
-
-    def dialog_info(self, msg, title, error = False):
-        gui.msgbox(msg=msg, title=title, error=error)
-
     def get_device_size(self, name, partition = 0):
         assert partition == 0
 
@@ -336,7 +331,7 @@ class WindowsBackend(Backend):
             msg += u"\n\nExécutez UFO en tant qu'administrateur en sélectionnant :\nClic droit -> Exécuter en tant qu'administrateur"
         else:
             msg += u"\n\nExécutez UFO en tant qu'administrateur en sélectionnant :\nClic droit -> Exécuter en tant qu'administrateur"
-        self.dialog_info(title=u"Permissions insuffisantes", msg=msg)
+        gui.dialog_info(title=u"Permissions insuffisantes", msg=msg)
         sys.exit(1)
 
     def prepare(self):

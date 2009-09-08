@@ -75,7 +75,7 @@ if not conf.NOUPDATE and not "--respawn" in sys.argv:
         local_version = map(int, conf.VERSION.split('.'))
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to user...")
-            input = backend.dialog_question(title=u"Mise à jour",
+            input = gui.dialog_question(title=u"Mise à jour",
                 msg=u"Une version plus récente du lanceur U.F.O est disponible, voulez-vous la télécharger (Environ 100 Mo de téléchargement) ?",
                 button1=u"Oui", button2=u"Non")
             logging.debug("Got : " + str(input))

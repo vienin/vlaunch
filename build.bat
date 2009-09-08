@@ -27,6 +27,7 @@ mkdir bin\drivers\network
 mkdir bin\drivers\network\netflt
 move /Y bin\VBoxDrv.sys bin\drivers\VBoxDrv
 copy /Y ..\snetcfg_x86.exe bin
+copy "E:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin\msvc*.dll" bin
 C:\Python25\python.exe -c  "import glob, tarfile; tar = tarfile.open('windows.tgz', 'w:gz'); map(tar.add, glob.glob('*.dll')); tar.add('ufo.exe'); tar.add('bin'); tar.close();"
 cd ..
 pscp.exe -i id_rsa.ppk dist\ufo.exe dist\windows.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization

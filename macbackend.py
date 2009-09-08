@@ -141,19 +141,6 @@ class MacBackend(Backend):
         if path.exists('/etc/fstab.bak'):
             shutil.copyfile("/etc/fstab.bak", "/etc/fstab")
 
-    def dialog_question(self, msg, title, button1, button2):
-        reply = gui.dialog_question(msg=msg, title=title, button1=button1, button2=button2)
-        return reply
-
-    def dialog_info(self, title, msg, error = False):
-        gui.dialog_info(msg=msg, title=title, error=error)
-            
-    # generic dialog box for ask password 
-    # params :
-    # return : pass_string
-    def dialog_password(self, rcode=True):
-        return gui.dialog_password(rcode=rcode)
-
     def get_device_parts(self, dev):
         parts = glob.glob(dev + 's[0-9]')
         device_parts = {}
