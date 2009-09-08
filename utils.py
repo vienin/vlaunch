@@ -147,6 +147,7 @@ class Backend(object):
 
     def destroy_splash_screen(self):
         if self.splash:
+            logging.debug("Destroying splash screen")
             self.splash.destroy()
 
     def create_virtual_machine(self, create_vmdk = True):
