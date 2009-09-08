@@ -62,16 +62,18 @@ def dialog_question(title, msg, button1="Yes", button2="No"):
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
 
-def dialog_password(msg=None):
+def dialog_password(msg=None, rcode=False):
     dlg = QtGui.QInputDialog(main)
     dlg.setTextEchoMode(QtGui.QLineEdit.Password)
-    msgbox.setIcon(QtGui.QMessageBox.Warning)
     if not msg:
         msg = u"Veuillez entrer le mot de passe de l'utilisateur \"" + os.environ["USER"] + "\""
     dlg.setLabelText(msg)
     dlg.setWindowTitle(u"Autorisations nécessaires")
-    dlg.exec_()
-    return dlg.textValue()
+    ret = dlg.exec_()
+    if rcode:
+        return dlg.textValue(), ret
+    else:
+        return dlg.textValue()
 
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, parent=None):

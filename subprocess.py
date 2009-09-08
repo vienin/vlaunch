@@ -536,7 +536,7 @@ class Popen(object):
                  stdin=None, stdout=None, stderr=None,
                  preexec_fn=None, close_fds=False, shell=False,
                  cwd=None, env=None, universal_newlines=False,
-                 startupinfo=None, creationflags=0):
+                 startupinfo=None, creationflags=0, fork=True):
         """Create new Popen instance."""
         _cleanup()
 
@@ -591,7 +591,7 @@ class Popen(object):
                             startupinfo, creationflags, shell,
                             p2cread, p2cwrite,
                             c2pread, c2pwrite,
-                            errread, errwrite)
+                            errread, errwrite, fork=fork)
 
         # On Windows, you cannot just redirect one or two handles: You
         # either have to redirect all three or none. If the subprocess
@@ -640,7 +640,7 @@ class Popen(object):
             _active.append(self)
 
 
-    def communicate(self, input=None):
+    def communicate(self, input=None, wait=True):
         """Interact with process: Send data to stdin.  Read data from
         stdout and stderr, until end-of-file is reached.  Wait for
         process to terminate.  The optional input argument should be a
@@ -664,10 +664,11 @@ class Popen(object):
             elif self.stderr:
                 stderr = self._fo_read_no_intr(self.stderr)
                 self.stderr.close()
-            self.wait()
+            if wait:
+                self.wait()
             return (stdout, stderr)
 
-        return self._communicate(input)
+        return self._communicate(input, wait)
 
 
     def poll(self):
@@ -772,7 +773,7 @@ class Popen(object):
                            startupinfo, creationflags, shell,
                            p2cread, p2cwrite,
                            c2pread, c2pwrite,
-                           errread, errwrite):
+                           errread, errwrite, fork=True):
             """Execute program (MS Windows version)"""
 
             if not isinstance(args, types.StringTypes):
@@ -869,7 +870,7 @@ class Popen(object):
             buffer.append(fh.read())
 
 
-        def _communicate(self, input):
+        def _communicate(self, input, wait):
             stdout = None # Return
             stderr = None # Return
 
@@ -911,8 +912,9 @@ class Popen(object):
                     stdout = self._translate_newlines(stdout)
                 if stderr:
                     stderr = self._translate_newlines(stderr)
-
-            self.wait()
+            print "comm 2 : " + wait
+            if wait:
+                self.wait()
             return (stdout, stderr)
 
     else:
@@ -1048,7 +1050,7 @@ class Popen(object):
                            startupinfo, creationflags, shell,
                            p2cread, p2cwrite,
                            c2pread, c2pwrite,
-                           errread, errwrite):
+                           errread, errwrite, fork=True):
             """Execute program (POSIX version)"""
 
             if isinstance(args, types.StringTypes):
@@ -1072,13 +1074,16 @@ class Popen(object):
             # Disable gc to avoid bug where gc -> file_dealloc ->
             # write to stderr -> hang.  http://bugs.python.org/issue1336
             gc.disable()
-            try:
-                self.pid = os.fork()
-            except:
-                if gc_was_enabled:
-                    gc.enable()
-                raise
-            self._child_created = True
+            if fork == True:
+                try:
+                    self.pid = os.fork()
+                except:
+                    if gc_was_enabled:
+                        gc.enable()
+                    raise
+                self._child_created = True
+            else:
+	            self.pid = 0
             if self.pid == 0:
                 # Child
                 try:
@@ -1189,7 +1194,7 @@ class Popen(object):
             return self.returncode
 
 
-        def _communicate(self, input):
+        def _communicate(self, input, wait):
             read_set = []
             write_set = []
             stdout = None # Return
@@ -1258,8 +1263,8 @@ class Popen(object):
                     stdout = self._translate_newlines(stdout)
                 if stderr:
                     stderr = self._translate_newlines(stderr)
-
-            self.wait()
+            if wait:
+                self.wait()
             return (stdout, stderr)
 
 

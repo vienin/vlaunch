@@ -107,7 +107,6 @@ try:
              path.join(SCRIPT_DIR, "..", "settings", "settings.conf")]
     if os.environ.has_key("_MEIPASS2"):
         files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
-    print files
     settings = cp.read(files)
     conf_file = settings[0]
 except:

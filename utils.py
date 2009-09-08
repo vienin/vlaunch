@@ -66,7 +66,7 @@ try:
         return -1
 
 except:
-    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None):
+    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
@@ -82,7 +82,7 @@ except:
                 stdout = subprocess.PIPE
             if output and i == len(cmds) - 1:
                 stdout = subprocess.PIPE
-            proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout)
+            proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, fork=fork)
             lastproc = proc
 
         if output or len(cmds):
@@ -122,11 +122,11 @@ class Backend(object):
         sys.path.append(os.path.join(conf.SCRIPT_DIR, "bin"))
         return os.environ.copy()
 
-    def call(self, cmd, env = None, shell = False, cwd = None, output = False):
-        return call(cmd, env = env, shell = shell, cwd = cwd, output = output)
+    def call(self, cmd, env = None, shell = False, cwd = None, output = False, input = False, fork=True):
+        return call(cmd, env = env, shell = shell, cwd = cwd, output = output, input = input, fork=fork)
 
     def find_network_device(self):
-        if not conf.HOSTNET:    
+        if not conf.HOSTNET:
             return conf.NET_NAT
         return conf.NET_HOST
 
@@ -135,7 +135,7 @@ class Backend(object):
         shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
 
     def create_splash_screen(self):
-        images = glob.glob(path.join(conf.HOME, "ufo-*.gif"))[0]
+        images = glob.glob(path.join(conf.HOME, "ufo-*.gif"))
         if images:
             self.splash = gui.SplashScreen(images[0])
         else:
@@ -146,6 +146,7 @@ class Backend(object):
             self.splash.destroy()
 
     def create_virtual_machine(self, create_vmdk = True):
+        logging.debug("sys.path: " + str(sys.path))
         logging.debug("Creating VBoxHypervisor")
         self.vbox = VBoxHypervisor()
         logging.debug("VBoxHypervisor successfully created")
@@ -412,7 +413,9 @@ class Backend(object):
             self.vbox.current_machine.start()
         else:
             self.run_vbox(path.join(conf.BIN, "VirtualBox"), env)
+        logging.debug("Waiting for termination")
         self.wait_for_termination()
+        logging.debug("Terminated")
 
     def remove_settings_files(self):
         if os.path.exists(path.join(conf.HOME, "VirtualBox.xml")):

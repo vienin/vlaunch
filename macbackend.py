@@ -39,7 +39,7 @@ class MacBackend(Backend):
     def check_process(self):
         logging.debug("Checking UFO process")
         processes = self.call([ ["ps", "ax", "-o", "pid,command"],
-                                ["grep", "\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)"] ], output = True)[1].strip().split("\n")
+                                ["grep", "-i", "\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)"] ], output = True)[1].strip().split("\n")
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
@@ -151,8 +151,8 @@ class MacBackend(Backend):
     # generic dialog box for ask password 
     # params :
     # return : pass_string
-    def dialog_password(self):
-        return gui.dialog_password()
+    def dialog_password(self, rcode=True):
+        return gui.dialog_password(rcode=rcode)
 
     def get_device_parts(self, dev):
         parts = glob.glob(dev + 's[0-9]')
@@ -216,22 +216,41 @@ class MacBackend(Backend):
 
     def check_privileges(self):
         if os.geteuid() != 0:
-            logging.debug("Asking user password")
-            password = self.dialog_password()
-            if conf.USESERVICE:
-                self.call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
-                sys.exit(0)
-            else:
+            tries = 0
+            while tries < 3:
+                logging.debug("Asking user password")
+                password, ok = self.dialog_password(rcode=True)
+                if ok != 1:
+                    ret = -1
+                    break
+
+                self.call([ "sudo", "-k" ])
+                ret = self.call([ [ "echo", str(password)], 
+                                  [ "sudo", "-S", "touch", sys.executable ] ])[0]
+                if ret == 0:
+                    break
+                else:
+                    self.dialog_info(title="Erreur", msg="Erreur lors de la saisie du mot de passe", error=True)
+                    tries += 1
+
+            if ret == 0:
                 if path.basename(sys.executable) == "python":
                     cmd = [ path.join(path.dirname(sys.executable), "UFO") ]
                 else:
                     cmd = [ sys.executable ] + sys.argv
                 cmd += [ "--respawn" ]
-                logging.debug("Sudoing and exiting")
+                logging.debug("Sudoing and execv")
                 logging.shutdown()
-                if self.call([ "sudo", "-S" ] + cmd, input = str(password)):
-                    self.dialog_info(title="Erreur", msg="Erreur lors de la saisie du mot de passe")
+                #os.execvpe(executable, args, env)
+                self.call([ "sudo" ] + cmd, fork=False)
+                logging.debug("Should not be displayed....")
                 sys.exit(0)
+            
+            sys.exit(0)
+            #if conf.USESERVICE:
+            #    self.call([ "sudo", "/Applications/UFO.app/Contents/MacOS/UFO" ])
+            #    sys.exit(0)
+            #else:
 
     def is_ready(self):
         # test if i need to move at another location
@@ -278,6 +297,7 @@ class MacBackend(Backend):
     def kill_resilient_vbox(self):
         # Kill resident com server
         self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
+        self.call([ "killall", "-9", "VBoxSVC" ])
 
     def prepare(self):
         # Ajusting paths
@@ -329,7 +349,7 @@ class MacBackend(Backend):
 
     def wait_for_termination(self):
         while True:
-            if not grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM", inverse=True):
+            if not grep(grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM"), "grep", inverse=True):
                 break
             disks = glob.glob("/dev/disk[0-9]")
             if self.disks != disks:

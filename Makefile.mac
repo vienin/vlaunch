@@ -4,7 +4,7 @@ py2app:
 		ln -s launcher.py UFO.py; \
 	fi; \
 	rm -rf dist build
-	python setup-mac.py py2app
+	python setup-mac.py py2app # --no-strip --packages=PyQt4
 
 py2app-updater:
 	if [ ! -f update_launcher_mac.py ]; \
@@ -63,7 +63,20 @@ mac-launcher: clean py2app py2app-updater
 	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/tst* 
 	rm -f dist/UFO.app/Contents/Resources/site.pyc
 	rm -f dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Resources/site.pyc
-	mkdir -p dist/UFO.app/Contents/Resources/.VirtualBox
+	mkdir dist/UFO.app/Contents/Resources/.VirtualBox
+	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui
+	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui
+	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui
+	# install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork.framework/Versions/Current/QtGui
+	install_name_tool -change /Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VBoxPython.so
+	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBoxVM
+	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBoxVM
+	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBoxVM
+
+	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBox
+	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBox
+	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBox
+
 	cd dist && tar cvzf mac-intel.tgz UFO.app
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
