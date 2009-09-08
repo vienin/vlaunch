@@ -225,6 +225,7 @@ class VBoxMachine(VirtualMachine):
         completed = progress.completed
         rc = int(progress.resultCode)
         if rc == 0:
+            self.hypervisor.current_machine = session.machine
             session.close()
             return 0;
         else:

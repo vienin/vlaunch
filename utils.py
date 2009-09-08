@@ -14,8 +14,8 @@ import shutil
 import tempfile
 import uuid
 import gui
+import time
 from ConfigParser import ConfigParser
-
 from ufovboxapi import VBoxHypervisor
 
 def grep(input, pattern, inverse=False):
@@ -308,7 +308,8 @@ class Backend(object):
                 logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
                 conf.DRIVERANK += 1
                 swap_rank = conf.DRIVERANK
-                shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.SWAPFILE), path.join(self.tmp_swapdir, conf.SWAPFILE))
+                shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.SWAPFILE), 
+                                path.join(self.tmp_swapdir, conf.SWAPFILE))
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
@@ -360,29 +361,25 @@ class Backend(object):
                 conf.DEV = self.find_device_by_volume(conf.VOLUME)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
-                
             if conf.MODEL:
                 conf.DEV = self.find_device_by_model(conf.MODEL)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
-        
             if conf.ROOTUUID:
                 conf.DEV = self.find_device_by_uuid(conf.ROOTUUID)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
-        
             if not conf.LIVECD:
                 input = gui.dialog_question(title=u"Attention",
                                          msg=u"Aucune clé UFO n'a été trouvée, réessayer ?",
                                          button1=u"Oui",
                                          button2=u"Non")
-        
                 if input == "Non":
                     if conf.NEEDDEV: return conf.STATUS_EXIT
                     return conf.STATUS_EXIT
-        
+
             try_times -= 1
-    
+
         return conf.STATUS_EXIT
 
     def look_for_virtualbox(self):
@@ -392,9 +389,30 @@ class Backend(object):
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
              gui.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
-                              u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce lien http://downloads.virtualbox.org/virtualbox/",
+                              u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce " + \
+                              u"lien http://downloads.virtualbox.org/virtualbox/",
                               title=u"Binaires manquants")
              sys.exit(1)
+
+    def wait_for_termination(self):
+        last_state = self.vbox.constants.MachineState_PoweredOff
+        while True:
+            try:
+                state = self.vbox.current_machine.state
+                if last_state == self.vbox.constants.MachineState_Running and \
+                   state == self.vbox.constants.MachineState_PoweredOff:
+                    break
+                elif state == self.vbox.constants.MachineState_PoweredOff:
+                    pass
+                elif self.splash and \
+                     last_state == self.vbox.constants.MachineState_PoweredOff and \
+                     state == self.vbox.constants.MachineState_Running:
+                    self.destroy_splash_screen()
+                last_state = state
+            except:
+                break
+            self.check_usb_devices()
+            time.sleep(2)
 
     def check_usb_devices(self):
         # set removable media shared folders
@@ -414,9 +432,6 @@ class Backend(object):
             self.vbox.current_machine.start()
         else:
             self.run_vbox(path.join(conf.BIN, "VirtualBox"), env)
-        logging.debug("Waiting for termination")
-        self.wait_for_termination()
-        logging.debug("Terminated")
 
     def remove_settings_files(self):
         if os.path.exists(path.join(conf.HOME, "VirtualBox.xml")):
@@ -436,6 +451,8 @@ class Backend(object):
             os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
         if self.tmp_overlaydir:
             os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
+
+        del self.vbox
         self.kill_resilient_vbox()
         self.cleanup()
 
@@ -477,6 +494,7 @@ class Backend(object):
         # launch vm
         logging.debug("Launching Virtual Machine")
         self.run_virtual_machine(self.env)
+        self.wait_for_termination()
 
         # clean environement
         logging.debug("Clean up")

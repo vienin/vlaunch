@@ -333,7 +333,8 @@ class MacBackend(Backend):
             if self.tmpdir:
                 shutil.rmtree(self.tmpdir)
 
-    def wait_for_termination(self): 
+    """
+    def wait_for_termination(self):
         while True:
             logging.debug("Splash screen ? " + str(self.splash))
             if not grep(grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM"), "grep", inverse=True):
@@ -343,7 +344,7 @@ class MacBackend(Backend):
                 self.check_usb_devices()
                 self.disks = disks
             time.sleep(2)
-            self.destroy_splash_screen()
+    """
 
     def run_vbox(self, command, env):
         self.call(command, env = env, cwd = conf.BIN)

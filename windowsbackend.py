@@ -153,6 +153,7 @@ class WindowsBackend(Backend):
     def kill_resilient_vbox(self):
         self.call([ 'taskkill', '/F', '/IM', 'VBoxSVC.exe' ], shell=True) 
 
+    """
     def process_wait_close(self, process):
         processes = self.WMI.Win32_Process(name=process)
         while processes:
@@ -165,6 +166,7 @@ class WindowsBackend(Backend):
         self.process_wait_close("VirtualBox.exe")
         self.process_wait_close("VBoxManage.exe")
         self.process_wait_close("VBoxSVC.exe")
+    """
 
     def stop_services(self):
         if conf.STARTSRVS:

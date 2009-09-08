@@ -20,9 +20,6 @@ def zenityfy(cmd, msg = []):
         logging.debug("Zenitify " + " ".join(cmd))
         if msg: msg = [ "--text", msg ]
         self.call([ [ cmd ], [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
-        #p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-        #p2 = subprocess.Popen([ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg, stdin=p1.stdout)
-        #p2.communicate()
     else:
         self.call([ cmd ])
 
@@ -88,7 +85,6 @@ except ImportError:
 
 import glob
 import tempfile
-import time
 from utils import *
 from shutil import copytree
 
@@ -102,6 +98,7 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
+        self.create_splash_screen()
         gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.terminated = False
 
@@ -250,14 +247,6 @@ class LinuxBackend(Backend):
     def kill_resilient_vbox(self):
         self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
         self.call([ "killall", "-9", "VBoxSVC" ])
-
-    def wait_for_termination(self):
-        while True:
-            if not grep(grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBox"), "grep", inverse=True):   
-                break
-            # logging.debug("Checking for USB devices")
-            self.check_usb_devices()
-            time.sleep(3)
 
     def run_vbox(self, command, env):
         # For some reason, it doesn't work with 'call'
