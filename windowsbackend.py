@@ -28,11 +28,25 @@ class WindowsBackend(Backend):
         self.WMI = wmi.WMI()
 
     def check_process(self):
-        logging.debug("Checking process")
+        logging.debug("Checking UFO process")
         processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="ufo-updater.exe")
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
             logging.debug("UFO launched twice. Exiting")
+            self.dialog_info(title= u"Impossible de lancer UFO",
+                             error=True,
+                             msg=u"UFO semble déjà en cours d'utilisation. \n" \
+                                 u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
+            sys.exit(0)
+
+        logging.debug("Checking VBoxXPCOMIPCD process")
+        processes = self.WMI.Win32_Process(name="VBoxSVC.exe")
+        if len(processes)>1 :
+            logging.debug("VBoxXPCOMIPCD is still running. Exiting")
+            self.dialog_info(title=u"Impossible de lancer UFO",
+                             error=True,
+                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
+                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
             sys.exit(0)
 
     def prepare_update(self):
