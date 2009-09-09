@@ -202,7 +202,7 @@ class DownloadWindow(QtGui.QDialog):
         self.outFile = QtCore.QFile(fileName)
         if not self.outFile.open(QtCore.QIODevice.WriteOnly):
             QtGui.QMessageBox.information(self, "HTTP",
-                    "Impossible d'écrire dans le fichier %1: %2.".arg(fileName).arg(self.outFile.errorString()))
+                    "Impossible d'écrire dans le fichier %s: %s."%(fileName,self.outFile.errorString()))
             self.outFile = None
             return
 
