@@ -24,9 +24,9 @@ def zenityfy(cmd, msg = []):
     if os.path.exists("/usr/bin/zenity"):
         logging.debug("Zenitify " + " ".join(cmd))
         if msg: msg = [ "--text", msg ]
-        utils.call([ [ cmd ], [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
+        utils.call([ cmd, [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
     else:
-        utils.call([ cmd ])
+        utils.call(cmd)
 
 def get_distro():
     if os.path.exists("/usr/bin/lsb_release"):
