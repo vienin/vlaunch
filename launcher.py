@@ -51,10 +51,6 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     logging.debug("Adding " + conf.BIN + " to sys.path")
     sys.path.append(conf.BIN)
-    logging.debug("Importing SIP")
-    import sip
-    logging.debug("Import PyQt4")
-    import PyQt4.QtGui
     from macbackend import *
     backend = MacBackend()
 elif sys.platform == "linux2":

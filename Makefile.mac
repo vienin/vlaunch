@@ -1,3 +1,10 @@
+RESOURCES=dist/UFO.app/Contents/Resources
+FRAMEWORKS=dist/UFO.app/Contents/Frameworks
+MACOS=dist/UFO.app/Contents/MacOS
+VBOXAPP=dist/UFO.app/Contents/Resources/VirtualBox.app
+VBOXMACOS=dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
+UPDATERAPP=dist/UFO.app/Contents/Resources/ufo-updater.app
+
 py2app:
 	if [ ! -f UFO.py ]; \
 	then \
@@ -44,48 +51,54 @@ mac-launcher: clean py2app py2app-updater
 	then \
 		exit 1; \
 	fi; \
-	mv dist/ufo-updater.app dist/UFO.app/Contents/Resources/
-	cp -R $$VBOX_PATH dist/UFO.app/Contents/Resources/VirtualBox.app
-	# cp -R kexts dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts
-	mkdir -p dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts/Tiger
-	cp -R $$VBOX_PATH/../*.kext dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts
-	mv dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts/VBoxDrvTiger.kext dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/kexts/Tiger
-	mkdir dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks
-	cp -R /Library/Frameworks/QtCore.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtCore.framework
-	cp -f /Library/Frameworks/Python.framework/Python dist/UFO.app/Contents/Frameworks/Python.framework/Versions/2.5/Python
-	cp -f /Library/Frameworks/Python.framework/Python dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/Python.framework/Versions/2.5/Python
-	cp -R /Library/Frameworks/QtGui.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework
-	cp -R /Library/Frameworks/QtNetwork.framework dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetwork.framework
-	for file in `ls dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
-	strip -S dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/* dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/components/* || true
-	mv dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VBoxPython{2_3.so,.so}
-	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/testcase 
-	rm -rf dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/tst* 
-	rm -f dist/UFO.app/Contents/Resources/site.pyc
-	rm -f dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Resources/site.pyc
-	mkdir dist/UFO.app/Contents/Resources/.VirtualBox
-	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui
-	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui
-	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtGui.framework/Versions/Current/QtGui
-	# install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork.framework/Versions/Current/QtGui
-	install_name_tool -change /Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VBoxPython.so
-	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBoxVM
-	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBoxVM
-	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBoxVM
+	mv dist/ufo-updater.app ${RESOURCES}
+	cp -R $$VBOX_PATH ${VBOXAPP}
+	# cp -R kexts ${VBOXMACOS}/kexts
+	mkdir -p ${VBOXMACOS}/kexts/Tiger
+	cp -R ${VBOX_PATH}/../*.kext ${VBOXMACOS}/kexts
+	mv ${VBOXMACOS}/kexts/VBoxDrvTiger.kext ${VBOXMACOS}/kexts/Tiger
+	mkdir ${VBOXAPP}/Contents/Frameworks
+	cp -R /Library/Frameworks/QtCore.framework ${VBOXAPP}/Contents/Frameworks/QtCore.framework
+	cp -f /Library/Frameworks/Python.framework/Python ${FRAMEWORKS}/Python.framework/Versions/2.5/Python
+	cp -f /Library/Frameworks/Python.framework/Python ${UPDATERAPP}/Contents/Frameworks/Python.framework/Versions/2.5/Python
+	cp -R /Library/Frameworks/QtGui.framework ${VBOXAPP}/Contents/Frameworks/QtGui.framework
+	cp -R /Library/Frameworks/QtNetwork.framework ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework
+	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
+	strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
+	mv ${VBOXMACOS}/VBoxPython{2_3.so,.so}
+	rm -rf ${VBOXMACOS}/testcase 
+	rm -rf ${VBOXMACOS}/tst* 
+	rm -f ${RESOURCES}/site.pyc
+	rm -f ${UPDATERAPP}/Contents/Resources/site.pyc
+	mkdir ${RESOURCES}/.VirtualBox
+	
+	for lib in QtGui QtNetwork; \
+	do \
+		install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXAPP}/Contents/Frameworks/$$lib.framework/Versions/Current/$$lib; \
+		install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui ${VBOXAPP}/Contents/Frameworks/$$lib.framework/Versions/Current/$$lib; \
+		install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork ${VBOXAPP}/Contents/Frameworks/$$lib.framework/Versions/Current/$$lib; \
+	done
+	
+	# install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork.framework/Versions/Current/QtGui
+	install_name_tool -change /Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython.so
+	
+	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXMACOS}/VirtualBoxVM
+	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui ${VBOXMACOS}/VirtualBoxVM
+	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork ${VBOXMACOS}/VirtualBoxVM
 
-	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBox
-	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBox
-	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS/VirtualBox
+	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXMACOS}/VirtualBox
+	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui ${VBOXMACOS}/VirtualBox
+	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork ${VBOXMACOS}/VirtualBox
 
 	cd dist && tar cvzf mac-intel.tgz UFO.app
-	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
+	cp *.gif *.bmp dist/UFO.app/Contents/Resources/.VirtualBox
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
-	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Frameworks/$$qt; \
+	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \
 	    ln -s ../../../../VirtualBox.app/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
 	done
-	cp vboxpython-workaround.py *.gif *.bmp dist/UFO.app/Contents/Resources/.VirtualBox
+	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
 
 testing: mac-launcher
 	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings.conf; \
