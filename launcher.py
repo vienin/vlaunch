@@ -132,5 +132,5 @@ if __name__ == "__main__":
             except:
                 pass
 
-    shutil.copy(log_path, os.path.join(os.path.dirname(log_path), last_log.log))
+    shutil.copy(log_path, os.path.join(os.path.dirname(log_path), "last_log.log"))
 
