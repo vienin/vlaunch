@@ -77,7 +77,8 @@ if not conf.NOUPDATE and not "--respawn" in sys.argv:
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to user...")
             input = gui.dialog_question(title=u"Mise à jour",
-                msg=u"Une version plus récente du lanceur U.F.O est disponible, voulez-vous la télécharger (Environ 100 Mo de téléchargement) ?",
+                msg=u"Une version plus récente du lanceur U.F.O est disponible, " + \
+                    u"voulez-vous la télécharger (Environ 100 Mo de téléchargement) ?",
                 button1=u"Oui", button2=u"Non")
             logging.debug("Got : " + str(input))
             if input == "Oui":
@@ -119,9 +120,12 @@ if __name__ == "__main__":
         import gui
         trace = traceback.format_exc()
         logging.debug(trace)
-        if gui.dialog_error_report(u"Erreur", u"UFO à rencontré une erreur fatale et doit fermer.\nVous pouvez aider à la correction du problème en soumettant le rapport d'erreur.", trace):
-            import httplib, urllib
+        if gui.dialog_error_report(u"Erreur", u"UFO à rencontré une erreur fatale et doit fermer.\n" + \
+                                   u"Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur.", trace):
+            import urllib
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
-            urllib.urlopen(conf.REPORTURL, params)
-
+            try:
+                urllib.urlopen(conf.REPORTURL, params)
+            except:
+                pass
 
