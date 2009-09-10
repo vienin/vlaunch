@@ -8,6 +8,7 @@ import sys
 import os.path as path
 import tempfile
 import urllib
+import shutil
 from shutil import rmtree
 import socket
 import subprocess
@@ -130,4 +131,6 @@ if __name__ == "__main__":
                 urllib.urlopen(conf.REPORTURL, params)
             except:
                 pass
+
+    shutil.copy(log_path, os.path.join(os.path.dirname(log_path), last_log.log))
 
