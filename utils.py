@@ -398,20 +398,26 @@ class Backend(object):
         last_state = self.vbox.constants.MachineState_PoweredOff
         while True:
             try:
-                state = self.vbox.current_machine.state
-                if last_state == self.vbox.constants.MachineState_Running and \
-                   state == self.vbox.constants.MachineState_PoweredOff:
+                state = self.vbox.current_machine.machine.state
+                if state == self.vbox.constants.MachineState_PoweredOff and \
+                   last_state == self.vbox.constants.MachineState_Running:
+                    # Virtual machine as been closed
                     break
                 elif state == self.vbox.constants.MachineState_PoweredOff:
+                    # Virtual machine isn't started yet
                     pass
-                elif self.splash and \
-                     last_state == self.vbox.constants.MachineState_PoweredOff and \
-                     state == self.vbox.constants.MachineState_Running:
-                    self.destroy_splash_screen()
+                elif state == self.vbox.constants.MachineState_Running:
+                    # Virtual machine is running
+                    if self.splash and \
+                       last_state == self.vbox.constants.MachineState_PoweredOff:
+                        self.destroy_splash_screen()
+
+                    self.check_usb_devices()
+					
                 last_state = state
             except:
+                # Virutal machine has been closed between two sleeps
                 break
-            self.check_usb_devices()
             time.sleep(2)
 
     def check_usb_devices(self):

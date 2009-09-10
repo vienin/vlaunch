@@ -22,7 +22,7 @@ def get_su_command():
 
 def zenityfy(cmd, msg = []):
     if os.path.exists("/usr/bin/zenity"):
-        logging.debug("Zenitify " + " ".join(cmd))
+        logging.debug("Zenityfy " + " ".join(cmd))
         if msg: msg = [ "--text", msg ]
         utils.call([ cmd, [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
     else:
@@ -76,7 +76,7 @@ except ImportError:
         import easygui
         reload(easygui)
     elif distro == "fedora" or os.path.exists('/usr/bin/pkcon'):
-        zenitify([ "pkcon", "install", "tkinter" ])
+        zenityfy([ "pkcon", "install", "tkinter" ])
         import easygui
         reload(easygui)
     else:
