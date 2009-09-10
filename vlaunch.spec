@@ -1,13 +1,13 @@
 Name:           vlaunch
-Version:        0.5.1
-Release:        3%{?dist}
+Version:        0.6
+Release:        1%{?dist}
 Summary:        Install files for virtualization on the UFO vfat partition
 
 BuildArch:      i386
 Group:          Applications/System
 License:        GPLv2
 URL:            http://www.glumol.com
-Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.tar.gz
+Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
@@ -52,7 +52,7 @@ files on the UFO vfat partition. 3 directories are installed, one for each
 operating systems : Linux, Windows and MacOSX.
 
 %prep
-%setup -q
+%setup -n vlaunch-%{version}.1
 # wget all binaries
 wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
 wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
@@ -123,13 +123,13 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.background/ufo.png
 %{TARGET_PATH}/.DS_Store
 %{TARGET_PATH}/ufo.app
-%{TARGET_PATH}/Windows/tcl84.dll
-%{TARGET_PATH}/Windows/tix84.dll
-%{TARGET_PATH}/Windows/tk84.dll
+# %{TARGET_PATH}/Windows/tcl84.dll
+# %{TARGET_PATH}/Windows/tix84.dll
+# %{TARGET_PATH}/Windows/tk84.dll
 %{TARGET_PATH}/Windows/MSVCR71.dll
 %{TARGET_PATH}/Windows/ufo.exe
-%{TARGET_PATH}/Windows/ufo.exe.manifest
-%{TARGET_PATH}/Windows/tcl
+# %{TARGET_PATH}/Windows/ufo.exe.manifest
+# %{TARGET_PATH}/Windows/tcl
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/settings
 %dir %{TARGET_PATH}/Windows/logs

@@ -357,16 +357,16 @@ class Backend(object):
     
         # research loop
         while try_times > 0:
+            if conf.ROOTUUID:
+                conf.DEV = self.find_device_by_uuid(conf.ROOTUUID)
+                if conf.DEV != "":
+                    return conf.STATUS_NORMAL
             if conf.VOLUME:
                 conf.DEV = self.find_device_by_volume(conf.VOLUME)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
             if conf.MODEL:
                 conf.DEV = self.find_device_by_model(conf.MODEL)
-                if conf.DEV != "":
-                    return conf.STATUS_NORMAL
-            if conf.ROOTUUID:
-                conf.DEV = self.find_device_by_uuid(conf.ROOTUUID)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
             if not conf.LIVECD:

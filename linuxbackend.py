@@ -143,16 +143,10 @@ class LinuxBackend(Backend):
                             os.path.join(self.shadow_updater_path, "settings"))
         
     def getuuid(self, dev):
-        return self.getoutput([ "blkid", "-o", "value", "-s", "UUID", dev ])
+        return self.call([ "blkid", "-o", "value", "-s", "UUID", dev ], output=True)[1]
 
     def find_device_by_uuid(self, dev_uuid):
-        for device in glob.glob("/dev/sd*[0-9]"):
-            uuid = self.getuuid(device)
-            if uuid == dev_uuid:
-                if device[-1] >= "0" and device[-1] <= "9":
-                    device = device[:-1]
-                return device
-        return ""
+        return self.call([ "findfs", "UUID=" + dev_uuid ], output=True)[1].strip()[:-1]
     
     def find_device_by_volume(self, dev_volume):
         if path.exists('/dev/disk/by-label/' + dev_volume):
