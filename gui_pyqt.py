@@ -153,7 +153,7 @@ def dialog_password(msg=None, rcode=False):
     #dlg.exec_()
     value = QtGui.QInputDialog.getText(w,"Saisi de mot de passe",msg,QtGui.QLineEdit.Password)
     if rcode:
-        return value[0], ret
+        return value
     else:
         return value[0]
 

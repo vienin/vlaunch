@@ -209,7 +209,7 @@ class MacBackend(Backend):
             while tries < 3:
                 logging.debug("Asking user password")
                 password, ok = gui.dialog_password(rcode=True)
-                if ok != 1:
+                if not ok:
                     ret = -1
                     break
 
