@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import datetime
 import conf
 import os
 import sys
@@ -10,19 +11,23 @@ import urllib
 from shutil import rmtree
 import socket
 import subprocess
+import traceback
 
 format = "%(asctime)s %(levelname)s %(message)s"
+log_file_name = os.path.join(os.path.dirname(conf.LOG), str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
 try:
-    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, conf.LOG))
-    logging.debug("Logging to " + path.join(conf.SCRIPT_DIR, conf.LOG))
-    print "Logging to " + path.join(conf.SCRIPT_DIR, conf.LOG)
+    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, log_file_name))
+    log_path = path.join(conf.SCRIPT_DIR, log_file_name)
+    logging.debug("Logging to " + log_path)
+    print "Logging to " + log_path
 except:
     try:
-        temp = path.join(tempfile.gettempdir(), "launcher.log")
+        temp = path.join(tempfile.gettempdir(), log_file_name)
         logging.basicConfig(format=format, level=logging.DEBUG,
                             filename=temp)
-        logging.debug("Logging to " + temp)
-        print "Logging to " + temp
+        log_path = temp
+        logging.debug("Logging to " + log_path)
+        print "Logging to " + log_path
     except:
         print "Could not redirect log to file"
 
@@ -108,5 +113,15 @@ if not conf.NOUPDATE and not "--respawn" in sys.argv:
     except: pass
 
 if __name__ == "__main__":
-    backend.run()
+    try:
+        backend.run()
+    except Exception, e:
+        import gui
+        trace = traceback.format_exc()
+        logging.debug(trace)
+        if gui.dialog_error_report(u"Erreur", u"UFO à rencontré une erreur fatale et doit fermer.\nVous pouvez aider à la correction du problème en soumettant le rapport d'erreur.", trace):
+            import httplib, urllib
+            params = urllib.urlencode({'report': open(log_path, 'r').read()})
+            urllib.urlopen(conf.REPORTURL, params)
+
 

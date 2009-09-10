@@ -412,7 +412,7 @@ class Backend(object):
                     if self.splash:
                         self.destroy_splash_screen()
                     self.check_usb_devices()
-					
+
                 last_state = state
             except:
                 # Virutal machine has been closed between two sleeps
@@ -427,9 +427,17 @@ class Backend(object):
                 continue
             if usb in self.usb_devices:
                 continue
-            self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
-            self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
-            logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
+            input = gui.dialog_question(u"Péripherique USB", 
+                                        u"Un nouveau périphérique USB à été détecté:\n\n" + \
+                                        u"\"" + usb[1] + "\" monte sur " + usb[0] + "\n\n" + \
+                                        u"Voulez vous le raccorder a la machine virtuelle UFO ?")
+            if input == "Yes":
+                self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
+                self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
+                logging.debug("Setting shared folder: " + str(usb[0]) + ", " + str(usb[1]))
+            else:
+                logging.debug("Shared folder refused by user: " + str(usb[0]) + ", " + str(usb[1]))
+
         self.usb_devices = usb_devices
 
     def run_virtual_machine(self, env):

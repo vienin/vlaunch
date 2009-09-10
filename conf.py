@@ -52,6 +52,7 @@ licensekey = "LICENSE"
 configurevmkey = "CONFIGUREVM"
 homekey = "HOME"
 binkey = "BIN"
+reporturlkey = "REPORTURL"
 useservicekey = "USESERVICE"
 createsrvskey = "CREATESRVS"
 startsrvskey = "STARTSRVS"
@@ -88,6 +89,7 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                volumekey : "",
                                rootuuidkey : "",
                                binkey : "",
+                               reporturlkey : "http://kickstart.agorabox.org/report/report.php",
                                homekey : "",
                                useservicekey : "0",
                                createsrvskey : "0",
@@ -125,6 +127,7 @@ STARTSRVS = int(cp.get(launchersection, startsrvskey))
 STARTVM = int(cp.get(launchersection, startvmkey))
 NEEDDEV = int(cp.get(launchersection, needdevkey))
 DEBUG = int(cp.get(launchersection, debugkey))
+REPORTURL = cp.get(launchersection, reporturlkey)
 LOG = cp.get(launchersection, logkey)
 VERSION = cp.get(launchersection, versionkey)
 LICENSE = int(cp.get(launchersection, licensekey))

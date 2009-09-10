@@ -7,6 +7,7 @@ try:
     from gui_pyqt import *
     logging.warning("Using PyQt backend")
 except:
+    raise
     try:
         from gui_tk import *
         logging.debug("Using Tk backend")
