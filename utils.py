@@ -149,6 +149,7 @@ class Backend(object):
         if self.splash:
             logging.debug("Destroying splash screen")
             self.splash.destroy()
+            self.splash = None
 
     def create_virtual_machine(self, create_vmdk = True):
         logging.debug("sys.path: " + str(sys.path))
@@ -408,10 +409,8 @@ class Backend(object):
                     pass
                 elif state == self.vbox.constants.MachineState_Running:
                     # Virtual machine is running
-                    if self.splash and \
-                       last_state == self.vbox.constants.MachineState_PoweredOff:
+                    if self.splash:
                         self.destroy_splash_screen()
-
                     self.check_usb_devices()
 					
                 last_state = state
@@ -428,7 +427,7 @@ class Backend(object):
                 continue
             if usb in self.usb_devices:
                 continue
-            self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = "True")
+            self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
             self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
             logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
         self.usb_devices = usb_devices
