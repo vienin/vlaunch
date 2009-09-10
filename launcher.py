@@ -64,10 +64,12 @@ elif sys.platform == "linux2":
 else:
     raise "Unsupported platform"
 
+logging.debug("Checking for running UFO processes")
 backend.check_process()
 
 if not conf.NOUPDATE and not "--respawn" in sys.argv:
     try:
+        logging.debug("Checking updates")
         socket.setdefaulttimeout(5)
         latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()
         logging.debug("Using launcher version : " + str(conf.VERSION))
