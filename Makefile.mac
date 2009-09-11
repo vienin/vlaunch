@@ -53,6 +53,7 @@ mac-launcher: clean py2app py2app-updater
 	fi; \
 	mv dist/ufo-updater.app ${RESOURCES}
 	cp -R $$VBOX_PATH ${VBOXAPP}
+	rm -rf ${VBOXAPP}/tst* ${VBOXAPP}/testcase
 	# cp -R kexts ${VBOXMACOS}/kexts
 	mkdir -p ${VBOXMACOS}/kexts/Tiger
 	cp -R ${VBOX_PATH}/../*.kext ${VBOXMACOS}/kexts
@@ -89,6 +90,8 @@ mac-launcher: clean py2app py2app-updater
 	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXMACOS}/VirtualBox
 	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui ${VBOXMACOS}/VirtualBox
 	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork ${VBOXMACOS}/VirtualBox
+
+	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython.so
 
 	cd dist && tar cvzf mac-intel.tgz UFO.app
 	cp *.gif *.bmp dist/UFO.app/Contents/Resources/.VirtualBox

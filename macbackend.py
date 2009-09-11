@@ -1,14 +1,13 @@
+import logging
 import fcntl
 import struct
 import glob
 import sys
 import os, os.path as path
-import logging
 import conf
 import shutil
 import gui
 import tempfile
-import time
 from utils import *
 
 conf.APP_PATH = path.dirname(path.dirname(conf.SCRIPT_DIR))
@@ -230,9 +229,14 @@ class MacBackend(Backend):
                 else:
                     cmd = [ sys.executable ] + sys.argv
                 cmd += [ "--respawn" ]
-                logging.debug("Sudoing and execv")
+                logging.debug("Environment: " + str(os.environ))
+                logging.debug("Sudoing and execv: " + " ".join([ "/usr/bin/sudo" ] + cmd))
                 logging.shutdown()
-                self.call([ "sudo" ] + cmd, fork=False)
+                if False:
+                    os.execv("/usr/bin/sudo", [ "/usr/bin/sudo" ] + cmd)
+                    # self.call([ "sudo" ] + cmd, fork=False)
+                else:
+                    self.call([ "sudo" ] + cmd)
                 logging.debug("Should not be displayed....")
                 sys.exit(0)
             
@@ -332,19 +336,6 @@ class MacBackend(Backend):
                                 os.path.join(os.environ["VBOX_USER_HOME"], "VirtualBox.xml"))
             if self.tmpdir:
                 shutil.rmtree(self.tmpdir)
-
-    """
-    def wait_for_termination(self):
-        while True:
-            logging.debug("Splash screen ? " + str(self.splash))
-            if not grep(grep(self.call([ "ps", "ax", "-o", "pid,command" ], output=True)[1], "VirtualBoxVM"), "grep", inverse=True):
-                break
-            disks = glob.glob("/dev/disk[0-9]")
-            if self.disks != disks:
-                self.check_usb_devices()
-                self.disks = disks
-            time.sleep(2)
-    """
 
     def run_vbox(self, command, env):
         self.call(command, env = env, cwd = conf.BIN)

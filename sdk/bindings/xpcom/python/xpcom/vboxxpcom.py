@@ -22,9 +22,9 @@ import platform
 # for binaries in the same place as platfom independent modules, while
 # rest of Python bindings expect _xpcom to be inside xpcom module
 
-candidates = ['VBoxPython' + str(sys.version_info[0]) + '_' + str(sys.version_info[1]), 
-              'VBoxPython' + str(sys.version_info[0]), 
-              'VBoxPython']
+candidates = ['VBoxPython',
+              'VBoxPython' + str(sys.version_info[0]) + '_' + str(sys.version_info[1]), 
+              'VBoxPython' + str(sys.version_info[0]) ]
 if platform.system() == 'Darwin':
     # On Darwin (aka Mac OS X) we know exactly where things are in a normal 
     # VirtualBox installation. Also, there are two versions of python there
