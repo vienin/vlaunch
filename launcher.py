@@ -67,6 +67,7 @@ else:
 
 logging.debug("Checking for running UFO processes")
 backend.check_process()
+logging.debug("Checked FUD")
 
 if not conf.NOUPDATE and not "--respawn" in sys.argv:
     try:
@@ -112,8 +113,10 @@ if not conf.NOUPDATE and not "--respawn" in sys.argv:
 
     try:
         if sys.platform == "linux2":
-            rmtree(path.join(conf.SCRIPT_DIR,"bin", "settings"))
-            print "Temporary settings file destroyed"
+            try:
+                rmtree(path.join(conf.SCRIPT_DIR,"bin", "settings"))
+                print "Temporary settings file destroyed"
+            except: pass
     except: pass
 
 if __name__ == "__main__":

@@ -12,81 +12,32 @@ import utils
 from utils import *
 from shutil import copytree
 
-def get_su_command(): 
-    if os.path.exists("/usr/bin/gksudo"):
-        return "/usr/bin/gksudo"                   
-    elif os.path.exists("/usr/bin/kdesudo"):   
-        return "/usr/bin/kdesudo"
-    else:
-        return "sudo"
-
-def zenityfy(cmd, msg = []):
-    if os.path.exists("/usr/bin/zenity"):
-        logging.debug("Zenityfy " + " ".join(cmd))
-        if msg: msg = [ "--text", msg ]
-        utils.call([ cmd, [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
-    else:
-        utils.call(cmd)
-
-def get_distro():
-    if os.path.exists("/usr/bin/lsb_release"):
-        return (utils.call([ 'lsb_release', '--short', '-i' ], output=True)[1].strip(),
-                utils.call([ 'lsb_release', '--short', '-r' ], output=True)[1].strip(),
-                utils.call([ 'lsb_release', '--short', '-c' ], output=True)[1].strip())
-    else:
-        return platform.dist()
-                                    
-def run_as_root(command):
-    if os.geteuid() != 0:
-       if os.path.exists("/usr/bin/gksudo"):
-           os.execv("/usr/bin/gksudo", [ "/usr/bin/gksudo" ] + command)
-       elif os.path.exists("/usr/bin/kdesudo"):
-           os.execv("/usr/bin/kdesudo", [ "/usr/bin/kdesudo" ] + command)
-       else:
-           dist, version, codename = get_distro()
-           version = float(version)
-           if dist in ("Fedora", "redhat") and version >= 10:
-               if not os.path.exists("/usr/bin/beesu"):
-                   msg = "Veuillez patientez pendant l'installation de composants\nnécessaires au lancement d'UFO"
-                   if os.path.exists("/usr/bin/gpk-install-package-name"):
-                       zenityfy([ "/usr/bin/gpk-install-package-name", "beesu" ], msg)
-                   else:
-                       zenityfy([ "/usr/bin/pkcon", "install", "beesu" ], msg)
-               if os.path.exists("/usr/bin/beesu"):
-                   os.execv("/usr/bin/beesu", [ "beesu" ] + command)
-           if os.isatty(0):
-               graphical_ask_pass = False
-               os.environ["SUDO_ASKPASS"] = path.join(conf.SCRIPT_DIR, "bin", "ask-password")
-               try:
-                   version = utils.call([ "sudo", "-V" ], output=True)[1].split("\n")[0].split()[2]
-                   if version >= "1.7.1":
-                       graphical_ask_pass = True
-               except:
-                   raise
-               if graphical_ask_pass:
-                   os.execv("/usr/bin/sudo", [ "sudo", "-A" ] + command)
-           os.execv("/usr/bin/xterm", [ "xterm", "-e", "su -c " + " ".join(command) ])
+# 
             
-try:
-    import easygui
-except ImportError:
-    distro, release, codename = get_distro()
-    if distro == "Ubuntu":
-        run_as_root([ "apt-get", "-y", "install", "python-tk" ])
-        import easygui
-        reload(easygui)
-    elif distro == "fedora" or os.path.exists('/usr/bin/pkcon'):
-        zenityfy([ "pkcon", "install", "tkinter" ])
-        import easygui
-        reload(easygui)
-    else:
-        msg = 'Votre distribution Linux n\'est pas officiellement ' \
-               'supportée.\nVeuillez installer les packages python-tk et VirtualBox.'
-        if os.path.exists("/usr/bin/zenity"):
-            self.call([ "zenity", "--info", '--text="' + msg + '"' ])
-        else:
-            print msg
-        sys.exit(1)
+import gui
+#try:
+#    # Virer easy gui
+#    import easygui
+#except ImportError:
+#    # repousser dans prepare.
+#    distro, release, codename = get_distro()
+
+# if distro == "Ubuntu":
+#     run_as_root([ "apt-get", "-y", "install", "python-tk" ])
+#     import easygui
+#     reload(easygui)
+# elif distro == "fedora" or os.path.exists('/usr/bin/pkcon'):
+#     zenitify([ "pkcon", "install", "tkinter" ])
+#     import easygui
+#     reload(easygui)
+# else:
+#     msg = 'Votre distribution Linux n\'est pas officiellement ' \
+#            'supportée.\nVeuillez installer les packages python-tk et VirtualBox.'
+#     if os.path.exists("/usr/bin/zenity"):
+#         self.call([ "zenity", "--info", '--text="' + msg + '"' ])
+#     else:
+#         print msg
+#     sys.exit(1)
 
 class LinuxBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
@@ -98,7 +49,10 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
+        #logging.debug("LinuxBackend::__init__ ----------------- begins distroConstructor")
+        self.distr = distroConstructor()
+        #logging.debug("LinuxBackend::__init__ ----------------- end distroConstructor")
+        #gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.terminated = False
 
     def check_process(self):
@@ -112,33 +66,25 @@ class LinuxBackend(Backend):
             while i >= 0:
                 if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].strip().split("\n")[-1].strip() in pids:
                     del pids[i]
-                    del processes[i]
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                if gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
-                                           u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
-                                           u"Forcer à quitter", "Processus " + str("\nProcessus ".join(processes).strip())):
-                    for pid in pids:
-                        self.call([ "kill", "-9", pid ])
-
+                gui.dialog_info(title= u"Impossible de lancer UFO",
+                                 error=True,
+                                 msg=u"UFO semble déjà en cours d'utilisation. \n" \
+                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
                 sys.exit(0)
 
-        # Existing VirtualBox instance do no tseems to be a problem on linux hosts
-        """
         logging.debug("Checking VBoxXPCOMIPCD process")
-        processes = self.call([ ["ps", "ax", "-o", "pid,command"],
-                              ["grep", "VBoxXPCOMIPCD"],
-                              ["grep", "-v", "grep" ] ], output = True)[1]
-        if processes:
+        if self.call([ ["ps", "ax", "-o", "pid,command"],
+                       ["grep", "VBoxXPCOMIPCD"],
+                       ["grep", "-v", "grep" ] ], output = True)[1]:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            if gui.dialog_error_report(u"Impossible de lancer UFO", u"VirtualBox semble déjà en cours d'utilisation. \n" + \
-                                           u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.",
-                                           u"Forcer à quitter", processes):
-                self.kill_resilient_vbox()
-
+            gui.dialog_info(title=u"Impossible de lancer UFO",
+                #             Error=True,
+                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
+                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
             sys.exit(0)
-        """
 
     def prepare_update(self):
         self.ufo_dir = path.normpath(path.join(
@@ -153,7 +99,13 @@ class LinuxBackend(Backend):
         return self.call([ "blkid", "-o", "value", "-s", "UUID", dev ], output=True)[1]
 
     def find_device_by_uuid(self, dev_uuid):
-        return self.call([ "findfs", "UUID=" + dev_uuid ], output=True)[1].strip()[:-1]
+        for device in glob.glob("/dev/sd*[0-9]"):
+            uuid = self.getuuid(device)
+            if uuid == dev_uuid:
+                if device[-1] >= "0" and device[-1] <= "9":
+                    device = device[:-1]
+                return device
+        return ""
     
     def find_device_by_volume(self, dev_volume):
         if path.exists('/dev/disk/by-label/' + dev_volume):
@@ -236,19 +188,26 @@ class LinuxBackend(Backend):
             sys.exit(0)
 
     def prepare(self):
+        # 1 étape: Préparation de la distgribution
+        self.distr.prepare()
+        # 2 étape: Si il n'ay pas de backend pour le gui installer zenity
+        if not gui.backend:
+            self.install_zenity()
+            reload(gui)
+        if os.getuid() != 0:
+            self.distr.run_as_root([ sys.executable ] + sys.argv + [ "--respawn" ], replace = True)
+
         self.call([ "rmmod", "kvm-intel" ])
         self.call([ "rmmod", "kvm-amd" ])
         self.call([ "rmmod", "kvm" ])
-        run_as_root([ sys.executable ] + sys.argv + [ "--respawn" ])
         self.create_splash_screen()
                                              
     def cleanup(self):
         pass
 
     def kill_resilient_vbox(self):
-        print self.call([ "killall", "-9", "VirtualBox" ], output=True)[1]
-        print self.call([ "killall", "-9", "VBoxXPCOMIPCD" ], output=True)[1]
-        print self.call([ "killall", "-9", "VBoxSVC" ], output=True)[1]
+        self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
+        self.call([ "killall", "-9", "VBoxSVC" ])
 
     def run_vbox(self, command, env):
         # For some reason, it doesn't work with 'call'
@@ -263,32 +222,182 @@ class LinuxBackend(Backend):
         logging.debug("Checking VirtualBox binaries")
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
-            distro, release, codename = get_distro()
-            if distro == "Ubuntu":
-                open("/etc/apt/sources.list", "a").write(
-                    "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (codename.lower(),))
-                os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
-                self.call([ "apt-get", "update" ])
-                self.call([ "apt-get", "-y", "install", "virtualbox-2.2" ])
-            elif distro == "Fedora":
-                logging.debug("Installing Agorabox repository for VirtualBox")
-                zenityfy([ "yum", "-y", "install", "yum-priorities" ], "Installation du plugin Yum : yum-priorities")
-                self.call([ "rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm" ])
-                kernel = "kernel"
-                if os.uname()[2].endswith("PAE"):
-                    kernel += "-PAE"
-                logging.debug("Kernel is: " + kernel)
-                logging.debug("Installing VirtualBox")
-                zenityfy([ "yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma" ])
-                version = self.call([ "rpm", "-q", "--queryformat", "\"%{VERSION}\"", "VirtualBox-OSE" ], output=True)[1]
-                kmod_dir = "VirtualBox-OSE-kmod-" + version
-                logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,))
-                self.call([ "tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,) ],
-                                cwd = tempfile.gettempdir())
-                tmpdir = tempfile.gettempdir() + "/" + kmod_dir
-                if not os.path.exists(tmpdir): os.mkdir(tmpdir)
-                ret = self.call([ "make" ], cwd = tmpdir)
-                logging.debug("make returned %d", (ret,))
-                
+            self.distr.install_virtualbox()
         Backend.look_for_virtualbox(self)
 
+    def install_zenity(self):
+        self.distr.install_package("zenity")
+        reload(gui)
+
+def distroConstructor():
+    #logging.debug("distroConstructor")
+    temp = Distro()
+    #logging.debug("distroConstructor:: object distro ok")
+    if temp.dist == "Fedora":   
+        return DistroFedora()
+    elif temp.dist == "Ubuntu":
+        return DistroUbuntu()
+    else:
+        raise Exception("Distribution non supporté")
+    
+   
+class Distro():
+    def __init__(self):
+        self.installCommand = None
+        if not ( hasattr(self,"dist") and hasattr(self,"version") and hasattr(self,"codename")):
+                self.dist, self.version, self.codename = self.get_distro()
+
+        self._run_as_root = None
+        #logging.debug("constructor::Distro2")
+
+    def get_distro(self):
+        if os.path.exists("/usr/bin/lsb_release"):
+            return (utils.call([ 'lsb_release', '--short', '-i' ], output=True)[1].strip(),
+                    utils.call([ 'lsb_release', '--short', '-r' ], output=True)[1].strip(),
+                    utils.call([ 'lsb_release', '--short', '-c' ], output=True)[1].strip())
+        else:
+            return platform.dist()
+
+    def lookupForVirtualBox(self):
+        raise Exception("Methode abstraite")
+
+    def install(self,args):
+        pass
+
+    def zenityfy(cmd, msg = []):
+        if os.path.exists("/usr/bin/zenity"):
+            logging.debug("Zenitify " + " ".join(cmd))
+            if msg: msg = [ "--text", msg ]
+            utils.call([ cmd, [ "/usr/bin/zenity", "--progress", "--auto-close" ] + msg ])
+        else:
+            utils.call(cmd)
+
+    # ToDo: get ride of this function
+    def launch_cmd(self,cmd, msg = [], interactive=True):
+        print "------------------------- LAUNCH CMD ----------------------"
+        if os.path.exists("/usr/bin/zenity") and interactive:
+            logging.debug("Zenitify " + " ".join(cmd))
+            p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+            if msg: msg = [ "--text", msg ]
+            p2 = subprocess.Popen([ "/usr/bin/zenity", "--progress", "--auto-close" , "--pulsate"] + msg, stdin=p1.stdout)
+            p2.communicate()
+        else:
+            subprocess.call(cmd)
+
+    def _run_as_root_with_xterm(self,command,interactive=False, replace = False):
+        # ToDo utils.call (bug in subprocess)
+        if replace: 
+            print "os.execv"
+        else:
+            print 'utils.call("/usr/bin/xterm", [ "xterm", "-e", "su -c " + " ".join(command) ])'
+    
+    def _run_as_root_with_sudo(self,command,interactive=False, replace = False):
+        if replace: 
+            print "os.execv"
+        else:
+            print 'utils.call("/usr/bin/sudo", [ "sudo", "-A" ] + command)'
+
+    def _run_as_root_with_gksudo(self,command,interactive=False, replace = False):
+        if replace: 
+            print "os.execv"
+        else:
+            print 'utils.call([ "/usr/bin/gksudo" , "--"] + command , "Veuillez patientez lors de l\'installation des composants", interactive)'
+
+    def _run_as_root_with_kdesudo(self,command,interactive=False, replace = False):
+        print command
+        if replace: 
+            print "_run_as_root_with_kdesudo replace"
+            os.execv("/usr/bin/kdesudo", ["/usr/bin/kdesudo", "--"] + command)
+        else:
+            utils.call([ "/usr/bin/kdesudo", "--" ] + command, "Veuillez patientez lors de l\'installation des composants", interactive)
+        
+    def _initRunAsRoot(self):
+        #logging.debug("Distro::_initRunAsRoot --begins")
+        if os.path.exists("/usr/bin/gksudo"):
+             self.run_as_root = self._run_as_root_with_gksudo #(command)
+        elif os.path.exists("/usr/bin/kdesudo"):
+             self.run_as_root = self._run_as_root_with_kdesudo# (command)
+        else:
+            if os.isatty(0):
+                graphical_ask_pass = False
+                os.environ["SUDO_ASKPASS"] = path.join(conf.SCRIPT_DIR, "bin", "ask-password")
+                try:
+                    version = utils.call([ "sudo", "-V" ], output=True)[1].split("\n")[0].split()[2]
+                    if version >= "1.7.1":
+                        graphical_ask_pass = True
+                except:
+                    raise
+                if graphical_ask_pass:
+                    self.run_as_root = self._run_as_root_with_sudo # (command)
+                self.run_as_root = self._run_as_root_with_xterm #(command) 
+
+    def prepare(self):
+        pass
+        
+
+class DistroFedora(Distro):
+    def __init__(self):
+        Distro.__init__(self)
+        self.installCommand = "yum install"
+        self.updateCommand = "yum update"
+
+    def _run_as_root_with_beesu(self, command, interactive = False, replace = False):
+        if replace:
+            os.execv("/usr/bin/beesu",["/usr/bin/beesu" ] + command)
+        else:
+            utils.call(["/usr/bin/beesu"] + command)
+    
+    def prepare(self):
+        Distro._initRunAsRoot(self)
+        self._initRunAsRoot()
+        
+    def _initRunAsRoot(self):
+        version = float(self.version)
+        if version >= 10:
+            if not os.path.exists("/usr/bin/beesu"):
+                msg = "Veuillez patientez pendant l'installation de composants\nnécessaires au lancement d'UFO"
+                if os.path.exists("/usr/bin/gpk-install-package-name"):
+                    print 'zenityfy([ "/usr/bin/gpk-install-package-name", "beesu" ], msg)'
+                else:
+                    print 'zenityfy([ "/usr/bin/pkcon", "install", "beesu" ], msg)'
+            if os.path.exists("/usr/bin/beesu"):
+                self.run_as_root = self._run_as_root_with_beesu #(command)
+
+    def lookupForVirtualBox(self):
+        logging.debug("Installing Agorabox repository for VirtualBox")
+        zenityfy([ "yum", "-y", "install", "yum-priorities" ], "Installation du plugin Yum : yum-priorities")
+        self.call([ "rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm" ])
+        kernel = "kernel"
+        if os.uname()[2].endswith("PAE"):
+            kernel += "-PAE"
+        logging.debug("Kernel is: " + kernel)
+        logging.debug("Installing VirtualBox")
+        zenityfy([ "yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma" ])
+        version = self.call([ "rpm", "-q", "--queryformat", "\"%{VERSION}\"", "VirtualBox-OSE" ], output=True)[1]
+        kmod_dir = "VirtualBox-OSE-kmod-" + version
+        logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,))
+        self.call([ "tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir,) ],
+                        cwd = tempfile.gettempdir())
+        tmpdir = tempfile.gettempdir() + "/" + kmod_dir
+        if not os.path.exists(tmpdir): os.mkdir(tmpdir)
+        ret = self.call([ "make" ], cwd = tmpdir)
+        logging.debug("make returned %d", (ret,))
+
+class DistroUbuntu(Distro):
+    def __init__(self):
+        Distro.__init__(self)
+        self.installCommand = "apt-get -y install"
+        self.updateCommand = "apt-get update"
+        #self.distro = "Ubuntu"
+
+    def prepare(self):
+        Distro._initRunAsRoot(self)
+        self._initRunAsRoot()
+
+    def install_virtualbox(self):
+        open("/etc/apt/sources.list", "a").write(
+            "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(),))
+        os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
+        #ToDo: Integrer le gui
+        utils.call([ "apt-get", "update" ])
+        gui.wait_command([ "apt-get", "-y", "install", "virtualbox-2.2" ], "Installation", "Veuillez patienter\nUne Installation est en cours")

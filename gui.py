@@ -5,19 +5,22 @@ if __name__ == "__main__":
 
 try:
     from gui_pyqt import *
+    backend = "PyQt"
     logging.warning("Using PyQt backend")
 except:
     raise
     try:
         from gui_tk import *
+        backend = "Tk"
         logging.debug("Using Tk backend")
     except:
         try:
             from gui_zenity import *
+            backend = "Zenity"
             logging.debug("Using zenity backend")
         except:
             logging.debug("Didn't find a gui backend...")
-            gui = None
+            backend = ""
 
 if __name__ == "__main__":
     dialog_question("Titre", "Message")

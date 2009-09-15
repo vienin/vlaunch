@@ -22,3 +22,7 @@ def dialog_password(root=None):
                               "--entry-text", '', "--hide-text" ],
                             stdout=subprocess.PIPE).communicate()[0]
 
+
+def SplashScreen(*args):
+    print "Impossible d'afficher un splash screen avec zenity"
+    pass

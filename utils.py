@@ -66,7 +66,7 @@ try:
         return -1
 
 except:
-    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True):
+    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True, spawn=False):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
@@ -88,7 +88,9 @@ except:
                 proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, fork=fork)
             lastproc = proc
 
-        if output or len(cmds):
+        if spawn:
+            return lastproc
+        elif output or len(cmds):
             output = lastproc.communicate()[0]
             logging.debug("Returned : " + str(lastproc.returncode))
             return lastproc.returncode, output
