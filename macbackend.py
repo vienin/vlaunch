@@ -46,14 +46,16 @@ class MacBackend(Backend):
             while i >= 0:
                 if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].strip().split("\n")[-1].strip() in pids:
                     del pids[i]
+                    del processes[i]
                 i -= 1
-            if len(pids) > 1: 
+            if len(pids) > 1:
                 logging.debug("U.F.O launched twice. Exiting")
-                gui.dialog_info(title=u"Impossible de lancer UFO",
-                                 error=True,
-                                 msg=u"UFO semble déjà en cours d'utilisation. \n" \
-                                     u"Veuillez fermer toutes les fenêtres UFO, et" \
-                                     u"relancer le programme.")
+                if gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
+                                           u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
+                                           u"Forcer à quitter", "Processus " + str("\nProcessus ".join(processes).strip())):
+                    for pid in pids:
+                        self.call([ "kill", "-9", pid ])
+
                 sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")

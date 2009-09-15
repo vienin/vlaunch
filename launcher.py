@@ -124,7 +124,8 @@ if __name__ == "__main__":
         trace = traceback.format_exc()
         logging.debug(trace)
         if gui.dialog_error_report(u"Erreur", u"UFO à rencontré une erreur fatale et doit fermer.\n" + \
-                                   u"Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur.", trace):
+                                   u"Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur.",
+                                   u"Envoyer le rapport d'erreur", trace):
             import urllib
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
             try:

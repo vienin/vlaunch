@@ -125,20 +125,22 @@ def dialog_question(title, msg, button1="Yes", button2="No"):
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
 
-def dialog_error_report(title, msg, details=None):
+def dialog_error_report(title, msg, action=None, details=None):
     msgbox = OurMessageBox(main)
     msgbox.setIcon(QtGui.QMessageBox.Question)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
     msgbox.addButton(QtGui.QMessageBox.Ok);
     msgbox.setIcon(QtGui.QMessageBox.Critical)
-    sendButton = msgbox.addButton(u"Envoyer le rapport d'erreur", QtGui.QMessageBox.AcceptRole);
+
+    if action:
+        sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole);
 
     if details:
         msgbox.setDetailedText(details)
  
     msgbox.exec_()
-    if msgbox.clickedButton() == sendButton:
+    if action and msgbox.clickedButton() == sendButton:
         return 1
     return 0
 

@@ -112,26 +112,33 @@ class LinuxBackend(Backend):
             while i >= 0:
                 if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].strip().split("\n")[-1].strip() in pids:
                     del pids[i]
+                    del processes[i]
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                gui.dialog_info(title= u"Impossible de lancer UFO",
-                                 error=True,
-                                 msg=u"UFO semble déjà en cours d'utilisation. \n" \
-                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
+                if gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
+                                           u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
+                                           u"Forcer à quitter", "Processus " + str("\nProcessus ".join(processes).strip())):
+                    for pid in pids:
+                        self.call([ "kill", "-9", pid ])
+
                 sys.exit(0)
 
+        # Existing VirtualBox instance do no tseems to be a problem on linux hosts
+        """
         logging.debug("Checking VBoxXPCOMIPCD process")
-        if self.call([ ["ps", "ax", "-o", "pid,command"],
-                       ["grep", "VBoxXPCOMIPCD"],
-                       ["grep", "-v", "grep" ] ], output = True)[1]:
+        processes = self.call([ ["ps", "ax", "-o", "pid,command"],
+                              ["grep", "VBoxXPCOMIPCD"],
+                              ["grep", "-v", "grep" ] ], output = True)[1]
+        if processes:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            gui.dialog_info(title=u"Impossible de lancer UFO",
-                             error=True,
-                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
-            sys.exit(0)
+            if gui.dialog_error_report(u"Impossible de lancer UFO", u"VirtualBox semble déjà en cours d'utilisation. \n" + \
+                                           u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.",
+                                           u"Forcer à quitter", processes):
+                self.kill_resilient_vbox()
 
+            sys.exit(0)
+        """
 
     def prepare_update(self):
         self.ufo_dir = path.normpath(path.join(
@@ -239,8 +246,9 @@ class LinuxBackend(Backend):
         pass
 
     def kill_resilient_vbox(self):
-        self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
-        self.call([ "killall", "-9", "VBoxSVC" ])
+        print self.call([ "killall", "-9", "VirtualBox" ], output=True)[1]
+        print self.call([ "killall", "-9", "VBoxXPCOMIPCD" ], output=True)[1]
+        print self.call([ "killall", "-9", "VBoxSVC" ], output=True)[1]
 
     def run_vbox(self, command, env):
         # For some reason, it doesn't work with 'call'

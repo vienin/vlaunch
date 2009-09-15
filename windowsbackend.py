@@ -30,14 +30,14 @@ class WindowsBackend(Backend):
 
     def check_process(self):
         logging.debug("Checking UFO process")
+        # TODO: Get pid for possible kill
         processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="ufo-updater.exe")
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
-            logging.debug("UFO launched twice. Exiting")
-            gui.dialog_info(title= u"Impossible de lancer UFO",
-                             error=True,
-                             msg=u"UFO semble déjà en cours d'utilisation. \n" \
-                                 u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
+            logging.debug("U.F.O launched twice. Exiting")
+            gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
+                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
+                                    "Processus " + str("\nProcessus ".join(processes).strip())):
             sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
