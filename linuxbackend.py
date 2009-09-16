@@ -95,12 +95,12 @@ class LinuxBackend(Backend):
         shutil.copytree(os.path.join(self.updater_path, "..", "settings"),
                             os.path.join(self.shadow_updater_path, "settings"))
         
-    def getuuid(self, dev):
+    def get_uuid(self, dev):
         return self.call([ "blkid", "-o", "value", "-s", "UUID", dev ], output=True)[1]
 
     def find_device_by_uuid(self, dev_uuid):
         for device in glob.glob("/dev/sd*[0-9]"):
-            uuid = self.getuuid(device)
+            uuid = self.get_uuid(device)
             if uuid == dev_uuid:
                 if device[-1] >= "0" and device[-1] <= "9":
                     device = device[:-1]
@@ -258,7 +258,7 @@ class Distro():
         else:
             return platform.dist()
 
-    def lookupForVirtualBox(self):
+    def install_virtualbox(self):
         raise Exception("Methode abstraite")
 
     def install(self,args):
@@ -311,8 +311,8 @@ class Distro():
         else:
             utils.call([ "/usr/bin/kdesudo", "--" ] + command, "Veuillez patientez lors de l\'installation des composants", interactive)
         
-    def _initRunAsRoot(self):
-        #logging.debug("Distro::_initRunAsRoot --begins")
+    def _init_run_as_root(self):
+        #logging.debug("Distro::_init_run_as_root --begins")
         if os.path.exists("/usr/bin/gksudo"):
              self.run_as_root = self._run_as_root_with_gksudo #(command)
         elif os.path.exists("/usr/bin/kdesudo"):
@@ -348,10 +348,10 @@ class DistroFedora(Distro):
             utils.call(["/usr/bin/beesu"] + command)
     
     def prepare(self):
-        Distro._initRunAsRoot(self)
-        self._initRunAsRoot()
+        Distro._init_run_as_root(self)
+        self._init_run_as_root()
         
-    def _initRunAsRoot(self):
+    def _init_run_as_root(self):
         version = float(self.version)
         if version >= 10:
             if not os.path.exists("/usr/bin/beesu"):
@@ -363,7 +363,7 @@ class DistroFedora(Distro):
             if os.path.exists("/usr/bin/beesu"):
                 self.run_as_root = self._run_as_root_with_beesu #(command)
 
-    def lookupForVirtualBox(self):
+    def install_virtualbox(self):
         logging.debug("Installing Agorabox repository for VirtualBox")
         zenityfy([ "yum", "-y", "install", "yum-priorities" ], "Installation du plugin Yum : yum-priorities")
         self.call([ "rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm" ])
@@ -391,8 +391,8 @@ class DistroUbuntu(Distro):
         #self.distro = "Ubuntu"
 
     def prepare(self):
-        Distro._initRunAsRoot(self)
-        self._initRunAsRoot()
+        Distro._init_run_as_root(self)
+        self._init_run_as_root()
 
     def install_virtualbox(self):
         open("/etc/apt/sources.list", "a").write(
