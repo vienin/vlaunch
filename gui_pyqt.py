@@ -7,7 +7,6 @@ import time,utils
 import subprocess
 
 
-
 class MyApp(QtGui.QApplication):
     def __init__(self, argv):
         self.progressDialog = None
@@ -37,7 +36,6 @@ def create_app():
 def destroy_app(app):
     app.exit()
     app = None
-
 
 def set_icon(icon_path):
     QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
@@ -355,8 +353,7 @@ def dialog_error_report(title, msg, action=None, details=None):
     msgbox.setWindowTitle(title)
     msgbox.addButton(QtGui.QMessageBox.Ok)
     msgbox.setIcon(QtGui.QMessageBox.Critical)
-    sendButton = msgbox.addButton(u"Envoyer le rapport d'erreur", QtGui.QMessageBox.AcceptRole)
-
+    
     if action:
         sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole)
 
