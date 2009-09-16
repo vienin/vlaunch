@@ -478,6 +478,7 @@ class Backend(object):
 
         # prepare environement
         logging.debug("Preparing environment")
+        gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()

@@ -75,7 +75,8 @@ install:
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
 	cp .background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background
 	cp DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
-	./create_fat_symlink.py Mac-Intel/UFO.app $(DESTDIR)$(TARGET_PATH)/ufo.app
+	cp ufo.app $(DESTDIR)$(TARGET_PATH)/UFO.app
+	./create_fat_symlink.py Mac-Intel/UFO.app $(DESTDIR)$(TARGET_PATH)/UFO.app
 	
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks

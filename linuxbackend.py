@@ -12,33 +12,6 @@ import utils
 from utils import *
 from shutil import copytree
 
-# 
-            
-import gui
-#try:
-#    # Virer easy gui
-#    import easygui
-#except ImportError:
-#    # repousser dans prepare.
-#    distro, release, codename = get_distro()
-
-# if distro == "Ubuntu":
-#     run_as_root([ "apt-get", "-y", "install", "python-tk" ])
-#     import easygui
-#     reload(easygui)
-# elif distro == "fedora" or os.path.exists('/usr/bin/pkcon'):
-#     zenitify([ "pkcon", "install", "tkinter" ])
-#     import easygui
-#     reload(easygui)
-# else:
-#     msg = 'Votre distribution Linux n\'est pas officiellement ' \
-#            'supportée.\nVeuillez installer les packages python-tk et VirtualBox.'
-#     if os.path.exists("/usr/bin/zenity"):
-#         self.call([ "zenity", "--info", '--text="' + msg + '"' ])
-#     else:
-#         print msg
-#     sys.exit(1)
-
 class LinuxBackend(Backend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
@@ -49,10 +22,7 @@ class LinuxBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        #logging.debug("LinuxBackend::__init__ ----------------- begins distroConstructor")
         self.distr = distroConstructor()
-        #logging.debug("LinuxBackend::__init__ ----------------- end distroConstructor")
-        #gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.terminated = False
 
     def check_process(self):
@@ -75,16 +45,17 @@ class LinuxBackend(Backend):
                                     u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
                 sys.exit(0)
 
-        logging.debug("Checking VBoxXPCOMIPCD process")
-        if self.call([ ["ps", "ax", "-o", "pid,command"],
-                       ["grep", "VBoxXPCOMIPCD"],
-                       ["grep", "-v", "grep" ] ], output = True)[1]:
-            logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            gui.dialog_info(title=u"Impossible de lancer UFO",
-                #             Error=True,
-                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
-            sys.exit(0)
+        # logging.debug("Checking VBoxXPCOMIPCD process")
+        # processes = self.call([ ["ps", "ax", "-o", "pid,command"],
+        #                       ["grep", "VBoxXPCOMIPCD"],
+        #                       ["grep", "-v", "grep" ] ], output = True)[1]
+        # if processes:
+        #     logging.debug("VBoxXPCOMIPCD is still running. Exiting")
+        #     if gui.dialog_error_report(u"Impossible de lancer UFO", u"VirtualBox semble déjà en cours d'utilisation. \n" + \
+        #                                    u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.",
+        #                                    u"Forcer à quitter", processes):
+        #         self.kill_resilient_vbox()
+        #     sys.exit(0)
 
     def prepare_update(self):
         self.ufo_dir = path.normpath(path.join(
@@ -188,9 +159,7 @@ class LinuxBackend(Backend):
             sys.exit(0)
 
     def prepare(self):
-        # 1 étape: Préparation de la distgribution
         self.distr.prepare()
-        # 2 étape: Si il n'ay pas de backend pour le gui installer zenity
         if not gui.backend:
             self.install_zenity()
             reload(gui)
@@ -230,9 +199,7 @@ class LinuxBackend(Backend):
         reload(gui)
 
 def distroConstructor():
-    #logging.debug("distroConstructor")
     temp = Distro()
-    #logging.debug("distroConstructor:: object distro ok")
     if temp.dist == "Fedora":   
         return DistroFedora()
     elif temp.dist == "Ubuntu":
@@ -248,7 +215,6 @@ class Distro():
                 self.dist, self.version, self.codename = self.get_distro()
 
         self._run_as_root = None
-        #logging.debug("constructor::Distro2")
 
     def get_distro(self):
         if os.path.exists("/usr/bin/lsb_release"):
@@ -272,9 +238,8 @@ class Distro():
         else:
             utils.call(cmd)
 
-    # ToDo: get ride of this function
+    # TODO: get ride of this function
     def launch_cmd(self,cmd, msg = [], interactive=True):
-        print "------------------------- LAUNCH CMD ----------------------"
         if os.path.exists("/usr/bin/zenity") and interactive:
             logging.debug("Zenitify " + " ".join(cmd))
             p1 = subprocess.Popen(cmd, stdout=subprocess.PIPE)
@@ -285,7 +250,7 @@ class Distro():
             subprocess.call(cmd)
 
     def _run_as_root_with_xterm(self,command,interactive=False, replace = False):
-        # ToDo utils.call (bug in subprocess)
+        # TODO: utils.call (bug in subprocess)
         if replace: 
             print "os.execv"
         else:
@@ -312,11 +277,10 @@ class Distro():
             utils.call([ "/usr/bin/kdesudo", "--" ] + command, "Veuillez patientez lors de l\'installation des composants", interactive)
         
     def _init_run_as_root(self):
-        #logging.debug("Distro::_init_run_as_root --begins")
         if os.path.exists("/usr/bin/gksudo"):
-             self.run_as_root = self._run_as_root_with_gksudo #(command)
+             self.run_as_root = self._run_as_root_with_gksudo
         elif os.path.exists("/usr/bin/kdesudo"):
-             self.run_as_root = self._run_as_root_with_kdesudo# (command)
+             self.run_as_root = self._run_as_root_with_kdesudo
         else:
             if os.isatty(0):
                 graphical_ask_pass = False
@@ -328,13 +292,12 @@ class Distro():
                 except:
                     raise
                 if graphical_ask_pass:
-                    self.run_as_root = self._run_as_root_with_sudo # (command)
-                self.run_as_root = self._run_as_root_with_xterm #(command) 
+                    self.run_as_root = self._run_as_root_with_sudo
+                self.run_as_root = self._run_as_root_with_xterm
 
     def prepare(self):
         pass
         
-
 class DistroFedora(Distro):
     def __init__(self):
         Distro.__init__(self)
@@ -361,7 +324,7 @@ class DistroFedora(Distro):
                 else:
                     print 'zenityfy([ "/usr/bin/pkcon", "install", "beesu" ], msg)'
             if os.path.exists("/usr/bin/beesu"):
-                self.run_as_root = self._run_as_root_with_beesu #(command)
+                self.run_as_root = self._run_as_root_with_beesu
 
     def install_virtualbox(self):
         logging.debug("Installing Agorabox repository for VirtualBox")
@@ -388,7 +351,6 @@ class DistroUbuntu(Distro):
         Distro.__init__(self)
         self.installCommand = "apt-get -y install"
         self.updateCommand = "apt-get update"
-        #self.distro = "Ubuntu"
 
     def prepare(self):
         Distro._init_run_as_root(self)
@@ -398,6 +360,6 @@ class DistroUbuntu(Distro):
         open("/etc/apt/sources.list", "a").write(
             "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(),))
         os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
-        #ToDo: Integrer le gui
         utils.call([ "apt-get", "update" ])
         gui.wait_command([ "apt-get", "-y", "install", "virtualbox-2.2" ], "Installation", "Veuillez patienter\nUne Installation est en cours")
+

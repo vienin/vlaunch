@@ -7,12 +7,14 @@ try:
     from gui_pyqt import *
     backend = "PyQt"
     logging.warning("Using PyQt backend")
+    gui = "PyQt4"
 except:
     raise
     try:
         from gui_tk import *
         backend = "Tk"
         logging.debug("Using Tk backend")
+        gui = "Tk"
     except:
         try:
             from gui_zenity import *
