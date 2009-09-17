@@ -200,7 +200,7 @@ class LinuxBackend(Backend):
 
 def distroConstructor():
     temp = Distro()
-    if temp.dist == "Fedora":   
+    if temp.dist in [ "Fedora", "U.F.O" ]:   
         return DistroFedora()
     elif temp.dist == "Ubuntu":
         return DistroUbuntu()
@@ -316,7 +316,8 @@ class DistroFedora(Distro):
         
     def _init_run_as_root(self):
         version = float(self.version)
-        if version >= 10:
+        if (self.dist == "Fedora" and version >= 10) or \
+           (self.dist == "U.F.O" and version >= 1.0):
             if not os.path.exists("/usr/bin/beesu"):
                 msg = "Veuillez patientez pendant l'installation de composants\nnécessaires au lancement d'UFO"
                 if os.path.exists("/usr/bin/gpk-install-package-name"):

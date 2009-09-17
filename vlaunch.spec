@@ -32,6 +32,11 @@ Summary: Install specific files for pole numerique distribution
 Group: Applications/System
 Requires: vlaunch = %{version}-%{release}
 
+%package descartes
+Summary: Install specific files for the Descartes University distribution
+Group: Applications/System
+Requires: vlaunch = %{version}-%{release}
+
 
 %description
 vlaunch installs VirtualBox binaries and virtual machines configuration 
@@ -50,6 +55,12 @@ operating systems : Linux, Windows and MacOSX.
 vlaunch installs VirtualBox binaries and virtual machines configuration 
 files on the UFO vfat partition. 3 directories are installed, one for each 
 operating systems : Linux, Windows and MacOSX.
+
+%description descartes
+vlaunch installs VirtualBox binaries and virtual machines configuration 
+files on the UFO vfat partition. 3 directories are installed, one for each 
+operating systems : Linux, Windows and MacOSX.
+
 
 %prep
 %setup -n vlaunch-%{version}.1
@@ -127,6 +138,7 @@ rm -rf $RPM_BUILD_ROOT
 # %{TARGET_PATH}/Windows/tix84.dll
 # %{TARGET_PATH}/Windows/tk84.dll
 %{TARGET_PATH}/Windows/MSVCR71.dll
+%{TARGET_PATH}/Windows/msvcp71.dll
 %{TARGET_PATH}/Windows/ufo.exe
 # %{TARGET_PATH}/Windows/ufo.exe.manifest
 # %{TARGET_PATH}/Windows/tcl
@@ -199,6 +211,15 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/.VirtualBox/ufo-polenumerique.gif
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.bmp
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.gif
+
+%files descartes
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.bmp
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.bmp
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.bmp
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.gif
+
 
 %changelog
 * Tue Jul 9 2009 Kevin Pouget <kevin.pouget@agorabox.org>
