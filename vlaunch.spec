@@ -147,8 +147,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{TARGET_PATH}/Windows/logs
 %{TARGET_PATH}/Windows/.VirtualBox/HardDisks
 %{TARGET_PATH}/Windows/.VirtualBox/Isos
-%{TARGET_PATH}/Windows/.VirtualBox/updater-download.gif
-%{TARGET_PATH}/Windows/.VirtualBox/updater-install.gif
+%{TARGET_PATH}/Windows/.VirtualBox/updater-download.png
+%{TARGET_PATH}/Windows/.VirtualBox/updater-install.png
 
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
@@ -164,8 +164,8 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.gif
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.png
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.png
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/ufo-updater.app
 %dir %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/logs
 
@@ -175,8 +175,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{TARGET_PATH}/Linux/logs
 %{TARGET_PATH}/Linux/.VirtualBox/HardDisks
 %{TARGET_PATH}/Linux/.VirtualBox/Isos
-%{TARGET_PATH}/Linux/.VirtualBox/updater-download.gif
-%{TARGET_PATH}/Linux/.VirtualBox/updater-install.gif
+%{TARGET_PATH}/Linux/.VirtualBox/updater-download.png
+%{TARGET_PATH}/Linux/.VirtualBox/updater-install.png
 
 "%{TARGET_PATH}/Kit de survie.pdf"
 
@@ -198,27 +198,27 @@ rm -rf $RPM_BUILD_ROOT
 
 %files generic
 %{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.bmp
-%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.png
 %{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.bmp
-%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.png
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.bmp
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.png
 
 %files polenumerique
 %{TARGET_PATH}/Linux/.VirtualBox/ufo-polenumerique.bmp
-%{TARGET_PATH}/Linux/.VirtualBox/ufo-polenumerique.gif
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-polenumerique.png
 %{TARGET_PATH}/Windows/.VirtualBox/ufo-polenumerique.bmp
-%{TARGET_PATH}/Windows/.VirtualBox/ufo-polenumerique.gif
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-polenumerique.png
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.bmp
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-polenumerique.png
 
 %files descartes
 %{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.bmp
-%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Linux/.VirtualBox/ufo-generic.png
 %{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.bmp
-%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Windows/.VirtualBox/ufo-generic.png
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.bmp
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.gif
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/ufo-generic.png
 
 
 %changelog

@@ -1,6 +1,6 @@
 NAME=vlaunch
 VERSION=0.6.1
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.gif ufo-*.gif README COPYING vboxapi sdk\
+SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng README COPYING vboxapi sdk\
         Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
         QtGuiVBox QtNetworkVBox vbox-client-symlink.desktop \
         vbox-client-dnd.desktop Headers Current 4.0 QtCore QtGui \
@@ -38,7 +38,7 @@ install:
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
-	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
+	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
@@ -69,7 +69,7 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings.conf
 	cp -f settings.conf.mac $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
-	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
+	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
 
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
@@ -87,7 +87,7 @@ install:
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
 	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
-	cp ufo-*.bmp updater-*.gif ufo-*.gif $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
+	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	

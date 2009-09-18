@@ -60,10 +60,10 @@ class WindowsBackend(Backend):
         logging.debug("Copying " + self.updater_executable + " to " + self.shadow_updater_executable)
         shutil.copyfile(self.updater_executable, self.shadow_updater_executable)
         os.mkdir(path.join(self.shadow_updater_path, "logs"))
-        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-download.gif")),
-                        path.join(self.shadow_updater_path, "updater-download.gif"))
-        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-install.gif")),
-                        path.join(self.shadow_updater_path, "updater-install.gif"))
+        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-download.png")),
+                        path.join(self.shadow_updater_path, "updater-download.png"))
+        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-install.png")),
+                        path.join(self.shadow_updater_path, "updater-install.png"))
         shutil.copytree(path.normpath(path.join(self.updater_path, "..", "settings")),
                         path.join(self.shadow_updater_path, "settings"))
 
@@ -339,7 +339,7 @@ class WindowsBackend(Backend):
     def prepare(self):
         # Ajusting paths
         if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
-        images = glob.glob(path.join(conf.HOME, "ufo-*.gif"))
+        images = glob.glob(path.join(conf.HOME, "ufo-*.png"))
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
             conf.VBOX_INSTALLED = True

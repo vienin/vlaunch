@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from PyQt4 import QtGui, QtCore
-import threading,sys,os
+import threading, sys, os
 from urllib import urlretrieve
-import time,utils
+import time, utils
 import subprocess
+import conf
 
 
 
@@ -16,15 +17,15 @@ class MyApp(QtGui.QApplication):
         self.animation = None
         QtGui.QApplication.__init__(self, argv)
 
-    def event(self,event):
-        if isinstance(event,MyFinishedEvent):
+    def event(self, event):
+        if isinstance(event, MyFinishedEvent):
             self.DownloadWindow.http_request_finished(event.error)
-        elif self.progressDialog and isinstance(event,MyNoneEvent):
+        elif self.progressDialog and isinstance(event, MyNoneEvent):
            self.progressDialog.setMaximum(event.total)
            self.progressDialog.setValue(event.size)
-        elif self.waitWindow and isinstance(event,MyCommandEvent):
+        elif self.waitWindow and isinstance(event, MyCommandEvent):
             self.waitWindow.finished(event.error)
-        elif self.waitWindow and isinstance(event,MyUpdateEvent):
+        elif self.waitWindow and isinstance(event, MyUpdateEvent):
             self.waitWindow.update()
         return False
 
@@ -51,27 +52,27 @@ main.resize(screenRect.width(), screenRect.height())
 
 
 class MyNoneEvent(QtCore.QEvent):
-    def __init__(self, size,total):
-        super(MyNoneEvent,self).__init__(QtCore.QEvent.None)
+    def __init__(self, size, total):
+        super(MyNoneEvent, self).__init__(QtCore.QEvent.None)
         self.size = size
         self.total = total
     pass
 
 class MyFinishedEvent(QtCore.QEvent):
-    def __init__(self,error=False):
-        super(MyFinishedEvent,self).__init__(QtCore.QEvent.None)
+    def __init__(self, error=False):
+        super(MyFinishedEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
     pass
 
 class MyCommandEvent(QtCore.QEvent):
     def __init__(self, error=False):
-        super(MyCommandEvent,self).__init__(QtCore.QEvent.None)
+        super(MyCommandEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
     pass
 
 class MyUpdateEvent(QtCore.QEvent):
     def __init__(self, error=False):
-        super(MyUpdateEvent,self).__init__(QtCore.QEvent.None)
+        super(MyUpdateEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
     pass
 
@@ -81,31 +82,31 @@ class MyUpdateEvent(QtCore.QEvent):
 #   2. MyFinishedEvent quand il termine(sur une erreur ou non)
 # ATTENTION: pour chaque appel de stop par le thread principale il faut recréer l'objet downloader
 class Downloader(threading.Thread):
-        def __init__(self,file,dest): 
+        def __init__(self, file, dest): 
                 threading.Thread.__init__(self)
-                self.file=file
-                self.dest=dest
-                self.toBeStop=False
+                self.file = file
+                self.dest = dest
+                self.toBeStop = False
 
         def run(self):
                 try:
                     yeah, headers = urlretrieve(self.file, self.dest, reporthook=self.progress)
                 except :
-                    app.postEvent(app,MyFinishedEvent(True))
+                    app.postEvent(app, MyFinishedEvent(True))
                 else: 
-                    app.postEvent(app,MyFinishedEvent(False))
+                    app.postEvent(app, MyFinishedEvent(False))
                 sys.exit()
 
-        def progress(self,count,blockSize,totalSize):
-                if self.toBeStop==True:
+        def progress(self, count, blockSize, totalSize):
+                if self.toBeStop == True:
                     sys.exit()
-                self.count=count
-                self.maximum=totalSize
-                self.downloaded=blockSize*count*100/totalSize
-                app.postEvent(app, MyNoneEvent(int(self.downloaded),100))
+                self.count = count
+                self.maximum = totalSize
+                self.downloaded = blockSize*count*100/totalSize
+                app.postEvent(app, MyNoneEvent(int(self.downloaded), 100))
 
         def stop(self):
-                self.toBeStop=True
+                self.toBeStop = True
 
 
 class CommandLauncher(threading.Thread):
@@ -117,18 +118,18 @@ class CommandLauncher(threading.Thread):
             app.postEvent(app, MyUpdateEvent())
             
         def run(self):
-            t=utils.call(self.cmd, spawn=True)
+            t = utils.call(self.cmd, spawn=True)
             while t.poll() == None:
                 self.update()
                 time.sleep(1)
-            app.postEvent(app,MyCommandEvent(False))
+            app.postEvent(app, MyCommandEvent(False))
             sys.exit()
     
 class WaitWindow(QtGui.QDialog):
     def __init__(self,  cmd="", title="", msg="", parent=None):
-        self.chars = ["     ",".","..","..."]
+        self.chars = ["     ", ".", "..", "..."]
         self.index = 0
-        QtGui.QDialog.__init__(self,parent)
+        QtGui.QDialog.__init__(self, parent)
         self.cmd = cmd
         self.setWindowTitle(title)
         self.command = CommandLauncher(self.cmd)
@@ -138,7 +139,7 @@ class WaitWindow(QtGui.QDialog):
         self.cancelButton = QtGui.QPushButton(u"Annuler")
         self.animation = QtGui.QLabel()
         self.animation.setAlignment(QtCore.Qt.AlignCenter)
-        self.animation.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
+        self.animation.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.addButton(self.cancelButton, QtGui.QDialogButtonBox.ActionRole)
         self.connect(self.cancelButton, QtCore.SIGNAL("canceled()"), self.cancel_command)
@@ -150,8 +151,8 @@ class WaitWindow(QtGui.QDialog):
         mainLayout.addWidget(buttonBox)
         mainLayout.addWidget(self.animation)
         self.setLayout(mainLayout)
-
-        self.animated = QtGui.QMovie(join(conf.HOME,"animated-bar.gif"), QtCore.QByteArray(), self.animation)
+        print os.path.join(conf.HOME, "animated-bar.mng")
+        self.animated = QtGui.QMovie(os.path.join(conf.HOME, "animated-bar.mng"), QtCore.QByteArray(), self.animation)
         self.animated.setCacheMode(QtGui.QMovie.CacheAll)
         self.animated.setSpeed(100)
         self.animation.setMovie(self.animated)
@@ -189,65 +190,52 @@ class DownloadWindow(QtGui.QDialog):
         self.httpGetId = 0
         self.http_request_aborted = False
         self.finished = False
-
         self.statusLabel = QtGui.QLabel(u"Un live U.F.O est nécessaire pour continuer. \n"   
                                                 u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
                                                 u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
                                                 u"suivant la vitesse de votre connexion.")
-
         self.progressDialog = QtGui.QProgressDialog(self)
         app.progressDialog = self.progressDialog
-
         self.progressDialog.setCancelButtonText(u"Annuler")
         self.downloadButton = QtGui.QPushButton(u"Télécharger")
         self.downloadButton.setDefault(True)
         self.quitButton = QtGui.QPushButton(u"Quitter")
         self.quitButton.setAutoDefault(False)
-
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.addButton(self.downloadButton,
                 QtGui.QDialogButtonBox.ActionRole)
         buttonBox.addButton(self.quitButton, QtGui.QDialogButtonBox.RejectRole)
-
-
         # On prépare le thread qui gérera le téléchargement
         self.init_downloader()
-
-        # On se connecte au Slot Qt pointant sur les evenement C++, sender,SIGNAL,callable
-        self.connect(self.progressDialog,QtCore.SIGNAL("canceled()"),self.cancel_download)
-        self.connect(self.downloadButton,QtCore.SIGNAL("clicked()"),self.download_file)
-        self.connect(self.quitButton,QtCore.SIGNAL("clicked()"),self.close)
-
+        # On se connecte au Slot Qt pointant sur les evenement C++, sender, SIGNAL, callable
+        self.connect(self.progressDialog, QtCore.SIGNAL("canceled()"), self.cancel_download)
+        self.connect(self.downloadButton, QtCore.SIGNAL("clicked()"), self.download_file)
+        self.connect(self.quitButton, QtCore.SIGNAL("clicked()"), self.close)
         topLayout = QtGui.QHBoxLayout()
-
         mainLayout = QtGui.QVBoxLayout()
         mainLayout.addLayout(topLayout) 
         mainLayout.addWidget(self.statusLabel)
         mainLayout.addWidget(buttonBox)
         self.setLayout(mainLayout)
-
         self.setWindowTitle(u"Téléchargement de l'image")
 
     def init_downloader(self):
-        self.downloader=Downloader(self.url,self.fileName)
+        self.downloader = Downloader(self.url, self.fileName)
         
 
     def download_file(self):
         if self.finished:
             self.accept()
-
         fileName = self.fileName
         self.outFile = QtCore.QFile(fileName)
         if not self.outFile.open(QtCore.QIODevice.WriteOnly):
             QtGui.QMessageBox.information(self, "HTTP",
-                    u"Impossible d'écrire dans le fichier %s: %s."%(fileName,self.outFile.errorString()))
+                    u"Impossible d'écrire dans le fichier %s: %s."%(fileName, self.outFile.errorString()))
             self.outFile = None
             return
-
         self.progressDialog.setWindowTitle(u"Téléchargement de l'image")
-        self.progressDialog.setLabelText(u"Téléchargement en cours : %s"%(fileName,))
+        self.progressDialog.setLabelText(u"Téléchargement en cours : %s"%(fileName, ))
         self.progressDialog.show()
-        
         self.downloadButton.setEnabled(False)
         self.downloader.start()
 
@@ -270,13 +258,11 @@ class DownloadWindow(QtGui.QDialog):
                 self.outFile.close() 
                 self.outFile.remove()
                 self.outFile = None
-
             self.progressDialog.hide()
             return
 
         self.progressDialog.hide()
         self.outFile.close()
-
         if error:
             self.outFile.remove()
             QtGui.QMessageBox.information(self, "HTTP",
@@ -320,7 +306,7 @@ class SplashScreen:
     def destroy(self):
         self.splash.close()
 
-def create_message_box(title, msg, width = 200, height = 100, buttons = QtGui.QMessageBox.Ok):
+def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"
     msgbox = OurMessageBox(main)
     msgbox.setText(msg)
@@ -330,12 +316,12 @@ def create_message_box(title, msg, width = 200, height = 100, buttons = QtGui.QM
         msgbox.setGeometry((screenRect.width() - width) / 2,
                            (screenRect.height() - height) / 2,
                            width, height)
+
     msgbox.setSizeGripEnabled(True)
     msgbox.setStandardButtons(buttons)
-
     return msgbox
 
-def dialog_info(title, msg, error = False):
+def dialog_info(title, msg, error=False):
     msgbox = create_message_box(title=title, msg=msg)
     if error:
         msgbox.setIcon(QtGui.QMessageBox.Critical)
@@ -344,7 +330,7 @@ def dialog_info(title, msg, error = False):
     msgbox.exec_()
 
 def dialog_question(title, msg, button1="Yes", button2="No"):
-    msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width = 500)
+    msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
     msgbox.setIcon(QtGui.QMessageBox.Question)
     reply = msgbox.exec_()
     if reply == QtGui.QMessageBox.Yes: return button1
@@ -357,7 +343,6 @@ def dialog_error_report(title, msg, action=None, details=None):
     msgbox.setWindowTitle(title)
     msgbox.addButton(QtGui.QMessageBox.Ok)
     msgbox.setIcon(QtGui.QMessageBox.Critical)
-
     if action:
         sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole)
 
@@ -367,14 +352,15 @@ def dialog_error_report(title, msg, action=None, details=None):
     msgbox.exec_()
     if action and msgbox.clickedButton() == sendButton:
         return 1
+
     return 0
 
 def dialog_password(msg=None, rcode=False):
-    w=QtGui.QWidget()
+    w = QtGui.QWidget()
     if not msg:
         msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
 
-    value = QtGui.QInputDialog.getText(w,"Saisi de mot de passe",msg,QtGui.QLineEdit.Password)
+    value = QtGui.QInputDialog.getText(w, "Saisi de mot de passe", msg, QtGui.QLineEdit.Password)
     if rcode:
         return value
     else:

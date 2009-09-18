@@ -9,7 +9,6 @@ try:
     logging.warning("Using PyQt backend")
     gui = "PyQt4"
 except:
-    raise
     try:
         from gui_tk import *
         backend = "Tk"
@@ -29,6 +28,6 @@ if __name__ == "__main__":
     dialog_info("Titre", "Message")
     print dialog_password()
     download_file("http://www.glumol.com", "toto")
-    splash = SplashScreen(image="ufo-generic.gif")
+    splash = SplashScreen(image="ufo-generic.png")
     import time
     time.sleep(5)

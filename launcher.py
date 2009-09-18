@@ -88,6 +88,7 @@ if not conf.NOUPDATE and not "--respawn" in sys.argv:
             if input == "Oui":
                 # Run Updater and close launcher
                 backend.prepare_update()
+
                 cmd = [ backend.shadow_updater_executable,
                         ".".join(map(str, latest_version)),
                         backend.ufo_dir, backend.shadow_updater_path ]

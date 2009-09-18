@@ -94,7 +94,7 @@ mac-launcher: clean py2app py2app-updater
 	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython.so
 
 	cd dist && tar cvzf mac-intel.tgz UFO.app
-	cp *.gif *.bmp dist/UFO.app/Contents/Resources/.VirtualBox
+	cp *.png *.bmp *.mng dist/UFO.app/Contents/Resources/.VirtualBox
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
