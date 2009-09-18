@@ -7,11 +7,13 @@ import time,utils
 import subprocess
 
 
+
 class MyApp(QtGui.QApplication):
     def __init__(self, argv):
         self.progressDialog = None
         self.DownloadWindow = None
         self.waitWindow = None
+        self.animation = None
         QtGui.QApplication.__init__(self, argv)
 
     def event(self,event):
@@ -36,6 +38,7 @@ def create_app():
 def destroy_app(app):
     app.exit()
     app = None
+
 
 def set_icon(icon_path):
     QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
@@ -131,22 +134,27 @@ class WaitWindow(QtGui.QDialog):
         self.command = CommandLauncher(self.cmd)
         self.msg = msg
         app.waitWindow = self
-
         self.statusLabel = QtGui.QLabel(self.msg + " " + self.chars[self.index])
         self.cancelButton = QtGui.QPushButton(u"Annuler")
-
+        self.animation = QtGui.QLabel()
+        self.animation.setAlignment(QtCore.Qt.AlignCenter)
+        self.animation.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Expanding)
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.addButton(self.cancelButton, QtGui.QDialogButtonBox.ActionRole)
         self.connect(self.cancelButton, QtCore.SIGNAL("canceled()"), self.cancel_command)
         self.cancelButton.hide()
-
         topLayout = QtGui.QHBoxLayout()
-
         mainLayout = QtGui.QVBoxLayout()
         mainLayout.addLayout(topLayout) 
         mainLayout.addWidget(self.statusLabel)
         mainLayout.addWidget(buttonBox)
+        mainLayout.addWidget(self.animation)
         self.setLayout(mainLayout)
+
+        self.animated = QtGui.QMovie(join(conf.HOME,"animated-bar.gif"), QtCore.QByteArray(), self.animation)
+        self.animated.setCacheMode(QtGui.QMovie.CacheAll)
+        self.animated.setSpeed(100)
+        self.animation.setMovie(self.animated)
 
     def cancel_command(self):
         pass 
@@ -156,23 +164,19 @@ class WaitWindow(QtGui.QDialog):
             self.statusLabel.setText("Une erreur est survenue")
         else:
             self.statusLabel.setText(u"Installation terminée")
+        self.close()
 
-            self.close()
-        
     def update(self):
         self.index = self.index + 1
         if self.index >= len(self.chars):
             self.index = 0
-
         self.statusLabel.setText(self.msg + " " + self.chars[self.index])
 
     def run(self):
+        self.animated.start()
         self.show()
-        print "ready to launch"
         self.command.start()
         return self.exec_()
-        #while self.command.isAlive():
-        #self.command.join()
 
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, parent=None):
@@ -353,7 +357,7 @@ def dialog_error_report(title, msg, action=None, details=None):
     msgbox.setWindowTitle(title)
     msgbox.addButton(QtGui.QMessageBox.Ok)
     msgbox.setIcon(QtGui.QMessageBox.Critical)
-    
+
     if action:
         sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole)
 
