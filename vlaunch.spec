@@ -179,7 +179,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Linux/.VirtualBox/Isos
 %{TARGET_PATH}/Linux/.VirtualBox/updater-download.png
 %{TARGET_PATH}/Linux/.VirtualBox/updater-install.png
-%{TARGET_PATH}/Linux/.VirtualBox/updater-install.mng
+%{TARGET_PATH}/Linux/.VirtualBox/animated-bar.mng
 
 "%{TARGET_PATH}/Kit de survie.pdf"
 
