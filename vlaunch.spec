@@ -149,6 +149,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/.VirtualBox/Isos
 %{TARGET_PATH}/Windows/.VirtualBox/updater-download.png
 %{TARGET_PATH}/Windows/.VirtualBox/updater-install.png
+%{TARGET_PATH}/Windows/.VirtualBox/animated-bar.mng
 
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
@@ -166,6 +167,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-download.png
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/updater-install.png
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/animated-bar.mng
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/ufo-updater.app
 %dir %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/logs
 
@@ -177,6 +179,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Linux/.VirtualBox/Isos
 %{TARGET_PATH}/Linux/.VirtualBox/updater-download.png
 %{TARGET_PATH}/Linux/.VirtualBox/updater-install.png
+%{TARGET_PATH}/Linux/.VirtualBox/updater-install.mng
 
 "%{TARGET_PATH}/Kit de survie.pdf"
 
