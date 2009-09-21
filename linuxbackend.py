@@ -222,7 +222,9 @@ class Distro():
                     utils.call(['lsb_release', '--short', '-r'], output=True)[1].strip(),
                     utils.call(['lsb_release', '--short', '-c'], output=True)[1].strip())
         else:
-            return platform.dist()
+            dist, version, codename = platform.dist()
+            dist = dist[0].upper() + dist[1:]
+            return dist, version, codename
 
     def install_virtualbox(self):
         raise Exception("Methode abstraite")
