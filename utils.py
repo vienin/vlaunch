@@ -380,6 +380,8 @@ class Backend(object):
                 if input == "Non":
                     if conf.NEEDDEV: return conf.STATUS_EXIT
                     return conf.STATUS_EXIT
+            else:
+                return conf.STATUS_IGNORE
 
             try_times -= 1
 

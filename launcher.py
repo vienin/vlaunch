@@ -37,7 +37,7 @@ if conf.LIVECD:
     download = True
     if path.exists(conf.BOOTISO):
         length = int(urllib.urlopen(iso_url).headers['content-length'])
-        if length == os.stat(conf.BOOTISO).st_size:
+        if length == os.stat(conf.BOOTISO).st_size or os.environ.has_key("NODOWNLOAD"):
             logging.debug("Found complete ISO file. Do not download it.")
             download = False
         else:
