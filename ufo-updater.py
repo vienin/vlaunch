@@ -3,16 +3,18 @@
 import logging
 import os
 format = "%(asctime)s %(levelname)s Updater %(message)s"
-try: logging.basicConfig(format=format, filename=os.path.join("logs", "launcher.log"), level=logging.DEBUG)
+try: logging.basicConfig(format=format, filename=os.path.join("logs", "ufo-updater.log"), level=logging.DEBUG)
 except: logging.basicConfig(level=logging.DEBUG)
 logging.debug("Current directory : " + os.getcwd())
 
 import urllib
 import sys
 import tarfile
-from utils import SplashScreen
+#from utils import SplashScreen
 import subprocess
 from ConfigParser import ConfigParser
+import gui
+import tempfile
 
 if sys.platform == "win32":
     from windowsbackend import *
@@ -52,23 +54,26 @@ try:
                 os.path.join(ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "settings", "settings.conf"),
                 os.path.join(ufo_dir, "Linux", "settings", "settings.conf"))
 
-    backend.dialog_info(title=u"Attention",
+    gui.dialog_info(title=u"Attention",
                         msg=u"Lancement de la mise à jour. " \
                             u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A " \
                             u"AUCUN FICHIER SUR LA CLE. La mise à jour peut durer plusieurs minutes")
-    splash_down = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-download.png"), timeout=0)
+    # splash_down = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-download.png"), timeout=0)
+    splash_down = gui.SplashScreen(image=os.path.join(splash_dir, "updater-download.png"))
     url = "http://downloads.agorabox.org/launcher/launcher-" + latest_version + ".tar.bz2"
 
-    logging.debug("Downloading " + url)
-    filename = urllib.urlretrieve(url)[0]
-    logging.debug("Downloaded as " + filename)
-    splash_down.destroy()
+    filename = tempfile.mkstemp()[1]
+    retcode  = gui.download_file(url, filename)
+    if not splash_down == None:
+        splash_down.destroy()
 
-    splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-install.png"),timeout=0)
+    # splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-install.png"),timeout=0)
+    splash_install = gui.SplashScreen(image=os.path.join(splash_dir, "updater-download.png"))
     logging.debug("Extracting update to " + ufo_dir)
     tgz = tarfile.open(filename)
     tgz.extractall(os.path.normcase(ufo_dir))
     tgz.close()
+    os.remove(filename)
 
     logging.debug("Updating version in settings.conf files")
     for setting in settings:
@@ -79,14 +84,21 @@ try:
         cp.set("launcher", "VERSION", latest_version)
         cp.write(open(setting, "w"))
 
-    splash_install.destroy()
-    backend.dialog_info(title=u"Information",
+    if not splash_install == None:
+        splash_install.destroy()
+
+    gui.dialog_info(title=u"Information",
                         msg=u"Votre clé est à jour.")
 
 except:
-    backend.dialog_info(title=u"Erreur",
+    gui.dialog_info(title=u"Erreur",
                         msg=u"La mise à jour n'a pas été réalisée correctement.")
 
-logging.debug("Restarting UFO launcher : " + launcher)
-subprocess.Popen([ launcher ])
+    import traceback
+    info = sys.exc_info()
+    logging.debug("Unexpected error: " + str(info[1]))
+    logging.debug("".join(traceback.format_tb(info[2])))
+    logging.debug("Exception while updating")
+    logging.debug("Restarting UFO launcher : " + launcher)
+    subprocess.Popen([ launcher ])
 

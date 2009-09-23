@@ -19,7 +19,9 @@ except:
             from gui_zenity import *
             backend = "Zenity"
             logging.debug("Using zenity backend")
-        except:
+            gui = "Zenity"
+        except Exception as e:
+            print e
             logging.debug("Didn't find a gui backend...")
             backend = ""
 

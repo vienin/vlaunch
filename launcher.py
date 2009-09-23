@@ -13,6 +13,7 @@ from shutil import rmtree
 import socket
 import subprocess
 import traceback
+import gui
 
 format = "%(asctime)s %(levelname)s %(message)s"
 log_file_name = os.path.join(os.path.dirname(conf.LOG), str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
@@ -67,7 +68,6 @@ else:
 
 logging.debug("Checking for running UFO processes")
 backend.check_process()
-logging.debug("Checked FUD")
 
 if not conf.NOUPDATE and not "--respawn" in sys.argv:
     try:
@@ -137,5 +137,7 @@ if __name__ == "__main__":
             except:
                 pass
 
-    shutil.copy(log_path, os.path.join(os.path.dirname(log_path), "last_log.log"))
+    try:
+        shutil.copy(log_path, os.path.join(os.path.dirname(log_path), "last_log.log"))
+    except: pass
 

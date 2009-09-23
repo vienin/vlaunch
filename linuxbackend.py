@@ -254,24 +254,23 @@ class Distro():
     def _run_as_root_with_xterm(self, command, interactive=False, replace=False):
         # TODO: utils.call (bug in subprocess)
         if replace: 
-            print "os.execv"
+            print "os.execv.xterm"
         else:
             print 'utils.call("/usr/bin/xterm", ["xterm", "-e", "su -c" + " " . join(command)])'
     
     def _run_as_root_with_sudo(self, command, interactive=False, replace=False):
         if replace: 
-            print "os.execv"
+            print "os.execv.sudo"
         else:
             print 'utils.call("/usr/bin/sudo", ["sudo", "-A"] + command)'
 
     def _run_as_root_with_gksudo(self, command, interactive=False, replace=False):
         if replace: 
-            print "os.execv"
+            os.execv("/usr/bin/gksudo", ["--"] + command)
         else:
             print 'utils.call(["/usr/bin/gksudo" , "--"] + command , "Veuillez patientez lors de l\'installation des composants", interactive)'
 
     def _run_as_root_with_kdesudo(self, command, interactive=False, replace=False):
-        print command
         if replace: 
             print "_run_as_root_with_kdesudo replace"
             os.execv("/usr/bin/kdesudo", ["/usr/bin/kdesudo", "--"] + command)
@@ -360,9 +359,7 @@ class DistroUbuntu(Distro):
         self._init_run_as_root()
 
     def install_virtualbox(self):
-        open("/etc/apt/sources.list", "a").write(
-            "deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
+        open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
         os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
         gui.wait_command(["apt-get", "update"], u"Mise-à-jour", u"Votre système est en train d'être mis à jour")
         gui.wait_command(["apt-get", "-y", "install", "virtualbox-2.2"], "Installation", "Veuillez patienter\nUne Installation est en cours")
-
