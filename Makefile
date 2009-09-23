@@ -100,7 +100,7 @@ install:
 	cp UFO-VirtualBox-boot-linux.img $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Isos/UFO-VirtualBox-boot.img
 
 	# Kit de survie
-	cp "Kit de survie.pdf" $(DESTDIR)$(TARGET_PATH)
+	cp "Manuel d'utilisation.pdf" $(DESTDIR)$(TARGET_PATH)
 
 	mkdir -p $(DESTDIR)/etc/pam.d
 	install -p -m 644 vbox-client-symlink.pam $(DESTDIR)/etc/pam.d/vbox-client-symlink
