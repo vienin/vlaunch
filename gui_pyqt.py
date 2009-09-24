@@ -7,8 +7,6 @@ import time, utils
 import subprocess
 import conf
 
-
-
 class MyApp(QtGui.QApplication):
     def __init__(self, argv):
         self.progressDialog = None
@@ -191,9 +189,9 @@ class DownloadWindow(QtGui.QDialog):
         self.http_request_aborted = False
         self.finished = False
         self.statusLabel = QtGui.QLabel(u"Un live U.F.O est nécessaire pour continuer. \n"   
-                                                u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
-                                                u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
-                                                u"suivant la vitesse de votre connexion.")
+                                        u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
+                                        u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
+                                        u"suivant la vitesse de votre connexion.")
         self.progressDialog = QtGui.QProgressDialog(self)
         app.progressDialog = self.progressDialog
         self.progressDialog.setCancelButtonText(u"Annuler")
@@ -222,7 +220,6 @@ class DownloadWindow(QtGui.QDialog):
     def init_downloader(self):
         self.downloader = Downloader(self.url, self.fileName)
         
-
     def download_file(self):
         if self.finished:
             self.accept()
@@ -238,7 +235,6 @@ class DownloadWindow(QtGui.QDialog):
         self.progressDialog.show()
         self.downloadButton.setEnabled(False)
         self.downloader.start()
-
 
     def cancel_download(self):
         self.statusLabel.setText(u"Téléchargement annulé. \n"
@@ -276,7 +272,6 @@ class DownloadWindow(QtGui.QDialog):
 
         self.downloadButton.setEnabled(True)
         self.outFile = None
-
 
 class OurMessageBox(QtGui.QMessageBox):
     def set_minimum_size(self, width, height):
@@ -365,4 +360,3 @@ def dialog_password(msg=None, rcode=False):
         return value
     else:
         return value[0]
-

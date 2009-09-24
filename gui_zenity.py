@@ -114,15 +114,12 @@ def dialog_password(root=None):
                               "--entry-text", '', "--hide-text" ],
                             stdout=subprocess.PIPE).communicate()[0]
 
-
 def SplashScreen(*args, **kw):
-    print "Impossible d'afficher un splash screen avec zenity"
+    print "Can't display a splash screen with zenity"
     return None
-
 
 def dialog_error_report(*args):
     pass
-
 
 def wait_command(cmd, title="", msg=""):
     launch = CommandLauncher(cmd, title, msg)

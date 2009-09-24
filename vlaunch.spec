@@ -25,7 +25,6 @@ Requires: VirtualBox-OSE-guest >= 2.2.4
 %package generic
 Summary: Install specific files for generic distribution
 Group: Applications/System
-Requires: vlaunch = %{version}-%{release}
 
 %package polenumerique
 Summary: Install specific files for pole numerique distribution
