@@ -37,7 +37,7 @@ class WindowsBackend(Backend):
             logging.debug("U.F.O launched twice. Exiting")
             gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
                                     u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
-                                    "Processus " + str("\nProcessus ".join(processes).strip())):
+                                    "Processus " + str("\nProcessus ".join(processes).strip()))
             sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
@@ -97,7 +97,7 @@ class WindowsBackend(Backend):
             create_service = True
             if retcode == 0:
                 logging.debug("Service PortableVBoxDrv exists")
-                lines = output[0].split("\n")
+                lines = output.split("\n")
                 for line in lines:
                     splt = line.split()
                     if "STATE" in splt:

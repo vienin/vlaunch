@@ -50,11 +50,13 @@ class CommandLauncher(threading.Thread):
         sys.exit(returncode)
 
 class Downloader(threading.Thread):
-    def __init__(self, file, dest): 
+    def __init__(self, file, dest, title, msg, autostart): 
         threading.Thread.__init__(self)
         self.file = file
         self.dest = dest
         self.toBeStop = False
+        self.title = title
+        self.msg = msg
         # Zenity process
         self.exe = None
         # return code of this thread (to help parent thread deciding what to do)
@@ -67,7 +69,9 @@ class Downloader(threading.Thread):
             sys.stdout.flush()
             self.fi = tempfile.mkstemp()
             os.write(self.fi[0],"\n")
-            self.exe = subprocess.Popen([ zenity, "--progress", "--pulsate", u"--title=Téléchargement", u"--text=Veuillez patienter le télécharchement est en cours."], stdin=self.fi[0])
+            self.exe = subprocess.Popen([ zenity, "--progress", "--pulsate",
+                                          "--title", self.title,
+                                          "--text", self.msg ], stdin=self.fi[0])
             yeah, headers = urllib.urlretrieve(self.file, self.dest, reporthook=self.progress)
         except Exception, e:
             print e
@@ -90,8 +94,8 @@ class Downloader(threading.Thread):
         sys.exit(self.retcode)
 
 
-def download_file(url, filename):
-    downloader = Downloader(url, filename)
+def download_file(url, filename, title, msg, autostart=False):
+    downloader = Downloader(url, filename, title, msg, autostart=autostart)
     downloader.start()
     downloader.join()
     return downloader.retcode

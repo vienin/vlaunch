@@ -6,23 +6,23 @@ if __name__ == "__main__":
 try:
     from gui_pyqt import *
     backend = "PyQt"
-    logging.warning("Using PyQt backend")
+    print "Using PyQt backend"
     gui = "PyQt4"
 except:
+    raise
     try:
-        from gui_tk import *
+        from gui_tk_ import *
         backend = "Tk"
-        logging.debug("Using Tk backend")
+        print "Using Tk backend"
         gui = "Tk"
     except:
         try:
             from gui_zenity import *
             backend = "Zenity"
-            logging.debug("Using zenity backend")
+            print "Using zenity backend"
             gui = "Zenity"
-        except Exception as e:
-            print e
-            logging.debug("Didn't find a gui backend...")
+        except Exception, e:
+            print "Didn't find a gui backend..."
             backend = ""
 
 if __name__ == "__main__":

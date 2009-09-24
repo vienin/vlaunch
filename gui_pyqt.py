@@ -178,20 +178,19 @@ class WaitWindow(QtGui.QDialog):
         return self.exec_()
 
 class DownloadWindow(QtGui.QDialog):
-    def __init__(self, url, filename, parent=None):
+    def __init__(self, url, filename, title, msg, parent=None, autostart=False):
         super(DownloadWindow, self).__init__(parent)
 
         app.DownloadWindow = self
         self.url = url
         self.fileName = filename
+        self.autostart = autostart
         self.outFile = None
         self.httpGetId = 0
         self.http_request_aborted = False
         self.finished = False
-        self.statusLabel = QtGui.QLabel(u"Un live U.F.O est nécessaire pour continuer. \n"   
-                                        u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
-                                        u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
-                                        u"suivant la vitesse de votre connexion.")
+        self.autostart = autostart
+        self.statusLabel = QtGui.QLabel(msg)
         self.progressDialog = QtGui.QProgressDialog(self)
         app.progressDialog = self.progressDialog
         self.progressDialog.setCancelButtonText(u"Annuler")
@@ -215,7 +214,9 @@ class DownloadWindow(QtGui.QDialog):
         mainLayout.addWidget(self.statusLabel)
         mainLayout.addWidget(buttonBox)
         self.setLayout(mainLayout)
-        self.setWindowTitle(u"Téléchargement de l'image")
+        self.setWindowTitle(title)
+        if self.autostart:
+            self.download_file()
 
     def init_downloader(self):
         self.downloader = Downloader(self.url, self.fileName)
@@ -270,6 +271,9 @@ class DownloadWindow(QtGui.QDialog):
             self.quitButton.setText(u"Continuer")
             self.statusLabel.setText(u"Téléchargement terminé.")
 
+        if self.autostart:
+            self.close()
+            
         self.downloadButton.setEnabled(True)
         self.outFile = None
 
@@ -283,10 +287,13 @@ class OurMessageBox(QtGui.QMessageBox):
             self.setFixedSize(*self._minSize)
 
 
-def download_file(url, filename):
-    downloadWin = DownloadWindow(url=url, filename=filename)
-    downloadWin.show()
-    return downloadWin.exec_()
+def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
+    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
+    if not autostart:
+        downloadWin.show()
+        return downloadWin.exec_()
+    else:
+        downloadWin.progressDialog.exec_()
 
 def wait_command(cmd, title="", msg=""):
     cmdWin = WaitWindow(cmd, title, msg)

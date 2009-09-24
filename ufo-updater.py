@@ -10,11 +10,12 @@ logging.debug("Current directory : " + os.getcwd())
 import urllib
 import sys
 import tarfile
-#from utils import SplashScreen
 import subprocess
 from ConfigParser import ConfigParser
 import gui
 import tempfile
+
+logging.debug("Using " + gui.backend + " backend")
 
 if sys.platform == "win32":
     from windowsbackend import *
@@ -58,22 +59,21 @@ try:
                         msg=u"Lancement de la mise à jour. " \
                             u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A " \
                             u"AUCUN FICHIER SUR LA CLE. La mise à jour peut durer plusieurs minutes")
-    # splash_down = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-download.png"), timeout=0)
+
     splash_down = gui.SplashScreen(image=os.path.join(splash_dir, "updater-download.png"))
     url = "http://downloads.agorabox.org/launcher/launcher-" + latest_version + ".tar.bz2"
 
     filename = tempfile.mkstemp()[1]
-    retcode  = gui.download_file(url, filename)
+    retcode  = gui.download_file(url, filename, title="Téléchargement de la mise à jour", msg="Merci de bien vouloir patientier", autostart=True)
     if not splash_down == None:
         splash_down.destroy()
 
-    # splash_install = SplashScreen(backend.tk, image=os.path.join(splash_dir, "updater-install.png"),timeout=0)
-    splash_install = gui.SplashScreen(image=os.path.join(splash_dir, "updater-download.png"))
-    logging.debug("Extracting update to " + ufo_dir)
+    splash_install = gui.SplashScreen(image=os.path.join(splash_dir, "updater-install.png"))
+    logging.debug("Extracting update " + filename + " to " + ufo_dir)
     tgz = tarfile.open(filename)
     tgz.extractall(os.path.normcase(ufo_dir))
     tgz.close()
-    os.remove(filename)
+    # os.remove(filename)
 
     logging.debug("Updating version in settings.conf files")
     for setting in settings:
@@ -100,5 +100,5 @@ except:
     logging.debug("".join(traceback.format_tb(info[2])))
     logging.debug("Exception while updating")
     logging.debug("Restarting UFO launcher : " + launcher)
-    subprocess.Popen([ launcher ])
 
+os.execv(launcher, [ launcher ])

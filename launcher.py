@@ -48,7 +48,11 @@ if conf.LIVECD:
         sys.path.append(conf.BIN)
         import gui_pyqt
         res = gui_pyqt.download_file(iso_url, # UFO.iso",
-                                     filename=conf.BOOTISO)
+                                     filename=conf.BOOTISO,
+                                     msg=u"Un live U.F.O est nécessaire pour continuer. \n"   
+                                         u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
+                                         u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
+                                         u"suivant la vitesse de votre connexion.")
         if not res:
             sys.exit(0)
 
