@@ -35,9 +35,11 @@ class WindowsBackend(Backend):
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
             logging.debug("U.F.O launched twice. Exiting")
-            gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
-                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
-                                    "Processus " + str("\nProcessus ".join(processes).strip()))
+            logging.debug(str([ x.Name for x in processes if x.ProcessId != os.getpid() ]))
+            gui.dialog_error_report(title=u"Impossible de lancer UFO",
+                                    msg=u"UFO semble déjà en cours d'utilisation.\n" + \
+                                        u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.\n" + \
+                                        "Processus :\n" + "\n".join([ x.Name for x in processes if x.ProcessId != os.getpid() ]).strip())
             sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
