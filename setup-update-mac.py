@@ -9,7 +9,9 @@ plist = dict(
 
 APP = [ "ufo-updater.py" ]
 DATA_FILES = [ ]
-OPTIONS = {'argv_emulation' : False }
+OPTIONS = {'argv_emulation' : False,
+           'iconfile' : 'ufo.icns',
+           'includes': ['xpcom', 'xpcom.vboxxpcom', 'sip'] }
 
 setup(
     app=APP,

@@ -53,7 +53,7 @@ mac-launcher: clean py2app py2app-updater
 	fi; \
 	mv dist/ufo-updater.app ${RESOURCES}
 	cp -R $$VBOX_PATH ${VBOXAPP}
-	rm -rf ${VBOXAPP}/tst* ${VBOXAPP}/testcase
+	rm -rf ${VBOXMACOS}/tst* ${VBOXMACOS}/testcase
 	# cp -R kexts ${VBOXMACOS}/kexts
 	mkdir -p ${VBOXMACOS}/kexts/Tiger
 	cp -R ${VBOX_PATH}/../*.kext ${VBOXMACOS}/kexts
@@ -64,9 +64,9 @@ mac-launcher: clean py2app py2app-updater
 	cp -f /Library/Frameworks/Python.framework/Python ${UPDATERAPP}/Contents/Frameworks/Python.framework/Versions/2.5/Python
 	cp -R /Library/Frameworks/QtGui.framework ${VBOXAPP}/Contents/Frameworks/QtGui.framework
 	cp -R /Library/Frameworks/QtNetwork.framework ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework
+	mv ${VBOXMACOS}/VBoxPython{2_3.so,.so}
 	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
 	strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
-	mv ${VBOXMACOS}/VBoxPython{2_3.so,.so}
 	rm -rf ${VBOXMACOS}/testcase 
 	rm -rf ${VBOXMACOS}/tst* 
 	rm -f ${RESOURCES}/site.pyc
@@ -99,12 +99,13 @@ mac-launcher: clean py2app py2app-updater
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
 	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \
-	    ln -s ../../../../VirtualBox.app/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
+	    ln -s ../../../VirtualBox.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
 	done
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
 
 testing: mac-launcher
-	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings.conf; \
+	mkdir -p dist/UFO.app/Contents/Resources/settings; \
+	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings/settings.conf; \
 	if [ ! -d dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks ]; \
 	then \
 	    mkdir dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks; \
