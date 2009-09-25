@@ -90,7 +90,7 @@ except:
 
         if spawn:
             return lastproc
-        elif output or len(cmds):
+        elif output or len(cmds) > 1:
             output = lastproc.communicate()[0]
             logging.debug("Returned : " + str(lastproc.returncode))
             return lastproc.returncode, output
@@ -381,7 +381,14 @@ class Backend(object):
                     if conf.NEEDDEV: return conf.STATUS_EXIT
                     return conf.STATUS_EXIT
             else:
-                return conf.STATUS_IGNORE
+                usb = self.get_usb_devices()
+                names = [ x[1] for x in usb ]
+                ret = gui.dialog_choices(msg="Selectionnez le périphérique USB sur lequel vous voulez installer UFO",
+                                         title="UFO", column="Périphérique", choices= [ "Aucune clée" ] + names)
+                if not ret:
+                    return conf.STATUS_IGNORE
+                    
+                conf.VOLUME = names[ret - 1]
 
             try_times -= 1
 
@@ -419,7 +426,7 @@ class Backend(object):
 
                 last_state = state
             except:
-                # Virutal machine has been closed between two sleeps
+                # Virtual machine has been closed between two sleeps
                 break
             time.sleep(2)
 

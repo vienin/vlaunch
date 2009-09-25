@@ -72,7 +72,7 @@ class Downloader(threading.Thread):
             self.exe = subprocess.Popen([ zenity, "--progress", "--pulsate",
                                           "--title", self.title,
                                           "--text", self.msg ], stdin=self.fi[0])
-            yeah, headers = urllib.urlretrieve(self.file, self.dest, reporthook=self.progress)
+            urllib.urlretrieve(self.file, self.dest, reporthook=self.progress)
         except Exception, e:
             print e
             self.stop(1)
@@ -93,7 +93,6 @@ class Downloader(threading.Thread):
             os.remove(self.fi[1]) 
         sys.exit(self.retcode)
 
-
 def download_file(url, filename, title, msg, autostart=False):
     downloader = Downloader(url, filename, title, msg, autostart=autostart)
     downloader.start()
@@ -106,15 +105,12 @@ def set_icon(icon_path):
 def dialog_info(title, msg, error = False):
     subprocess.call([ zenity, "--info", "--title=" + title, "--text=" + msg ])
 
-def dialog_question(title, msg, button1, button2):
+def dialog_question(title, msg, button1=None , button2=None):
     return (button1, button2)[ subprocess.call([ zenity, "--question", "--title=" + title, "--text=" + msg ])]
 
-# generic dialog box for ask password 
-# params :
-# return : pass_string
 def dialog_password(root=None):
-    return subprocess.Popen([ zenity, "--entry", "--title=", u'Autorisation nécessaire',
-                              "--text=", 'Veuillez entrer votre mot de passe:',
+    return subprocess.Popen([ zenity, "--entry", "--title", u'Autorisation nécessaire',
+                              "--text", 'Veuillez entrer votre mot de passe:',
                               "--entry-text", '', "--hide-text" ],
                             stdout=subprocess.PIPE).communicate()[0]
 
@@ -131,5 +127,9 @@ def wait_command(cmd, title="", msg=""):
     launch.join()
     return launch.retcode
     
+def dialog_choices(title, msg, column, choices):
+    ret, output =  utils.call([ zenity, "--title", title, "--text", msg,
+                                "--list", "--column", column ] + choices, output=True)
+    output = output.strip()
+    return choices.index(output)
 
-         

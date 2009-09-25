@@ -18,26 +18,23 @@ import gui
 format = "%(asctime)s %(levelname)s %(message)s"
 log_file_name = os.path.join(os.path.dirname(conf.LOG), str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
 try:
-    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, log_file_name))
+    # logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, log_file_name))
     log_path = path.join(conf.SCRIPT_DIR, log_file_name)
-    logging.debug("Logging to " + log_path)
     print "Logging to " + log_path
 except:
     try:
         temp = path.join(tempfile.gettempdir(), log_file_name)
-        logging.basicConfig(format=format, level=logging.DEBUG,
-                            filename=temp)
+        #logging.basicConfig(format=format, level=logging.DEBUG,
+        #                    filename=temp)
         log_path = temp
-        logging.debug("Logging to " + log_path)
         print "Logging to " + log_path
     except:
         print "Could not redirect log to file"
 
 if conf.LIVECD:
-    iso_url = "http://kickstart.agorabox.org/private/VBoxRT.dll" # UFO.iso"
     download = True
     if path.exists(conf.BOOTISO):
-        length = int(urllib.urlopen(iso_url).headers['content-length'])
+        length = int(urllib.urlopen(conf.ISOURL).headers['content-length'])
         if length == os.stat(conf.BOOTISO).st_size or os.environ.has_key("NODOWNLOAD"):
             logging.debug("Found complete ISO file. Do not download it.")
             download = False
@@ -46,13 +43,12 @@ if conf.LIVECD:
         
     if not "--respawn" in sys.argv and download:
         sys.path.append(conf.BIN)
-        import gui_pyqt
-        res = gui_pyqt.download_file(iso_url, # UFO.iso",
-                                     filename=conf.BOOTISO,
-                                     msg=u"Un live U.F.O est nécessaire pour continuer. \n"   
-                                         u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
-                                         u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
-                                         u"suivant la vitesse de votre connexion.")
+        res = gui.download_file(conf.ISOURL,
+                                filename=conf.BOOTISO,
+                                msg=u"Un live U.F.O est nécessaire pour continuer. \n"   
+                                    u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
+                                    u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
+                                    u"suivant la vitesse de votre connexion.")
         if not res:
             sys.exit(0)
 

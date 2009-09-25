@@ -367,3 +367,6 @@ def dialog_password(msg=None, rcode=False):
         return value
     else:
         return value[0]
+
+def dialog_choices(title, msg, choices):
+    pass

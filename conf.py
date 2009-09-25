@@ -61,6 +61,7 @@ noupdatekey = "NOUPDATE"
 livecdkey = "LIVECD"
 bootdiskkey = "BOOTDISK"
 bootdiskuuidkey = "BOOTDISKUUID"
+isourlkey = "ISOURL"
 
 cp = ConfigParser(defaults = { logkey : "launcher.log",
                                startvmkey : "1",
@@ -100,7 +101,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                noupdatekey : "0",
                                livecdkey : "0",
                                bootdiskuuidkey : "",
-                               bootdiskkey : ""
+                               bootdiskkey : "",
+                               isourlkey : "http://downloads.agorabox.org/launcher/latest"
                              })
                              
 try:
@@ -135,6 +137,7 @@ CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 NOUPDATE = int(cp.get(launchersection, noupdatekey))
 LIVECD = int(cp.get(launchersection, livecdkey))
+ISOURL = cp.get(launchersection, isourlkey)
 
 DEV = cp.get(rawdisksection, devkey)
 PARTS = cp.get(rawdisksection, partskey)
