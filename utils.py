@@ -381,15 +381,16 @@ class Backend(object):
                     if conf.NEEDDEV: return conf.STATUS_EXIT
                     return conf.STATUS_EXIT
             else:
-                usb = self.get_usb_devices()
+                usb = self.get_usb_sticks()
                 names = [ x[1] for x in usb ]
-                ret = gui.dialog_choices(msg="Selectionnez le périphérique USB sur lequel vous voulez installer UFO",
-                                         title="UFO", column="Périphérique", choices= [ "Aucune clée" ] + names)
+                ret = gui.dialog_choices(msg=u"Selectionnez le périphérique USB sur lequel vous voulez installer UFO",
+                                         title=u"UFO", column=u"Périphérique", choices= [ u"Aucune clée" ] + names)
                 if not ret:
                     return conf.STATUS_IGNORE
                     
-                conf.VOLUME = names[ret - 1]
-
+                conf.DEV = usb[ret - 1][0]
+                return conf.STATUS_NORMAL
+                
             try_times -= 1
 
         return conf.STATUS_EXIT

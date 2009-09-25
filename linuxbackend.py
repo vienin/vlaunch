@@ -141,6 +141,13 @@ class LinuxBackend(Backend):
             return [[path, os.path.basename(path)] for path in usb_paths]
         return [], []
 
+    def get_usb_sticks(self):
+        if os.path.exists('/dev/disk/by-id'):
+            usb_devices = [os.path.realpath(os.path.join('/dev/disk/by-id', link)) \
+                           for link in os.listdir('/dev/disk/by-id') if link[0:3] == "usb" and "-part" not in link ]
+            return [[dev, open(path.join("/", "sys", "block", path.basename(dev), "device", "model")).read().strip()] for dev in usb_devices]
+        return [], []
+
     def find_resolution(self):
         if path.exists("/usr/bin/xrandr"):
             try:
