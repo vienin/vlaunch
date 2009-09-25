@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import fcntl
 import struct
@@ -135,6 +137,16 @@ class MacBackend(Backend):
                    len(grep(infos, "Mount Point:").split()) > 2:
                     disks.append((grep(infos, "Mount Point:").split()[2],
                                   " ".join(grep(infos, "Volume Name:").split()[2:])))
+        except: return []
+        return disks
+
+    def get_usb_sticks(self):
+        disks = []
+        try: 
+            for device in glob.glob("/dev/disk[0-9]"):
+                infos = self.call([ "diskutil", "info", device ], output=True)[1]
+                if grep(infos, "Protocol:").split()[1] == "USB":
+                    disks.append([ device, " ".join(grep(infos, "Media Name:").split()[2:]) ])
         except: return []
         return disks
 
