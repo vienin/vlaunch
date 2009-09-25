@@ -326,7 +326,12 @@ class WindowsBackend(Backend):
     
     def get_usb_devices(self):
         logical_disks = self.WMI.Win32_LogicalDisk (DriveType = 2)
-        return [[logical_disk.Caption + '\\', str(logical_disk.Caption) + str("_") + str(logical_disk.VolumeName)] for logical_disk in logical_disks ]
+        return [[logical_disk.Caption + '\\',
+                  str(logical_disk.Caption) + str("_") + str(logical_disk.VolumeName)] for logical_disk in logical_disks ]
+
+    def get_usb_sticks(self):
+        disks = self.WMI.Win32_DiskDrive()
+        return [[ disk.Name, disk.Model ] for disk in disks if disk.InterfaceType == "USB" ]
 
     def rights_error(self):
         msg = u"Vous ne possédez pas les permissions nécessaires pour lancer UFO."
