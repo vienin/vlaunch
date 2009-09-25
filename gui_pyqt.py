@@ -368,5 +368,24 @@ def dialog_password(msg=None, rcode=False):
     else:
         return value[0]
 
-def dialog_choices(title, msg, choices):
-    pass
+class ListDialog(QtGui.QDialog):
+    def __init__(self, parent=None, title="List", msg="msg", choices=[]):
+        super(ListDialog, self).__init__(parent)
+        msglabel = QtGui.QLabel(msg)
+        self.choicelist = QtGui.QListWidget()        
+        for i in choices:
+            self.choicelist.addItem(i)
+        buttonbox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
+        buttonbox.accepted.connect(self.accept)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(msglabel)
+        layout.addWidget(self.choicelist)
+        layout.addWidget(buttonbox)
+        self.setLayout(layout)
+        self.setWindowTitle(title)
+
+def dialog_choices(title, msg, column, choices):
+    dlg = ListDialog(title=title, msg=msg, choices=choices)
+    dlg.exec_()
+    return dlg.choicelist.currentRow()
+

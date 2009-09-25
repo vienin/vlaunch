@@ -26,8 +26,8 @@ except:
             backend = ""
 
 if __name__ == "__main__":
-    dialog_choices(title="Title", msg="Messages", column="Objects",
-                   choices = [ "a", "b", "c" ])
+    print dialog_choices(title="Title", msg="Messages", column="Objects",
+                         choices = [ "a", "b", "c" ])
     dialog_question("Titre", "Message")
     dialog_info("Titre", "Message")
     print dialog_password()

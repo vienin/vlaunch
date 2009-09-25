@@ -1,4 +1,4 @@
-# -*- coding: iso8859-15 -*-
+# -*- coding: utf-8 -*-
 
 import logging
 import commands
@@ -374,7 +374,7 @@ class Backend(object):
                     return conf.STATUS_NORMAL
             if not conf.LIVECD:
                 input = gui.dialog_question(title=u"Attention",
-                                         msg=u"Aucune clé UFO n'a été trouvée, réessayer ?",
+                                         msg=u"Aucune clÃ© UFO n'a Ã©tÃ© trouvÃ©e, rÃ©essayer ?",
                                          button1=u"Oui",
                                          button2=u"Non")
                 if input == "Non":
@@ -401,7 +401,7 @@ class Backend(object):
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
              gui.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
-                              u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce " + \
+                              u"VÃ©rifiez votre PATH ou tÃ©lecharger VirtualBox en suivant ce " + \
                               u"lien http://downloads.virtualbox.org/virtualbox/",
                               title=u"Binaires manquants")
              sys.exit(1)
@@ -438,8 +438,8 @@ class Backend(object):
                 continue
             if usb in self.usb_devices:
                 continue
-            input = gui.dialog_question(u"Péripherique USB", 
-                                        u"Un nouveau périphérique USB à été détecté:\n\n" + \
+            input = gui.dialog_question(u"PÃ©ripherique USB", 
+                                        u"Un nouveau pÃ©riphÃ©rique USB Ã  Ã©tÃ© dÃ©tectÃ©:\n\n" + \
                                         u"\"" + usb[1] + "\" monte sur " + usb[0] + "\n\n" + \
                                         u"Voulez vous le raccorder a la machine virtuelle UFO ?")
             if input == "Yes":
