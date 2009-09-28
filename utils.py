@@ -182,7 +182,8 @@ class Backend(object):
         self.vbox.set_extra_data("GUI/UpdateDate", "never")
         self.vbox.set_extra_data("GUI/SuppressMessages", ",remindAboutAutoCapture,confirmInputCapture," + 
                                  "remindAboutMouseIntegrationOn,remindAboutMouseIntegrationOff," + 
-                                 "remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen")
+                                 "remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen," +
+                                 "showRuntimeError.warning.HostAudioNotResponding")
 
         self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
         self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
