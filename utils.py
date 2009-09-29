@@ -233,7 +233,7 @@ class Backend(object):
                     freeram = self.vbox.host.get_free_ram()
                 else:
                     freeram = self.get_free_ram()
-                conf.RAMSIZE = 2 * freeram / 3
+                conf.RAMSIZE = max(2 * freeram / 3, conf.MINRAM)
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
             self.vbox.current_machine.set_ram_size(conf.RAMSIZE)

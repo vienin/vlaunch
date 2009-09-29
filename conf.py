@@ -33,6 +33,7 @@ nettypekey = "NETTYPE"
 hostnetkey = "HOSTNET"
 macaddrkey = "MACADDR"
 ramsizekey = "RAMSIZE"
+minramkey = "MINRAM"
 kioskmodekey = "KIOSKMODE"
 widthkey = "WIDTH"
 heightkey = "HEIGHT"
@@ -78,6 +79,7 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                hostnetkey : "",
                                macaddrkey : "",
                                ramsizekey : "auto",
+                               minramkey : "256",
                                kioskmodekey : "0",
                                heightkey : "",
                                widthkey : "",
@@ -153,6 +155,7 @@ NETTYPE = int(cp.get(vmsection, nettypekey))
 HOSTNET = cp.get(vmsection, hostnetkey)
 MACADDR = cp.get(vmsection, macaddrkey)
 RAMSIZE = cp.get(vmsection, ramsizekey)
+MINRAM = cp.get(vmsection, minramkey)
 KIOSKMODE = int(cp.get(vmsection, kioskmodekey))
 DRIVERANK = int(cp.get(vmsection, driverankkey))
 SWAPFILE  = cp.get(vmsection, swapfile)
