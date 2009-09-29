@@ -28,6 +28,9 @@ mount_share_and_link() {
 	fi
 }
 
+run=`runlevel`
+[ "$run" != "N 4" ] && exit
+
 [ -z "$USERHELPER_UID" ] && USER_UID=`id -u $USER` || USER_UID=$USERHELPER_UID
 
 # Set $IFS to end-of-line and coma

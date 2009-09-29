@@ -3,6 +3,9 @@
 # and start VBoxClient DnD service
 . /etc/sysconfig/ufo/vboxclient
 
+run=`runlevel`
+[ "$run" != "N 4" ] && exit
+
 [ -z "$VBOX_DND_SF_PATH" ] && exit
 [ -z "$USERHELPER_UID" ] && USER_UID=`id -u $USER` || USER_UID=$USERHELPER_UID
 
