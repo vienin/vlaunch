@@ -7,7 +7,7 @@ BuildArch:      i386
 Group:          Applications/System
 License:        GPLv2
 URL:            http://www.glumol.com
-Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.1.tar.gz
+Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
@@ -62,7 +62,7 @@ operating systems : Linux, Windows and MacOSX.
 
 
 %prep
-%setup -n vlaunch-%{version}.1
+%setup -n vlaunch-%{version}
 # wget all binaries
 wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
 wget http://kickstart.agorabox.org/private/virtualization/windows.tgz

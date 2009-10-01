@@ -28,14 +28,30 @@ mount_share_and_link() {
 	fi
 }
 
-run=`runlevel`
-[ "$run" != "N 4" ] && exit
-
 [ -z "$USERHELPER_UID" ] && USER_UID=`id -u $USER` || USER_UID=$USERHELPER_UID
 
 # Set $IFS to end-of-line and coma
 ORIGIFS=$IFS
 IFS=`echo -en ",\n\b"`
+
+# Remove old shares
+echo "" > $HOME/.sharelinks.new
+for ligne in `cat $HOME/.sharelinks`
+do
+	mountpoint "${target}/${ligne#*;}"
+	if [ $? -eq 0 ]; then
+		echo $ligne >> $HOME/.sharelinks.new
+	else
+		echo "unlink \"${desktop}/${ligne%;*}\""
+		unlink "${desktop}/${ligne%;*}"
+		rmdir "${target}/${ligne#*;}"
+	fi
+done
+cat $HOME/.sharelinks.new > $HOME/.sharelinks
+rm -f $HOME/.sharelinks.new
+
+runlevel=`runlevel | cut -d " " -f 2`
+[ "$runlevel" != "4" ] && exit
 
 # Parse VBoxControl output
 share_names=()
@@ -55,22 +71,6 @@ for ligne in `/usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share
 		;;
 	esac
 done
-
-# Remove old shares
-echo "" > $HOME/.sharelinks.new
-for ligne in `cat $HOME/.sharelinks`
-do
-	mountpoint "${target}/${ligne#*;}"
-	if [ $? -eq 0 ]; then
-		echo $ligne >> $HOME/.sharelinks.new
-	else
-		echo "unlink \"${desktop}/${ligne%;*}\""
-		unlink "${desktop}/${ligne%;*}"
-		rmdir "${target}/${ligne#*;}"
-	fi
-done
-cat $HOME/.sharelinks.new > $HOME/.sharelinks
-rm -f $HOME/.sharelinks.new
 
 # Create new shares
 i=0
