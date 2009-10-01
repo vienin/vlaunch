@@ -73,7 +73,7 @@ if not conf.NOUPDATE and not "--respawn" in sys.argv:
     try:
         logging.debug("Checking updates")
         socket.setdefaulttimeout(5)
-        latest_version = urllib.urlopen("http://downloads.agorabox.org/launcher/latest").read()
+        latest_version = urllib.urlopen(conf.UPDATEURL + latest).read()
         logging.debug("Using launcher version : " + str(conf.VERSION))
         logging.debug("Available version on the Net : " + str(latest_version))
         latest_version = map(int, latest_version.split('.'))

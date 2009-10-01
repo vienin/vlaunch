@@ -73,6 +73,7 @@ class WindowsBackend(Backend):
         return Backend.call(self, cmd, env, shell, cwd, output)
 
     def start_services(self):
+        start_service = True
         if conf.CREATESRVS:
             logging.debug("Creating services :")
 
@@ -97,7 +98,7 @@ class WindowsBackend(Backend):
             logging.debug("Checking if service PortableVBoxDrv exists")
             retcode, output = self.call([ "sc", "query", "PortableVBoxDrv" ], shell=True, output=True)
             create_service = True
-            if retcode == 0:
+            if retcode == 0 and not ("FAILED" in output):
                 logging.debug("Service PortableVBoxDrv exists")
                 lines = output.split("\n")
                 for line in lines:
@@ -110,12 +111,14 @@ class WindowsBackend(Backend):
                         elif splt[-1] == "RUNNING":
                             logging.debug("Service PortableVBoxDrv is running")
                             create_service = False
+                            start_service = False
 
             if create_service:
-                if self.call([ "sc", "create", "PortableVBoxDrv",
-                               "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
-                               "type=", "kernel", "start=", "demand", "error=", "normal", 
-                               "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
+                ret, output = self.call([ "sc", "create", "PortableVBoxDrv",
+                                           "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
+                                           "type=", "kernel", "start=", "demand", "error=", "normal", 
+                                           "displayname=", "PortableVBoxDrv" ], shell=True, output=True)
+                if ret == 5 or "FAILED" in output:
                     return 1
 
             if self.puel:
@@ -135,18 +138,22 @@ class WindowsBackend(Backend):
                 except:
                     logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
     
-        if conf.STARTSRVS:
+        if conf.STARTSRVS and start_service:
             logging.debug("Starting services :")
         
-            if self.call([ "sc", "start", "PortableVBoxDRV" ], shell=True) in [ 1060, 5 ]:
-               return 1
+            code, output = self.call([ "sc", "start", "PortableVBoxDRV" ], shell=True, output=True)
+            if code in [ 1060, 5 ] or "FAILED" in output:
+                logging.debug("Got error: " + str(code) + " " + output)
+                return 1
 
             if self.puel:
                 self.call([ "sc", "start", "PortableVBoxUSBMon" ], shell=True)
 
         logging.debug("Re-registering server:")
 
-        self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/reregserver" ], cwd = conf.BIN, shell=True)
+        if self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/reregserver" ], cwd = conf.BIN, shell=True):
+            return 1
+        
         self.call([ "regsvr32.exe", "/S", path.join(conf.BIN, "VBoxC.dll") ], cwd = conf.BIN, shell=True)
         self.call([ "rundll32.exe", "/S", path.join(conf.BIN, "VBoxRT.dll"), "RTR3Init" ], cwd = conf.BIN, shell=True)
     
