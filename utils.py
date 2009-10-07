@@ -190,6 +190,8 @@ class Backend(object):
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
+        self.vbox.current_machine.set_extra_data("GUI/RegistrationData", "0")
+        self.vbox.current_machine.set_extra_data("GUI/SUNOnlineData", "0")
         logging.debug("VM successfully initialized")
 
     def configure_virtual_machine(self, create_vmdk = True):
@@ -234,6 +236,13 @@ class Backend(object):
                 else:
                     freeram = self.get_free_ram()
                 conf.RAMSIZE = max(2 * freeram / 3, conf.MINRAM)
+
+            if int(conf.RAMSIZE) <= int(conf.MINRAM):
+                gui.dialog_info(title=u"Attention", 
+                                msg=u"La mémoire vive disponible est faible, \n" + \
+                                    u"cela peut influer sur la vitesse d'exécution de la machine virtuelle UFO.\n\n" + \
+                                    u"Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances.", 
+                                error=False)
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
             self.vbox.current_machine.set_ram_size(conf.RAMSIZE)
