@@ -2,9 +2,17 @@
 # -*- coding: utf-8 -*-
 import logging
 import os
+import conf
+
 format = "%(asctime)s %(levelname)s Updater %(message)s"
-try: logging.basicConfig(format=format, filename=os.path.join("logs", "ufo-updater.log"), level=logging.DEBUG)
-except: logging.basicConfig(level=logging.DEBUG)
+log_file_name = os.path.join("logs", "ufo-updater.log")
+try:
+    logging.basicConfig(format=format, filename=log_file_name, level=logging.DEBUG)
+    print "Logging to", log_file_name
+except:
+    logging.basicConfig(level=logging.DEBUG)
+    print "Logging to stdout"
+
 logging.debug("Current directory : " + os.getcwd())
 
 import urllib
@@ -32,7 +40,7 @@ else:
 if len(sys.argv) < 4:
     print "Wrong number of arguments"
     sys.exit(1)
-    
+
 try:
     latest_version = sys.argv[1]
     ufo_dir = sys.argv[2]
@@ -61,10 +69,13 @@ try:
                             u"AUCUN FICHIER SUR LA CLE. La mise à jour peut durer plusieurs minutes")
 
     splash_down = gui.SplashScreen(image=os.path.join(splash_dir, "updater-download.png"))
-    url = "http://downloads.agorabox.org/launcher/launcher-" + latest_version + ".tar.bz2"
+    url = conf.UPDATEURL + "/launcher-" + latest_version + ".tar.bz2"
 
     filename = tempfile.mkstemp()[1]
+    logging.debug("Downloading " + url + " to " + filename)
     retcode  = gui.download_file(url, filename, title="Téléchargement de la mise à jour", msg="Merci de bien vouloir patientier", autostart=True)
+    
+    print "retcode", retcode
     if not splash_down == None:
         splash_down.destroy()
 
