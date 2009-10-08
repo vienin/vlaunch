@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os
 import sys
 import threading
@@ -121,7 +122,7 @@ def SplashScreen(*args, **kw):
 def dialog_error_report(*args):
     pass
 
-def wait_command(cmd, title="", msg=""):
+def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
     launch = CommandLauncher(cmd, title, msg)
     launch.start()
     launch.join()

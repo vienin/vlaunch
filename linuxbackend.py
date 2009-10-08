@@ -327,11 +327,11 @@ class DistroFedora(Distro):
         if (self.dist == "Fedora" and version >= 10) or \
            (self.dist == "U.F.O" and version >= 1.0):
             if not os.path.exists("/usr/bin/beesu"):
-                msg = "Veuillez patientez pendant l'installation de composants\nnécessaires au lancement d'UFO"
-                if os.path.exists("/usr/bin/gpk-install-package-name"):
-                    print 'zenityfy(["/usr/bin/gpk-install-package-name", "beesu"], msg)'
-                else:
-                    print 'zenityfy(["/usr/bin/pkcon", "install", "beesu"], msg)'
+                msg = u"Veuillez patienter pendant l'installation de composants\nnécessaires au lancement d'UFO"
+                # if os.path.exists("/usr/bin/gpk-install-package-name"):
+                #    print (["/usr/bin/gpk-install-package-name", "beesu"], msg)'
+                #else:
+                gui.wait_command(["/usr/bin/pkcon", "install", "beesu"], msg=msg)
             if os.path.exists("/usr/bin/beesu"):
                 self.run_as_root = self._run_as_root_with_beesu
 
@@ -348,8 +348,8 @@ class DistroFedora(Distro):
         version = self.call(["rpm", "-q", "--queryformat", "\"%{VERSION}\"", "VirtualBox-OSE"], output=True)[1]
         kmod_dir = "VirtualBox-OSE-kmod-" + version
         logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir, ))
-        self.call(["tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir, )],
-                        cwd = tempfile.gettempdir())
+        utils.call(["tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir, )],
+                   cwd = tempfile.gettempdir())
         tmpdir = tempfile.gettempdir() + "/" + kmod_dir
         if not os.path.exists(tmpdir): os.mkdir(tmpdir)
         ret = self.call(["make"], cwd=tmpdir)

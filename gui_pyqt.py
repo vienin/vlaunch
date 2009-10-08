@@ -38,16 +38,11 @@ def destroy_app(app):
     app.exit()
     app = None
 
-
-def set_icon(icon_path):
-    QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
-
 app = MyApp(sys.argv)
 desktop = app.desktop()
 screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())
-
 
 class MyNoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -105,7 +100,6 @@ class Downloader(threading.Thread):
 
         def stop(self):
                 self.toBeStop = True
-
 
 class CommandLauncher(threading.Thread):
         def __init__(self, cmd): 
@@ -286,6 +280,35 @@ class OurMessageBox(QtGui.QMessageBox):
         if hasattr(self, "_minSize"):
             self.setFixedSize(*self._minSize)
 
+class SplashScreen:
+    def __init__(self, image):
+        pixmap = QtGui.QPixmap(image)
+        self.splash = QtGui.QSplashScreen(pixmap)
+        self.splash.show()
+
+    def destroy(self):
+        self.splash.close()
+
+class ListDialog(QtGui.QDialog):
+    def __init__(self, parent=None, title="List", msg="msg", choices=[]):
+        super(ListDialog, self).__init__(parent)
+        msglabel = QtGui.QLabel(msg)
+        self.choicelist = QtGui.QListWidget()        
+        for i in choices:
+            self.choicelist.addItem(i)
+        buttonbox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
+        buttonbox.accepted.connect(self.accept)
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(msglabel)
+        layout.addWidget(self.choicelist)
+        layout.addWidget(buttonbox)
+        self.setLayout(layout)
+        self.setWindowTitle(title)
+
+# Globals functions
+
+def set_icon(icon_path):
+    QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
 
 def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
@@ -295,18 +318,9 @@ def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuille
     else:
         downloadWin.progressDialog.exec_()
 
-def wait_command(cmd, title="", msg=""):
+def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
     cmdWin = WaitWindow(cmd, title, msg)
     cmdWin.run()
-
-class SplashScreen:
-    def __init__(self, image):
-        pixmap = QtGui.QPixmap(image)
-        self.splash = QtGui.QSplashScreen(pixmap)
-        self.splash.show()
-
-    def destroy(self):
-        self.splash.close()
 
 def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"
@@ -367,22 +381,6 @@ def dialog_password(msg=None, rcode=False):
         return value
     else:
         return value[0]
-
-class ListDialog(QtGui.QDialog):
-    def __init__(self, parent=None, title="List", msg="msg", choices=[]):
-        super(ListDialog, self).__init__(parent)
-        msglabel = QtGui.QLabel(msg)
-        self.choicelist = QtGui.QListWidget()        
-        for i in choices:
-            self.choicelist.addItem(i)
-        buttonbox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Ok)
-        buttonbox.accepted.connect(self.accept)
-        layout = QtGui.QVBoxLayout()
-        layout.addWidget(msglabel)
-        layout.addWidget(self.choicelist)
-        layout.addWidget(buttonbox)
-        self.setLayout(layout)
-        self.setWindowTitle(title)
 
 def dialog_choices(title, msg, column, choices):
     dlg = ListDialog(title=title, msg=msg, choices=choices)
