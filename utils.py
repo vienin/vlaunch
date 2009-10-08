@@ -180,6 +180,8 @@ class Backend(object):
         self.vbox.set_extra_data("GUI/TrayIcon/Enabled", "false")
         self.vbox.set_extra_data("GUI/UpdateCheckCount", "2")
         self.vbox.set_extra_data("GUI/UpdateDate", "never")
+        self.vbox.set_extra_data("GUI/RegistrationData", "0")
+        self.vbox.set_extra_data("GUI/SUNOnlineData", "0")
         self.vbox.set_extra_data("GUI/SuppressMessages", ",remindAboutAutoCapture,confirmInputCapture," + 
                                  "remindAboutMouseIntegrationOn,remindAboutMouseIntegrationOff," + 
                                  "remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen," +
@@ -190,8 +192,6 @@ class Backend(object):
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
-        self.vbox.current_machine.set_extra_data("GUI/RegistrationData", "0")
-        self.vbox.current_machine.set_extra_data("GUI/SUNOnlineData", "0")
         logging.debug("VM successfully initialized")
 
     def configure_virtual_machine(self, create_vmdk = True):
@@ -247,6 +247,18 @@ class Backend(object):
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
             self.vbox.current_machine.set_ram_size(conf.RAMSIZE)
             
+            # Set number of processors
+            if self.vbox.vbox.version >= "3.0.0" and self.vbox.host.is_virt_ex_available():
+                logging.debug("Enabling virtualization extensions")
+                self.vbox.current_machine.machine.HWVirtExEnabled = True
+                # nbprocs = int(self.vbox.host.get_nb_procs())
+                nbprocs = 1
+                logging.debug(str(nbprocs) + " processors available on host")
+                if nbprocs >= 2:
+                    nbprocs = max(2, nbprocs / 2)
+                    logging.debug("Setting number of processors to " + str(nbprocs))
+                    self.vbox.current_machine.set_procs(nbprocs)
+                
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
             if conf.NETTYPE == conf.NET_NAT:

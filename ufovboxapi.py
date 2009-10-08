@@ -86,7 +86,7 @@ class VBoxHypervisor(Hypervisor):
         self.constants = VirtualBoxReflectionInfo()
         self.mgr  = self.vm_manager.mgr
         self.vbox = self.vm_manager.vbox
-        self.host = VBoxHost(self.vm_manager.vbox.host)
+        self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
         
         self.current_machine = None
         self.session = None
@@ -463,14 +463,27 @@ class VBoxMachine(VirtualMachine):
             self.machine.saveSettings()
         return result_code
 
+    def set_procs(self, nbprocs, save = False):
+        self.machine.CPUCount = nbprocs
+        if save:
+            self.machine.saveSettings()
+        return 0
+    
 class VBoxHost(Host):
 
-    def __init__(self, host):
+    def __init__(self, host, constants):
         self.host = host
+        self.contants = constants
 
     def __del__(self):
         del self.host
 
+    def is_virt_ex_available(self):
+        return self.host.getProcessorFeature(getattr(self.contants, "ProcessorFeature_HWVirtEx"))
+    
+    def get_nb_procs(self):
+        return self.host.processorCount
+    
     def get_total_ram(self):
         return self.host.memorySize
 
