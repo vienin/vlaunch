@@ -12,10 +12,10 @@ import gui
 import tempfile
 from utils import *
 
-conf.APP_PATH = path.dirname(path.dirname(conf.SCRIPT_DIR))
 conf.MOBILE = not conf.USESERVICE
 conf.VBOX_INSTALLED = path.exists("/Applications/VirtualBox.app") and \
                       not path.islink("/Applications/VirtualBox.app")
+
 logging.debug("Using Mobile mode : " + str(conf.MOBILE.__nonzero__()))
 logging.debug("Is VirtualBox installed : " + str(conf.VBOX_INSTALLED))
 
@@ -29,7 +29,7 @@ class MacBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "..", "..", "UFO.ico"))
+        gui.set_icon(path.join(conf.UFO_DIR, "UFO.ico"))
         self.KEXTS = "kexts"
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
@@ -256,30 +256,6 @@ class MacBackend(Backend):
             
             sys.exit(0)
 
-    def is_ready(self):
-        # test if i need to move at another location
-        if conf.APP_PATH.startswith("/Volumes") and conf.PARTS == "all":
-            conf.READY = 0
-        else:
-            conf.READY = 1
-
-        if not conf.READY:
-            self.tmpdir = tempfile.mkdtemp(suffix="ufo")
-            logging.debug("Copying myself from " + conf.APP_PATH + " to " + self.tmpdir)
-
-            output = self.call([ [ "tar", "-cf", "-", "-C", conf.APP_PATH, ".." ], 
-                                 [ "tar", "xf", "-", "-C", self.tmpdir ] ], output = True)[1]
-
-            logging.debug(" ".join([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ]))
-            logging.shutdown()
-
-            env = os.environ.copy()
-            env["VBOX_USER_HOME"] = conf.HOME
-            self.call([ path.join(self.tmpdir, "UFO.app", "Contents", "MacOS", "UFO") ], env = env)
-            sys.exit(0)
-
-        logging.debug("Ready")
-
     def load_kexts(self):
         # loading kernel extentions
         KEXTS = path.join(conf.BIN, self.KEXTS)
@@ -305,7 +281,6 @@ class MacBackend(Backend):
 
     def prepare(self):
         # Ajusting paths
-        if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, "Contents", "Resources", ".VirtualBox")
         if not conf.BIN: conf.BIN = path.join(conf.APP_PATH, "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
         self.check_privileges()
@@ -314,7 +289,7 @@ class MacBackend(Backend):
             self.create_splash_screen()
         except:
             logging.debug("Failed to create splash screen")
-        self.is_ready()
+
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")
@@ -323,10 +298,10 @@ class MacBackend(Backend):
                        "/Applications/VirtualBox.app")
                          
             # Restore permissions
-            self.call([ "/usr/sbin/chown", "-R", "0:0", conf.APP_PATH ])
-            self.call([ "chmod", "-R", "755", "/Applications/VirtualBox.app/Contents" ])
-            for f in glob.glob("/Applications/VirtualBox.app/Contents/*.*"):
-                self.call([ "chmod", "-R", "644", f ])
+            # self.call([ "/usr/sbin/chown", "-R", "0:0", conf.APP_PATH ])
+            # self.call([ "chmod", "-R", "755", "/Applications/VirtualBox.app/Contents" ])
+            # for f in glob.glob("/Applications/VirtualBox.app/Contents/*.*"):
+            #     self.call([ "chmod", "-R", "644", f ])
         
             self.load_kexts()
 

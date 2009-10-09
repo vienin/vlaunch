@@ -3,7 +3,6 @@ FRAMEWORKS=dist/UFO.app/Contents/Frameworks
 MACOS=dist/UFO.app/Contents/MacOS
 VBOXAPP=dist/UFO.app/Contents/Resources/VirtualBox.app
 VBOXMACOS=dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
-UPDATERAPP=dist/UFO.app/Contents/Resources/ufo-updater.app
 
 py2app:
 	if [ ! -f UFO.py ]; \
@@ -13,17 +12,9 @@ py2app:
 	rm -rf dist build
 	python setup-mac.py py2app # --no-strip --packages=PyQt4
 
-py2app-updater:
-	if [ ! -f update_launcher_mac.py ]; \
-	then \
-		ln -s update_launcher.py ufo-updater.py; \
-	fi; \
-	python setup-update-mac.py py2app
-
 pkg: py2app
 	mkdir -p dist/packagemaker/Applications
 	mv dist/UFO.app dist/packagemaker/Applications
-	mv dist/ufo-updater.app dist/packagemaker/Applications
 	/Developer/Tools/packagemaker -build -proj U.F.O\ Launcher.pmproj -p dist/U.F.O\ Launcher.pkg
 
 clean:
@@ -46,12 +37,11 @@ test:
 	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings/settings.conf
 	cp -R .VirtualBox dist/UFO.app/Contents/Resources/
 
-mac-launcher: clean py2app py2app-updater
+mac-launcher: clean py2app
 	if [ -z "$$VBOX_PATH" ]; \
 	then \
 		exit 1; \
 	fi; \
-	mv dist/ufo-updater.app ${RESOURCES}
 	cp -R $$VBOX_PATH ${VBOXAPP}
 	rm -rf ${VBOXMACOS}/tst* ${VBOXMACOS}/testcase
 	# cp -R kexts ${VBOXMACOS}/kexts
@@ -61,7 +51,6 @@ mac-launcher: clean py2app py2app-updater
 	mkdir ${VBOXAPP}/Contents/Frameworks
 	cp -R /Library/Frameworks/QtCore.framework ${VBOXAPP}/Contents/Frameworks/QtCore.framework
 	cp -f /Library/Frameworks/Python.framework/Python ${FRAMEWORKS}/Python.framework/Versions/2.5/Python
-	cp -f /Library/Frameworks/Python.framework/Python ${UPDATERAPP}/Contents/Frameworks/Python.framework/Versions/2.5/Python
 	cp -R /Library/Frameworks/QtGui.framework ${VBOXAPP}/Contents/Frameworks/QtGui.framework
 	cp -R /Library/Frameworks/QtNetwork.framework ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework
 	mv ${VBOXMACOS}/VBoxPython{2_3.so,.so}
@@ -70,7 +59,6 @@ mac-launcher: clean py2app py2app-updater
 	rm -rf ${VBOXMACOS}/testcase 
 	rm -rf ${VBOXMACOS}/tst* 
 	rm -f ${RESOURCES}/site.pyc
-	rm -f ${UPDATERAPP}/Contents/Resources/site.pyc
 	mkdir ${RESOURCES}/.VirtualBox
 	
 	for lib in QtGui QtNetwork; \
@@ -97,9 +85,9 @@ mac-launcher: clean py2app py2app-updater
 	cp *.png *.bmp *.mng dist/UFO.app/Contents/Resources/.VirtualBox
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
-	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
+	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt; \
 	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \
-	    ln -s ../../../VirtualBox.app/Contents/Frameworks/$$qt dist/UFO.app/Contents/Resources/ufo-updater.app/Contents/Frameworks/$$qt; \
+	    ln -s ../../../VirtualBox.app/Contents/Frameworks/$$qt; \
 	done
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
 
@@ -115,3 +103,4 @@ testing: mac-launcher
 	cp ufo_swap.vdi ufo_overlay.vdi dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks
 	cd dist && tar cvzf mac-intel.tgz UFO.app
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-runnable.tgz
+

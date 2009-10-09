@@ -1,11 +1,39 @@
 import os, os.path as path, sys
 from ConfigParser import ConfigParser
+from optparse import OptionParser
 
 SCRIPT_PATH = path.realpath(sys.argv[0])
-SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 SCRIPT_NAME = path.basename(sys.argv[0])
+SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
-APP_PATH = SCRIPT_DIR
+parser = OptionParser()
+parser.add_option("-u", "--update", dest="update",
+                  help="update a UFO launcher located in ", metavar="FOLDER")
+parser.add_option("-r", "--respawn", dest="respawn", default=False,
+                  action="store_true", help="tells the launcher that it has been respawned ")
+(options, args) = parser.parse_args()
+
+UFO_DIR = options.update
+
+if sys.platform == "linux2":
+    if not UFO_DIR:
+        UFO_DIR = path.dirname(path.dirname(SCRIPT_PATH))
+    bin_default = "/usr/lib/virtualbox"
+    EXEC_PATH = path.join(UFO_DIR, "Linux", "UFO")
+elif sys.platform == "darwin":
+    if not UFO_DIR:
+        UFO_DIR = path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH))))
+    bin_default = path.join(UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
+    EXEC_PATH = path.join(UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "MacOS", "UFO")
+else:
+    if not UFO_DIR:
+        UFO_DIR = path.dirname(SCRIPT_DIR)
+    bin_default = path.join(UFO_DIR, "Windows", "bin")
+    EXEC_PATH = path.join(UFO_DIR, "Windows", "ufo.exe")
+
+DATA_DIR = path.join(UFO_DIR, ".data")
+LOG_DIR = path.join(DATA_DIR, "logs")
+IMG_DIR = path.join(DATA_DIR, "images")
 
 STATUS_NORMAL = 0
 STATUS_IGNORE = 1
@@ -15,8 +43,6 @@ STATUS_EXIT = 3
 NET_LOCAL = 0
 NET_HOST = 1
 NET_NAT = 2
-
-READY = 0
 
 globalsection = "virtualbox"
 launchersection = "launcher"
@@ -82,8 +108,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                ramsizekey : "auto",
                                minramkey : "256",
                                kioskmodekey : "0",
-                               heightkey : "",
-                               widthkey : "",
+                               heightkey : "full",
+                               widthkey : "full",
                                driverankkey : "0",
                                configurevmkey : "1",
                                needdevkey : "0",
@@ -92,9 +118,9 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                modelkey : "",
                                volumekey : "",
                                rootuuidkey : "",
-                               binkey : "",
+                               binkey : bin_default,
                                reporturlkey : "http://reporting.agorabox.org/services/reporting",
-                               homekey : "",
+                               homekey : ".VirtualBox",
                                useservicekey : "0",
                                createsrvskey : "0",
                                startsrvskey : "0",
@@ -110,8 +136,8 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                              })
                              
 try:
-    files = [path.join(SCRIPT_DIR, "settings.conf"),
-             path.join(SCRIPT_DIR, "settings", "settings.conf"),
+    files = [path.join(DATA_DIR, "settings.conf"),
+             path.join(DATA_DIR, "settings", "settings.conf"),
              path.join(SCRIPT_DIR, "..", "settings", "settings.conf")]
     if os.environ.has_key("_MEIPASS2"):
         files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
@@ -134,7 +160,7 @@ STARTVM = int(cp.get(launchersection, startvmkey))
 NEEDDEV = int(cp.get(launchersection, needdevkey))
 DEBUG = int(cp.get(launchersection, debugkey))
 REPORTURL = cp.get(launchersection, reporturlkey)
-LOG = cp.get(launchersection, logkey)
+LOG = path.join(DATA_DIR, cp.get(launchersection, logkey))
 VERSION = cp.get(launchersection, versionkey)
 LICENSE = int(cp.get(launchersection, licensekey))
 CONFIGUREVM = int(cp.get(launchersection, configurevmkey))

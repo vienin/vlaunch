@@ -1,11 +1,9 @@
 NAME=vlaunch
 VERSION=0.7
-SOURCES=settings.conf.* *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng README COPYING vboxapi sdk\
-        Resources MacOS site.py bootfloppy.img launcher-linux.py QtCoreVBox \
-        QtGuiVBox QtNetworkVBox vbox-client-symlink.desktop \
-        vbox-client-dnd.desktop Headers Current 4.0 QtCore QtGui \
-        QtGui.Resources QtNetwork QtNetwork.framework \
-        QtCore.framework QtGui.framework \
+SOURCES=settings.conf *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng README COPYING vboxapi sdk\
+        bootfloppy.img launcher-linux.py \
+        vbox-client-symlink.desktop \
+        vbox-client-dnd.desktop \
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
         autorun.inf UFO.ico DS_Store .background .autorun ask-password
@@ -23,36 +21,34 @@ endif
 all:
 
 install:
-	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf.linux'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf.linux', 'w'))"
-	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf.win32'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf.win32', 'w'))"
-	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf.mac'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf.mac', 'w'))"
+	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf', 'w'))"
 
 	# build vdi file for swap device
 	./createvdi.py -p `pwd`/ufo_swap.vdi
 
+    # Common folder
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/settings
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Images
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/images
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
+
+	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
+	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/.data/images/
+	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
+	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks/
+
 	# build windows tree
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/settings
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/logs
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows
 	tar xvzf windows.tgz -C $(DESTDIR)$(TARGET_PATH)/Windows/
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
-	cp settings.conf.win32 $(DESTDIR)$(TARGET_PATH)/Windows/settings/settings.conf
-	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/HardDisks/
-	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
-	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
-	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/ufo-updater.app/Contents/MacOS
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
 	tar xvzf mac-intel.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel
-	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
 	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/logs
-	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/HardDisks/
 
 	find $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks -type l -exec unlink {} \;
 
@@ -66,38 +62,20 @@ install:
 	    ./create_fat_symlink.py `readlink $$symlink` $$symlink; \
 	done
 
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings
-	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings.conf
-	cp -f settings.conf.mac $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
-	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
-	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
-
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
 	cp .background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background
 	cp DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
 	./create_fat_symlink.py Mac-Intel/UFO.app $(DESTDIR)$(TARGET_PATH)/UFO.app
 	
 	# build linux tree
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/settings
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/logs
-	tar xvzf fake_vmdk.tgz -C $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
-	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/HardDisks
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py ufo-updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
-	cp settings.conf.linux $(DESTDIR)$(TARGET_PATH)/Linux/settings/settings.conf
-	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
-	cp vboxpython-workaround.py $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/
+	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	
-	# installs Boot Isos
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Isos
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Isos
-	cp UFO-VirtualBox-boot-windows.img $(DESTDIR)$(TARGET_PATH)/Windows/.VirtualBox/Isos/UFO-VirtualBox-boot.img
-	cp UFO-VirtualBox-boot-mac.img $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/Isos/UFO-VirtualBox-boot.img
-	cp UFO-VirtualBox-boot-linux.img $(DESTDIR)$(TARGET_PATH)/Linux/.VirtualBox/Isos/UFO-VirtualBox-boot.img
+	# installs Boot Iso
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Isos
+	cp UFO-VirtualBox-boot.img $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Images/UFO-VirtualBox-boot.img
 
 	# Kit de survie
 	cp "Manuel d'utilisation.pdf" $(DESTDIR)$(TARGET_PATH)

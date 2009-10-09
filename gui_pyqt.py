@@ -233,7 +233,7 @@ class DownloadWindow(QtGui.QDialog):
 
     def cancel_download(self):
         self.statusLabel.setText(u"Téléchargement annulé. \n"
-                                         u"Cliquer sur 'Télécharger' pour recommencer.")
+                                 u"Cliquer sur 'Télécharger' pour recommencer.")
         self.http_request_aborted = True
         self.downloader.stop()
         self.init_downloader()

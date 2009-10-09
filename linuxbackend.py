@@ -58,13 +58,7 @@ class LinuxBackend(Backend):
             sys.exit(0)
 
     def prepare_update(self):
-        self.ufo_dir = path.normpath(path.join(
-                           path.realpath(path.dirname(sys.argv[0])), ".."))
-        self.updater_path = self.shadow_updater_path = path.normpath(path.join(self.ufo_dir, "Linux", "bin"))
-        self.updater_executable = self.shadow_updater_executable = path.normpath(path.join(self.updater_path, "ufo-updater.py"))
-        
-        shutil.copytree(os.path.join(self.updater_path, "..", "settings"),
-                            os.path.join(self.shadow_updater_path, "settings"))
+        return conf.SCRIPT_PATH
         
     def get_uuid(self, dev):
         return self.call(["blkid", "-o", "value", "-s", "UUID", dev], output=True)[1]
@@ -171,7 +165,7 @@ class LinuxBackend(Backend):
             self.install_zenity()
             reload(gui)
         if os.getuid() != 0:
-            self.distr.run_as_root([sys.executable] + sys.argv + ["--respawn"], replace=True)
+            self.distr.run_as_root([sys.executable] + sys.argv + [ "--respawn" ], replace=True)
 
         self.call(["rmmod", "kvm-intel"])
         self.call(["rmmod", "kvm-amd"])

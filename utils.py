@@ -16,7 +16,7 @@ import uuid
 import gui
 import time
 from ConfigParser import ConfigParser
-from ufovboxapi import VBoxHypervisor
+import ufovboxapi
 
 def grep(input, pattern, inverse=False):
     for line in input.split("\n"):
@@ -115,16 +115,19 @@ class Backend(object):
 
     def update_env(self):
         if not path.isabs(conf.HOME):
-            conf.HOME = path.join(conf.SCRIPT_DIR, conf.HOME)
+            conf.HOME = path.join(conf.DATA_DIR, conf.HOME)
         if not path.isabs(conf.BIN):
             conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
 
         os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
                             "VBOX_PROGRAM_PATH" : conf.BIN, 
                             "PYTHONPATH"        : conf.BIN,
-                            "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk") })
+                            "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk")
+                          })
+
         sys.path.append(conf.BIN)
         sys.path.append(os.path.join(conf.SCRIPT_DIR, "bin"))
+
         return os.environ.copy()
 
     def call(self, cmd, env = None, shell = False, cwd = None, output = False, input = False, fork=True):
@@ -135,12 +138,8 @@ class Backend(object):
             return conf.NET_NAT
         return conf.NET_HOST
 
-    def write_fake_vmdk(self, dev):
-        vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
-        shutil.copyfile(path.join(conf.HOME, "HardDisks", "fake.vmdk"), vmdk)
-
     def create_splash_screen(self):
-        images = glob.glob(path.join(conf.HOME, "ufo-*.bmp"))
+        images = glob.glob(path.join(conf.IMG_DIR, "ufo-*.bmp"))
         if images:
             logging.debug("Creating splash screen with image " + images[0])
             self.splash = gui.SplashScreen(images[0])
@@ -156,7 +155,8 @@ class Backend(object):
     def create_virtual_machine(self, create_vmdk = True):
         logging.debug("sys.path: " + str(sys.path))
         logging.debug("Creating VBoxHypervisor")
-        self.vbox = VBoxHypervisor()
+
+        self.vbox = ufovboxapi.VBoxHypervisor()
         logging.debug("VBoxHypervisor successfully created")
 
         logging.debug("Creating VM")
@@ -180,7 +180,7 @@ class Backend(object):
         self.vbox.set_extra_data("GUI/TrayIcon/Enabled", "false")
         self.vbox.set_extra_data("GUI/UpdateCheckCount", "2")
         self.vbox.set_extra_data("GUI/UpdateDate", "never")
-        self.vbox.set_extra_data("GUI/RegistrationData", "0")
+        self.vbox.set_extra_data("GUI/RegistrationData", "triesLeft=0")
         self.vbox.set_extra_data("GUI/SUNOnlineData", "0")
         self.vbox.set_extra_data("GUI/SuppressMessages", ",remindAboutAutoCapture,confirmInputCapture," + 
                                  "remindAboutMouseIntegrationOn,remindAboutMouseIntegrationOff," + 
@@ -274,11 +274,11 @@ class Backend(object):
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
-                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Isos", conf.BOOTFLOPPY))
+                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Images", conf.BOOTFLOPPY))
                 self.vbox.current_machine.set_boot_device('Floppy') 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Isos", conf.BOOTISO))
+                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Images", conf.BOOTISO))
                 if not conf.LIVECD:
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
@@ -302,7 +302,7 @@ class Backend(object):
                     self.vbox.current_machine.set_resolution(resolution)
             
             self.vbox.current_machine.set_fullscreen()
-            self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.HOME, "ufo-*.bmp"))[0])
+            self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMG_DIR, "ufo-*.bmp"))[0])
         
             # set host home shared folder
             if not conf.USESERVICE:
@@ -462,7 +462,7 @@ class Backend(object):
             if usb in self.usb_devices:
                 continue
             input = gui.dialog_question(u"Péripherique USB", 
-                                        u"Un nouveau périphérique USB à été détecté:\n\n" + \
+                                        u"Un nouveau périphérique USB a été détecté:\n\n" + \
                                         u"\"" + usb[1] + "\" monte sur " + usb[0] + "\n\n" + \
                                         u"Voulez vous le raccorder a la machine virtuelle UFO ?")
             if input == "Yes":
@@ -504,7 +504,6 @@ class Backend(object):
         self.cleanup()
 
     def run(self):
-        logging.debug("APP path: " + conf.APP_PATH)
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
 
@@ -525,9 +524,6 @@ class Backend(object):
                 logging.debug("Unable to umount %s, exiting script" % (conf.DEV,))
                 sys.exit(1)
             create_vmdk = True
-        elif ret == conf.STATUS_GUEST:
-            logging.debug("no device found, use guest account")
-            self.write_fake_vmdk("")
         elif ret == conf.STATUS_IGNORE:
             logging.debug("no vmdk generation needed")
         elif ret == conf.STATUS_EXIT:

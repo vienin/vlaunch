@@ -31,7 +31,7 @@ class WindowsBackend(Backend):
     def check_process(self):
         logging.debug("Checking UFO process")
         # TODO: Get pid for possible kill
-        processes = self.WMI.Win32_Process(name="ufo.exe") + self.WMI.Win32_Process(name="ufo-updater.exe")
+        processes = self.WMI.Win32_Process(name="ufo.exe")
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
             logging.debug("U.F.O launched twice. Exiting")
@@ -53,21 +53,10 @@ class WindowsBackend(Backend):
             sys.exit(0)
 
     def prepare_update(self):
-        self.ufo_dir = path.normpath(path.join(path.realpath(path.dirname(sys.argv[0])), ".."))
-        self.updater_path = path.join(self.ufo_dir, "Windows", "bin")
-        self.updater_executable = path.join(self.ufo_dir, "Windows", "bin", "ufo-updater.exe")
-        self.shadow_updater_path = tempfile.mkdtemp(prefix="Ufo-updater")
-        self.shadow_updater_executable = path.join(self.shadow_updater_path, "ufo-updater.exe")
-        
-        logging.debug("Copying " + self.updater_executable + " to " + self.shadow_updater_executable)
-        shutil.copyfile(self.updater_executable, self.shadow_updater_executable)
-        os.mkdir(path.join(self.shadow_updater_path, "logs"))
-        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-download.png")),
-                        path.join(self.shadow_updater_path, "updater-download.png"))
-        shutil.copyfile(path.normpath(path.join(conf.HOME, "updater-install.png")),
-                        path.join(self.shadow_updater_path, "updater-install.png"))
-        shutil.copytree(path.normpath(path.join(self.updater_path, "..", "settings")),
-                        path.join(self.shadow_updater_path, "settings"))
+        self.updater_path = tempfile.mkstemp(prefix="ufo-updater")
+        logging.debug("Copying " + conf.SCRIPT_PATH + " to " + self.updater_path)
+        shutil.copyfile(conf.SCRIPT_PATH, self.self.updater_path)
+        return self.updater_path
 
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
         return Backend.call(self, cmd, env, shell, cwd, output)
