@@ -53,10 +53,11 @@ class WindowsBackend(Backend):
             sys.exit(0)
 
     def prepare_update(self):
-        self.updater_path = tempfile.mkstemp(prefix="ufo-updater")
-        logging.debug("Copying " + conf.SCRIPT_PATH + " to " + self.updater_path)
-        shutil.copyfile(conf.SCRIPT_PATH, self.self.updater_path)
-        return self.updater_path
+        updater_path = tempfile.mkdtemp(prefix="ufo-updater")
+        logging.debug("Copying " + conf.SCRIPT_PATH + " to " + updater_path)
+        exe_path = path.join(updater_path, "ufo.exe")
+        shutil.copyfile(conf.SCRIPT_PATH, exe_path)
+        return exe_path
 
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
         return Backend.call(self, cmd, env, shell, cwd, output)

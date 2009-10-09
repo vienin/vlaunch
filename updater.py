@@ -27,7 +27,7 @@ def check_update(backend):
         latest_version = get_latest_version()
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to user...")
-            input = gui.dialog_question(title=u"Mise Ã  jour",
+            input = gui.dialog_question(title=u"Mise à jour",
                 msg=u"Une version plus récente du lanceur U.F.O est disponible, " + \
                     u"voulez-vous la télécharger (Environ 100 Mo de téléchargement) ?",
                 button1=u"Oui", button2=u"Non")
@@ -111,6 +111,6 @@ def self_update():
     logging.debug("".join(traceback.format_tb(info[2])))
     logging.debug("Exception while updating")
     logging.debug("Restarting UFO launcher : " + conf.EXEC_PATH)
-	
+
   os.execv(conf.EXEC_PATH, [ conf.EXEC_PATH ])
 
