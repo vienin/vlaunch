@@ -6,6 +6,10 @@ SCRIPT_PATH = path.realpath(sys.argv[0])
 SCRIPT_NAME = path.basename(sys.argv[0])
 SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
+print "SCRIPT_PATH", SCRIPT_PATH
+print "SCRIPT_PATH", SCRIPT_NAME
+print "SCRIPT_PATH", SCRIPT_DIR
+
 parser = OptionParser()
 parser.add_option("-u", "--update", dest="update",
                   help="update a UFO launcher located in ", metavar="FOLDER")

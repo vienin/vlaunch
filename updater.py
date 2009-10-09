@@ -81,7 +81,11 @@ def self_update():
  
     splash_install = gui.SplashScreen(image=os.path.join(conf.IMG_DIR, "updater-install.png"))
     logging.debug("Extracting update " + filename + " to " + conf.UFO_DIR)
-    tgz = tarfile.open(filename)
+    
+    if sys.platform == "darwin":
+        subprocess.call([ "tar", "-C", conf.UFO_DIR, "-xjf", filename ])
+    else:
+        tgz = tarfile.open(filename)
     tgz.extractall(os.path.normcase(conf.UFO_DIR))
     tgz.close()
  
@@ -101,7 +105,6 @@ def self_update():
         pass
      
   except:
-    raise
     gui.dialog_info(title=u"Erreur",
                     msg=u"La mise à jour n'a pas été réalisée correctement.")
 
