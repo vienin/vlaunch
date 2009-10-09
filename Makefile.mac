@@ -87,20 +87,23 @@ mac-launcher: clean py2app
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt; \
 	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \
-	    ln -s ../../../VirtualBox.app/Contents/Frameworks/$$qt; \
 	done
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
 
 testing: mac-launcher
-	mkdir -p dist/UFO.app/Contents/Resources/settings; \
-	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings/settings.conf; \
-	if [ ! -d dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks ]; \
-	then \
-	    mkdir dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks; \
-	fi; \
-	mkdir -p dist/UFO.app/Contents/Resources/.VirtualBox/Isos
-	cp UFO-VirtualBox-boot.img dist/UFO.app/Contents/Resources/.VirtualBox/Isos
-	cp ufo_swap.vdi ufo_overlay.vdi dist/UFO.app/Contents/Resources/.VirtualBox/HardDisks
-	cd dist && tar cvzf mac-intel.tgz UFO.app
-	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-runnable.tgz
+	rm -rf testing
+	mkdir -p testing
+	mkdir -p testing/.data
+	mkdir -p testing/.data/settings
+	mkdir -p testing/.data/images
+	mkdir -p testing/.data/.VirtualBox/Images
+	mkdir -p testing/.data/.VirtualBox/HardDisks
+	mkdir -p testing/.data/logs
+	cp settings.conf testing/.data/settings
+	cp UFO-VirtualBox-boot.img testing/.data/.VirtualBox/Images
+	cp ufo_swap.vdi ufo_overlay.vdi testing/.data/.VirtualBox/HardDisks
+	rm dist/mac-intel.tgz
+	mv dist testing/Mac-Intel
+	cd testing && tar cvzf mac-intel.tgz *
+	scp testing/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-runnable.tgz
 

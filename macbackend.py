@@ -73,19 +73,14 @@ class MacBackend(Backend):
             sys.exit(0)
 
     def prepare_update(self):
-        self.ufo_dir = path.join(path.realpath(path.dirname(sys.argv[0])), "..", "..", "..", "..")
-        self.updater_path = path.join(self.ufo_dir, "Mac-Intel", "UFO.app", "Contents", "Resources", "Ufo-updater.app")
-        self.shadow_updater_path = tempfile.mktemp(prefix="ufo-updater", suffix=".app")
-        self.shadow_updater_executable = path.join(self.shadow_updater_path,
-                                                  "Contents", "MacOS", "Ufo-updater")
+        tmpdir = tempfile.mkdtemp(prefix="ufo-updater")
+
+        src = path.join(conf.UFO_DIR, "Mac-Intel")
+        logging.debug("Copying " + path.join(src, "UFO.app") + " to " + tmpdir)
+        output = self.call([ [ "tar", "-cf", "-", "-C", src, "UFO.app" ],
+                             [ "tar", "xf", "-", "-C", tmpdir ] ], output = True)[1]
                                                   
-        logging.debug("Copying " + self.updater_path + " to " + self.shadow_updater_path)
-        shutil.copytree(self.updater_path, self.shadow_updater_path)
-        shutil.copytree(path.join(self.updater_path, "..", ".VirtualBox"),
-                        path.join(self.shadow_updater_path, "Contents", "Resources", ".VirtualBox"))
-                        # ignore=ignore_patterns(("comp*", "Hard*", "Iso*", "Machine*", "ufo-pole*", "uuid", "Virt*", "xpti*")))
-        shutil.copytree(path.join(self.updater_path, "..", "settings"),
-                        path.join(self.shadow_updater_path, "Contents", "Resources", "settings"))
+        return path.join(tmpdir, "UFO.app", "Contents", "MacOS", "UFO")
 
     def get_model(self, dev):
         medianame = grep(self.call(["/usr/sbin/diskutil", "info", dev]), "Media Name:")

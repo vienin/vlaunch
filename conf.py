@@ -26,7 +26,7 @@ if sys.platform == "linux2":
     EXEC_PATH = path.join(UFO_DIR, "Linux", "UFO")
 elif sys.platform == "darwin":
     if not UFO_DIR:
-        UFO_DIR = path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH))))
+        UFO_DIR = path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH)))))
     bin_default = path.join(UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
     EXEC_PATH = path.join(UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "MacOS", "UFO")
 else:
