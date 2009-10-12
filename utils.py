@@ -436,7 +436,7 @@ class Backend(object):
         if self.splash:
             self.destroy_splash_screen()
         
-        if self.hypervisor.vbox.version >= "3.0.0":
+        if self.vbox.version >= "3.0.0":
             while not self.vbox.current_machine.is_finished:
                 if self.vbox.current_machine.is_logged_in:
                     self.check_usb_devices()
@@ -472,7 +472,7 @@ class Backend(object):
                 continue
             if usb in self.usb_devices:
                 continue
-            if self.hypervisor.vbox.version >= "3.0.0":
+            if self.vbox.version >= "3.0.0":
                 guest_prop_type = "/UFO/Com/HostToGuest/Shares/AskToUser/"
             else:
                 guest_prop_type = "/UFO/Com/HostToGuest/Shares/ReadyToMount/"
@@ -483,7 +483,7 @@ class Backend(object):
         for usb in self.usb_devices:
             if usb in usb_devices:
                 continue
-            if self.hypervisor.vbox.version < "3.0.0":
+            if self.vbox.version >= "3.0.0":
                 self.vbox.current_machine.remove_shared_folder(str(usb[1]))
             
             self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb[1]),
