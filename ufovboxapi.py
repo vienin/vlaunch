@@ -175,17 +175,8 @@ class VBoxMachine():
         rc = int(progress.resultCode)
         if rc == 0:
             self.machine = session.machine
-            console = session.console
-            display = console.display
-            a = None
-            b = None
-            fb = None
-            fb, a, b = display.getFramebuffer(0)
-            print ":::::::::::desktop = " + str(gui.desktop.winId())
-            print ":::::::::::window id = " + str(fb.winId)
-            print "???? " + str(gui.QtGui.QWidget.find(fb.winId))
             session.close()
-            return 0;
+            return 0
         else:
             return 1
 
