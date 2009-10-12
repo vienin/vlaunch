@@ -289,7 +289,7 @@ class MacBackend(Backend):
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")
             
-            os.symlink(path.join(conf.APP_PATH, "Contents", "Resources", "VirtualBox.app"),
+            os.symlink(path.join(conf.UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app"),
                        "/Applications/VirtualBox.app")
                          
             # Restore permissions
