@@ -9,7 +9,6 @@ try:
     print "Using PyQt backend"
     gui = "PyQt4"
 except:
-    raise
     try:
         from gui_tk_ import *
         backend = "Tk"
