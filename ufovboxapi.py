@@ -34,18 +34,17 @@ class VBoxHypervisor():
     def cleanup(self):
         if self.vbox.version >= "3.0.0":
             self.vbox.unregisterCallback(self.cb)
+        self.cleaned = True
+
+    def __del__(self):
+        if not self.cleaned:
+            self.cleanup()
         if self.current_machine:
             del self.current_machine
             self.current_machine = None
         self.vbox.saveSettings()
         self.vm_manager.deinit()
         del self.vm_manager
-        self.cleaned = True
-
-    def __del__(self):
-        if not self.cleaned:
-            self.cleanup()
-            self.cleaned = True
 
     def create_machine(self, machine_name, os_type, base_dir = ''):
         if self.vbox.version < "2.1.0" and os_type == "Fedora":

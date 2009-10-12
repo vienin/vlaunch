@@ -516,6 +516,7 @@ class Backend(object):
             os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
 
         self.vbox.cleanup()
+        del self.vbox
         self.kill_resilient_vbox()
         self.cleanup()
 
