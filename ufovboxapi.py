@@ -8,6 +8,7 @@ import uuid as uuid_lib
 import traceback
 import logging
 import threading
+import gui
 
 class VBoxHypervisor():
 
@@ -21,8 +22,9 @@ class VBoxHypervisor():
         self.vbox = self.vm_manager.vbox
         
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
-        self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', VBoxMonitor, self)
-        self.vbox.registerCallback(self.cb)
+        if self.vbox.version >= "3.0.0":
+            self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', VBoxMonitor, self)
+            self.vbox.registerCallback(self.cb)
         
         self.current_machine = None
         self.session = None
@@ -30,7 +32,8 @@ class VBoxHypervisor():
         self.vbox.saveSettings()
 
     def __del__(self):
-        self.vbox.unregisterCallback(self.cb)
+        if self.vbox.version >= "3.0.0":
+            self.vbox.unregisterCallback(self.cb)
         if self.current_machine:
             del self.current_machine
             self.current_machine = None
@@ -172,6 +175,15 @@ class VBoxMachine():
         rc = int(progress.resultCode)
         if rc == 0:
             self.machine = session.machine
+            console = session.console
+            display = console.display
+            a = None
+            b = None
+            fb = None
+            fb, a, b = display.getFramebuffer(0)
+            print ":::::::::::desktop = " + str(gui.desktop.winId())
+            print ":::::::::::window id = " + str(fb.winId)
+            print "???? " + str(gui.QtGui.QWidget.find(fb.winId))
             session.close()
             return 0;
         else:
