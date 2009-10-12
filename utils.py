@@ -15,8 +15,10 @@ import tempfile
 import uuid
 import gui
 import time
+
 from ConfigParser import ConfigParser
 import ufovboxapi
+
 
 def grep(input, pattern, inverse=False):
     for line in input.split("\n"):
@@ -102,7 +104,8 @@ except:
             retcode = lastproc.wait()
             logging.debug("Returned : " + str(retcode))
             return retcode
-
+        
+    
 class Backend(object):
     def __init__(self):
         self.usb_devices = []
@@ -303,13 +306,13 @@ class Backend(object):
             
             self.vbox.current_machine.set_fullscreen()
             self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMG_DIR, "ufo-*.bmp"))[0])
-        
+
             # set host home shared folder
             if not conf.USESERVICE:
                 share_name = "hosthome"
                 home_path, displayed_name = self.get_host_home()
                 self.vbox.current_machine.add_shared_folder(share_name, home_path, writable = True)
-                self.vbox.current_machine.set_guest_property("share_" + share_name, displayed_name)
+                self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_name, displayed_name)
                 logging.debug("Setting shared folder : " + home_path + ", " + displayed_name)
                 
                 self.dnddir = tempfile.mkdtemp(suffix="ufodnd")
@@ -322,7 +325,7 @@ class Backend(object):
                 if usb[1] == None:
                     continue
                 self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
-                self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
+                self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + str(usb[1]), usb[1])
                 logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
             self.usb_devices = usb_devices
 
@@ -338,12 +341,12 @@ class Backend(object):
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
-                self.vbox.current_machine.set_guest_property("swap", swap_dev)
+                self.vbox.current_machine.set_guest_property("/UFO/Storages/Swap/Device", swap_dev)
                         
                 free_size = self.get_free_size(self.tmp_swapdir)
                 if free_size:
                     swap_size = min(conf.SWAPSIZE, free_size)
-                    self.vbox.current_machine.set_guest_property("swap_size", str(swap_size))
+                    self.vbox.current_machine.set_guest_property("/UFO/Storages/Swap/Size", str(swap_size))
             except:
                 logging.debug("Exception while creating swap")
         
@@ -424,54 +427,36 @@ class Backend(object):
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
              gui.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
-                              u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce " + \
-                              u"lien http://downloads.virtualbox.org/virtualbox/",
-                              title=u"Binaires manquants")
+                                 u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce " + \
+                                 u"lien http://downloads.virtualbox.org/virtualbox/",
+                            title=u"Binaires manquants")
              sys.exit(1)
 
     def wait_for_termination(self):
-        last_state = self.vbox.constants.MachineState_PoweredOff
-        while True:
-            try:
-                state = self.vbox.current_machine.machine.state
-                if state == self.vbox.constants.MachineState_PoweredOff and \
-                   last_state == self.vbox.constants.MachineState_Running:
-                    # Virtual machine as been closed
-                    break
-                elif state == self.vbox.constants.MachineState_PoweredOff:
-                    # Virtual machine isn't started yet
-                    pass
-                elif state == self.vbox.constants.MachineState_Running:
-                    # Virtual machine is running
-                    if self.splash:
-                        self.destroy_splash_screen()
-                    self.check_usb_devices()
-
-                last_state = state
-            except:
-                # Virtual machine has been closed between two sleeps
-                break
-            time.sleep(2)
+        if self.splash:
+            self.destroy_splash_screen()
+        
+        while not self.vbox.current_machine.is_finished:
+            if self.vbox.current_machine.is_logged_in:
+                self.check_usb_devices()
+                
+            self.vbox.vm_manager.waitForEvents(5000)
 
     def check_usb_devices(self):
-        # set removable media shared folders
+        # manage removable media shared folders
         usb_devices = self.get_usb_devices()
         for usb in usb_devices:
             if usb[1] == None:
                 continue
             if usb in self.usb_devices:
                 continue
-            input = gui.dialog_question(u"Péripherique USB", 
-                                        u"Un nouveau périphérique USB a été détecté:\n\n" + \
-                                        u"\"" + usb[1] + "\" monte sur " + usb[0] + "\n\n" + \
-                                        u"Voulez vous le raccorder a la machine virtuelle UFO ?")
-            if input == "Yes":
-                self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
-                self.vbox.current_machine.set_guest_property("share_" + str(usb[1]), usb[1])
-                logging.debug("Setting shared folder: " + str(usb[0]) + ", " + str(usb[1]))
-            else:
-                logging.debug("Shared folder refused by user: " + str(usb[0]) + ", " + str(usb[1]))
-
+            self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/AskToUser/" + str(usb[1]),
+                                                         str(usb[1]) + ";" + str(usb[0]))
+        for usb in self.usb_devices:
+            if usb in usb_devices:
+                continue
+            self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb[1]),
+                                                         str(usb[0]))
         self.usb_devices = usb_devices
 
     def run_virtual_machine(self, env):
@@ -529,7 +514,7 @@ class Backend(object):
         elif ret == conf.STATUS_EXIT:
             logging.debug("no device found, do not start machine")
             sys.exit(1)
-
+        
         # build virtual machine as host capabilities
         logging.debug("Creating Virtual Machine")
         self.create_virtual_machine()

@@ -3,80 +3,13 @@
 
 # export VBOX_PROGRAM_PATH=/usr/lib/virtualbox/ PYTHONPATH=..:$VBOX_PROGRAM_PATH
 
+import os
 import uuid as uuid_lib
 import traceback
 import logging
+import threading
 
-class Host:
-
-    def get_total_ram(self):
-        pass
-    def get_free_ram(self):
-        pass
-
-class Hypervisor:
-
-    def create_machine(self, machine_name, os_type, base_dir):
-        pass
-    def open_machine(self, machine_name):
-        pass
-    def close_session(self):
-        pass
-    def close_machine(self):
-        pass
-    def get_machines(self):
-        pass
-    def add_harddisk(self):
-        pass
-    def add_dvd(self, location, uuid):
-        pass
-    def add_floppy(self, location, uuid):
-        pass
-    def set_extra_data(self, key, value):
-        pass
-
-class VirtualMachine:
-
-    def start(self):
-        pass
-    def set_variable(self, variable_expr, variable_value):
-        pass
-    def attach_harddisk(self, location, disk_rank):
-        pass
-    def attach_dvd(self, location, host_drive):
-        pass
-    def attach_floppy(self, location, host_drive):
-        pass
-    def add_shared_folder(self, name, host_path, writable):
-        pass
-    def remove_shared_folder(self, name):
-        pass
-    def set_boot_device(self, device_type):
-        pass
-    def set_boot_logo(self, image_path, fade_in, fade_out, display_time):
-        pass
-    def set_bios_params(self, acpi_enabled, ioapic_enabled):
-        pass
-    def disable_boot_menu(self):
-        pass
-    def set_ram_size(self, ram_size):
-        pass
-    def set_vram_size(self, vram_size):
-        pass
-    def set_resolution(self, resolution):
-        pass
-    def set_fullscreen(self):
-        pass
-    def set_guest_property(self, key, value):
-        pass
-    def set_network_adapter(self, attach_type, adapter_type, host_adapter, mac_address):
-        pass
-    def set_audio_adapter(self, audio_driver, audio_controller):
-        pass
-    def set_extra_data(self, key, value):
-        pass
-
-class VBoxHypervisor(Hypervisor):
+class VBoxHypervisor():
 
     def __init__(self):
         from vboxapi import VirtualBoxManager
@@ -90,10 +23,13 @@ class VBoxHypervisor(Hypervisor):
         
         self.current_machine = None
         self.session = None
-
+        
         self.vbox.saveSettings()
 
     def __del__(self):
+        if self.current_machine:
+            del self.current_machine
+            self.current_machine = None
         self.vbox.saveSettings()
         self.vm_manager.deinit()
         del self.vm_manager
@@ -205,20 +141,30 @@ class VBoxHypervisor(Hypervisor):
             return 1
         return 0 
 
-class VBoxMachine(VirtualMachine):
+
+class VBoxMachine():
 
     def __init__(self, hypervisor, machine):
         self.hypervisor = hypervisor
         self.machine    = machine
         self.name       = machine.name
         self.uuid       = machine.id
+        
+        self.last_state   = self.hypervisor.constants.MachineState_PoweredOff
+        self.is_finished  = False
+        self.is_logged_in = False
+        
         self.current_disk_rank = 0
         self.machine.saveSettings()
         
     def __del__(self):
+        self.hypervisor.vbox.unregisterCallback(self.hypervisor.cb)
         del self.machine
 
     def start(self):
+        self.hypervisor.cb = self.hypervisor.vm_manager.createCallback('IVirtualBoxCallback', VBoxMonitor, self.hypervisor)
+        self.hypervisor.vbox.registerCallback(self.hypervisor.cb)
+        
         session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
         progress = self.hypervisor.vm_manager.vbox.openRemoteSession(session, self.uuid, "gui", "")
         progress.waitForCompletion(-1)
@@ -321,7 +267,7 @@ class VBoxMachine(VirtualMachine):
             self.machine.saveSettings()
         return 0
     
-    def remove_shared_folder(self, name):
+    def remove_shared_folder(self, name, save = False):
         try:
             self.machine.removeSharedFolder(name)
         except Exception, e:
@@ -468,8 +414,9 @@ class VBoxMachine(VirtualMachine):
         if save:
             self.machine.saveSettings()
         return 0
-    
-class VBoxHost(Host):
+
+
+class VBoxHost():
 
     def __init__(self, host, constants):
         self.host = host
@@ -479,7 +426,7 @@ class VBoxHost(Host):
         del self.host
 
     def is_virt_ex_available(self):
-        return self.host.getProcessorFeature(getattr(self.contants, "ProcessorFeature_HWVirtEx"))
+        return self.host.getProcessorFeature(self.contants.ProcessorFeature_HWVirtEx)
     
     def get_nb_procs(self):
         return self.host.processorCount
@@ -493,6 +440,73 @@ class VBoxHost(Host):
     def get_DVD_drives(self):
         return self.host.DVDDrives
 
+
+class VBoxMonitor:
+    def __init__(self, hypervisor):
+        self.hypervisor = hypervisor
+        pass
+    
+    def onMachineStateChange(self, id, state):
+        print "onMachineStateChange: %s %d" %(id, state)
+        
+        last_state = self.hypervisor.current_machine.last_state
+        if self.hypervisor.current_machine.uuid == id:
+            if state == self.hypervisor.constants.MachineState_PoweredOff and \
+               (last_state == self.hypervisor.constants.MachineState_Stopping or \
+                last_state == self.hypervisor.constants.MachineState_Aborted):
+                
+               self.hypervisor.current_machine.is_finished = True
+                
+            self.hypervisor.current_machine.last_state = state
+        
+    def onMachineDataChange(self,id):
+        print "onMachineDataChange: %s" %(id)
+
+    def onExtraDataCanChange(self, id, key, value):
+        print "onExtraDataCanChange: %s %s=>%s" %(id, key, value)
+        return True, ""
+
+    def onExtraDataChange(self, id, key, value):
+        print "onExtraDataChange: %s %s=>%s" %(id, key, value)
+
+    def onMediaRegistred(self, id, type, registred):
+        print "onMediaRegistred: %s" %(id)
+
+    def onMachineRegistred(self, id, registred):
+        print "onMachineRegistred: %s" %(id)
+
+    def onSessionStateChange(self, id, state):
+        print "onSessionStateChange: %s %d" %(id, state)
+
+    def onSnapshotTaken(self, mach, id):
+        print "onSnapshotTaken: %s %s" %(mach, id)
+
+    def onSnapshotDiscarded(self, mach, id):
+        print "onSnapshotDiscarded: %s %s" %(mach, id)
+
+    def onSnapshotChange(self, mach, id):
+        print "onSnapshotChange: %s %s" %(mach, id)
+
+    def onGuestPropertyChange(self, id, name, newValue, flags):
+        print "onGuestPropertyChange: %s: %s=%s" %(id, name, newValue)
+       
+        # Shared folder management
+        if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":
+            share_label = os.path.basename(name)
+            share_name, share_mntpt = newValue.split(";")
+            self.hypervisor.current_machine.add_shared_folder(share_label, share_mntpt, writable = True)
+            self.hypervisor.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_label, share_name)
+            
+        elif os.path.dirname(name) == "/UFO/Com/HostToGuest/Shares/Remove":
+            self.hypervisor.current_machine.remove_shared_folder(os.path.basename(name))
+            
+        # Custom machine state management
+        elif name == "/UFO/State":
+            if newValue == "LOGGED_IN":
+                self.hypervisor.current_machine.is_logged_in = True
+            elif newValue == "HALTING":
+                pass
+            
 def test_cases():
     vm = VBoxHypervisor()
     print "-- Let's test ufovboxapi !"

@@ -64,9 +64,9 @@ def self_update():
     latest_version = ".".join(map(str, get_latest_version()))
  
     gui.dialog_info(title=u"Attention",
-                    msg=u"Lancement de la mise à jour. " \
-                        u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A " \
-                        u"AUCUN FICHIER SUR LA CLE. La mise à jour peut durer plusieurs minutes")
+                    msg=u"Lancement de la mise à jour. \n" \
+                        u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A \n" \
+                        u"AUCUN FICHIER SUR LA CLE. \n\nLa mise à jour peut durer plusieurs minutes")
  
     splash_down = gui.SplashScreen(image=os.path.join(conf.IMG_DIR, "updater-download.png"))
     url = conf.UPDATEURL + "/launcher-" + latest_version + ".tar.bz2"

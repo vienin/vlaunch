@@ -6,7 +6,7 @@ host="${cmdline#*hostos=}"
 host="${host%% *}"
 desktop="$HOME/Bureau"
 target=/media
-share_id="share_"
+share_id="/UFO/Shares/"
 
 mount_share_and_link() {
 
@@ -57,7 +57,7 @@ runlevel=`runlevel | cut -d " " -f 2`
 share_names=()
 share_labels=()
 i=0
-for ligne in `/usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share_id`; do
+for ligne in `/usr/bin/VBoxControl -nologo guestproperty enumerate -patterns "/UFO/Com/HostToGuest/Shares/ReadyToMount/*"`; do
 	case "${ligne%%:*}" in
 	" value")
 		[ "${lab#*_}" == "None" ] && continue
@@ -65,9 +65,9 @@ for ligne in `/usr/bin/VBoxControl -nologo guestproperty enumerate | grep $share
 		i=$(( $i + 1 ))
 		;;
 	"Name")
-		lab="${ligne#*: share_}"
+		lab="${ligne#*: /UFO/Com/HostToGuest/Shares/ReadyToMount/}"
 		[ "${lab#*_}" == "None" ] && continue
-		share_labels[$i]="${ligne#*: share_}"
+		share_labels[$i]="$lab"
 		;;
 	esac
 done
@@ -82,37 +82,49 @@ for label in ${share_labels[@]}; do
 	i=$(( $i + 1 ))
 done
 
-# On MAC-OSX hosts, mount UFO part as real device
-host="${cmdline#*hostos=}"
-host="${host%% *}"
-[ "$host" == "macosx" ] && sudo -u #$USER_UID gnome-mount --device /dev/sda1
+# Signal that user is logged in and ready to answer to usb connections
+/usr/bin/VBoxControl -nologo guestproperty set "/UFO/State" "LOGGED_IN"
 
 awaited_share_time="0"
 while [ 1 ]; do
-	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "share_*" -timestamp "$awaited_share_time"`; do
+	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "/UFO/Com/HostToGuest/Shares/*" -timestamp "$awaited_share_time"`; do
 
-		echo "ligne:$ligne"
 		case "${ligne%%:*}" in
 		"Value")
-			awaited_share_name="${ligne#*: }"
+			awaited_share_tuple="${ligne#* }"
+			awaited_share_name="${awaited_share_tuple%;*}"
+			awaited_share_mntpt="${awaited_share_tuple#*;}"
 			;;
 		"Name")
-			awaited_share_label="${ligne#*: share_}"
+			awaited_share_tuple="${ligne#*: /UFO/Com/HostToGuest/Shares/}"
+			awaited_share_state="${awaited_share_tuple%/*}"
+			awaited_share_label="${awaited_share_tuple#*/}"
 			;;
 		"Timestamp")
 			a="${ligne#*: }"
 			awaited_share_time="${a% ns}"
 			;;
-		# TODO:
-		# Store received timestamp, to set next wait to timestamp
 		esac
 	done
-
-	sleep 5
-	mount_share_and_link $awaited_share_label $awaited_share_name
-	sleep 5
+	echo "Received guest property  \"/UFO/Com/HostToGuest/Shares/${awaited_share_state}\" for share \"${awaited_share_label}\", name \"${awaited_share_name}\", mntpoint \"${awaited_share_mntpt}\""
+    
+	case "$awaited_share_state" in
+	"AskToUser")
+		zenity --question --title="Périphérique USB" --text="Un nouveau périphérique USB a été détecté,\n\n\"$awaited_share_name\" monté sur \"$awaited_share_mntpt\" \n\nVoulez vous monter ce périphérique sur votre bureau UFO ?" --window-icon=/usr/share/icons/UFO/48x48/emblems/emblem-usb.png
+		if [ $? == 0 ]; then
+		    /usr/bin/VBoxControl -nologo guestproperty set "/UFO/Com/GuestToHost/Shares/UserAccept/$awaited_share_label" "$awaited_share_name;$awaited_share_mntpt"
+		fi
+		;;
+	"ReadyToMount")
+		mount_share_and_link $awaited_share_label $awaited_share_name
+		;;
+	"Remove")
+		unlink "${desktop}/${awaited_share_label}"
+		umount $awaited_share_mntpt
+		rmdir "${target}/${awaited_share_label}"
+		;;
+	esac
 done
 
 IFS=$ORIGIFS
-
 
