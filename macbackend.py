@@ -276,7 +276,7 @@ class MacBackend(Backend):
 
     def prepare(self):
         # Ajusting paths
-        if not conf.BIN: conf.BIN = path.join(conf.APP_PATH, "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
+        if not conf.BIN: conf.BIN = path.join(conf.UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
         self.check_privileges()
         try:
