@@ -90,8 +90,10 @@ def self_update():
     tgz.close()
  
     logging.debug("Updating settings.conf")
-    conf.cp.set("launcher", "VERSION", latest_version)
-    conf.cp.write(open(conf.conf_file, "w"))
+    cp = ConfigParser()
+    cp.read([ conf.conf_file ])
+    cp.set("launcher", "VERSION", latest_version)
+    cp.write(open(conf.conf_file, "w"))
  
     if not splash_install == None:
         splash_install.destroy()
