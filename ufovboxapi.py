@@ -19,7 +19,10 @@ class VBoxHypervisor():
         self.constants = VirtualBoxReflectionInfo()
         self.mgr  = self.vm_manager.mgr
         self.vbox = self.vm_manager.vbox
+        
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
+        self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', VBoxMonitor, self)
+        self.vbox.registerCallback(self.cb)
         
         self.current_machine = None
         self.session = None
@@ -27,6 +30,7 @@ class VBoxHypervisor():
         self.vbox.saveSettings()
 
     def __del__(self):
+        self.vbox.unregisterCallback(self.cb)
         if self.current_machine:
             del self.current_machine
             self.current_machine = None
@@ -158,13 +162,9 @@ class VBoxMachine():
         self.machine.saveSettings()
         
     def __del__(self):
-        self.hypervisor.vbox.unregisterCallback(self.hypervisor.cb)
         del self.machine
 
     def start(self):
-        self.hypervisor.cb = self.hypervisor.vm_manager.createCallback('IVirtualBoxCallback', VBoxMonitor, self.hypervisor)
-        self.hypervisor.vbox.registerCallback(self.hypervisor.cb)
-        
         session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
         progress = self.hypervisor.vm_manager.vbox.openRemoteSession(session, self.uuid, "gui", "")
         progress.waitForCompletion(-1)
@@ -447,7 +447,7 @@ class VBoxMonitor:
         pass
     
     def onMachineStateChange(self, id, state):
-        print "onMachineStateChange: %s %d" %(id, state)
+        logging.debug("onMachineStateChange: %s %d" %(id, state))
         
         last_state = self.hypervisor.current_machine.last_state
         if self.hypervisor.current_machine.uuid == id:
@@ -460,35 +460,35 @@ class VBoxMonitor:
             self.hypervisor.current_machine.last_state = state
         
     def onMachineDataChange(self,id):
-        print "onMachineDataChange: %s" %(id)
+        logging.debug("onMachineDataChange: %s" %(id))
 
     def onExtraDataCanChange(self, id, key, value):
-        print "onExtraDataCanChange: %s %s=>%s" %(id, key, value)
+        logging.debug("onExtraDataCanChange: %s %s=>%s" %(id, key, value))
         return True, ""
 
     def onExtraDataChange(self, id, key, value):
-        print "onExtraDataChange: %s %s=>%s" %(id, key, value)
+        logging.debug("onExtraDataChange: %s %s=>%s" %(id, key, value))
 
     def onMediaRegistred(self, id, type, registred):
-        print "onMediaRegistred: %s" %(id)
+        logging.debug("onMediaRegistred: %s" %(id))
 
     def onMachineRegistred(self, id, registred):
-        print "onMachineRegistred: %s" %(id)
+        logging.debug("onMachineRegistred: %s" %(id))
 
     def onSessionStateChange(self, id, state):
-        print "onSessionStateChange: %s %d" %(id, state)
+        logging.debug("onSessionStateChange: %s %d" %(id, state))
 
     def onSnapshotTaken(self, mach, id):
-        print "onSnapshotTaken: %s %s" %(mach, id)
+        logging.debug("onSnapshotTaken: %s %s" %(mach, id))
 
     def onSnapshotDiscarded(self, mach, id):
-        print "onSnapshotDiscarded: %s %s" %(mach, id)
+        logging.debug("onSnapshotDiscarded: %s %s" %(mach, id))
 
     def onSnapshotChange(self, mach, id):
-        print "onSnapshotChange: %s %s" %(mach, id)
+        logging.debug("onSnapshotChange: %s %s" %(mach, id))
 
     def onGuestPropertyChange(self, id, name, newValue, flags):
-        print "onGuestPropertyChange: %s: %s=%s" %(id, name, newValue)
+        logging.debug("onGuestPropertyChange: %s: %s=%s" %(id, name, newValue))
        
         # Shared folder management
         if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":
