@@ -86,8 +86,8 @@ def self_update():
         subprocess.call([ "tar", "-C", conf.UFO_DIR, "-xjf", filename ])
     else:
         tgz = tarfile.open(filename)
-    tgz.extractall(os.path.normcase(conf.UFO_DIR))
-    tgz.close()
+        tgz.extractall(os.path.normcase(conf.UFO_DIR))
+        tgz.close()
  
     logging.debug("Updating settings.conf")
     cp = ConfigParser()
