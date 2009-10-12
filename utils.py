@@ -456,8 +456,6 @@ class Backend(object):
                         pass
                     elif state == self.vbox.constants.MachineState_Running:
                         # Virtual machine is running
-                        if self.splash:
-                            self.destroy_splash_screen()
                         self.check_usb_devices()
      
                     last_state = state
