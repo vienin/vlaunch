@@ -10,12 +10,13 @@ print "SCRIPT_PATH", SCRIPT_PATH
 print "SCRIPT_PATH", SCRIPT_NAME
 print "SCRIPT_PATH", SCRIPT_DIR
 
+args = [ arg for arg in sys.argv[1:] if not arg.startswith("-psn_") ]
 parser = OptionParser()
 parser.add_option("-u", "--update", dest="update",
                   help="update a UFO launcher located in ", metavar="FOLDER")
 parser.add_option("-r", "--respawn", dest="respawn", default=False,
                   action="store_true", help="tells the launcher that it has been respawned ")
-(options, args) = parser.parse_args()
+(options, args) = parser.parse_args(args=args)
 
 UFO_DIR = options.update
 
