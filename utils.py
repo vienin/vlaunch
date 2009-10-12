@@ -436,11 +436,35 @@ class Backend(object):
         if self.splash:
             self.destroy_splash_screen()
         
-        while not self.vbox.current_machine.is_finished:
-            if self.vbox.current_machine.is_logged_in:
-                self.check_usb_devices()
-                
-            self.vbox.vm_manager.waitForEvents(5000)
+        if self.hypervisor.vbox.version >= "3.0.0":
+            while not self.vbox.current_machine.is_finished:
+                if self.vbox.current_machine.is_logged_in:
+                    self.check_usb_devices()
+                    
+                self.vbox.vm_manager.waitForEvents(5000)
+        else:
+            last_state = self.vbox.constants.MachineState_PoweredOff
+            while True:
+                try:
+                    state = self.vbox.current_machine.machine.state
+                    if state == self.vbox.constants.MachineState_PoweredOff and \
+                        last_state == self.vbox.constants.MachineState_Running:
+                        # Virtual machine as been closed
+                        break
+                    elif state == self.vbox.constants.MachineState_PoweredOff:
+                        # Virtual machine isn't started yet
+                        pass
+                    elif state == self.vbox.constants.MachineState_Running:
+                        # Virtual machine is running
+                        if self.splash:
+                            self.destroy_splash_screen()
+                        self.check_usb_devices()
+     
+                    last_state = state
+                except:
+                    # Virtual machine has been closed between two sleeps
+                    break
+                time.sleep(4)
 
     def check_usb_devices(self):
         # manage removable media shared folders
@@ -450,11 +474,20 @@ class Backend(object):
                 continue
             if usb in self.usb_devices:
                 continue
-            self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/AskToUser/" + str(usb[1]),
+            if self.hypervisor.vbox.version >= "3.0.0":
+                guest_prop_type = "/UFO/Com/HostToGuest/Shares/AskToUser/"
+            else:
+                guest_prop_type = "/UFO/Com/HostToGuest/Shares/ReadyToMount/"
+                self.vbox.current_machine.add_shared_folder(str(usb[1]), str(usb[0]), writable = True)
+                
+            self.vbox.current_machine.set_guest_property(guest_prop_type + str(usb[1]),
                                                          str(usb[1]) + ";" + str(usb[0]))
         for usb in self.usb_devices:
             if usb in usb_devices:
                 continue
+            if self.hypervisor.vbox.version < "3.0.0":
+                self.vbox.current_machine.remove_shared_folder(str(usb[1]))
+            
             self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb[1]),
                                                          str(usb[0]))
         self.usb_devices = usb_devices
