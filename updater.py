@@ -64,7 +64,17 @@ def check_update(backend):
 def self_update():
   try:
     latest_version = ".".join(map(str, get_latest_version()))
- 
+
+    try:
+        if sys.platform == "darwin":
+            mount = utils.grep(utils.call([ "mount" ], output=True)[1], conf.UFO_DIR)
+            if mount:
+                dev = mount.split()[0]
+                utils.call([ "diskutil", "unmount", dev ])
+                utils.call([ "diskutil", "mount", dev ])
+    except:
+        pass
+
     gui.dialog_info(title=u"Attention",
                     msg=u"Lancement de la mise à jour. \n" \
                         u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A \n" \

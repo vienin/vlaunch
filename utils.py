@@ -159,6 +159,10 @@ class Backend(object):
         logging.debug("sys.path: " + str(sys.path))
         logging.debug("Creating VBoxHypervisor")
 
+        compreg = path.join(conf.HOME, "compreg.dat")
+        if path.exists(compreg):
+            os.unlink(compreg)
+
         self.vbox = ufovboxapi.VBoxHypervisor()
         logging.debug("VBoxHypervisor successfully created")
 
