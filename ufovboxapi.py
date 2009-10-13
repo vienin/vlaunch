@@ -483,7 +483,7 @@ class VBoxMonitor:
     def onMediaRegistred(self, id, type, registred):
         logging.debug("onMediaRegistred: %s" %(id))
 
-    def onMachineRegistred(self, id, registred):
+    def onMachineRegistered(self, id, registred):
         logging.debug("onMachineRegistred: %s" %(id))
 
     def onSessionStateChange(self, id, state):
