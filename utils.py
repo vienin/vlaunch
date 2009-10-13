@@ -15,6 +15,7 @@ import tempfile
 import uuid
 import gui
 import time
+import platform
 
 from ConfigParser import ConfigParser
 import ufovboxapi
@@ -199,6 +200,9 @@ class Backend(object):
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
+        
+        self.vbox.current_machine.set_guest_property("/UFO/HostPlatform", platform.platform())
+        
         logging.debug("VM successfully initialized")
 
     def configure_virtual_machine(self, create_vmdk = True):
