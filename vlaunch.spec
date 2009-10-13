@@ -141,12 +141,16 @@ rm -rf $RPM_BUILD_ROOT
 %files guest
 %{_sysconfdir}/pam.d/vbox-client-dnd
 %{_sysconfdir}/pam.d/vbox-client-symlink
+%{_sysconfdir}/pam.d/vbox-get-property
 %{_sysconfdir}/security/console.apps/vbox-client-dnd
 %{_sysconfdir}/security/console.apps/vbox-client-symlink
+%{_sysconfdir}/security/console.apps/vbox-get-property
 %{_bindir}/vbox-client-symlink
 %{_bindir}/vbox-client-dnd
+%{_bindir}/vbox-get-property
 %{_sbindir}/vbox-client-symlink
 %{_sbindir}/vbox-client-dnd
+%{_sbindir}/vbox-get-property
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
 

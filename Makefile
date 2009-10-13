@@ -6,6 +6,7 @@ SOURCES=settings.conf *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png a
         vbox-client-dnd.desktop \
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
+        vbox-get-property vbox-get-property.pam vbox-get-property.console \
         autorun.inf UFO.ico DS_Store .background .autorun ask-password
 
 DIR=$(NAME)-$(VERSION)
@@ -80,26 +81,24 @@ install:
 	# Kit de survie
 	cp "Manuel d'utilisation.pdf" $(DESTDIR)$(TARGET_PATH)
 
-	mkdir -p $(DESTDIR)/etc/pam.d
-	install -p -m 644 vbox-client-symlink.pam $(DESTDIR)/etc/pam.d/vbox-client-symlink
-	install -p -m 644 vbox-client-dnd.pam $(DESTDIR)/etc/pam.d/vbox-client-dnd
+	install -D -m 644 vbox-client-symlink.pam $(DESTDIR)/etc/pam.d/vbox-client-symlink
+	install -D -m 644 vbox-client-dnd.pam $(DESTDIR)/etc/pam.d/vbox-client-dnd
+	install -D -m 644 vbox-get-property.pam $(DESTDIR)/etc/pam.d/vbox-get-property
 
-	mkdir -p $(DESTDIR)/etc/security/console.apps
-	install -p -m 644 vbox-client-symlink.console $(DESTDIR)/etc/security/console.apps/vbox-client-symlink
-	install -p -m 644 vbox-client-dnd.console $(DESTDIR)/etc/security/console.apps/vbox-client-dnd
+	install -D -m 644 vbox-client-symlink.console $(DESTDIR)/etc/security/console.apps/vbox-client-symlink
+	install -D -m 644 vbox-client-dnd.console $(DESTDIR)/etc/security/console.apps/vbox-client-dnd
+	install -D -m 644 vbox-get-property.console $(DESTDIR)/etc/security/console.apps/vbox-get-property
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
 	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-symlink
 	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-dnd
-	mkdir -p $(DESTDIR)/usr/sbin
-	mkdir -p $(DESTDIR)/etc/xdg/autostart
-	chmod +x vbox-client-symlink
-	chmod +x vbox-client-dnd
-	cp vbox-client-symlink $(DESTDIR)/usr/sbin
-	cp vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart
-	cp vbox-client-dnd $(DESTDIR)/usr/sbin
-	cp vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
+	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-get-property
+	install -D -m 755 vbox-client-symlink $(DESTDIR)/usr/sbin/vbox-client-symlink
+	install -D -m 644 vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart/vbox-client-symlink.desktop
+	install -D -m 755 vbox-client-dnd $(DESTDIR)/usr/sbin
+	install -D -m 644 vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
+	install -D -m 755 vbox-get-property $(DESTDIR)/usr/sbin
 	
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \

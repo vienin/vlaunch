@@ -124,7 +124,7 @@ class Backend(object):
             conf.BIN = path.join(conf.SCRIPT_DIR, conf.BIN)
 
         os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
-                            "VBOX_PROGRAM_PATH" : conf.BIN, 
+                            "VBOX_PROGRAM_PATH" : conf.BIN,
                             "PYTHONPATH"        : conf.BIN,
                             "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk")
                           })
