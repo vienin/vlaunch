@@ -11,6 +11,7 @@ import gui
 import tempfile
 import conf
 import socket
+import utils
 
 def get_latest_version():
     socket.setdefaulttimeout(5)
@@ -42,9 +43,10 @@ def check_update(backend):
                 logging.debug("Launching updater : " + " ".join(cmd))
                 # For some reason, execv does not work on Mac OS
                 # I get Operation not permitted
-                if False:
-                    subprocess.Popen(cmd, shell=False)
+                if sys.platform == "darwin":
+                    subprocess.Popen(cmd, shell=False, close_fds=True)
                     logging.debug("Exiting for good")
+                    logging.shutdown()
                 else:
                     os.execv(executable, cmd)
                 sys.exit(0)
@@ -83,7 +85,13 @@ def self_update():
     logging.debug("Extracting update " + filename + " to " + conf.UFO_DIR)
     
     if sys.platform == "darwin":
-        subprocess.call([ "tar", "-C", conf.UFO_DIR, "-xjf", filename ])
+        utils.call([ "tar", "-C", conf.UFO_DIR, "-xjf", filename ])
+        mount = utils.grep(utils.call([ "mount" ], output=True)[1], conf.UFO_DIR)
+        if mount:
+            dev = mount.split()[0]
+            utils.call([ "diskutil", "unmount", dev ])
+            utils.call([ "diskutil", "mount", dev ])
+
     else:
         tgz = tarfile.open(filename)
         tgz.extractall(os.path.normcase(conf.UFO_DIR))
@@ -117,5 +125,6 @@ def self_update():
     logging.debug("Exception while updating")
     logging.debug("Restarting UFO launcher : " + conf.EXEC_PATH)
 
+  logging.shutdown()
   os.execv(conf.EXEC_PATH, [ conf.EXEC_PATH ])
 

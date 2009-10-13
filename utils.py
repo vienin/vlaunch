@@ -515,7 +515,10 @@ class Backend(object):
         if self.tmp_overlaydir:
             os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
 
-        self.vbox.cleanup()
+        try:
+            self.vbox.cleanup()
+            del self.vbox
+        except: pass
         del self.vbox
         self.kill_resilient_vbox()
         self.cleanup()

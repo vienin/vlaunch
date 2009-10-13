@@ -32,6 +32,7 @@ class VBoxHypervisor():
         self.vbox.saveSettings()
 
     def cleanup(self):
+        self.cleaned = True
         if self.vbox.version >= "3.0.0":
             self.vbox.unregisterCallback(self.cb)
         self.cleaned = True

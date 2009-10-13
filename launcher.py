@@ -17,7 +17,10 @@ import gui
 import updater
 
 format = "%(asctime)s %(levelname)s %(message)s"
-log_file_name = os.path.join(os.path.dirname(conf.LOG), str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
+if conf.options.update:
+    log_file_name = path.join(tempfile.gettempdir(), "ufo-updater.log")
+else:
+    log_file_name = path.join(os.path.dirname(conf.LOG), str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
 try:
     logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, log_file_name))
     log_path = path.join(conf.SCRIPT_DIR, log_file_name)
