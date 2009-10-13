@@ -9,6 +9,7 @@ import traceback
 import logging
 import threading
 import gui
+import sys
 
 class VBoxHypervisor():
 
@@ -475,7 +476,12 @@ class VBoxMonitor:
 
     def onExtraDataCanChange(self, id, key, value):
         logging.debug("onExtraDataCanChange: %s %s=>%s" %(id, key, value))
-        return True, ""
+        # win32com need 3 return value (2 out parameters and return value)
+        # xpcom only need the both out parameters
+        if sys.platform != "win32":
+            return True, ""
+        else:
+            return "", True, 0
 
     def onExtraDataChange(self, id, key, value):
         logging.debug("onExtraDataChange: %s %s=>%s" %(id, key, value))

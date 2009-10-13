@@ -59,14 +59,17 @@ if conf.LIVECD:
 if sys.platform == "win32":
     from windowsbackend import *
     backend = WindowsBackend()
+    logging.debug("Platefrom: win32")
 elif sys.platform == "darwin":
     logging.debug("Adding " + conf.BIN + " to sys.path")
     sys.path.append(conf.BIN)
     from macbackend import *
     backend = MacBackend()
+    logging.debug("Platefrom: darwin")
 elif sys.platform == "linux2":
     from linuxbackend import LinuxBackend
     backend = LinuxBackend()
+    logging.debug("Platefrom: linux2")
 else:
     raise "Unsupported platform"
 
