@@ -19,7 +19,7 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 setup(zipfile = None,
       options = {'py2exe': { 'bundle_files': 1,
-                              'includes': ['sip'],
+                              'includes': ['sip', 'win32com.server.util', 'pythoncom'],
                               'excludes' : [ "Tkconstants", "Tkinter", "tcl" ],
                               #               "PyQt4.QtCore", "PyQt4.QtGui", "PyQt4.QtNetwork", "PyQt4" ],
                               # 'dll_excludes': [ "PyQt4\\QtCore.pyd", "PyQt4\\QtGui.pyd",

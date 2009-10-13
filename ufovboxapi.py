@@ -34,10 +34,12 @@ class VBoxHypervisor():
     def cleanup(self):
         self.cleaned = True
         if self.vbox.version >= "3.0.0":
+            logging.debug("Unregistering VirtualBox callbacks")
             self.vbox.unregisterCallback(self.cb)
         self.cleaned = True
 
     def __del__(self):
+        logging.debug("Destroying VBoxHypervisor")
         if not self.cleaned:
             self.cleanup()
         if self.current_machine:
