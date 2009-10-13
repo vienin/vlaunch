@@ -1,0 +1,7 @@
+#!/bin/sh
+
+value=`VBoxControl -nologo guestproperty get $1`
+ret=$?
+[ $ret -ne 0 ] && exit $ret
+echo ${value#Value: }
+
