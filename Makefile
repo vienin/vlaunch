@@ -7,7 +7,8 @@ SOURCES=settings.conf *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png a
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
         vbox-get-property vbox-get-property.pam vbox-get-property.console \
-        autorun.inf UFO.ico DS_Store .background .autorun ask-password
+        autorun.inf UFO.ico DS_Store .background .autorun ask-password \
+        VolumeIcon.icns VolumeIcon-OS-trick
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -66,6 +67,7 @@ install:
 	mkdir $(DESTDIR)$(TARGET_PATH)/.background
 	cp .background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background
 	cp DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
+	cp VolumeIcon.icns $(DESTDIR)$(TARGET_PATH)/.VolumeIcon.icns
 	./create_fat_symlink.py Mac-Intel/UFO.app $(DESTDIR)$(TARGET_PATH)/UFO.app
 	
 	# build linux tree
@@ -73,6 +75,9 @@ install:
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
 	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
+	# cp VolumeIcon-OS-trick $(DESTDIR)$(TARGET_PATH)/
+	# pushd . && cd $(DESTDIR)$(TARGET_PATH) && python -c "import os; os.rename('VolumeIcon-OS-trick', '._\xef\x80\xa9')" && popd
+
 	
 	# installs Boot Iso
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Isos

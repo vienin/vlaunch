@@ -107,6 +107,8 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/UFO.ico
 %{TARGET_PATH}/.background/ufo.png
 %{TARGET_PATH}/.DS_Store
+%{TARGET_PATH}/.VolumeIcon.icns
+# %{TARGET_PATH}/._
 %{TARGET_PATH}/UFO.app
 %{TARGET_PATH}/.data/settings
 %{TARGET_PATH}/.data/.VirtualBox/HardDisks
