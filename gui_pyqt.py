@@ -27,23 +27,6 @@ class MyApp(QtGui.QApplication):
             self.waitWindow.update()
         return False
 
-def create_app():
-    global app
-    app = QtGui.QApplication(sys.argv)
-    # After this line, subprocess needs to be patch as in Ubuntu
-    # http://svn.python.org/view?view=rev&revision=65475
-    # http://twistedmatrix.com/trac/ticket/733
-
-def destroy_app(app):
-    app.exit()
-    app = None
-
-app = MyApp(sys.argv)
-desktop = app.desktop()
-screenRect = desktop.screenGeometry(desktop.primaryScreen())
-main = QtGui.QMainWindow(desktop)
-main.resize(screenRect.width(), screenRect.height())
-
 class MyNoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
         super(MyNoneEvent, self).__init__(QtCore.QEvent.None)
@@ -305,11 +288,40 @@ class ListDialog(QtGui.QDialog):
         self.setLayout(layout)
         self.setWindowTitle(title)
 
+
 # Globals functions
+
+def create_app():
+    global app
+    app = QtGui.QApplication(sys.argv)
+    # After this line, subprocess needs to be patch as in Ubuntu
+    # http://svn.python.org/view?view=rev&revision=65475
+    # http://twistedmatrix.com/trac/ticket/733
+
+def destroy_app(app):
+    app.exit()
+    app = None
+    
+app = MyApp(sys.argv)
+desktop = app.desktop()
+screenRect = desktop.screenGeometry(desktop.primaryScreen())
+main = QtGui.QMainWindow(desktop)
+main.resize(screenRect.width(), screenRect.height())
+
+tray = QtGui.QSystemTrayIcon()
+window = QtGui.QWidget()
 
 def set_icon(icon_path):
     QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
 
+def initialize_tray_icon():
+    menu = QtGui.QMenu()
+    tray.setIcon(QtGui.QApplication.windowIcon())
+    tray.setContextMenu(menu)
+    tray.setToolTip(QtCore.QString("UFO: en cours de démarrage"))
+    tray.setVisible(True)
+    tray.show()
+    
 def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
     if not autostart:

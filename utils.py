@@ -196,7 +196,7 @@ class Backend(object):
                                  "showRuntimeError.warning.HostAudioNotResponding")
 
         self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
-        self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
+        # self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
@@ -304,7 +304,7 @@ class Backend(object):
             if conf.LIVECD:
                 logging.debug("Setting bootdisk for Live CD at rank %d" % (conf.DRIVERANK,))
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
-                
+            
             if conf.WIDTH and conf.HEIGHT:
                 resolution = str(conf.WIDTH) + "x" + str(conf.HEIGHT)
                 if conf.WIDTH == "full" and conf.HEIGHT == "full":
@@ -312,7 +312,6 @@ class Backend(object):
                 if resolution != "":
                     self.vbox.current_machine.set_resolution(resolution)
             
-            self.vbox.current_machine.set_fullscreen()
             self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMG_DIR, "ufo-*.bmp"))[0])
 
             # set host home shared folder
@@ -441,36 +440,98 @@ class Backend(object):
              sys.exit(1)
 
     def wait_for_termination(self):
+        # Destroy our own splash screen
         if self.splash:
             self.destroy_splash_screen()
         
+        gui.tray.showMessage(u"Démarrage de UFO", 
+                             u"UFO est en cours de démarrage, vous pourrez bientôt entrer vos identifiants.")
+                
+        # As we use waitForEvents(interval) from vboxapi,
+        # we are not able to use another type of loop, as 
+        # Qt one, because we d'ont receive any vbox callbacks
+        # ones the other loop is stated.
+        #
+        # So we handle Qt events ourself with the configurable
+        # following interval value (default: 400ms)
+        interval = 400
         if self.vbox.vbox.version >= "3.0.0":
-            while not self.vbox.current_machine.is_finished:
-                if self.vbox.current_machine.is_logged_in:
-                    self.check_usb_devices()
-                    
-                self.vbox.vm_manager.waitForEvents(5000)
+            times = 0
+            
+            # Let's show virtual machine's splash screen 2s,
+            # minimize window while booting
+            time.sleep(2)
+            gui.window.show()
+            gui.window.showMinimized()
+        
+            while not self.vbox.current_machine.is_booted:
+                self.vbox.vm_manager.waitForEvents(interval)
+                gui.QtCore.QCoreApplication.processEvents()
+                
+            gui.window.showFullScreen()
+                
+            while not self.vbox.current_machine.is_halting and \
+                  not self.vbox.current_machine.is_finished:
+                if times == (1000 / interval) * 4:
+                    if self.vbox.current_machine.is_logged_in:
+                        gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours d'éxecution"))
+                        self.check_usb_devices()
+                    times = 0
+
+                self.vbox.vm_manager.waitForEvents(interval)
+                gui.QtCore.QCoreApplication.processEvents()
+                times += 1
+                
+            if not self.vbox.current_machine.is_finished:
+                gui.window.show()
+                gui.window.showMinimized()
+                gui.tray.showMessage(u"Sauvegarde des données", 
+                                     u"UFO est en train d'enregistrer les modifications du système (" + 
+                                     str(self.vbox.current_machine.overlay_data_size) + 
+                                     u" méga-octets), ne débranchez surtout pas la clé !", 
+                                     gui.QtGui.QSystemTrayIcon.Warning,
+                                     30000)
+                gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours de sauvegarde"))
+                
+                while not self.vbox.current_machine.is_finished:
+                    self.vbox.vm_manager.waitForEvents(interval)
+                    gui.QtCore.QCoreApplication.processEvents()
+            
         else:
+            times = 0
             last_state = self.vbox.constants.MachineState_PoweredOff
             while True:
-                try:
-                    state = self.vbox.current_machine.machine.state
-                    if state == self.vbox.constants.MachineState_PoweredOff and \
-                        last_state == self.vbox.constants.MachineState_Running:
-                        # Virtual machine as been closed
+                if times == (1000 / interval) * 4:
+                    try:
+                        state = self.vbox.current_machine.machine.state
+                        if state == self.vbox.constants.MachineState_PoweredOff and \
+                            last_state == self.vbox.constants.MachineState_Running:
+                            # Virtual machine as been closed
+                            break
+                        elif state == self.vbox.constants.MachineState_PoweredOff:
+                            # Virtual machine isn't started yet
+                            pass
+                        elif state == self.vbox.constants.MachineState_Running:
+                            # Virtual machine is running
+                            gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours d'éxecution"))
+                            self.check_usb_devices()
+         
+                        last_state = state
+                    except:
+                        # Virtual machine has been closed between two sleeps
                         break
-                    elif state == self.vbox.constants.MachineState_PoweredOff:
-                        # Virtual machine isn't started yet
-                        pass
-                    elif state == self.vbox.constants.MachineState_Running:
-                        # Virtual machine is running
-                        self.check_usb_devices()
-     
-                    last_state = state
-                except:
-                    # Virtual machine has been closed between two sleeps
-                    break
-                time.sleep(4)
+                time.sleep(interval / 1000)
+                gui.QtCore.QCoreApplication.processEvents()
+                times += 1
+        
+        gui.tray.setToolTip(gui.QtCore.QString("UFO: terminé"))
+        gui.tray.showMessage(u"Au revoir", 
+                             u"Vous pouvez débrancher votre clé UFO en toute securité.")
+        times = 0
+        while times < 25:
+            time.sleep(0.2)
+            gui.QtCore.QCoreApplication.processEvents()
+            times += 1 
 
     def check_usb_devices(self):
         # manage removable media shared folders
@@ -482,6 +543,9 @@ class Backend(object):
                 continue
             if self.vbox.vbox.version >= "3.0.0":
                 guest_prop_type = "/UFO/Com/HostToGuest/Shares/AskToUser/"
+                gui.tray.showMessage(u"Nouveau périphérique USB", 
+                                     u'"' + str(usb[1]) + 
+                                     u'", vous pouvez relier ce nouveau périphérique à votre bureau UFO.')
             else:
                 guest_prop_type = "/UFO/Com/HostToGuest/Shares/ReadyToMount/"
                 self.vbox.current_machine.add_shared_folder(str(usb[1]), str(usb[0]), writable = True)
@@ -500,7 +564,8 @@ class Backend(object):
 
     def run_virtual_machine(self, env):
         if conf.STARTVM:
-            self.vbox.current_machine.start()
+            winid = self.vbox.current_machine.start()
+            gui.window.create(winid, False, False) 
         else:
             self.run_vbox(path.join(conf.BIN, "VirtualBox"), env)
 
@@ -538,10 +603,13 @@ class Backend(object):
         # prepare environement
         logging.debug("Preparing environment")
         gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
+        
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()
-
+        
+        gui.initialize_tray_icon()
+        
         # generate raw vmdk for usb key
         create_vmdk = False
         logging.debug("Searching device...")
@@ -571,4 +639,3 @@ class Backend(object):
         # clean environement
         logging.debug("Clean up")
         self.global_cleanup()
-

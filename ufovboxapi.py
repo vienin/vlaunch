@@ -7,7 +7,7 @@ import os
 import uuid as uuid_lib
 import traceback
 import logging
-import threading
+import time
 import gui
 import sys
 
@@ -32,13 +32,6 @@ class VBoxHypervisor():
         self.cleaned = False
         self.vbox.saveSettings()
 
-    def cleanup(self):
-        self.cleaned = True
-        if self.vbox.version >= "3.0.0":
-            logging.debug("Unregistering VirtualBox callbacks")
-            self.vbox.unregisterCallback(self.cb)
-        self.cleaned = True
-
     def __del__(self):
         logging.debug("Destroying VBoxHypervisor")
         if not self.cleaned:
@@ -49,6 +42,13 @@ class VBoxHypervisor():
         self.vbox.saveSettings()
         self.vm_manager.deinit()
         del self.vm_manager
+
+    def cleanup(self):
+        self.cleaned = True
+        if self.vbox.version >= "3.0.0":
+            logging.debug("Unregistering VirtualBox callbacks")
+            self.vbox.unregisterCallback(self.cb)
+        self.cleaned = True
 
     def create_machine(self, machine_name, os_type, base_dir = ''):
         if self.vbox.version < "2.1.0" and os_type == "Fedora":
@@ -165,10 +165,15 @@ class VBoxMachine():
         self.machine    = machine
         self.name       = machine.name
         self.uuid       = machine.id
+        self.window     = None
+        self.winid      = 0
+        self.overlay_size = 0
         
         self.last_state   = self.hypervisor.constants.MachineState_PoweredOff
         self.is_finished  = False
+        self.is_booted    = False
         self.is_logged_in = False
+        self.is_halting   = False
         
         self.current_disk_rank = 0
         self.machine.saveSettings()
@@ -184,10 +189,11 @@ class VBoxMachine():
         rc = int(progress.resultCode)
         if rc == 0:
             self.machine = session.machine
+            self.winid   = self.machine.showConsoleWindow()
             session.close()
-            return 0
+            return self.winid
         else:
-            return 1
+            return 0
 
     def set_variable(self, variable_expr, variable_value, save = False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value
@@ -456,11 +462,10 @@ class VBoxHost():
 class VBoxMonitor:
     def __init__(self, hypervisor):
         self.hypervisor = hypervisor
-        pass
     
     def onMachineStateChange(self, id, state):
         logging.debug("onMachineStateChange: %s %d" %(id, state))
-        
+            
         last_state = self.hypervisor.current_machine.last_state
         if self.hypervisor.current_machine.uuid == id:
             if state == self.hypervisor.constants.MachineState_PoweredOff and \
@@ -506,24 +511,42 @@ class VBoxMonitor:
 
     def onGuestPropertyChange(self, id, name, newValue, flags):
         logging.debug("onGuestPropertyChange: %s: %s=%s" %(id, name, newValue))
-       
+        
         # Shared folder management
         if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":
             share_label = os.path.basename(name)
             share_name, share_mntpt = newValue.split(";")
             self.hypervisor.current_machine.add_shared_folder(share_label, share_mntpt, writable = True)
-            self.hypervisor.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_label, share_name)
+            self.hypervisor.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_label, 
+                                                               share_name)
             
         elif os.path.dirname(name) == "/UFO/Com/HostToGuest/Shares/Remove":
             self.hypervisor.current_machine.remove_shared_folder(os.path.basename(name))
+        
+        # Boot progress management
+        elif name == "/UFO/Boot/Progress":
+            if str(newValue) > str("0.950"):
+                self.hypervisor.current_machine.is_booted = True
+            
+        elif name == "/UFO/Overlay/Size":
+            self.hypervisor.current_machine.overlay_data_size = int(newValue)
             
         # Custom machine state management
         elif name == "/UFO/State":
             if newValue == "LOGGED_IN":
                 self.hypervisor.current_machine.is_logged_in = True
             elif newValue == "HALTING":
-                pass
-            
+                self.hypervisor.current_machine.is_halting = True
+        
+        # Fullscreen management
+        #elif name == "/VirtualBox/GuestAdd/tFS/tFS":
+        #    if newValue == "1":
+        #        self.window.showFullScreen()
+        #    else:
+        #        self.window.showNormal()
+        
+        # Overlay data reintegration infos
+        
 def test_cases():
     vm = VBoxHypervisor()
     print "-- Let's test ufovboxapi !"
