@@ -25,6 +25,10 @@ except:
             backend = ""
 
 if __name__ == "__main__":
+    balloon = BalloonMessage(None, None, "Do you Glumol ?")
+    #balloon.setAnchor(QtCore.QPoint(100, 100))
+    balloon.showMessage(timeout=5000)
+    app.exec_()
     print dialog_choices(title="Title", msg="Messages", column="Objects",
                          choices = [ "a", "b", "c" ])
     dialog_question("Titre", "Message")

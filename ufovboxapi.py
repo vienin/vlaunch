@@ -167,7 +167,7 @@ class VBoxMachine():
         self.uuid       = machine.id
         self.window     = None
         self.winid      = 0
-        self.overlay_size = 0
+        self.overlay_data_size = 0
         
         self.last_state   = self.hypervisor.constants.MachineState_PoweredOff
         self.is_finished  = False
@@ -525,8 +525,10 @@ class VBoxMonitor:
         
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
-            if str(newValue) > str("0.950"):
+            if str(newValue) > str("0.900"):
                 self.hypervisor.current_machine.is_booted = True
+            else:
+                gui.app.update_progress(gui.app.tray.progress, newValue)
             
         elif name == "/UFO/Overlay/Size":
             self.hypervisor.current_machine.overlay_data_size = int(newValue)

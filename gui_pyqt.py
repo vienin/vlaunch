@@ -25,12 +25,25 @@ class MyApp(QtGui.QApplication):
             self.waitWindow.finished(event.error)
         elif self.waitWindow and isinstance(event, MyUpdateEvent):
             self.waitWindow.update()
+        elif isinstance(event, ProgressEvent):
+            event.progress.setValue(int(event.value * 100))
         return False
+
+    def update_progress(self, progress, value):
+        self.postEvent(self, ProgressEvent(progress, float(value), 100))
 
 class MyNoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
         super(MyNoneEvent, self).__init__(QtCore.QEvent.None)
         self.size = size
+        self.total = total
+    pass
+
+class ProgressEvent(QtCore.QEvent):
+    def __init__(self, progress, value, total):
+        super(ProgressEvent, self).__init__(QtCore.QEvent.None)
+        self.progress = progress
+        self.value = value
         self.total = total
     pass
 
@@ -126,7 +139,6 @@ class WaitWindow(QtGui.QDialog):
         mainLayout.addWidget(buttonBox)
         mainLayout.addWidget(self.animation)
         self.setLayout(mainLayout)
-        print os.path.join(conf.HOME, "animated-bar.mng")
         self.animated = QtGui.QMovie(os.path.join(conf.HOME, "animated-bar.mng"), QtCore.QByteArray(), self.animation)
         self.animated.setCacheMode(QtGui.QMovie.CacheAll)
         self.animated.setSpeed(100)
@@ -308,20 +320,45 @@ screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())
 
-tray = QtGui.QSystemTrayIcon()
+class TrayIcon(QtGui.QSystemTrayIcon):
+    def create(self):
+        self.setIcon(QtGui.QApplication.windowIcon())
+        self.setVisible(True)
+        self.show()
+        menu = QtGui.QMenu()
+        self.setContextMenu(menu)
+        self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
+        self.activated.connect(self.activate)
+
+    def show_message(self, title, msg, timeout=0):
+        self.balloon = BalloonMessage(self, icon = os.path.join(conf.UFO_DIR, "UFO.ico"),
+                                      title=title, msg=msg, timeout=timeout)
+
+    def show_progress(self, title, msg, timeout=0, no_text=False, invert=False):
+        self.balloon = BalloonMessage(self, icon = os.path.join(conf.UFO_DIR, "UFO.ico"),
+                                     title=title, msg=msg, progress=True)
+        self.progress = self.balloon.progressBar
+        #if no_text:
+        #    self.progress.setTextVisible(False)
+        #if invert:
+        #    self.progress.setInvertedAppearance(True)
+
+    def hide_progress(self):
+        self.balloon.close()
+        del self.balloon
+
+    def activate(self):
+        pass
+
+def initialize_tray_icon():
+    app.tray = TrayIcon()
+    app.tray.create()
+
 window = QtGui.QWidget()
 
 def set_icon(icon_path):
     QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
 
-def initialize_tray_icon():
-    menu = QtGui.QMenu()
-    tray.setIcon(QtGui.QApplication.windowIcon())
-    tray.setContextMenu(menu)
-    tray.setToolTip(QtCore.QString("UFO: en cours de démarrage"))
-    tray.setVisible(True)
-    tray.show()
-    
 def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
     if not autostart:
@@ -398,4 +435,168 @@ def dialog_choices(title, msg, column, choices):
     dlg = ListDialog(title=title, msg=msg, choices=choices)
     dlg.exec_()
     return dlg.choicelist.currentRow()
+
+class BalloonMessage(QtGui.QWidget):
+    def __init__(self, parent, icon, title, msg, timeout=0, progress=False):
+
+        QtGui.QWidget.__init__(self, None, 
+                         QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.ToolTip)
+
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.parent = parent
+        self.mAnchor = QtCore.QPoint()
+        BalloonLayout = QtGui.QHBoxLayout(self)
+
+        Layout2 = QtGui.QVBoxLayout()
+        self.mTitle = QtGui.QLabel("<b>" + title + "</b>")
+        self.mTitle.setPalette(QtGui.QToolTip.palette())
+        self.mTitle.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+
+        self.mCaption = QtGui.QLabel(msg)
+        self.mCaption.setPalette(QtGui.QToolTip.palette())
+        self.mCaption.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+
+        if icon:
+            pixmap = QtGui.QIcon(icon).pixmap(64, 64)
+            mImage = QtGui.QLabel(self)
+            mImage.setScaledContents(False);
+            mImage.setPixmap(pixmap)
+            BalloonLayout.addWidget(mImage)
+
+        Layout2.addWidget(self.mTitle)
+        Layout2.addWidget(self.mCaption)
+
+        BalloonLayout.addLayout(Layout2)
+
+        if progress:
+            self.progressBar = QtGui.QProgressBar()
+            Layout2.addWidget(self.progressBar)
+
+        self.setAutoFillBackground(True)
+
+        self.currentAlpha = 0
+        self.setWindowOpacity(1.0)
+        self.resize(180, 80)
+    
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.timeout)
+        self.timer.start(1)
+
+        if timeout:
+            self.destroytimer = QtCore.QTimer(self)
+            self.destroytimer.timeout.connect(self.destroy)
+            self.destroytimer.start(timeout)
+
+        deskRect = QtCore.QRect(desktop.availableGeometry())
+        self.mAnchor = QtCore.QPoint(app.tray.geometry().center().x(),
+                                     app.tray.geometry().bottom())
+        self.show()
+        self.connect(self, QtCore.SIGNAL("clicked()"), self.destroy)
+
+    def destroy(self):
+        self.close()
+
+    def timeout(self):
+        if self.currentAlpha <= 255:
+            self.currentAlpha += 15
+            self.timer.start(1)
+        self.setWindowOpacity(1. / 255. * self.currentAlpha)
+
+    def setAnchor(self, anchor):
+        self.mAnchor = anchor
+        # self.updateMask()
+
+    def showUpdateWindow(self):
+        self.parent.parent.mainwidget.trayUpgradeSwitch()
+        self.parent.parent.show()
+
+    def paintEvent2(self):
+        path = QtGui.QPainterPath()
+        #path.addRoundedRect(QtCore.QRectF(10, 10, self.width() - 10, self.height() - 10),
+        #                    1.0, 1.0)
+        path.addEllipse(QtCore.QPointF(50, 20), 30, 10)
+
+    def paintEvent(self, evt):
+        mask = QtGui.QRegion() # 10, 10, self.width() - 20, self.height() - 20)
+
+        corners = [
+            QtCore.QPoint(self.width() - 50, 10),
+            QtCore.QPoint(10, 10),
+            QtCore.QPoint(10, self.height() - 50),
+            QtCore.QPoint(self.width() - 50, self.height() - 50),
+            QtCore.QPoint(self.width() - 10, 10),
+            QtCore.QPoint(10, 10),
+            QtCore.QPoint(10, self.height() - 10),
+            QtCore.QPoint(self.width() - 10, self.height() - 10)
+            ]
+
+        painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        path = QtGui.QPainterPath()
+        path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()),
+                            7, 7)
+
+        # get screen-geometry for screen our anchor is on
+        # (geometry can differ from screen to screen!
+        deskRect = QtCore.QRect(desktop.availableGeometry())
+
+        bottom = (self.mAnchor.y() + self.height()) > ((deskRect.y() + deskRect.height()-48));
+        right = (self.mAnchor.x() + self.width()) > ((deskRect.x() + deskRect.width()-48));
+
+        if right:
+            if bottom:
+                points = [ QtCore.QPointF(self.width(), self.height()),
+                           QtCore.QPointF(self.width() - 10, self.height() - 30),
+                           QtCore.QPointF(self.width() - 30, self.height() - 10) ]
+            else:
+                points = [ QtCore.QPointF(self.width() , 0),
+                           QtCore.QPointF(self.width() - 10,30),
+                           QtCore.QPointF(self.width() - 30,10) ]
+        else:
+            if bottom:
+                points = [ QtCore.QPointF(0, self.height()),
+                           QtCore.QPointF(10, self.height() - 30),
+                           QtCore.QPointF(30, self.height() - 10) ]
+            else:
+                points = [ QtCore.QPointF(0,0),
+                           QtCore.QPointF(10,30),
+                           QtCore.QPointF(30,10) ]
+
+        point = QtCore.QPointF(points[0].x(), points[0].y())
+        points += [ point ]
+        # path.addPolygon(QtGui.QPolygonF(points))
+
+        """
+        if right:
+            if bottom:
+                self.move(self.mAnchor.x() - self.width(), self.mAnchor.y() - self.height())
+            else:
+                if self.mAnchor.y() < 0:
+                    self.move(self.mAnchor.x() - self.width(), 0)
+                else:
+                    self.move(self.mAnchor.x() - self.width(), self.mAnchor.y())
+        else:
+            if bottom:
+                if self.mAnchor.x() < 0:
+                    self.move(0, self.mAnchor.y() - self.height())
+                else:
+                    self.move(self.mAnchor.x(), self.mAnchor.y() - self.height())
+            else:
+                if self.mAnchor.x() < 0:
+                    if self.mAnchor.y() < 0:
+                        self.move(0,0)
+                    else:
+                        self.move(0,self.mAnchor.y())
+                else:
+                    if self.mAnchor.y() < 0:
+                        self.move(self.mAnchor.x(),0)
+                    else:
+                        self.move(self.mAnchor.x(),self.mAnchor.y())
+        """
+
+        self.move(deskRect.width() - self.width() - 10, 40)
+        painter.setClipPath(path)
+        painter.fillPath(path, QtGui.QBrush(QtGui.QColor(255, 255, 225)))
+        mask = painter.clipRegion()
+        self.setMask(mask)
 

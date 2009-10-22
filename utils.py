@@ -444,8 +444,8 @@ class Backend(object):
         if self.splash:
             self.destroy_splash_screen()
         
-        gui.tray.showMessage(u"Démarrage de UFO", 
-                             u"UFO est en cours de démarrage, vous pourrez bientôt entrer vos identifiants.")
+        gui.app.tray.show_progress(title=u"Démarrage de UFO", 
+                                   msg=u"UFO est en cours de démarrage.")
                 
         # As we use waitForEvents(interval) from vboxapi,
         # we are not able to use another type of loop, as 
@@ -453,8 +453,8 @@ class Backend(object):
         # ones the other loop is stated.
         #
         # So we handle Qt events ourself with the configurable
-        # following interval value (default: 400ms)
-        interval = 400
+        # following interval value (default: 50ms)
+        interval = 50
         if self.vbox.vbox.version >= "3.0.0":
             times = 0
             
@@ -468,13 +468,14 @@ class Backend(object):
                 self.vbox.vm_manager.waitForEvents(interval)
                 gui.QtCore.QCoreApplication.processEvents()
                 
+            gui.app.tray.hide_progress()
             gui.window.showFullScreen()
                 
             while not self.vbox.current_machine.is_halting and \
                   not self.vbox.current_machine.is_finished:
                 if times == (1000 / interval) * 4:
                     if self.vbox.current_machine.is_logged_in:
-                        gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours d'éxecution"))
+                        gui.tray.setToolTip(gui.QtCore.QString(u"UFO: en cours d'éxecution"))
                         self.check_usb_devices()
                     times = 0
 
@@ -485,13 +486,13 @@ class Backend(object):
             if not self.vbox.current_machine.is_finished:
                 gui.window.show()
                 gui.window.showMinimized()
-                gui.tray.showMessage(u"Sauvegarde des données", 
-                                     u"UFO est en train d'enregistrer les modifications du système (" + 
-                                     str(self.vbox.current_machine.overlay_data_size) + 
-                                     u" méga-octets), ne débranchez surtout pas la clé !", 
-                                     gui.QtGui.QSystemTrayIcon.Warning,
-                                     30000)
-                gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours de sauvegarde"))
+                gui.app.tray.show_message(title=u"Sauvegarde des données", 
+                                          msg=u"UFO est en train d'enregistrer les modifications du système (" + 
+                                              str(self.vbox.current_machine.overlay_data_size) + 
+                                              u" méga-octets),\nne débranchez surtout pas la clé !", 
+                                          # gui.QtGui.QSystemTrayIcon.Warning,
+                                          timeout=30000)
+                # gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours de sauvegarde"))
                 
                 while not self.vbox.current_machine.is_finished:
                     self.vbox.vm_manager.waitForEvents(interval)
@@ -513,7 +514,7 @@ class Backend(object):
                             pass
                         elif state == self.vbox.constants.MachineState_Running:
                             # Virtual machine is running
-                            gui.tray.setToolTip(gui.QtCore.QString("UFO: en cours d'éxecution"))
+                            gui.tray.setToolTip(gui.QtCore.QString(u"UFO: en cours d'éxecution"))
                             self.check_usb_devices()
          
                         last_state = state
@@ -524,14 +525,15 @@ class Backend(object):
                 gui.QtCore.QCoreApplication.processEvents()
                 times += 1
         
-        gui.tray.setToolTip(gui.QtCore.QString("UFO: terminé"))
-        gui.tray.showMessage(u"Au revoir", 
-                             u"Vous pouvez débrancher votre clé UFO en toute securité.")
+        # gui.app.tray.setToolTip(gui.QtCore.QString(u"UFO: terminé"))
+        gui.app.tray.show_message(u"Au revoir", 
+                                  u"Vous pouvez débrancher votre clé UFO en toute securité.",
+                                  timeout = 3000)
         times = 0
-        while times < 25:
-            time.sleep(0.2)
+        while times < 2:
+            time.sleep(0.05)
             gui.QtCore.QCoreApplication.processEvents()
-            times += 1 
+            times += 0.05 
 
     def check_usb_devices(self):
         # manage removable media shared folders
