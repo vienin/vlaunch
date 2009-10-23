@@ -30,7 +30,8 @@ class MyApp(QtGui.QApplication):
         return False
 
     def update_progress(self, progress, value):
-        self.postEvent(self, ProgressEvent(progress, float(value), 100))
+        if progress:
+            self.postEvent(self, ProgressEvent(progress, float(value), 100))
 
 class MyNoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -320,6 +321,8 @@ screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())
 
+window = None
+
 class TrayIcon(QtGui.QSystemTrayIcon):
     def create(self):
         self.setIcon(QtGui.QApplication.windowIcon())
@@ -329,6 +332,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setContextMenu(menu)
         self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
         self.activated.connect(self.activate)
+        self.progress = None
 
     def show_message(self, title, msg, timeout=0):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.UFO_DIR, "UFO.ico"),
@@ -346,6 +350,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
     def hide_progress(self):
         self.balloon.close()
         del self.balloon
+        self.progress = None
 
     def activate(self):
         pass
@@ -353,8 +358,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 def initialize_tray_icon():
     app.tray = TrayIcon()
     app.tray.create()
-
-window = QtGui.QWidget()
 
 def set_icon(icon_path):
     QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))

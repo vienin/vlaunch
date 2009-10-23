@@ -170,10 +170,14 @@ class VBoxMachine():
         self.overlay_data_size = 0
         
         self.last_state   = self.hypervisor.constants.MachineState_PoweredOff
-        self.is_finished  = False
+        
+        self.is_started   = False
         self.is_booted    = False
         self.is_logged_in = False
+        self.is_finished  = False
+
         self.is_halting   = False
+        self.is_booting   = False
         
         self.current_disk_rank = 0
         self.machine.saveSettings()
@@ -189,11 +193,21 @@ class VBoxMachine():
         rc = int(progress.resultCode)
         if rc == 0:
             self.machine = session.machine
-            self.winid   = self.machine.showConsoleWindow()
             session.close()
-            return self.winid
-        else:
             return 0
+        else:
+            return 1
+        
+    def minimize_window(self):
+        if self.winid == 0:
+            self.winid = self.machine.showConsoleWindow()
+            
+        if self.winid != 0:
+            if gui.window == None:
+                gui.window = gui.QtGui.QWidget()
+                gui.window.create(self.winid, False, False) 
+            gui.window.show()
+            gui.window.showMinimized()
 
     def set_variable(self, variable_expr, variable_value, save = False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value
@@ -468,11 +482,16 @@ class VBoxMonitor:
             
         last_state = self.hypervisor.current_machine.last_state
         if self.hypervisor.current_machine.uuid == id:
-            if state == self.hypervisor.constants.MachineState_PoweredOff and \
+            if state == self.hypervisor.constants.MachineState_Running and \
+               last_state == self.hypervisor.constants.MachineState_Starting:
+                
+                self.hypervisor.current_machine.is_started = True
+                
+            elif state == self.hypervisor.constants.MachineState_PoweredOff and \
                (last_state == self.hypervisor.constants.MachineState_Stopping or \
                 last_state == self.hypervisor.constants.MachineState_Aborted):
                 
-               self.hypervisor.current_machine.is_finished = True
+                self.hypervisor.current_machine.is_finished = True
                 
             self.hypervisor.current_machine.last_state = state
         
@@ -525,10 +544,17 @@ class VBoxMonitor:
         
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
-            if str(newValue) > str("0.900"):
+            if not self.hypervisor.current_machine.is_booting:
+                self.hypervisor.current_machine.is_booting = True
+            gui.app.update_progress(gui.app.tray.progress, newValue)
+        
+        # Resolution changes management
+        elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
+            # Sometimes, we don't receive last percent event
+            if self.hypervisor.current_machine.is_booting and \
+               not self.hypervisor.current_machine.is_booted:
+                gui.app.update_progress(gui.app.tray.progress, str("1.000"))
                 self.hypervisor.current_machine.is_booted = True
-            else:
-                gui.app.update_progress(gui.app.tray.progress, newValue)
             
         elif name == "/UFO/Overlay/Size":
             self.hypervisor.current_machine.overlay_data_size = int(newValue)
