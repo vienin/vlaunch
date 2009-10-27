@@ -1,7 +1,3 @@
-[virtualbox]
-HOME=.VirtualBox
-BIN=/usr/lib/virtualbox
-
 [vm]
 width=full
 height=full
@@ -21,4 +17,6 @@ STARTSRVS=0
 NEEDDEV=1
 USESERVICE=0
 CONFIGUREVM=1
-LOG=logs/launcher.log
+LOGDIR=.
+IMGDIR=.
+BIN=.

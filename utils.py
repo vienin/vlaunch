@@ -143,7 +143,7 @@ class Backend(object):
         return conf.NET_HOST
 
     def create_splash_screen(self):
-        images = glob.glob(path.join(conf.IMG_DIR, "ufo-*.bmp"))
+        images = glob.glob(path.join(conf.IMGDIR, "ufo-*.bmp"))
         if images:
             logging.debug("Creating splash screen with image " + images[0])
             self.splash = gui.SplashScreen(images[0])
@@ -312,7 +312,7 @@ class Backend(object):
                 if resolution != "":
                     self.vbox.current_machine.set_resolution(resolution)
             
-            self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMG_DIR, "ufo-*.bmp"))[0])
+            self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMGDIR, "ufo-*.bmp"))[0])
 
             # set host home shared folder
             if not conf.USESERVICE:

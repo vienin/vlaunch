@@ -335,11 +335,11 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.progress = None
 
     def show_message(self, title, msg, timeout=0):
-        self.balloon = BalloonMessage(self, icon = os.path.join(conf.UFO_DIR, "UFO.ico"),
+        self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.svg"),
                                       title=title, msg=msg, timeout=timeout)
 
     def show_progress(self, title, msg, timeout=0, no_text=False, invert=False):
-        self.balloon = BalloonMessage(self, icon = os.path.join(conf.UFO_DIR, "UFO.ico"),
+        self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.svg"),
                                      title=title, msg=msg, progress=True)
         self.progress = self.balloon.progressBar
         #if no_text:

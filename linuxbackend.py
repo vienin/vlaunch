@@ -61,7 +61,7 @@ class LinuxBackend(Backend):
         return conf.SCRIPT_PATH
         
     def get_uuid(self, dev):
-        return self.call(["blkid", "-o", "value", "-s", "UUID", dev], output=True)[1]
+        return self.call(["blkid", "-o", "value", "-s", "UUID", dev], output=True)[1].strip()
 
     def find_device_by_uuid(self, dev_uuid):
         for device in glob.glob("/dev/sd*[0-9]"):

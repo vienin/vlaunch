@@ -73,8 +73,8 @@ elif sys.platform == "linux2":
 else:
     raise "Unsupported platform"
 
-if "--update" in sys.argv:
-    updater.self_update()
+if conf.options.update and conf.options.relaunch:
+    updater.self_update(conf.options.update, conf.options.relaunch)
 elif not conf.NOUPDATE and not conf.options.respawn:
     updater.check_update(backend)
 

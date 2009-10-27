@@ -16,29 +16,9 @@ parser.add_option("-u", "--update", dest="update",
                   help="update a UFO launcher located in ", metavar="FOLDER")
 parser.add_option("-r", "--respawn", dest="respawn", default=False,
                   action="store_true", help="tells the launcher that it has been respawned ")
+parser.add_option("--relaunch", dest="relaunch", default="",
+                  help="tells the launcher the program to relaunch")
 (options, args) = parser.parse_args(args=args)
-
-UFO_DIR = options.update
-
-if sys.platform == "linux2":
-    if not UFO_DIR:
-        UFO_DIR = path.dirname(path.dirname(SCRIPT_PATH))
-    bin_default = "/usr/lib/virtualbox"
-    EXEC_PATH = path.join(UFO_DIR, "Linux", "UFO")
-elif sys.platform == "darwin":
-    if not UFO_DIR:
-        UFO_DIR = path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH)))))
-    bin_default = path.join(UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
-    EXEC_PATH = path.join(UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "MacOS", "UFO")
-else:
-    if not UFO_DIR:
-        UFO_DIR = path.dirname(SCRIPT_DIR)
-    bin_default = path.join(UFO_DIR, "Windows", "bin")
-    EXEC_PATH = path.join(UFO_DIR, "Windows", "ufo.exe")
-
-DATA_DIR = path.join(UFO_DIR, ".data")
-LOG_DIR = path.join(DATA_DIR, "logs")
-IMG_DIR = path.join(DATA_DIR, "images")
 
 STATUS_NORMAL = 0
 STATUS_IGNORE = 1
@@ -79,6 +59,7 @@ modelkey = "MODEL"
 rootuuidkey = "ROOTUUID"
 volumekey = "VOLUME"
 logkey = "LOG"
+imgdirkey = "IMGDIR"
 versionkey = "VERSION"
 licensekey = "LICENSE"
 configurevmkey = "CONFIGUREVM"
@@ -96,7 +77,8 @@ bootdiskuuidkey = "BOOTDISKUUID"
 isourlkey = "ISOURL"
 updateurlkey = "UPDATEURL"
 
-cp = ConfigParser(defaults = { logkey : "launcher.log",
+cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
+                               imgdirkey : "images",
                                startvmkey : "1",
                                vmkey : "UFO",
                                oskey : "Fedora",
@@ -123,7 +105,7 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                                modelkey : "",
                                volumekey : "",
                                rootuuidkey : "",
-                               binkey : bin_default,
+                               binkey : "",
                                reporturlkey : "http://reporting.agorabox.org/services/reporting",
                                homekey : ".VirtualBox",
                                useservicekey : "0",
@@ -141,11 +123,13 @@ cp = ConfigParser(defaults = { logkey : "launcher.log",
                              })
                              
 try:
-    files = [path.join(DATA_DIR, "settings.conf"),
-             path.join(DATA_DIR, "settings", "settings.conf"),
-             path.join(SCRIPT_DIR, "..", "settings", "settings.conf")]
-    if os.environ.has_key("_MEIPASS2"):
+    files = ["settings.conf", # Used on Mac OS LiveCD
+             path.join(SCRIPT_DIR, "..", ".data", "settings", "settings.conf"), # Windows & Linux - Normal case
+             path.join(SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf")] # Mac - Normal case
+    if os.environ.has_key("_MEIPASS2"): # Used on Windows & Linux Live
         files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
+    if options.update:
+        files.append(path.join(options.update, ".data", "settings", "settings.conf"))
     settings = cp.read(files)
     conf_file = settings[0]
 except:
@@ -154,8 +138,39 @@ except:
 
 print "Using configuration file:", conf_file
 
-HOME = cp.get(globalsection, homekey)
-BIN  = cp.get(globalsection, binkey)
+LIVECD = int(cp.get(launchersection, livecdkey))
+DATA_DIR = options.update
+BIN = ""
+
+if sys.platform == "linux2":
+    if LIVECD:
+        DATA_DIR = os.environ["_MEIPASS2"]
+        # no BIN as the livecd always provides a settings.conf
+    else:
+        if not DATA_DIR: DATA_DIR = path.join(path.dirname(path.dirname(SCRIPT_PATH)), ".data")
+        BIN = "/usr/lib/virtualbox"
+
+elif sys.platform == "darwin":
+    if LIVECD:
+        DATA_DIR = path.join(path.dirname(SCRIPT_PATH), "..", "Resources")
+        # no BIN as the livecd always provides a settings.conf
+    else:
+        if not DATA_DIR: DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH))))), ".data")
+        BIN = path.join(SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
+
+else:
+    if LIVECD:
+        DATA_DIR = os.environ["_MEIPASS2"]
+        # no BIN as the livecd always provides a settings.conf
+    else:
+        if not DATA_DIR: DATA_DIR = path.dirname(SCRIPT_DIR)
+        BIN = path.join(SCRIPT_DIR, "bin")
+
+# Is BIN overridden in settings.conf ?
+bin  = cp.get(globalsection, binkey)
+if bin: BIN = path.join(DATA_DIR, bin)
+
+HOME = path.join(DATA_DIR, cp.get(globalsection, homekey))
 VMDK = cp.get(globalsection, vmdkkey)
 
 USESERVICE = int(cp.get(launchersection, useservicekey))
@@ -166,12 +181,12 @@ NEEDDEV = int(cp.get(launchersection, needdevkey))
 DEBUG = int(cp.get(launchersection, debugkey))
 REPORTURL = cp.get(launchersection, reporturlkey)
 LOG = path.join(DATA_DIR, cp.get(launchersection, logkey))
+IMGDIR = path.join(DATA_DIR, cp.get(launchersection, imgdirkey))
 VERSION = cp.get(launchersection, versionkey)
 LICENSE = int(cp.get(launchersection, licensekey))
 CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
 UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 NOUPDATE = int(cp.get(launchersection, noupdatekey))
-LIVECD = int(cp.get(launchersection, livecdkey))
 ISOURL = cp.get(launchersection, isourlkey)
 UPDATEURL = cp.get(launchersection, updateurlkey)
 
@@ -200,3 +215,4 @@ BOOTDISKUUID = cp.get(vmsection, bootdiskuuidkey)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)
+

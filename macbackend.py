@@ -29,7 +29,6 @@ class MacBackend(Backend):
 
     def __init__(self):
         Backend.__init__(self)
-        gui.set_icon(path.join(conf.UFO_DIR, "UFO.ico"))
         self.KEXTS = "kexts"
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
@@ -75,7 +74,7 @@ class MacBackend(Backend):
     def prepare_update(self):
         tmpdir = tempfile.mkdtemp(prefix="ufo-updater")
 
-        src = path.join(conf.UFO_DIR, "Mac-Intel")
+        src = path.join(conf.DATA_DIR, "..", "Mac-Intel")
         logging.debug("Copying " + path.join(src, "UFO.app") + " to " + tmpdir)
         output = self.call([ [ "tar", "-cf", "-", "-C", src, "UFO.app" ],
                              [ "tar", "xf", "-", "-C", tmpdir ] ], output = True)[1]
@@ -275,9 +274,6 @@ class MacBackend(Backend):
         self.call([ "killall", "-9", "VBoxSVC" ])
 
     def prepare(self):
-        # Ajusting paths
-        if not conf.BIN: conf.BIN = path.join(conf.UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app", "Contents", "MacOS")
-
         self.check_privileges()
         try:
             logging.debug("Creating splash screen")

@@ -39,7 +39,8 @@ def check_update(backend):
  
                 cmd = [ executable,
                         "--update",
-                        conf.UFO_DIR, ".".join(map(str, latest_version)) ]
+                        path.dirname(conf.DATA_DIR), ".".join(map(str, latest_version)),
+                        "--relaunch", conf.SCRIPT_PATH ]
                 logging.debug("Launching updater : " + " ".join(cmd))
                 # For some reason, execv does not work on Mac OS
                 # I get Operation not permitted
@@ -61,13 +62,13 @@ def check_update(backend):
         logging.debug("".join(traceback.format_tb(info[2])))
         logging.debug("Exception while updating")
 
-def self_update():
+def self_update(ufo_dir, relaunch):
   try:
     latest_version = ".".join(map(str, get_latest_version()))
 
     try:
         if sys.platform == "darwin":
-            mount = utils.grep(utils.call([ "mount" ], output=True)[1], conf.UFO_DIR)
+            mount = utils.grep(utils.call([ "mount" ], output=True)[1], ufo_dir)
             if mount:
                 dev = mount.split()[0]
                 utils.call([ "diskutil", "unmount", dev ])
@@ -80,7 +81,7 @@ def self_update():
                         u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A \n" \
                         u"AUCUN FICHIER SUR LA CLE. \n\nLa mise à jour peut durer plusieurs minutes")
  
-    splash_down = gui.SplashScreen(image=os.path.join(conf.IMG_DIR, "updater-download.png"))
+    splash_down = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-download.png"))
     url = conf.UPDATEURL + "/launcher-" + latest_version + ".tar.bz2"
  
     filename = tempfile.mkstemp()[1]
@@ -91,12 +92,12 @@ def self_update():
     if not splash_down == None:
         splash_down.destroy()
  
-    splash_install = gui.SplashScreen(image=os.path.join(conf.IMG_DIR, "updater-install.png"))
-    logging.debug("Extracting update " + filename + " to " + conf.UFO_DIR)
+    splash_install = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-install.png"))
+    logging.debug("Extracting update " + filename + " to " + ufo_dir)
     
     if sys.platform == "darwin":
-        utils.call([ "tar", "-C", conf.UFO_DIR, "-xjf", filename ])
-        mount = utils.grep(utils.call([ "mount" ], output=True)[1], conf.UFO_DIR)
+        utils.call([ "tar", "-C", ufo_dir, "-xjf", filename ])
+        mount = utils.grep(utils.call([ "mount" ], output=True)[1], ufo_dir)
         if mount:
             dev = mount.split()[0]
             utils.call([ "diskutil", "unmount", dev ])
@@ -104,7 +105,7 @@ def self_update():
 
     else:
         tgz = tarfile.open(filename)
-        tgz.extractall(os.path.normcase(conf.UFO_DIR))
+        tgz.extractall(os.path.normcase(ufo_dir))
         tgz.close()
  
     logging.debug("Updating settings.conf")
@@ -133,8 +134,8 @@ def self_update():
     logging.debug("Unexpected error: " + str(info[1]))
     logging.debug("".join(traceback.format_tb(info[2])))
     logging.debug("Exception while updating")
-    logging.debug("Restarting UFO launcher : " + conf.EXEC_PATH)
+    logging.debug("Restarting UFO launcher : " + relaunch)
 
   logging.shutdown()
-  os.execv(conf.EXEC_PATH, [ conf.EXEC_PATH ])
+  os.execv(relaunch, [ relaunch ])
 
