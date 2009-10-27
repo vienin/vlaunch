@@ -34,3 +34,4 @@ copy "E:\Program Files\Microsoft Visual Studio .NET 2003\SDK\v1.1\Bin\msvc*.dll"
 C:\Python25\python.exe -c  "import glob, tarfile; tar = tarfile.open('windows.tgz', 'w:gz'); map(tar.add, glob.glob('*.dll')); tar.add('ufo.exe'); tar.add('bin'); tar.close();"
 cd ..
 pscp.exe -i id_rsa.ppk dist\ufo.exe dist\windows.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization
+rem pscp.exe -i id_rsa.ppk dist\ufo.exe bob@kickstart.agorabox.org:/var/www/html/private/virtualization

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import logging
-import os
+import os, os.path as path
 import urllib
 import sys
 import tarfile

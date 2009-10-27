@@ -572,7 +572,7 @@ class Backend(object):
 
     def run_virtual_machine(self, env):
         if conf.STARTVM:
-            self.vbox.current_machine.start()
+            winid = self.vbox.current_machine.start()
         else:
             self.run_vbox(path.join(conf.BIN, "VirtualBox"), env)
 
@@ -609,7 +609,8 @@ class Backend(object):
 
         # prepare environement
         logging.debug("Preparing environment")
-        gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
+        logging.debug("Setting icon : " + path.join(conf.IMGDIR, "UFO.svg"))
+        gui.set_icon(path.join(conf.IMGDIR, "UFO.svg"))
         
         self.prepare()
         self.look_for_virtualbox()

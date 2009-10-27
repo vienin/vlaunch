@@ -205,7 +205,7 @@ class VBoxMachine():
         if self.winid != 0:
             if gui.window == None:
                 gui.window = gui.QtGui.QWidget()
-                gui.window.create(self.winid, False, False) 
+                gui.window.create(int(self.winid), False, False) 
             gui.window.show()
             gui.window.showMinimized()
 

@@ -6,6 +6,7 @@ from urllib import urlretrieve
 import time, utils
 import subprocess
 import conf
+import logging
 
 class MyApp(QtGui.QApplication):
     def __init__(self, argv):
@@ -360,7 +361,7 @@ def initialize_tray_icon():
     app.tray.create()
 
 def set_icon(icon_path):
-    QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
+    QtGui.QApplication.setWindowIcon(QtGui.QIcon(QtGui.QIcon(icon_path).pixmap(16, 16)))
 
 def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
