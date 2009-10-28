@@ -10,7 +10,8 @@ import conf
 import shutil
 import gui
 import tempfile
-from utils import *
+
+from osbackend import OSBackend
 
 conf.MOBILE = not conf.USESERVICE
 conf.VBOX_INSTALLED = path.exists("/Applications/VirtualBox.app") and \
@@ -19,7 +20,7 @@ conf.VBOX_INSTALLED = path.exists("/Applications/VirtualBox.app") and \
 logging.debug("Using Mobile mode : " + str(conf.MOBILE.__nonzero__()))
 logging.debug("Is VirtualBox installed : " + str(conf.VBOX_INSTALLED))
 
-class MacBackend(Backend):
+class MacBackend(OSBackend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
 
@@ -28,7 +29,7 @@ class MacBackend(Backend):
     RELATIVE_VMDK_POLICY = True
 
     def __init__(self):
-        Backend.__init__(self)
+        OSBackend.__init__(self)
         self.KEXTS = "kexts"
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
@@ -325,4 +326,7 @@ class MacBackend(Backend):
         
     def get_free_size(self, path):
         return 1000
-
+    
+    def onExtraDataCanChange(self, key, value):
+        # xpcom only return the both out parameters
+        return True, ""

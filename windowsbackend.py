@@ -10,10 +10,11 @@ import conf
 import tempfile
 import time
 import platform
-from utils import *
+
+from osbackend import OSBackend
 from shutil import copyfile, copytree
 
-class WindowsBackend(Backend):
+class WindowsBackend(OSBackend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage.exe"
     VIRTUALBOX_EXECUTABLE = "VirtualBox.exe"
 
@@ -23,7 +24,7 @@ class WindowsBackend(Backend):
     systemdir = win32api.GetSystemDirectory ()
 
     def __init__(self):
-        Backend.__init__(self)
+        OSBackend.__init__(self)
         self.create_splash_screen()
         gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.WMI = wmi.WMI()
@@ -60,7 +61,7 @@ class WindowsBackend(Backend):
         return exe_path
 
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
-        return Backend.call(self, cmd, env, shell, cwd, output)
+        return OSBackend.call(self, cmd, env, shell, cwd, output)
 
     def start_services(self):
         start_service = True
@@ -373,3 +374,6 @@ class WindowsBackend(Backend):
 
         return int(logical_disks[0].FreeSpace) / 1000000
 
+    def onExtraDataCanChange(self, key, value):
+        # win32com need 3 return values (2 out parameters and return value)
+        return "", True, 0

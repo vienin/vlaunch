@@ -13,7 +13,7 @@ import sys
 
 class VBoxHypervisor():
 
-    def __init__(self):
+    def __init__(self, vbox_callback_class = None, vbox_callback_arg = None):
         from vboxapi import VirtualBoxManager
         from vboxapi import VirtualBoxReflectionInfo
 
@@ -23,10 +23,16 @@ class VBoxHypervisor():
         self.vbox = self.vm_manager.vbox
         
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
-        if self.vbox.version >= "3.0.0":
-            self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', VBoxMonitor, self)
-            self.vbox.registerCallback(self.cb)
         
+        if self.vbox.version >= "3.0.0":
+            self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', vbox_callback_class, vbox_callback_arg)
+            self.vbox.registerCallback(self.cb)
+            self.callbacks_aware = True
+        else:
+            self.guest_props = {}
+            self.vbox_callback_obj = vbox_callback_arg
+            self.callbacks_aware = False
+            
         self.current_machine = None
         self.session = None
         self.cleaned = False
@@ -44,8 +50,7 @@ class VBoxHypervisor():
         del self.vm_manager
 
     def cleanup(self):
-        self.cleaned = True
-        if self.vbox.version >= "3.0.0":
+        if self.callbacks_aware:
             logging.debug("Unregistering VirtualBox callbacks")
             self.vbox.unregisterCallback(self.cb)
         self.cleaned = True
@@ -157,6 +162,41 @@ class VBoxHypervisor():
             return 1
         return 0 
 
+    def minimal_callbacks_maker_loop(self):
+        try:
+            names, values, x, x = self.current_machine.machine.enumerateGuestProperties("*")
+    
+            id = 0
+            guest_props = {}
+            while id < len(names):
+                guest_props[names[id]] = values[id]
+                    
+                if not self.guest_props.has_key(names[id]) or \
+                   self.guest_props[names[id]] != values[id]:
+                    self.vbox_callback_obj.onGuestPropertyChange(names[id], 
+                                                                 guest_props[names[id]], 
+                                                                 "")
+                    if names[id] == "/UFO/Boot/Progress" and guest_props[names[id]] >= "0.95":
+                        self.vbox_callback_obj.onGuestPropertyChange("/VirtualBox/GuestAdd/Vbgl/Video/SavedMode", 
+                                                                     self.guest_props["/VirtualBox/GuestAdd/Vbgl/Video/SavedMode"], 
+                                                                     "")
+                id += 1
+            
+            self.guest_props = guest_props
+            
+            state = self.current_machine.machine.state
+            last_state = self.current_machine.last_state
+            if self.current_machine.last_state != state:
+                if state == self.constants.MachineState_Running and \
+                   last_state == self.constants.MachineState_PoweredOff:
+                    self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Starting)
+                if state == self.constants.MachineState_PoweredOff:
+                    self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Stopping)
+                    
+                self.vbox_callback_obj.onMachineStateChange(state)
+        except:
+            self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Stopping)
+            self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_PoweredOff)
 
 class VBoxMachine():
 
@@ -169,21 +209,25 @@ class VBoxMachine():
         self.winid      = 0
         self.overlay_data_size = 0
         
-        self.last_state   = self.hypervisor.constants.MachineState_PoweredOff
-        
-        self.is_started   = False
+        self.is_booting   = False
         self.is_booted    = False
-        self.is_logged_in = False
         self.is_finished  = False
 
-        self.is_halting   = False
-        self.is_booting   = False
+        self.last_state   = self.hypervisor.constants.MachineState_PoweredOff
         
         self.current_disk_rank = 0
         self.machine.saveSettings()
         
     def __del__(self):
         del self.machine
+        
+    def get_winid(self):
+        if self.winid == 0:
+            try:
+                self.winid = self.machine.showConsoleWindow()
+            except:
+                self.winid = 0
+        return self.winid
 
     def start(self):
         session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
@@ -197,17 +241,6 @@ class VBoxMachine():
             return 0
         else:
             return 1
-        
-    def minimize_window(self):
-        if self.winid == 0:
-            self.winid = self.machine.showConsoleWindow()
-            
-        if self.winid != 0:
-            if gui.window == None:
-                gui.window = gui.QtGui.QWidget()
-                gui.window.create(int(self.winid), False, False) 
-            gui.window.show()
-            gui.window.showMinimized()
 
     def set_variable(self, variable_expr, variable_value, save = False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value
@@ -474,38 +507,17 @@ class VBoxHost():
 
 
 class VBoxMonitor:
-    def __init__(self, hypervisor):
-        self.hypervisor = hypervisor
+    def __init__(self):
+        pass
     
     def onMachineStateChange(self, id, state):
         logging.debug("onMachineStateChange: %s %d" %(id, state))
-            
-        last_state = self.hypervisor.current_machine.last_state
-        if self.hypervisor.current_machine.uuid == id:
-            if state == self.hypervisor.constants.MachineState_Running and \
-               last_state == self.hypervisor.constants.MachineState_Starting:
-                
-                self.hypervisor.current_machine.is_started = True
-                
-            elif state == self.hypervisor.constants.MachineState_PoweredOff and \
-               (last_state == self.hypervisor.constants.MachineState_Stopping or \
-                last_state == self.hypervisor.constants.MachineState_Aborted):
-                
-                self.hypervisor.current_machine.is_finished = True
-                
-            self.hypervisor.current_machine.last_state = state
         
     def onMachineDataChange(self,id):
         logging.debug("onMachineDataChange: %s" %(id))
 
     def onExtraDataCanChange(self, id, key, value):
         logging.debug("onExtraDataCanChange: %s %s=>%s" %(id, key, value))
-        # win32com need 3 return value (2 out parameters and return value)
-        # xpcom only need the both out parameters
-        if sys.platform != "win32":
-            return True, ""
-        else:
-            return "", True, 0
 
     def onExtraDataChange(self, id, key, value):
         logging.debug("onExtraDataChange: %s %s=>%s" %(id, key, value))
@@ -530,50 +542,7 @@ class VBoxMonitor:
 
     def onGuestPropertyChange(self, id, name, newValue, flags):
         logging.debug("onGuestPropertyChange: %s: %s=%s" %(id, name, newValue))
-        
-        # Shared folder management
-        if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":
-            share_label = os.path.basename(name)
-            share_name, share_mntpt = newValue.split(";")
-            self.hypervisor.current_machine.add_shared_folder(share_label, share_mntpt, writable = True)
-            self.hypervisor.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_label, 
-                                                               share_name)
-            
-        elif os.path.dirname(name) == "/UFO/Com/HostToGuest/Shares/Remove":
-            self.hypervisor.current_machine.remove_shared_folder(os.path.basename(name))
-        
-        # Boot progress management
-        elif name == "/UFO/Boot/Progress":
-            if not self.hypervisor.current_machine.is_booting:
-                self.hypervisor.current_machine.is_booting = True
-            gui.app.update_progress(gui.app.tray.progress, newValue)
-        
-        # Resolution changes management
-        elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
-            # Sometimes, we don't receive last percent event
-            if self.hypervisor.current_machine.is_booting and \
-               not self.hypervisor.current_machine.is_booted:
-                gui.app.update_progress(gui.app.tray.progress, str("1.000"))
-                self.hypervisor.current_machine.is_booted = True
-            
-        elif name == "/UFO/Overlay/Size":
-            self.hypervisor.current_machine.overlay_data_size = int(newValue)
-            
-        # Custom machine state management
-        elif name == "/UFO/State":
-            if newValue == "LOGGED_IN":
-                self.hypervisor.current_machine.is_logged_in = True
-            elif newValue == "HALTING":
-                self.hypervisor.current_machine.is_halting = True
-        
-        # Fullscreen management
-        #elif name == "/VirtualBox/GuestAdd/tFS/tFS":
-        #    if newValue == "1":
-        #        self.window.showFullScreen()
-        #    else:
-        #        self.window.showNormal()
-        
-        # Overlay data reintegration infos
+
         
 def test_cases():
     vm = VBoxHypervisor()

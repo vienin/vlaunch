@@ -8,35 +8,137 @@ import subprocess
 import conf
 import logging
 
-class MyApp(QtGui.QApplication):
+class UFOApp(QtGui.QApplication):
     def __init__(self, argv):
-        self.progressDialog = None
-        self.DownloadWindow = None
-        self.waitWindow = None
-        self.animation = None
+        self.progressDialog  = None
+        self.download_window = None
+        self.waitWindow      = None
+        self.animation       = None
+        self.tray            = None
+        self.usb_check_timer = None
+        self.callbacks_timer = None
+        self.console_window  = None
+        self.console_winid   = 0
+        
         QtGui.QApplication.__init__(self, argv)
 
     def event(self, event):
-        if isinstance(event, MyFinishedEvent):
-            self.DownloadWindow.http_request_finished(event.error)
-        elif self.progressDialog and isinstance(event, MyNoneEvent):
+        if isinstance(event, FinishedEvent):
+            self.download_window.http_request_finished(event.error)
+            
+        elif self.progressDialog and isinstance(event, NoneEvent):
            self.progressDialog.setMaximum(event.total)
            self.progressDialog.setValue(event.size)
-        elif self.waitWindow and isinstance(event, MyCommandEvent):
+           
+        elif self.waitWindow and isinstance(event, CommandEvent):
             self.waitWindow.finished(event.error)
-        elif self.waitWindow and isinstance(event, MyUpdateEvent):
+            
+        elif self.waitWindow and isinstance(event, UpdateEvent):
             self.waitWindow.update()
+            
         elif isinstance(event, ProgressEvent):
             event.progress.setValue(int(event.value * 100))
+            
+        elif isinstance(event, BalloonMessageEvent):
+            if not event.show:
+                self.tray.hide_balloon()
+            elif event.progress:
+                self.tray.show_progress(event.title, event.msg)
+            else:
+                self.tray.show_message(event.title, event.msg, event.timeout)
+                
+        elif isinstance(event, ToolTipEvent):
+            self.tray.setToolTip(QtCore.QString(event.tip))
+        
+        elif isinstance(event, ConsoleWindowEvent):
+            if event.winid != 0:
+                if self.console_winid != event.winid:
+                    self.console_winid = event.winid
+                    self.console_window = QtGui.QWidget()
+                    self.console_window.create(event.winid, False, False)
+                    
+                if event.show:
+                    self.console_window.showFullScreen()
+                else:
+                    self.console_window.show()
+                    self.console_window.showMinimized()
+                    
+        elif isinstance(event, TimerEvent):
+            if event.stop:
+                event.timer.stop()
+                del event.timer
+                event.timer = None
+            else:
+                if not event.timer:
+                    event.timer = QtCore.QTimer(self)
+                    self.connect(event.timer, QtCore.SIGNAL("timeout()"), event.function)
+                    #event.timer.timeout.connect(event.function)
+                    event.timer.start(event.time * 1000)
+            
         return False
+
+    def initialize_tray_icon(self):
+        self.tray = TrayIcon()
+        
+    def start_usb_check_timer(self, time, function):
+        self.postEvent(self, TimerEvent(self.usb_check_timer,
+                                        time, 
+                                        function))
+        
+    def stop_usb_check_timer(self):
+        self.postEvent(self, TimerEvent(self.usb_check_timer,
+                                        time=None, 
+                                        function=None, 
+                                        stop=True))
+    
+    def start_callbacks_timer(self, time, function):
+        self.postEvent(self, TimerEvent(self.callbacks_timer,
+                                        time, 
+                                        function))
+        
+    def stop_usb_check_timer(self):
+        self.postEvent(self, TimerEvent(self.callbacks_timer,
+                                        time=None, 
+                                        function=None, 
+                                        stop=True))
 
     def update_progress(self, progress, value):
         if progress:
-            self.postEvent(self, ProgressEvent(progress, float(value), 100))
+            self.postEvent(self, ProgressEvent(progress, 
+                                               float(value), 
+                                               100))
 
-class MyNoneEvent(QtCore.QEvent):
+    def show_balloon_message(self, title, msg, timeout=0):
+        self.postEvent(self, BalloonMessageEvent(title, 
+                                                 msg, 
+                                                 timeout))
+        
+    def show_balloon_progress(self, title, msg):
+        self.postEvent(self, BalloonMessageEvent(title, 
+                                                 msg, 
+                                                 timeout=0, 
+                                                 progress=True))
+        
+    def hide_balloon(self):
+        self.postEvent(self, BalloonMessageEvent(title=None, 
+                                                 msg=None, 
+                                                 timeout=0, 
+                                                 progress=None, 
+                                                 show=False))
+        
+    def set_tooltip(self, tip):
+        self.postEvent(self, ToolTipEvent(tip))
+        
+    def fullscreen_window(self, winid):
+        self.postEvent(self, ConsoleWindowEvent(winid, True))
+        
+    def minimize_window(self, winid):
+        self.postEvent(self, ConsoleWindowEvent(winid, False))
+
+
+class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
-        super(MyNoneEvent, self).__init__(QtCore.QEvent.None)
+        super(NoneEvent, self).__init__(QtCore.QEvent.None)
         self.size = size
         self.total = total
     pass
@@ -45,32 +147,65 @@ class ProgressEvent(QtCore.QEvent):
     def __init__(self, progress, value, total):
         super(ProgressEvent, self).__init__(QtCore.QEvent.None)
         self.progress = progress
-        self.value = value
-        self.total = total
+        self.value    = value
+        self.total    = total
     pass
 
-class MyFinishedEvent(QtCore.QEvent):
+class BalloonMessageEvent(QtCore.QEvent):
+    def __init__(self, title, msg, timeout, progress=False, show=True):
+        super(BalloonMessageEvent, self).__init__(QtCore.QEvent.None)
+        self.show     = show
+        self.title    = title
+        self.msg      = msg
+        self.timeout  = timeout
+        self.progress = progress
+    pass
+
+class TimerEvent(QtCore.QEvent):
+    def __init__(self, timer, time, function, stop=False):
+        super(TimerEvent, self).__init__(QtCore.QEvent.None)
+        self.timer    = timer
+        self.time     = time
+        self.function = function
+        self.stop     = stop
+    pass
+
+class ToolTipEvent(QtCore.QEvent):
+    def __init__(self, tip):
+        super(ToolTipEvent, self).__init__(QtCore.QEvent.None)
+        self.tip = tip
+    pass
+
+class ConsoleWindowEvent(QtCore.QEvent):
+    def __init__(self, winid, show):
+        super(ConsoleWindowEvent, self).__init__(QtCore.QEvent.None)
+        self.winid = winid
+        self.show  = show
+    pass
+
+class FinishedEvent(QtCore.QEvent):
     def __init__(self, error=False):
-        super(MyFinishedEvent, self).__init__(QtCore.QEvent.None)
+        super(FinishedEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
     pass
 
-class MyCommandEvent(QtCore.QEvent):
+class CommandEvent(QtCore.QEvent):
     def __init__(self, error=False):
-        super(MyCommandEvent, self).__init__(QtCore.QEvent.None)
+        super(CommandEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
     pass
 
-class MyUpdateEvent(QtCore.QEvent):
+class UpdateEvent(QtCore.QEvent):
     def __init__(self, error=False):
-        super(MyUpdateEvent, self).__init__(QtCore.QEvent.None)
+        super(UpdateEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
     pass
+
 
 # Gere le téléchargement dans un thread a part.
 # Envoie Deux type d'evenement à l'application :
-#   1. MyNoneEvent pour chaque mise a jour de la progression du téléchargemetn
-#   2. MyFinishedEvent quand il termine(sur une erreur ou non)
+#   1. NoneEvent pour chaque mise a jour de la progression du téléchargemetn
+#   2. FinishedEvent quand il termine(sur une erreur ou non)
 # ATTENTION: pour chaque appel de stop par le thread principale il faut recréer l'objet downloader
 class Downloader(threading.Thread):
         def __init__(self, file, dest): 
@@ -83,9 +218,9 @@ class Downloader(threading.Thread):
                 try:
                     yeah, headers = urlretrieve(self.file, self.dest, reporthook=self.progress)
                 except :
-                    app.postEvent(app, MyFinishedEvent(True))
+                    app.postEvent(app, FinishedEvent(True))
                 else: 
-                    app.postEvent(app, MyFinishedEvent(False))
+                    app.postEvent(app, FinishedEvent(False))
                 sys.exit()
 
         def progress(self, count, blockSize, totalSize):
@@ -94,10 +229,11 @@ class Downloader(threading.Thread):
                 self.count = count
                 self.maximum = totalSize
                 self.downloaded = blockSize*count*100/totalSize
-                app.postEvent(app, MyNoneEvent(int(self.downloaded), 100))
+                app.postEvent(app, NoneEvent(int(self.downloaded), 100))
 
         def stop(self):
                 self.toBeStop = True
+
 
 class CommandLauncher(threading.Thread):
         def __init__(self, cmd): 
@@ -105,16 +241,17 @@ class CommandLauncher(threading.Thread):
             self.cmd = cmd
 
         def update(self):
-            app.postEvent(app, MyUpdateEvent())
+            app.postEvent(app, UpdateEvent())
             
         def run(self):
             t = utils.call(self.cmd, spawn=True)
             while t.poll() == None:
                 self.update()
                 time.sleep(1)
-            app.postEvent(app, MyCommandEvent(False))
+            app.postEvent(app, CommandEvent(False))
             sys.exit()
     
+
 class WaitWindow(QtGui.QDialog):
     def __init__(self,  cmd="", title="", msg="", parent=None):
         self.chars = ["     ", ".", "..", "..."]
@@ -168,11 +305,12 @@ class WaitWindow(QtGui.QDialog):
         self.command.start()
         return self.exec_()
 
+
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, title, msg, parent=None, autostart=False):
         super(DownloadWindow, self).__init__(parent)
 
-        app.DownloadWindow = self
+        app.download_window = self
         self.url = url
         self.fileName = filename
         self.autostart = autostart
@@ -268,6 +406,7 @@ class DownloadWindow(QtGui.QDialog):
         self.downloadButton.setEnabled(True)
         self.outFile = None
 
+
 class OurMessageBox(QtGui.QMessageBox):
     def set_minimum_size(self, width, height):
         self._minSize = (width, height)
@@ -277,6 +416,7 @@ class OurMessageBox(QtGui.QMessageBox):
         if hasattr(self, "_minSize"):
             self.setFixedSize(*self._minSize)
 
+
 class SplashScreen:
     def __init__(self, image):
         pixmap = QtGui.QPixmap(image)
@@ -285,6 +425,7 @@ class SplashScreen:
 
     def destroy(self):
         self.splash.close()
+
 
 class ListDialog(QtGui.QDialog):
     def __init__(self, parent=None, title="List", msg="msg", choices=[]):
@@ -303,37 +444,20 @@ class ListDialog(QtGui.QDialog):
         self.setWindowTitle(title)
 
 
-# Globals functions
-
-def create_app():
-    global app
-    app = QtGui.QApplication(sys.argv)
-    # After this line, subprocess needs to be patch as in Ubuntu
-    # http://svn.python.org/view?view=rev&revision=65475
-    # http://twistedmatrix.com/trac/ticket/733
-
-def destroy_app(app):
-    app.exit()
-    app = None
-    
-app = MyApp(sys.argv)
-desktop = app.desktop()
-screenRect = desktop.screenGeometry(desktop.primaryScreen())
-main = QtGui.QMainWindow(desktop)
-main.resize(screenRect.width(), screenRect.height())
-
-window = None
-
 class TrayIcon(QtGui.QSystemTrayIcon):
-    def create(self):
+    def __init__(self):
+        QtGui.QSystemTrayIcon.__init__(self)
         self.setIcon(QtGui.QApplication.windowIcon())
         self.setVisible(True)
-        self.show()
         menu = QtGui.QMenu()
         self.setContextMenu(menu)
-        self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
         self.activated.connect(self.activate)
+        
         self.progress = None
+        self.balloon  = None
+        
+        self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
+        self.show()
 
     def show_message(self, title, msg, timeout=0):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.svg"),
@@ -348,97 +472,16 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         #if invert:
         #    self.progress.setInvertedAppearance(True)
 
-    def hide_progress(self):
-        self.balloon.close()
-        del self.balloon
+    def hide_balloon(self):
+        if self.balloon:
+            self.balloon.close()
+            del self.balloon
+            self.balloon = None
         self.progress = None
 
     def activate(self):
         pass
 
-def initialize_tray_icon():
-    app.tray = TrayIcon()
-    app.tray.create()
-
-def set_icon(icon_path):
-    QtGui.QApplication.setWindowIcon(QtGui.QIcon(QtGui.QIcon(icon_path).pixmap(16, 16)))
-
-def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
-    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
-    if not autostart:
-        downloadWin.show()
-        return downloadWin.exec_()
-    else:
-        downloadWin.progressDialog.exec_()
-
-def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
-    cmdWin = WaitWindow(cmd, title, msg)
-    cmdWin.run()
-
-def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
-    darwin = sys.platform == "darwin"
-    msgbox = OurMessageBox(main)
-    msgbox.setText(msg)
-    msgbox.setWindowTitle(title)
-    if False: # darwin:
-        msgbox.set_minimum_size(width, height)
-        msgbox.setGeometry((screenRect.width() - width) / 2,
-                           (screenRect.height() - height) / 2,
-                           width, height)
-
-    msgbox.setSizeGripEnabled(True)
-    msgbox.setStandardButtons(buttons)
-    return msgbox
-
-def dialog_info(title, msg, error=False):
-    msgbox = create_message_box(title=title, msg=msg)
-    if error:
-        msgbox.setIcon(QtGui.QMessageBox.Critical)
-    else:
-        msgbox.setIcon(QtGui.QMessageBox.Information)
-    msgbox.exec_()
-
-def dialog_question(title, msg, button1="Yes", button2="No"):
-    msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
-    msgbox.setIcon(QtGui.QMessageBox.Question)
-    reply = msgbox.exec_()
-    if reply == QtGui.QMessageBox.Yes: return button1
-    else: return button2
-
-def dialog_error_report(title, msg, action=None, details=None):
-    msgbox = OurMessageBox(main)
-    msgbox.setIcon(QtGui.QMessageBox.Question)
-    msgbox.setText(msg)
-    msgbox.setWindowTitle(title)
-    msgbox.addButton(QtGui.QMessageBox.Ok)
-    msgbox.setIcon(QtGui.QMessageBox.Critical)
-    if action:
-        sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole)
-
-    if details:
-        msgbox.setDetailedText(details)
-
-    msgbox.exec_()
-    if action and msgbox.clickedButton() == sendButton:
-        return 1
-
-    return 0
-
-def dialog_password(msg=None, rcode=False):
-    w = QtGui.QWidget()
-    if not msg:
-        msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
-
-    value = QtGui.QInputDialog.getText(w, "Saisi de mot de passe", msg, QtGui.QLineEdit.Password)
-    if rcode:
-        return value
-    else:
-        return value[0]
-
-def dialog_choices(title, msg, column, choices):
-    dlg = ListDialog(title=title, msg=msg, choices=choices)
-    dlg.exec_()
-    return dlg.choicelist.currentRow()
 
 class BalloonMessage(QtGui.QWidget):
     def __init__(self, parent, icon, title, msg, timeout=0, progress=False):
@@ -604,3 +647,102 @@ class BalloonMessage(QtGui.QWidget):
         mask = painter.clipRegion()
         self.setMask(mask)
 
+
+# Globals
+
+def set_icon(icon_path):
+    QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
+
+def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
+    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
+    if not autostart:
+        downloadWin.show()
+        return downloadWin.exec_()
+    else:
+        downloadWin.progressDialog.exec_()
+
+def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
+    cmdWin = WaitWindow(cmd, title, msg)
+    cmdWin.run()
+
+def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
+    darwin = sys.platform == "darwin"
+    msgbox = OurMessageBox(main)
+    msgbox.setText(msg)
+    msgbox.setWindowTitle(title)
+    if False: # darwin:
+        msgbox.set_minimum_size(width, height)
+        msgbox.setGeometry((screenRect.width() - width) / 2,
+                           (screenRect.height() - height) / 2,
+                           width, height)
+
+    msgbox.setSizeGripEnabled(True)
+    msgbox.setStandardButtons(buttons)
+    return msgbox
+
+def dialog_info(title, msg, error=False):
+    msgbox = create_message_box(title=title, msg=msg)
+    if error:
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
+    else:
+        msgbox.setIcon(QtGui.QMessageBox.Information)
+    msgbox.exec_()
+
+def dialog_question(title, msg, button1="Yes", button2="No"):
+    msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
+    msgbox.setIcon(QtGui.QMessageBox.Question)
+    reply = msgbox.exec_()
+    if reply == QtGui.QMessageBox.Yes: return button1
+    else: return button2
+
+def dialog_error_report(title, msg, action=None, details=None):
+    msgbox = OurMessageBox(main)
+    msgbox.setIcon(QtGui.QMessageBox.Question)
+    msgbox.setText(msg)
+    msgbox.setWindowTitle(title)
+    msgbox.addButton(QtGui.QMessageBox.Ok)
+    msgbox.setIcon(QtGui.QMessageBox.Critical)
+    if action:
+        sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole)
+
+    if details:
+        msgbox.setDetailedText(details)
+
+    msgbox.exec_()
+    if action and msgbox.clickedButton() == sendButton:
+        return 1
+
+    return 0
+
+def dialog_password(msg=None, rcode=False):
+    w = QtGui.QWidget()
+    if not msg:
+        msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
+
+    value = QtGui.QInputDialog.getText(w, "Saisi de mot de passe", msg, QtGui.QLineEdit.Password)
+    if rcode:
+        return value
+    else:
+        return value[0]
+
+def dialog_choices(title, msg, column, choices):
+    dlg = ListDialog(title=title, msg=msg, choices=choices)
+    dlg.exec_()
+    return dlg.choicelist.currentRow()
+
+def create_app():
+    global app
+    app = QtGui.QApplication(sys.argv)
+    # After this line, subprocess needs to be patch as in Ubuntu
+    # http://svn.python.org/view?view=rev&revision=65475
+    # http://twistedmatrix.com/trac/ticket/733
+
+def destroy_app(app):
+    app.exit()
+    app = None
+    
+app = UFOApp(sys.argv)
+desktop = app.desktop()
+screenRect = desktop.screenGeometry(desktop.primaryScreen())
+main = QtGui.QMainWindow(desktop)
+main.resize(screenRect.width(), screenRect.height())

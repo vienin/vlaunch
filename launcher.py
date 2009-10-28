@@ -71,9 +71,9 @@ elif sys.platform == "darwin":
     backend = MacBackend()
     logging.debug("Platfrom: darwin")
 elif sys.platform == "linux2":
-    from linuxbackend import LinuxBackend
-    backend = LinuxBackend()
-    logging.debug("Platfrom: linux2")
+    from linuxbackend import *
+    backend = create_linux_distro_backend()
+    logging.debug("Platfrom: linux2, distro: %s, version: %s, codename: %s" % (backend.dist, backend.version, backend.codename))
 else:
     raise "Unsupported platform"
 
