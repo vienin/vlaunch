@@ -180,7 +180,7 @@ class OSBackend(object):
         if conf.CONFIGUREVM:
             # compute reasonable memory size
             if conf.RAMSIZE == "auto":
-                if self.vbox.vbox.version >= "2.1.0":
+                if self.vbox.vbox_version() >= "2.1.0":
                     freeram = self.vbox.host.get_free_ram()
                 else:
                     freeram = self.get_free_ram()
@@ -197,7 +197,7 @@ class OSBackend(object):
             self.vbox.current_machine.set_ram_size(conf.RAMSIZE)
             
             # Set number of processors
-            if self.vbox.vbox.version >= "3.0.0" and self.vbox.host.is_virt_ex_available():
+            if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
                 logging.debug("Enabling virtualization extensions")
                 self.vbox.current_machine.machine.HWVirtExEnabled = True
                 # nbprocs = int(self.vbox.host.get_nb_procs())
@@ -406,7 +406,12 @@ class OSBackend(object):
                 
                 time.sleep(1)
                 gui.app.hide_balloon()
-                gui.app.fullscreen_window(self.vbox.current_machine.get_winid())
+                if self.vbox.is_vbox_OSE():
+                    # We hope that is it our VirtualBox OSE
+                    self.vbox.current_machine.set_guest_property("/VirtualBox/GuestAdd/tFS/tFS", "1")
+                    gui.app.console_window.showNormal()
+                else:
+                    gui.app.fullscreen_window(self.vbox.current_machine.get_winid())
                 
         # Overlay data reintegration infos
         elif name == "/UFO/Overlay/Size":

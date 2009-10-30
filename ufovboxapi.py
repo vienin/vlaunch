@@ -24,7 +24,7 @@ class VBoxHypervisor():
         
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
         
-        if self.vbox.version >= "3.0.0":
+        if self.vbox_version() >= "3.0.0":
             self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', vbox_callback_class, vbox_callback_arg)
             self.vbox.registerCallback(self.cb)
             self.callbacks_aware = True
@@ -37,7 +37,7 @@ class VBoxHypervisor():
         self.session = None
         self.cleaned = False
         self.vbox.saveSettings()
-
+    
     def __del__(self):
         logging.debug("Destroying VBoxHypervisor")
         if not self.cleaned:
@@ -49,6 +49,15 @@ class VBoxHypervisor():
         self.vm_manager.deinit()
         del self.vm_manager
 
+    def vbox_version(self):
+        return self.vbox.version.split("_")[0]
+    
+    def is_vbox_OSE(self):
+        version = self.vbox.version.split("_")
+        if len(version) > 1:
+            return version[1] == "OSE"
+        return False
+    
     def cleanup(self):
         if self.callbacks_aware:
             logging.debug("Unregistering VirtualBox callbacks")
@@ -56,7 +65,7 @@ class VBoxHypervisor():
         self.cleaned = True
 
     def create_machine(self, machine_name, os_type, base_dir = ''):
-        if self.vbox.version < "2.1.0" and os_type == "Fedora":
+        if self.vbox_version() < "2.1.0" and os_type == "Fedora":
             os_type = "fedoracore"
         try:
             self.vbox.getGuestOSType(os_type)
@@ -64,7 +73,7 @@ class VBoxHypervisor():
             logging.debug("Unknown OS type: " + os_type)
             return 1
         try:
-            if self.vbox.version >= "2.1.0":
+            if self.vbox_version() >= "2.1.0":
                 self.vbox.registerMachine(
                     self.vbox.createMachine(machine_name, os_type, base_dir, 
                                             "00000000-0000-0000-0000-000000000000"))
@@ -106,7 +115,7 @@ class VBoxHypervisor():
         return 0
 
     def get_machines(self):
-        if self.vbox.version < "2.2.0":
+        if self.vbox_version() < "2.2.0":
             attr = 'machines2'
         else:
             attr = 'machines'
@@ -114,12 +123,12 @@ class VBoxHypervisor():
 
     def add_harddisk(self, location):
         try:
-            if self.vbox.version >= "3.0.0":
+            if self.vbox_version() >= "3.0.0":
                 disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly,
                                               False, '', False, '')
-            elif self.vbox.version >= "2.2.0":
+            elif self.vbox_version() >= "2.2.0":
                 disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly)
-            elif self.vbox.version >= "2.1.0":
+            elif self.vbox_version() >= "2.1.0":
                 disk = self.vbox.openHardDisk2(location)
             else:
                 disk = self.vbox.openHardDisk(location)
@@ -133,7 +142,7 @@ class VBoxHypervisor():
         uuid = str(uuid_lib.uuid4())
         try:
             dvd = self.vbox.openDVDImage(location, uuid)
-            if self.vbox.version < "2.1.0":
+            if self.vbox_version() < "2.1.0":
                 self.vbox.registerDVDImage(dvd)
         except Exception, e:
             logging.debug(e)
@@ -144,7 +153,7 @@ class VBoxHypervisor():
         uuid = str(uuid_lib.uuid4())
         try:
             floppy = self.vbox.openFloppyImage(location, uuid)
-            if self.vbox.version < "2.1.0":
+            if self.vbox_version() < "2.1.0":
                 self.vbox.registerFloppyImage(floppy)
         except Exception, e:
             logging.debug(e)
@@ -269,10 +278,10 @@ class VBoxMachine():
         if disk_rank >= 2:
             disk_rank += 1
         try:
-            if self.hypervisor.vbox.version >= "2.2.0":
+            if self.hypervisor.vbox_version() >= "2.2.0":
                 self.machine.attachHardDisk(disk.id, "IDE", 
                                             disk_rank // 2, disk_rank % 2)
-            elif self.hypervisor.vbox.version >= "2.1.0":
+            elif self.hypervisor.vbox_version() >= "2.1.0":
                 self.machine.attachHardDisk2(disk.id, self.hypervisor.constants.StorageBus_IDE, 
                                              disk_rank // 2, disk_rank % 2)
             else:
@@ -312,7 +321,7 @@ class VBoxMachine():
             if floppy == None:
                 return 1
 
-        if self.hypervisor.vbox.version >= "2.1.0":
+        if self.hypervisor.vbox_version() >= "2.1.0":
             self.machine.floppyDrive.enabled = True
             self.machine.floppyDrive.mountImage(floppy.id)
         else:
@@ -461,7 +470,7 @@ class VBoxMachine():
                 if mac_address:
                     self.machine.getNetworkAdapter(0).MACAddress = mac_address
                 self.machine.getNetworkAdapter(0).hostInterface = host_adapter
-		if self.hypervisor.vbox.version < "2.2.0":
+		if self.hypervisor.vbox_version() < "2.2.0":
                     self.machine.getNetworkAdapter(0).attachToHostInterface()
                 else:
                     self.machine.getNetworkAdapter(0).attachToBridgedInterface()
