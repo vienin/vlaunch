@@ -418,8 +418,7 @@ class OSBackend(object):
                 #start usb check loop
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
                 
-            # TODO: now use CLOSING_SESSION guest prop
-            elif newValue == "HALTING":
+            elif newValue == "CLOSING_SESSION":
                 gui.app.minimize_window(self.vbox.current_machine.get_winid())
                 gui.app.show_balloon_message(title=u"Sauvegarde des données", 
                                              msg=u"UFO est en train d'enregistrer les modifications du système (" + 
@@ -427,6 +426,9 @@ class OSBackend(object):
                                                  u" méga-octets),\nne débranchez surtout pas la clé !")
                 gui.app.set_tooltip("UFO: en cours de sauvegarde")
             
+            elif newValue == "HALTING":
+                pass
+                
             elif newValue == "REBOOTING":
                 
                 self.vbox.current_machine.is_booted  = False
@@ -436,12 +438,11 @@ class OSBackend(object):
                 # minimize window while booting
                 time.sleep(2)
                 gui.app.hide_balloon()
-                gui.app.minimize_window(self.vbox.current_machine.get_winid())
                 gui.app.show_balloon_progress(title=u"Redémarrage de UFO",
                                               msg=u"UFO est en cours de redémarrage.")
                 
         # Fullscreen management
-        #elif name == "/VirtualBox/GuestAdd/tFS/tFS":
+        # elif name == "/VirtualBox/GuestAdd/tFS/tFS":
         #    if newValue == "1":
         #        self.window.showFullScreen()
         #    else:
@@ -508,7 +509,13 @@ class OSBackend(object):
                 self.vbox.vm_manager.waitForEvents(int(interval * 1000))
             else:
                 time.sleep(interval)
-            gui.QtCore.QCoreApplication.processEvents()
+
+                # Special case when Qt backend unavailale and virtualbox < 3.0.0,
+                # in this case we are not able to catch termination
+                if gui.backend != "PyQt":
+                    sys.exit(1)
+                    
+            gui.app.process_gui_events()
 
     def check_usb_devices(self):
         # manage removable media shared folders
@@ -578,9 +585,6 @@ class OSBackend(object):
 
         # prepare environement
         logging.debug("Preparing environment")
-        logging.debug("Setting icon : " + path.join(conf.IMGDIR, "UFO.svg"))
-        gui.set_icon(path.join(conf.IMGDIR, "UFO.svg"))
-        
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()

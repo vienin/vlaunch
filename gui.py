@@ -8,21 +8,29 @@ try:
     backend = "PyQt"
     print "Using PyQt backend"
     gui = "PyQt4"
+    
 except:
     try:
-        from gui_tk_ import *
-        backend = "Tk"
-        print "Using Tk backend"
-        gui = "Tk"
+        from gui_zenity import *
+        backend = "Zenity"
+        print "Using zenity backend"
+        gui = "Zenity"
+        
     except:
-        try:
-            from gui_zenity import *
-            backend = "Zenity"
-            print "Using zenity backend"
-            gui = "Zenity"
-        except Exception, e:
-            print "Didn't find a gui backend..."
+        if False:
+            try:
+                from gui_tk_ import *
+                backend = "Tk"
+                print "Using Tk backend"
+                gui = "Tk"
+                
+            except Exception, e:
+                print "Didn't find a gui backend..."
+                backend = ""
+        else:
+            raise "Didn't find a gui backend... (Tk backend deprecated)"
             backend = ""
+        
 
 if __name__ == "__main__":
     balloon = BalloonMessage(None, None, "Do you Glumol ?")

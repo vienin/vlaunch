@@ -5,9 +5,6 @@ import Tix
 tk = Tkinter.Tk()
 tk.withdraw()
 
-def set_icon(icon_path):
-    pass
-
 def dialog_info(title, msg, error = False):
     easygui.msgbox(msg=msg, title=title)
 

@@ -26,7 +26,6 @@ class WindowsBackend(OSBackend):
     def __init__(self):
         OSBackend.__init__(self)
         self.create_splash_screen()
-        gui.set_icon(path.join(conf.SCRIPT_DIR, "..", "UFO.ico"))
         self.WMI = wmi.WMI()
 
     def check_process(self):

@@ -192,28 +192,13 @@ class LinuxBackend(OSBackend):
     def get_free_size(self, path):
         stats = os.statvfs(path)
         return (stats[statvfs.F_BSIZE] * stats[statvfs.F_BFREE]) / 1000000
-
-    def look_for_virtualbox(self):
-        logging.debug("Checking VirtualBox binaries")
-        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
-           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
-            self.install_virtualbox()
-        OSBackend.look_for_virtualbox(self)
         
     def onExtraDataCanChange(self, key, value):
         # xpcom only return the both out parameters
         return True, ""
-    
-    def install_virtualbox(self):
+
+    def look_for_virtualbox(self):
         raise Exception("Implemented in subclasses")
-        
-    def zenityfy(cmd, msg=[]):
-        if os.path.exists("/usr/bin/zenity"):
-            logging.debug("Zenitify " + " " . join(cmd))
-            if msg: msg = ["--text", msg]
-            utils.call([cmd, ["/usr/bin/zenity", "--progress", "--auto-close"] + msg])
-        else:
-            utils.call(cmd)
 
     def create_run_as_root(self):
         if os.path.exists("/usr/bin/gksudo"):
@@ -237,6 +222,9 @@ class LinuxBackend(OSBackend):
 
         
 class FedoraLinuxBackend(LinuxBackend):
+    
+    AGORAOX_VBOX_REPO = "http://downloads.agorabox.org/virtualbox/yum/"
+    
     def __init__(self, dist, version, codename):
         LinuxBackend.__init__(self, dist, version, codename)
         
@@ -245,43 +233,85 @@ class FedoraLinuxBackend(LinuxBackend):
         if (self.dist == "Fedora" and version >= 10) or \
            (self.dist == "U.F.O" and version >= 1.0):
             if not os.path.exists("/usr/bin/beesu"):
-                msg = u"Veuillez patienter pendant l'installation de composants\nnécessaires au lancement d'UFO"
+                msg = u"Veuillez patienter pendant l'installation de " + \
+                      "composants\nnécessaires au lancement d'UFO"
                 # if os.path.exists("/usr/bin/gpk-install-package-name"):
                 #    print (["/usr/bin/gpk-install-package-name", "beesu"], msg)'
                 #else:
                 gui.wait_command(["/usr/bin/pkcon", "install", "beesu"], msg=msg)
         return LinuxBackend.create_run_as_root(self)
 
-    def install_virtualbox(self):
-        logging.debug("Installing Agorabox repository for VirtualBox")
-        zenityfy(["yum", "-y", "install", "yum-priorities"], "Installation du plugin Yum : yum-priorities")
-        self.call(["rpm", "-ivf", "http://downloads.agorabox.org/virtualbox/yum/agorabox-virtualbox-yum-repository-1.0.noarch.rpm"])
-        kernel = "kernel"
-        if os.uname()[2].endswith("PAE"):
-            kernel += "-PAE"
-        logging.debug("Kernel is: " + kernel)
-        logging.debug("Installing VirtualBox")
-        zenityfy(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma"])
-        version = self.call(["rpm", "-q", "--queryformat", "\"%{VERSION}\"", "VirtualBox-OSE"], output=True)[1]
-        kmod_dir = "VirtualBox-OSE-kmod-" + version
-        logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir, ))
-        utils.call(["tar", "--use-compress-program", "lzma", "-xf", "/usr/share/%s/%s.tar.lzma" % (kmod_dir, kmod_dir, )],
-                   cwd = tempfile.gettempdir())
-        tmpdir = tempfile.gettempdir() + "/" + kmod_dir
-        if not os.path.exists(tmpdir): os.mkdir(tmpdir)
-        ret = self.call(["make"], cwd=tmpdir)
-        logging.debug("make returned %d", (ret, ))
-
+    def look_for_virtualbox(self):
+        logging.debug("Checking PyQt")
+        if gui.backend != "PyQt":
+            gui.wait_command(["yum", "-y", "install", "PyQt4"], "Installation", "Installation de \"PyQt4\"")
+            reload(gui)
+            if gui.backend != "PyQt":
+                logging.debug("Could not enable PyQt")
+                
+        logging.debug("Checking VirtualBox binaries")
+        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
+           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+            logging.debug("Installing Agorabox repository for VirtualBox")
+            gui.wait_command(["yum", "-y", "install", "yum-priorities"], 
+                              "Installation",
+                              "Installation de \"yum-priorities\"")
+            gui.wait_command(["rpm", 
+                              "-ivf", 
+                              self.AGORAOX_VBOX_REPO + "agorabox-virtualbox-yum-repository-1.0.noarch.rpm"], 
+                             "Installation",
+                             "Installation de \"agorabox-virtualbox-yum-repository\"")
+            
+            kernel = "kernel"
+            if os.uname()[2].endswith("PAE"):
+                kernel += "-PAE"
+            logging.debug("Kernel is: " + kernel)
+            
+            logging.debug("Installing VirtualBox")
+            gui.wait_command(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma"],
+                              u"Téléchargement", 
+                              u"Téléchargement, décompression de \"VirtualBox-OSE\"\n(Cette opération peut prendre quelques minutes)")
+            version = self.call(["rpm", "-q", "--queryformat", "%{VERSION}", "VirtualBox-OSE"], output=True)[1]
+            kmod_name = "VirtualBox-OSE-kmod-" + version
+            
+            logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar" % (kmod_name, kmod_name, ))
+            tarfile = glob.glob("/usr/share/%s/%s.tar.*" % (kmod_name, kmod_name, ))[0]
+            tarext  = os.path.splitext(tarfile)[1][1:]
+            utils.call(["tar", "--use-compress-program", tarext, "-xf", "/usr/share/%s/%s.tar.%s" % (kmod_name, kmod_name, tarext, )],
+                       cwd = tempfile.gettempdir())
+            
+            compdir = os.path.join(tempfile.gettempdir(), kmod_name, "vboxdrv")
+            logging.debug("Compiling vboxdrv source code in %s" % (compdir, ))
+            gui.wait_command(["make", "install", "-C", compdir], 
+                             "Installation", 
+                             "Installation de \"VirtualBox-OSE\"")
+            
+            logging.debug("Loading vboxdrv module")
+            self.call(["/etc/sysconfig/modules/VirtualBox-OSE.modules"])
+                
+        OSBackend.look_for_virtualbox(self)
 
 class UbuntuLinuxBackend(LinuxBackend):
     def __init__(self, dist, version, codename):
         LinuxBackend.__init__(self, dist, version, codename)
 
-    def install_virtualbox(self):
-        open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
-        os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
-        gui.wait_command(["apt-get", "update"], u"Mise-à-jour", u"Votre système est en train d'être mis à jour")
-        gui.wait_command(["apt-get", "-y", "install", "virtualbox-2.2"], "Installation", "Veuillez patienter\nUne Installation est en cours")
+    def look_for_virtualbox(self):
+        logging.debug("Checking PyQt")
+        if gui.backend != "PyQt":
+            gui.wait_command(["apt-get", "-y", "install", "python-qt4"], "Installation", u"Veuillez patienter,\nl'installation de \"python Qt4\" est en cours.")
+            reload(gui)
+            if gui.backend != "PyQt":
+                logging.debug("Could not enable PyQt")
+                
+        logging.debug("Checking VirtualBox binaries")
+        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
+           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+            open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
+            os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
+            gui.wait_command(["apt-get", "update"], u"Mise-à-jour", u"Votre système est en train d'être mis à jour")
+            gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.0"], "Installation", "Veuillez patienter,\nl'installation de \"VirtualBox 3\" est en cours.")
+         
+        OSBackend.look_for_virtualbox(self)
 
 
 class GenericLinuxBackend(LinuxBackend):
@@ -376,7 +406,7 @@ def create_linux_distro_backend():
     
     if dist in ["Fedora", "U.F.O"]:
         distro_backend = FedoraLinuxBackend(dist, version, codename)
-    elif temp.dist == "Ubuntu":
+    elif dist == "Ubuntu":
         distro_backend = UbuntuLinuxBackend(dist, version, codename)
     else:
         distro_backend = GenericLinuxBackend(dist, version, codename)

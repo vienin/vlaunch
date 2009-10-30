@@ -8,11 +8,11 @@ import subprocess
 import conf
 import logging
 
-class UFOApp(QtGui.QApplication):
+class QtUFOGui(QtGui.QApplication):
     def __init__(self, argv):
-        self.progressDialog  = None
+        self.progress_dialog = None
         self.download_window = None
-        self.waitWindow      = None
+        self.wait_window     = None
         self.animation       = None
         self.tray            = None
         self.usb_check_timer = None
@@ -21,20 +21,21 @@ class UFOApp(QtGui.QApplication):
         self.console_winid   = 0
         
         QtGui.QApplication.__init__(self, argv)
-
+        QtGui.QApplication.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.svg")))
+    
     def event(self, event):
         if isinstance(event, FinishedEvent):
             self.download_window.http_request_finished(event.error)
             
-        elif self.progressDialog and isinstance(event, NoneEvent):
+        elif self.progress_dialog and isinstance(event, NoneEvent):
            self.progressDialog.setMaximum(event.total)
            self.progressDialog.setValue(event.size)
            
-        elif self.waitWindow and isinstance(event, CommandEvent):
-            self.waitWindow.finished(event.error)
+        elif self.wait_window and isinstance(event, CommandEvent):
+            self.wait_window.finished(event.error)
             
-        elif self.waitWindow and isinstance(event, UpdateEvent):
-            self.waitWindow.update()
+        elif self.wait_window and isinstance(event, UpdateEvent):
+            self.wait_window.update()
             
         elif isinstance(event, ProgressEvent):
             event.progress.setValue(int(event.value * 100))
@@ -72,7 +73,6 @@ class UFOApp(QtGui.QApplication):
                 if not event.timer:
                     event.timer = QtCore.QTimer(self)
                     self.connect(event.timer, QtCore.SIGNAL("timeout()"), event.function)
-                    #event.timer.timeout.connect(event.function)
                     event.timer.start(event.time * 1000)
             
         return False
@@ -96,7 +96,7 @@ class UFOApp(QtGui.QApplication):
                                         time, 
                                         function))
         
-    def stop_usb_check_timer(self):
+    def stop_callbacks_timer(self):
         self.postEvent(self, TimerEvent(self.callbacks_timer,
                                         time=None, 
                                         function=None, 
@@ -134,6 +134,9 @@ class UFOApp(QtGui.QApplication):
         
     def minimize_window(self, winid):
         self.postEvent(self, ConsoleWindowEvent(winid, False))
+        
+    def process_gui_events(self):
+        QtCore.QCoreApplication.processEvents()
 
 
 class NoneEvent(QtCore.QEvent):
@@ -254,15 +257,13 @@ class CommandLauncher(threading.Thread):
 
 class WaitWindow(QtGui.QDialog):
     def __init__(self,  cmd="", title="", msg="", parent=None):
-        self.chars = ["     ", ".", "..", "..."]
-        self.index = 0
-        QtGui.QDialog.__init__(self, parent)
+        super(WaitWindow, self).__init__(main)
         self.cmd = cmd
         self.setWindowTitle(title)
         self.command = CommandLauncher(self.cmd)
         self.msg = msg
-        app.waitWindow = self
-        self.statusLabel = QtGui.QLabel(self.msg + " " + self.chars[self.index])
+        app.wait_window = self
+        self.statusLabel = QtGui.QLabel(self.msg)
         self.cancelButton = QtGui.QPushButton(u"Annuler")
         self.animation = QtGui.QLabel()
         self.animation.setAlignment(QtCore.Qt.AlignCenter)
@@ -278,7 +279,7 @@ class WaitWindow(QtGui.QDialog):
         mainLayout.addWidget(buttonBox)
         mainLayout.addWidget(self.animation)
         self.setLayout(mainLayout)
-        self.animated = QtGui.QMovie(os.path.join(conf.HOME, "animated-bar.mng"), QtCore.QByteArray(), self.animation)
+        self.animated = QtGui.QMovie(os.path.join(conf.IMGDIR, "animated-bar.mng"), QtCore.QByteArray(), self.animation)
         self.animated.setCacheMode(QtGui.QMovie.CacheAll)
         self.animated.setSpeed(100)
         self.animation.setMovie(self.animated)
@@ -293,12 +294,6 @@ class WaitWindow(QtGui.QDialog):
             self.statusLabel.setText(u"Installation terminée")
         self.close()
 
-    def update(self):
-        self.index = self.index + 1
-        if self.index >= len(self.chars):
-            self.index = 0
-        self.statusLabel.setText(self.msg + " " + self.chars[self.index])
-
     def run(self):
         self.animated.start()
         self.show()
@@ -308,7 +303,7 @@ class WaitWindow(QtGui.QDialog):
 
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, title, msg, parent=None, autostart=False):
-        super(DownloadWindow, self).__init__(parent)
+        super(DownloadWindow, self).__init__(main)
 
         app.download_window = self
         self.url = url
@@ -451,7 +446,8 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
         menu = QtGui.QMenu()
         self.setContextMenu(menu)
-        self.activated.connect(self.activate)
+        self.connect(self, QtCore.SIGNAL("activate()"), self.activate)
+        #self.activated.connect(self.activate)
         
         self.progress = None
         self.balloon  = None
@@ -526,12 +522,14 @@ class BalloonMessage(QtGui.QWidget):
         self.resize(180, 80)
     
         self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.timeout)
+        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.timeout)
+        #self.timer.timeout.connect(self.timeout)
         self.timer.start(1)
 
         if timeout:
             self.destroytimer = QtCore.QTimer(self)
-            self.destroytimer.timeout.connect(self.destroy)
+            self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy)
+            #self.destroytimer.timeout.connect(self.destroy)
             self.destroytimer.start(timeout)
 
         deskRect = QtCore.QRect(desktop.availableGeometry())
@@ -650,9 +648,6 @@ class BalloonMessage(QtGui.QWidget):
 
 # Globals
 
-def set_icon(icon_path):
-    QtGui.QApplication.setWindowIcon(QtGui.QIcon(icon_path))
-
 def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le télécharchement est en cours", autostart=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
     if not autostart:
@@ -741,7 +736,7 @@ def destroy_app(app):
     app.exit()
     app = None
     
-app = UFOApp(sys.argv)
+app = QtUFOGui(sys.argv)
 desktop = app.desktop()
 screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)

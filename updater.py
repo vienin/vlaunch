@@ -16,21 +16,24 @@ import utils
 def get_latest_version():
     socket.setdefaulttimeout(5)
     latest_version = urllib.urlopen(conf.UPDATEURL + "/latest").read()
-    logging.debug("Using launcher version : " + str(conf.VERSION))
-    logging.debug("Available version on the Net : " + str(latest_version))
     latest_version = map(int, latest_version.split('.'))
-    return latest_version
+    string_version = ".".join(map(str, latest_version))
+    latest_size = int(urllib.urlopen(conf.UPDATEURL + "/launcher-" + string_version + ".tar.bz2").headers.get("content-length"))
+    
+    logging.debug("Using launcher version : " + str(conf.VERSION))
+    logging.debug("Available version on the Net : " + str(string_version) + " (" + str(latest_size / 1000) + " k)")
+    return latest_version, latest_size
  
 def check_update(backend):
     try:
         logging.debug("Checking updates")
         local_version = map(int, conf.VERSION.split('.'))
-        latest_version = get_latest_version()
+        latest_version, latest_size = get_latest_version()
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to user...")
             input = gui.dialog_question(title=u"Mise à jour",
                 msg=u"Une version plus récente du lanceur U.F.O est disponible, " + \
-                    u"voulez-vous la télécharger (Environ 100 Mo de téléchargement) ?",
+                    u"voulez-vous l'installer (" + str( latest_size / 1000000) + u" Mo de téléchargement) ?",
                 button1=u"Oui", button2=u"Non")
             logging.debug("Got : " + str(input))
             if input == "Oui":
@@ -53,8 +56,10 @@ def check_update(backend):
                 sys.exit(0)
             else:
                 backend.do_not_update = True
+          
     except SystemExit:
         sys.exit(0)
+        
     except:
         import traceback
         info = sys.exc_info()
@@ -64,7 +69,7 @@ def check_update(backend):
 
 def self_update(ufo_dir, relaunch):
   try:
-    latest_version = ".".join(map(str, get_latest_version()))
+    latest_version, x = ".".join(map(str, get_latest_version()))
 
     try:
         if sys.platform == "darwin":
@@ -77,9 +82,9 @@ def self_update(ufo_dir, relaunch):
         pass
 
     gui.dialog_info(title=u"Attention",
-                    msg=u"Lancement de la mise à jour. \n" \
-                        u"NE RETIREZ PAS LA CLE. NE TOUCHEZ A \n" \
-                        u"AUCUN FICHIER SUR LA CLE. \n\nLa mise à jour peut durer plusieurs minutes")
+                    msg=u"Lancement de la mise à jour.\n" \
+                        u"NE RETIREZ PAS LA CLE.\n" \
+                        u"NE TOUCHEZ A AUCUN FICHIER SUR LA CLE. \n\nLa mise à jour peut durer plusieurs minutes")
  
     splash_down = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-download.png"))
     url = conf.UPDATEURL + "/launcher-" + latest_version + ".tar.bz2"

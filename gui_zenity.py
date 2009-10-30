@@ -15,6 +15,51 @@ zenity = subprocess.Popen(["which", "zenity"], stdout=subprocess.PIPE, stderr=su
 if not os.path.lexists(zenity):
     raise Exception("Could not find 'zenity'")
 
+
+class NoneUFOGui():
+    def __init__(self, argv):
+        pass
+    
+    def initialize_tray_icon(self):
+        pass
+        
+    def start_usb_check_timer(self, time, function):
+        pass
+        
+    def stop_usb_check_timer(self):
+        pass
+    
+    def start_callbacks_timer(self, time, function):
+        pass
+        
+    def stop_callbacks_timer(self):
+        pass
+
+    def update_progress(self, progress, value):
+        pass
+
+    def show_balloon_message(self, title, msg, timeout=0):
+        pass
+        
+    def show_balloon_progress(self, title, msg):
+        pass
+        
+    def hide_balloon(self):
+        pass
+        
+    def set_tooltip(self, tip):
+        pass
+        
+    def fullscreen_window(self, winid):
+        pass
+        
+    def minimize_window(self, winid):
+        pass
+    
+    def process_gui_events(self):
+        pass
+
+
 class CommandLauncher(threading.Thread):
     def __init__(self, cmd, titre="", msg=""):
         threading.Thread.__init__(self)
@@ -100,8 +145,11 @@ def download_file(url, filename, title, msg, autostart=False):
     downloader.join()
     return downloader.retcode
 
-def set_icon(icon_path):
-    pass
+def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
+    launch = CommandLauncher(cmd, title, msg)
+    launch.start()
+    launch.join()
+    return launch.retcode
 
 def dialog_info(title, msg, error = False):
     subprocess.call([ zenity, "--info", "--title=" + title, "--text=" + msg ])
@@ -119,14 +167,9 @@ def SplashScreen(*args, **kw):
     print "Can't display a splash screen with zenity"
     return None
 
-def dialog_error_report(*args):
-    pass
-
-def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
-    launch = CommandLauncher(cmd, title, msg)
-    launch.start()
-    launch.join()
-    return launch.retcode
+def dialog_error_report(title, msg, action=None, details=None):
+    dialog_info(title, msg, error = True)
+    return True
     
 def dialog_choices(title, msg, column, choices):
     ret, output =  utils.call([ zenity, "--title", title, "--text", msg,
@@ -134,3 +177,4 @@ def dialog_choices(title, msg, column, choices):
     output = output.strip()
     return choices.index(output)
 
+app = NoneUFOGui(sys.argv)
