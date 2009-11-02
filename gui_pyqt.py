@@ -586,7 +586,12 @@ class BalloonMessage(QtGui.QWidget):
 
     def setAnchor(self, anchor):
         self.mAnchor = anchor
-        # self.updateMask()
+        deskRect = QtCore.QRect(desktop.availableGeometry())
+        if self.mAnchor.y() > deskRect.height() / 2:
+            y = - self.height() - 40
+        else:
+            y = 40
+        self.move(deskRect.width() - self.width() - 10, self.mAnchor.y() + y)
 
     def showUpdateWindow(self):
         self.parent.parent.mainwidget.trayUpgradeSwitch()
@@ -609,10 +614,8 @@ class BalloonMessage(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         path = QtGui.QPainterPath()
-        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 1, QtCore.Qt.SolidLine,
-                       QtCore.Qt.FlatCap, QtCore.Qt.MiterJoin))
-        path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()),
-                            7, 7)
+        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 1, QtCore.Qt.SolidLine))
+        path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
 
         # get screen-geometry for screen our anchor is on
         # (geometry can differ from screen to screen!
@@ -671,16 +674,10 @@ class BalloonMessage(QtGui.QWidget):
                     else:
                         self.move(self.mAnchor.x(),self.mAnchor.y())
         """
-        if self.mAnchor.y() > deskRect.height() / 2:
-            y = - self.height() - 40
-        else:
-            y = 40
-        self.move(deskRect.width() - self.width() - 10, self.mAnchor.y() + y)
         painter.setClipPath(path)
         painter.drawPath(path)
         mask = painter.clipRegion()
         self.setMask(mask)
-
 
 # Globals
 
