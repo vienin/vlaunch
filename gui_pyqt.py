@@ -555,12 +555,6 @@ class BalloonMessage(QtGui.QWidget):
         self.parent.parent.mainwidget.trayUpgradeSwitch()
         self.parent.parent.show()
 
-    def paintEvent2(self):
-        path = QtGui.QPainterPath()
-        #path.addRoundedRect(QtCore.QRectF(10, 10, self.width() - 10, self.height() - 10),
-        #                    1.0, 1.0)
-        path.addEllipse(QtCore.QPointF(50, 20), 30, 10)
-
     def paintEvent(self, evt):
         mask = QtGui.QRegion() # 10, 10, self.width() - 20, self.height() - 20)
 
@@ -578,6 +572,8 @@ class BalloonMessage(QtGui.QWidget):
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         path = QtGui.QPainterPath()
+        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 1, QtCore.Qt.SolidLine,
+                       QtCore.Qt.FlatCap, QtCore.Qt.MiterJoin))
         path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()),
                             7, 7)
 
@@ -638,10 +634,13 @@ class BalloonMessage(QtGui.QWidget):
                     else:
                         self.move(self.mAnchor.x(),self.mAnchor.y())
         """
-
-        self.move(deskRect.width() - self.width() - 10, 40)
+        if self.mAnchor.y() > deskRect.height() / 2:
+            y = - self.height() - 40
+        else:
+            y = 40
+        self.move(deskRect.width() - self.width() - 10, self.mAnchor.y() + y)
         painter.setClipPath(path)
-        painter.fillPath(path, QtGui.QBrush(QtGui.QColor(255, 255, 225)))
+        painter.drawPath(path)
         mask = painter.clipRegion()
         self.setMask(mask)
 
