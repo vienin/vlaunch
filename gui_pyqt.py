@@ -7,9 +7,12 @@ import time, utils
 import subprocess
 import conf
 import logging
+import glob
 
 class QtUFOGui(QtGui.QApplication):
     def __init__(self, argv):
+        QtGui.QApplication.__init__(self, argv)
+
         self.progress_dialog = None
         self.download_window = None
         self.wait_window     = None
@@ -19,14 +22,22 @@ class QtUFOGui(QtGui.QApplication):
         self.callbacks_timer = None
         self.console_window  = None
         self.console_winid   = 0
-        
-        QtGui.QApplication.__init__(self, argv)
-        QtGui.QApplication.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.svg")))
-    
+
+        self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
+
     def event(self, event):
-        if isinstance(event, FinishedEvent):
+        if isinstance(event, SetTrayIconEvent):
+            self.tray = TrayIcon()
+
+        elif isinstance(event, FinishedEvent):
             self.download_window.http_request_finished(event.error)
-            
+
+        elif isinstance(event, CreateSplashEvent):
+            self._create_splash_screen()
+
+        elif isinstance(event, DestroySplashEvent):
+            self._destroy_splash_screen()
+
         elif self.progress_dialog and isinstance(event, NoneEvent):
            self.progressDialog.setMaximum(event.total)
            self.progressDialog.setValue(event.size)
@@ -75,10 +86,34 @@ class QtUFOGui(QtGui.QApplication):
                     self.connect(event.timer, QtCore.SIGNAL("timeout()"), event.function)
                     event.timer.start(event.time * 1000)
             
-        return False
+        else:
+            return False
+
+        return True
+        
+    def _create_splash_screen(self):
+        images = glob.glob(os.path.join(conf.IMGDIR, "ufo-*.bmp"))
+        if images:
+            logging.debug("Creating splash screen with image " + images[0])
+            self.splash = SplashScreen(images[0])
+        else:
+            logging.debug("Found no image for splash screen")
+
+    def _destroy_splash_screen(self):
+        if self.splash:
+            logging.debug("Destroying splash screen")
+            self.splash.destroy()
+            self.splash = None
+
+    def create_splash_screen(self):
+        self.create_splash_event = CreateSplashEvent()
+        self.postEvent(self, self.create_splash_event)
+
+    def destroy_splash_screen(self):
+        self.postEvent(self, DestroySplashEvent())
 
     def initialize_tray_icon(self):
-        self.tray = TrayIcon()
+        self.postEvent(self, SetTrayIconEvent())
         
     def start_usb_check_timer(self, time, function):
         self.postEvent(self, TimerEvent(self.usb_check_timer,
@@ -136,15 +171,25 @@ class QtUFOGui(QtGui.QApplication):
         self.postEvent(self, ConsoleWindowEvent(winid, False))
         
     def process_gui_events(self):
-        QtCore.QCoreApplication.processEvents()
-
+        self.processEvents()
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
         super(NoneEvent, self).__init__(QtCore.QEvent.None)
         self.size = size
         self.total = total
-    pass
+
+class SetTrayIconEvent(QtCore.QEvent):
+    def __init__(self):
+        super(SetTrayIconEvent, self).__init__(QtCore.QEvent.None)
+
+class CreateSplashEvent(QtCore.QEvent):
+    def __init__(self):
+        super(CreateSplashEvent, self).__init__(QtCore.QEvent.None)
+
+class DestroySplashEvent(QtCore.QEvent):
+    def __init__(self):
+        super(DestroySplashEvent, self).__init__(QtCore.QEvent.None)
 
 class ProgressEvent(QtCore.QEvent):
     def __init__(self, progress, value, total):
@@ -152,7 +197,6 @@ class ProgressEvent(QtCore.QEvent):
         self.progress = progress
         self.value    = value
         self.total    = total
-    pass
 
 class BalloonMessageEvent(QtCore.QEvent):
     def __init__(self, title, msg, timeout, progress=False, show=True):
@@ -162,7 +206,6 @@ class BalloonMessageEvent(QtCore.QEvent):
         self.msg      = msg
         self.timeout  = timeout
         self.progress = progress
-    pass
 
 class TimerEvent(QtCore.QEvent):
     def __init__(self, timer, time, function, stop=False):
@@ -171,38 +214,32 @@ class TimerEvent(QtCore.QEvent):
         self.time     = time
         self.function = function
         self.stop     = stop
-    pass
 
 class ToolTipEvent(QtCore.QEvent):
     def __init__(self, tip):
         super(ToolTipEvent, self).__init__(QtCore.QEvent.None)
         self.tip = tip
-    pass
 
 class ConsoleWindowEvent(QtCore.QEvent):
     def __init__(self, winid, show):
         super(ConsoleWindowEvent, self).__init__(QtCore.QEvent.None)
         self.winid = winid
         self.show  = show
-    pass
 
 class FinishedEvent(QtCore.QEvent):
     def __init__(self, error=False):
         super(FinishedEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
-    pass
 
 class CommandEvent(QtCore.QEvent):
     def __init__(self, error=False):
         super(CommandEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
-    pass
 
 class UpdateEvent(QtCore.QEvent):
     def __init__(self, error=False):
         super(UpdateEvent, self).__init__(QtCore.QEvent.None)
         self.error = error
-    pass
 
 
 # Gere le téléchargement dans un thread a part.
@@ -456,11 +493,11 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.show()
 
     def show_message(self, title, msg, timeout=0):
-        self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.svg"),
+        self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
                                       title=title, msg=msg, timeout=timeout)
 
     def show_progress(self, title, msg, timeout=0, no_text=False, invert=False):
-        self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.svg"),
+        self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
                                      title=title, msg=msg, progress=True)
         self.progress = self.balloon.progressBar
         #if no_text:

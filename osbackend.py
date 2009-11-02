@@ -81,19 +81,11 @@ class OSBackend(object):
         return conf.NET_HOST
 
     def create_splash_screen(self):
-        images = glob.glob(path.join(conf.IMGDIR, "ufo-*.bmp"))
-        if images:
-            logging.debug("Creating splash screen with image " + images[0])
-            self.splash = gui.SplashScreen(images[0])
-        else:
-            logging.debug("Found no image for splash screen")
+        gui.app.create_splash_screen()
 
     def destroy_splash_screen(self):
-        if self.splash:
-            logging.debug("Destroying splash screen")
-            self.splash.destroy()
-            self.splash = None
-
+        gui.app.destroy_splash_screen()
+        
     def init_vbox_hypervisor(self):
         logging.debug("Creating VBoxHypervisor")
 
@@ -494,8 +486,7 @@ class OSBackend(object):
 
     def wait_for_termination(self):
         # Destroy our own splash screen
-        if self.splash:
-            self.destroy_splash_screen()
+        self.destroy_splash_screen()
         
         # As virtualbox < 3.0.0 do not provides 
         # callbacks, we pool on virtual machine's properties
@@ -596,7 +587,7 @@ class OSBackend(object):
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()
-        
+
         gui.app.initialize_tray_icon()
         
         # generate raw vmdk for usb key

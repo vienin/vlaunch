@@ -58,9 +58,9 @@ if conf.LIVECD:
                                     u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
                                     u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
                                     u"suivant la vitesse de votre connexion.")
-        if not res:
-            sys.exit(0)
-
+        if res:
+            sys.exit(1)
+ 
 if sys.platform == "win32":
     from windowsbackend import *
     backend = WindowsBackend()
