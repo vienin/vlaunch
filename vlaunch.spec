@@ -116,6 +116,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/updater-download.png
 %{TARGET_PATH}/.data/images/updater-install.png
 %{TARGET_PATH}/.data/images/animated-bar.mng
+%{TARGET_PATH}/.data/images/UFO.svg
 %dir %{TARGET_PATH}/.data/logs
 
 %{TARGET_PATH}/Windows/MSVCR71.dll

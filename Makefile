@@ -7,7 +7,7 @@ SOURCES=settings.conf *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png a
         vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
         vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
         vbox-get-property vbox-get-property.pam vbox-get-property.console \
-        autorun.inf UFO.ico DS_Store .background .autorun ask-password \
+        autorun.inf UFO.ico UFO.svg DS_Store .background .autorun ask-password \
         VolumeIcon.icns VolumeIcon-OS-trick
 
 DIR=$(NAME)-$(VERSION)
@@ -37,7 +37,7 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
 
 	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
-	cp ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/.data/images/
+	cp UFO.svg ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/.data/images/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks/
 
@@ -77,7 +77,6 @@ install:
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	# cp VolumeIcon-OS-trick $(DESTDIR)$(TARGET_PATH)/
 	# pushd . && cd $(DESTDIR)$(TARGET_PATH) && python -c "import os; os.rename('VolumeIcon-OS-trick', '._\xef\x80\xa9')" && popd
-
 	
 	# installs Boot Iso
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Isos
