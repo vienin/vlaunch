@@ -41,6 +41,7 @@ except:
 
 if conf.LIVECD:
     download = True
+    conf.BOOTISO = path.realpath(unicode(conf.BOOTISO))
     if path.exists(conf.BOOTISO):
         length = int(urllib.urlopen(conf.ISOURL).headers['content-length'])
         if length == os.stat(conf.BOOTISO).st_size or os.environ.has_key("NODOWNLOAD"):

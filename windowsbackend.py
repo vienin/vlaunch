@@ -10,6 +10,8 @@ import conf
 import tempfile
 import time
 import platform
+import glob
+import gui
 
 from osbackend import OSBackend
 from shutil import copyfile, copytree
@@ -105,7 +107,7 @@ class WindowsBackend(OSBackend):
 
             if create_service:
                 ret, output = self.call([ "sc", "create", "PortableVBoxDrv",
-                                           "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
+                                           "binpath=", path.join(conf.VBOXDRIVERS, "VBoxDrv.sys"),
                                            "type=", "kernel", "start=", "demand", "error=", "normal", 
                                            "displayname=", "PortableVBoxDrv" ], shell=True, output=True)
                 if ret == 5 or "FAILED" in output:

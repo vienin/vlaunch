@@ -1,6 +1,10 @@
+# -*- coding: utf-8 -*-
+
 import os, os.path as path, sys
 from ConfigParser import ConfigParser
 from optparse import OptionParser
+
+path.supports_unicode_filenames = True
 
 SCRIPT_PATH = path.realpath(sys.argv[0])
 SCRIPT_NAME = path.basename(sys.argv[0])
@@ -76,6 +80,7 @@ bootdiskkey = "BOOTDISK"
 bootdiskuuidkey = "BOOTDISKUUID"
 isourlkey = "ISOURL"
 updateurlkey = "UPDATEURL"
+vboxdriverskey = "VBOXDRIVERS"
 
 cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                imgdirkey : "images",
@@ -84,7 +89,7 @@ cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                oskey : "Fedora",
                                vmdkkey : "ufo_key.vmdk",
                                partskey : "all",
-                               bootfloppykey : "",
+                               bootfloppykey : "Images/UFO-VirtualBox-boot.img",
                                bootisokey : "",
                                swapfile : "ufo_swap.vdi",
                                swapsize : "512",
@@ -119,7 +124,8 @@ cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                bootdiskuuidkey : "",
                                bootdiskkey : "",
                                isourlkey : "http://downloads.agorabox.org/launcher/latest",
-                               updateurlkey : "http://downloads.agorabox.org/launcher/"
+                               updateurlkey : "http://downloads.agorabox.org/launcher/",
+                               vboxdriverskey : "drivers\\VBoxDrv"
                              })
                              
 try:
@@ -189,6 +195,7 @@ UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 NOUPDATE = int(cp.get(launchersection, noupdatekey))
 ISOURL = cp.get(launchersection, isourlkey)
 UPDATEURL = cp.get(launchersection, updateurlkey)
+VBOXDRIVERS = path.normpath(path.join(BIN, cp.get(launchersection, vboxdriverskey)))
 
 DEV = cp.get(rawdisksection, devkey)
 PARTS = cp.get(rawdisksection, partskey)

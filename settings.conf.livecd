@@ -1,22 +1,28 @@
+[virtualbox]
+HOME=.VirtualBox
+BIN=.
+VMDK=../ufo_key.vmdk
+
 [vm]
 width=full
 height=full
 BOOTISO=UFO.iso
-BOOTDISK=HardDisks/bootdisk.vdi
+BOOTDISK=../bootdisk.vdi
 BOOTDISKUUID=bed47518-6bd0-4d1c-a953-e85f41962d04
+OVERLAYFILE=
 
 [rawdisk]
-VOLUME=UFO
+VOLUME=dontfindme
 
 [launcher]
 LIVECD=1
 DEBUG=0
-STARTVM=0
-CREATESRVS=0
-STARTSRVS=0
-NEEDDEV=1
+STARTVM=1
+CREATESRVS=1
+STARTSRVS=1
 USESERVICE=0
-CONFIGUREVM=1
-LOGDIR=.
+LOG=logs_UFO.log
+NOUPDATE=1
+ISOURL=http://downloads.agorabox.org/live/UFO.iso
 IMGDIR=.
-BIN=.
+VBOXDRIVERS=.

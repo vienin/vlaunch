@@ -56,7 +56,7 @@ class QtUFOGui(QtGui.QApplication):
                 if self.console_winid != event.winid:
                     self.console_winid = event.winid
                     self.console_window = QtGui.QWidget()
-                    self.console_window.create(event.winid, False, False)
+                    self.console_window.create(int(event.winid), False, False)
                     
                 if event.show:
                     self.console_window.showFullScreen()

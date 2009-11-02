@@ -155,7 +155,7 @@ class OSBackend(object):
             if conf.LIVECD:
                 rank += 1
             
-            vmdk = path.join(conf.HOME, "HardDisks", conf.VMDK)
+            vmdk = path.normpath(path.join(conf.HOME, "HardDisks", conf.VMDK))
             if os.path.exists(vmdk):
                 os.unlink(vmdk)
             if conf.PARTS == "all":
@@ -223,11 +223,11 @@ class OSBackend(object):
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
-                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Images", conf.BOOTFLOPPY))
+                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, conf.BOOTFLOPPY))
                 self.vbox.current_machine.set_boot_device('Floppy') 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Images", conf.BOOTISO))
+                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, conf.BOOTISO))
                 if not conf.LIVECD:
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
@@ -277,12 +277,15 @@ class OSBackend(object):
         logging.debug("conf.SWAPFILE: " + conf.SWAPFILE)
         if conf.SWAPFILE:
             try:
-                self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
-                logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
-                conf.DRIVERANK += 1
-                swap_rank = conf.DRIVERANK
-                shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.SWAPFILE), 
-                                path.join(self.tmp_swapdir, conf.SWAPFILE))
+                if not conf.LIVECD or sys.platform() != "win32":
+                    self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
+                    logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
+                    conf.DRIVERANK += 1
+                    swap_rank = conf.DRIVERANK
+                    shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.SWAPFILE), 
+                                    path.join(self.tmp_swapdir, path.basename(conf.SWAPFILE)))
+                else:
+                    self.tmp_swapdir = conf.DATADIR
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
