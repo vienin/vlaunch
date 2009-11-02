@@ -522,7 +522,6 @@ class BalloonMessage(QtGui.QWidget):
         QtGui.QWidget.__init__(self, None, 
                          QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.ToolTip)
 
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.parent = parent
         self.mAnchor = QtCore.QPoint()
         BalloonLayout = QtGui.QHBoxLayout(self)
@@ -555,23 +554,20 @@ class BalloonMessage(QtGui.QWidget):
         self.setAutoFillBackground(True)
 
         self.currentAlpha = 0
-        self.setWindowOpacity(1.0)
-        self.resize(180, 80)
+        self.setWindowOpacity(0.0)
+        self.setAnchor(QtCore.QPoint(app.tray.geometry().center().x(),
+                                     app.tray.geometry().bottom()))
+        self.resize(250, 80)
     
         self.timer = QtCore.QTimer(self)
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.timeout)
-        #self.timer.timeout.connect(self.timeout)
         self.timer.start(1)
 
         if timeout:
             self.destroytimer = QtCore.QTimer(self)
             self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy)
-            #self.destroytimer.timeout.connect(self.destroy)
             self.destroytimer.start(timeout)
 
-        deskRect = QtCore.QRect(desktop.availableGeometry())
-        self.mAnchor = QtCore.QPoint(app.tray.geometry().center().x(),
-                                     app.tray.geometry().bottom())
         self.show()
         self.connect(self, QtCore.SIGNAL("clicked()"), self.destroy)
 
@@ -586,6 +582,10 @@ class BalloonMessage(QtGui.QWidget):
 
     def setAnchor(self, anchor):
         self.mAnchor = anchor
+
+    def resizeEvent(self, evt):
+        mask = self.draw()
+        self.setMask(mask)
         deskRect = QtCore.QRect(desktop.availableGeometry())
         if self.mAnchor.y() > deskRect.height() / 2:
             y = - self.height() - 40
@@ -593,91 +593,30 @@ class BalloonMessage(QtGui.QWidget):
             y = 40
         self.move(deskRect.width() - self.width() - 10, self.mAnchor.y() + y)
 
-    def showUpdateWindow(self):
-        self.parent.parent.mainwidget.trayUpgradeSwitch()
-        self.parent.parent.show()
+    def draw(self, paintEvent=False):
+        mask = QtGui.QRegion()
 
-    def paintEvent(self, evt):
-        mask = QtGui.QRegion() # 10, 10, self.width() - 20, self.height() - 20)
-
-        corners = [
-            QtCore.QPoint(self.width() - 50, 10),
-            QtCore.QPoint(10, 10),
-            QtCore.QPoint(10, self.height() - 50),
-            QtCore.QPoint(self.width() - 50, self.height() - 50),
-            QtCore.QPoint(self.width() - 10, 10),
-            QtCore.QPoint(10, 10),
-            QtCore.QPoint(10, self.height() - 10),
-            QtCore.QPoint(self.width() - 10, self.height() - 10)
-            ]
-
-        painter = QtGui.QPainter(self)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
         path = QtGui.QPainterPath()
-        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 1, QtCore.Qt.SolidLine))
         path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
-
-        # get screen-geometry for screen our anchor is on
-        # (geometry can differ from screen to screen!
-        deskRect = QtCore.QRect(desktop.availableGeometry())
-
-        bottom = (self.mAnchor.y() + self.height()) > ((deskRect.y() + deskRect.height()-48));
-        right = (self.mAnchor.x() + self.width()) > ((deskRect.x() + deskRect.width()-48));
-
-        if right:
-            if bottom:
-                points = [ QtCore.QPointF(self.width(), self.height()),
-                           QtCore.QPointF(self.width() - 10, self.height() - 30),
-                           QtCore.QPointF(self.width() - 30, self.height() - 10) ]
-            else:
-                points = [ QtCore.QPointF(self.width() , 0),
-                           QtCore.QPointF(self.width() - 10,30),
-                           QtCore.QPointF(self.width() - 30,10) ]
+        
+        if paintEvent:
+            painter = QtGui.QPainter(self)
         else:
-            if bottom:
-                points = [ QtCore.QPointF(0, self.height()),
-                           QtCore.QPointF(10, self.height() - 30),
-                           QtCore.QPointF(30, self.height() - 10) ]
-            else:
-                points = [ QtCore.QPointF(0,0),
-                           QtCore.QPointF(10,30),
-                           QtCore.QPointF(30,10) ]
-
-        point = QtCore.QPointF(points[0].x(), points[0].y())
-        points += [ point ]
-        # path.addPolygon(QtGui.QPolygonF(points))
-
-        """
-        if right:
-            if bottom:
-                self.move(self.mAnchor.x() - self.width(), self.mAnchor.y() - self.height())
-            else:
-                if self.mAnchor.y() < 0:
-                    self.move(self.mAnchor.x() - self.width(), 0)
-                else:
-                    self.move(self.mAnchor.x() - self.width(), self.mAnchor.y())
-        else:
-            if bottom:
-                if self.mAnchor.x() < 0:
-                    self.move(0, self.mAnchor.y() - self.height())
-                else:
-                    self.move(self.mAnchor.x(), self.mAnchor.y() - self.height())
-            else:
-                if self.mAnchor.x() < 0:
-                    if self.mAnchor.y() < 0:
-                        self.move(0,0)
-                    else:
-                        self.move(0,self.mAnchor.y())
-                else:
-                    if self.mAnchor.y() < 0:
-                        self.move(self.mAnchor.x(),0)
-                    else:
-                        self.move(self.mAnchor.x(),self.mAnchor.y())
-        """
+            pixmap = QtGui.QPixmap(self.size())
+            painter = QtGui.QPainter()
+            painter.begin(pixmap)
+        
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 2, QtCore.Qt.SolidLine))
         painter.setClipPath(path)
         painter.drawPath(path)
         mask = painter.clipRegion()
-        self.setMask(mask)
+        if not paintEvent:
+            painter.end()
+        return mask
+
+    def paintEvent(self, evt):
+        self.draw(paintEvent=True)
 
 # Globals
 

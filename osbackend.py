@@ -458,8 +458,13 @@ class OSBackend(object):
             # minimize window while booting
             time.sleep(2)
             gui.app.minimize_window(self.vbox.current_machine.get_winid())
-            gui.app.show_balloon_progress(title=u"Démarrage de UFO",
-                                          msg=u"UFO est en cours de démarrage.")
+            if self.vbox.current_machine.get_winid() != 0:
+                gui.app.show_balloon_progress(title=u"Démarrage de UFO",
+                                              msg=u"UFO est en cours de démarrage.")
+            else:
+                gui.app.show_balloon_message(title=u"Démarrage de UFO",
+                                             msg=u"UFO est en cours de démarrage.",
+                                             timeout=10000)
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
@@ -578,13 +583,16 @@ class OSBackend(object):
         self.kill_resilient_vbox()
         self.cleanup()
 
+    def global_prepare(self):
+        self.prepare()
+
     def run(self):
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
 
         # prepare environement
         logging.debug("Preparing environment")
-        self.prepare()
+        self.global_prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()
 

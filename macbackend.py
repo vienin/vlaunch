@@ -10,6 +10,7 @@ import conf
 import shutil
 import gui
 import tempfile
+import utils
 
 from osbackend import OSBackend
 
@@ -83,7 +84,7 @@ class MacBackend(OSBackend):
         return path.join(tmpdir, "UFO.app", "Contents", "MacOS", "UFO")
 
     def get_model(self, dev):
-        medianame = grep(self.call(["/usr/sbin/diskutil", "info", dev]), "Media Name:")
+        medianame = utils.grep(self.call(["/usr/sbin/diskutil", "info", dev]), "Media Name:")
         if medianame:
             return medianame[medianame.find(':') + 1:]
 
@@ -91,7 +92,7 @@ class MacBackend(OSBackend):
         return ""
     
     def find_device_by_volume(self, dev_volume):
-        output = grep(self.call([ "diskutil", "list" ], output=True)[1], " " + dev_volume + " ").split()
+        output = utils.grep(self.call([ "diskutil", "list" ], output=True)[1], " " + dev_volume + " ").split()
         if output:
             return "/dev/" + output[-1][:-2]
         return ""
@@ -106,7 +107,7 @@ class MacBackend(OSBackend):
 
     def get_free_ram(self):
         maxmem = 384
-        mem = grep(self.call([ "top", "-l", "1" ], output=True)[1], "PhysMem:").split()
+        mem = utils.grep(self.call([ "top", "-l", "1" ], output=True)[1], "PhysMem:").split()
         for ind, val in enumerate(mem):
             if ind > 0 and val in [ "inactive", "free", "free." ]:
                 val = mem[ind - 1]
@@ -127,11 +128,11 @@ class MacBackend(OSBackend):
         try: 
             for device in glob.glob("/dev/disk[0-9]s[0-9]"):
                 infos = self.call([ "diskutil", "info", device ], output=True)[1]
-                if grep(infos, "Protocol:").split()[1] == "USB" and \
-                   len(grep(infos, "Volume Name:").split()) > 2 and \
-                   len(grep(infos, "Mount Point:").split()) > 2:
-                    disks.append((grep(infos, "Mount Point:").split()[2],
-                                  " ".join(grep(infos, "Volume Name:").split()[2:])))
+                if utils.grep(infos, "Protocol:").split()[1] == "USB" and \
+                   len(utils.grep(infos, "Volume Name:").split()) > 2 and \
+                   len(utils.grep(infos, "Mount Point:").split()) > 2:
+                    disks.append((utils.grep(infos, "Mount Point:").split()[2],
+                                  " ".join(utils.grep(infos, "Volume Name:").split()[2:])))
         except: return []
         return disks
 
@@ -140,8 +141,8 @@ class MacBackend(OSBackend):
         try: 
             for device in glob.glob("/dev/disk[0-9]"):
                 infos = self.call([ "diskutil", "info", device ], output=True)[1]
-                if grep(infos, "Protocol:").split()[1] == "USB":
-                    disks.append([ device, " ".join(grep(infos, "Media Name:").split()[2:]) ])
+                if utils.grep(infos, "Protocol:").split()[1] == "USB":
+                    disks.append([ device, " ".join(utils.grep(infos, "Media Name:").split()[2:]) ])
         except: return []
         return disks
 
@@ -196,10 +197,10 @@ class MacBackend(OSBackend):
                     shutil.copyfile("/etc/fstab", "/etc/fstab.bak")
     
             for partition in glob.glob(disk + "s*"):
-                volname = grep(self.call([ "diskutil", "info", partition ], output=True)[1], "Volume Name:").split()
+                volname = utils.grep(self.call([ "diskutil", "info", partition ], output=True)[1], "Volume Name:").split()
                 if not volname or len(volname) < 3: continue
                 volname = volname[2]
-                fstype = grep(self.call([ "diskutil", "info", partition ], output=True)[1], "File System:").split()
+                fstype = utils.grep(self.call([ "diskutil", "info", partition ], output=True)[1], "File System:").split()
                 if fstype:
                     fstype = fstype[2]
                     fstype = { "MS-DOS" : "msdos", "Ext2" : "ext2", "Ext3" : "ext3" }.get(fstype, fstype)
@@ -286,7 +287,7 @@ class MacBackend(OSBackend):
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")
             
-            os.symlink(path.join(conf.UFO_DIR, "Mac-Intel", "UFO.app", "Contents", "Resources", "VirtualBox.app"),
+            os.symlink(path.join(conf.BIN, "..", ".."),
                        "/Applications/VirtualBox.app")
                          
             # Restore permissions
