@@ -10,7 +10,7 @@ py2app:
 		ln -s launcher.py ../src/UFO.py; \
 	fi; \
 	rm -rf dist build
-	python setup-mac.py py2app # --no-strip --packages=PyQt4
+	python ../src/setup-mac.py py2app # --no-strip --packages=PyQt4
 
 pkg: py2app
 	mkdir -p dist/packagemaker/Applications
