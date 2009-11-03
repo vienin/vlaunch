@@ -1,5 +1,5 @@
 NAME=vlaunch
-VERSION=0.7
+VERSION=0.9
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/animated-bar.mng \

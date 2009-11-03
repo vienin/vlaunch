@@ -572,11 +572,10 @@ class BalloonMessage(QtGui.QWidget):
             Layout2.addWidget(self.progressBar)
 
         self.setAutoFillBackground(True)
-
+        deskRect = QtCore.QRect(desktop.availableGeometry())
+        self.up = self.mAnchor.y() < deskRect.height() / 2
         self.currentAlpha = 0
         self.setWindowOpacity(0.0)
-        self.setAnchor(QtCore.QPoint(app.tray.geometry().center().x(),
-                                     app.tray.geometry().bottom()))
         self.resize(250, 80)
     
         self.timer = QtCore.QTimer(self)
@@ -600,18 +599,15 @@ class BalloonMessage(QtGui.QWidget):
             self.timer.start(1)
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
 
-    def setAnchor(self, anchor):
-        self.mAnchor = anchor
-
     def resizeEvent(self, evt):
         mask = self.draw()
         self.setMask(mask)
         deskRect = QtCore.QRect(desktop.availableGeometry())
-        if self.mAnchor.y() > deskRect.height() / 2:
-            y = - self.height() - 40
+        if self.up:
+            y = app.tray.geometry().bottom() + 10
         else:
-            y = 40
-        self.move(deskRect.width() - self.width() - 10, self.mAnchor.y() + y)
+            y = app.tray.geometry().up() - self.height() - 10
+        self.move(deskRect.width() - self.width() - 10, y)
 
     def draw(self, paintEvent=False):
         mask = QtGui.QRegion()
