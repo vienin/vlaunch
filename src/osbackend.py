@@ -235,11 +235,11 @@ class OSBackend(object):
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
-                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, conf.BOOTFLOPPY))
+                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Images", conf.BOOTFLOPPY))
                 self.vbox.current_machine.set_boot_device('Floppy') 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, conf.BOOTISO))
+                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Images", conf.BOOTISO))
                 if not conf.LIVECD:
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
@@ -477,7 +477,9 @@ class OSBackend(object):
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting
             time.sleep(2)
+            
             winid = self.vbox.current_machine.get_winid()
+            logging.debug("Get winid : " + str(winid))
             gui.app.minimize_window(winid)
             if winid != 0:
                 gui.app.show_balloon_progress(title=u"Démarrage de UFO",

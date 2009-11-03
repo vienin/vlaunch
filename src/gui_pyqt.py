@@ -37,6 +37,7 @@ class QtUFOGui(QtGui.QApplication):
         self.wait_window     = None
         self.animation       = None
         self.tray            = None
+        self.splash          = None
         self.usb_check_timer = None
         self.callbacks_timer = None
         self.console_window  = None
@@ -126,10 +127,10 @@ class QtUFOGui(QtGui.QApplication):
 
     def create_splash_screen(self):
         self.create_splash_event = CreateSplashEvent()
-        self.postEvent(self, self.create_splash_event)
+        self.sendEvent(self, self.create_splash_event)
 
     def destroy_splash_screen(self):
-        self.postEvent(self, DestroySplashEvent())
+        self.sendEvent(self, DestroySplashEvent())
 
     def initialize_tray_icon(self):
         self.postEvent(self, SetTrayIconEvent())
