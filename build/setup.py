@@ -36,6 +36,9 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 </assembly>
 """
 
+sys.path.append("..")
+sys.path.append("../src")
+
 setup(zipfile = None,
       options = {'py2exe': { 'bundle_files': 1,
                               'includes': ['sip', 'win32com.server.util', 'pythoncom'],
@@ -47,7 +50,7 @@ setup(zipfile = None,
                               "typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 3)],
                 }},
 
-      windows = [{'script': "ufo.py",
+      windows = [{'script': "../src/ufo.py",
                    "icon_resources" : [(1, "../graphics/UFO.ico")],
                    "other_resources": [(24, 1, manifest)],
                   }],
