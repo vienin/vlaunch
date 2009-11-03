@@ -4,17 +4,17 @@ set PATH=F:\Qt\4.5.2\bin;%PATH%;%VBOX_PATH%;
 cmd /C comregister.cmd
 set PATH=%OLDPATH%
 del /F /Q /S dist build
-copy ../src/launcher.py ../src/ufo.py
-del ../src/subprocess.py*
+copy ..\src\launcher.py ..\src\ufo.py
+del ..\src\subprocess.py*
 setup.py py2exe
 rem copy ufo.exe.manifest dist
 mkdir dist\settings
 mkdir dist\.VirtualBox
-copy settings.conf.win32 dist\settings\settings.conf
-copy ../graphics/ufo-generic.png dist\.VirtualBox
-copy ../graphics/ufo-generic.bmp dist\.VirtualBox
-copy ../graphics/updater-install.png dist\.VirtualBox
-copy ../graphics/updater-download.png dist\.VirtualBox
+copy settings.conf dist\settings\settings.conf
+copy ..\graphics\ufo-generic.png dist\.VirtualBox
+copy ..\graphics\ufo-generic.bmp dist\.VirtualBox
+copy ..\graphics\updater-install.png dist\.VirtualBox
+copy ..\graphics\updater-download.png dist\.VirtualBox
 rem mt -inputresource:dist\ufo.exe;#1 -manifest ufo.exe.manifest -outputresource:dist\ufo.exe;#1
 cd dist
 rename launcher.exe ufo.exe
