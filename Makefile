@@ -1,14 +1,10 @@
 NAME=vlaunch
 VERSION=0.7
-SOURCES=settings.conf *.py set_xml_attr boot ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng README COPYING vboxapi sdk\
-        bootfloppy.img launcher-linux.py \
-        vbox-client-symlink.desktop \
-        vbox-client-dnd.desktop \
-        vbox-client-dnd vbox-client-dnd.pam vbox-client-dnd.console \
-        vbox-client-symlink vbox-client-symlink.pam vbox-client-symlink.console \
-        vbox-get-property vbox-get-property.pam vbox-get-property.console \
-        autorun.inf UFO.ico UFO.svg UFO.png DS_Store .background .autorun ask-password \
-        VolumeIcon.icns VolumeIcon-OS-trick
+SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
+        guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
+        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/animated-bar.mng \
+        graphics/UFO.ico graphics/UFO.svg graphics/UFO.png  graphics/.background graphics/VolumeIcon.icns \
+        build/settings.conf build/bootfloppy.img build/.autorun build/autorun.inf build/DS_Store
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -73,7 +69,7 @@ install:
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	# cp VolumeIcon-OS-trick $(DESTDIR)$(TARGET_PATH)/
 	# pushd . && cd $(DESTDIR)$(TARGET_PATH) && python -c "import os; os.rename('VolumeIcon-OS-trick', '._\xef\x80\xa9')" && popd

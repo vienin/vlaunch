@@ -1,5 +1,24 @@
 # -*- coding: utf-8 -*-
 
+# UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
+#
+# Copyright (c) 2008-2009 Agorabox, Inc.
+#
+# This is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
+
+
 import logging
 import commands
 import glob
@@ -20,6 +39,7 @@ import utils
 
 from ufovboxapi import *
 from ConfigParser import ConfigParser
+
 
 class UFOVboxMonitor(VBoxMonitor):
     
@@ -82,7 +102,7 @@ class OSBackend(object):
 
     def create_splash_screen(self):
         gui.app.create_splash_screen()
-
+        
     def destroy_splash_screen(self):
         gui.app.destroy_splash_screen()
         
@@ -457,8 +477,9 @@ class OSBackend(object):
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting
             time.sleep(2)
-            gui.app.minimize_window(self.vbox.current_machine.get_winid())
-            if self.vbox.current_machine.get_winid() != 0:
+            winid = self.vbox.current_machine.get_winid()
+            gui.app.minimize_window(winid)
+            if winid != 0:
                 gui.app.show_balloon_progress(title=u"Démarrage de UFO",
                                               msg=u"UFO est en cours de démarrage.")
             else:
@@ -478,7 +499,7 @@ class OSBackend(object):
             gui.app.hide_balloon()
             gui.app.set_tooltip(u"UFO: terminé")
             gui.app.show_balloon_message(u"Au revoir", 
-                                         u"Vous pouvez débrancher votre clé UFO en toute securité.")
+                                         u"Vous pouvez éjecter votre clé UFO en toute securité.")
 
             # Let's show ballon message 3s
             time.sleep(3)
@@ -579,12 +600,10 @@ class OSBackend(object):
         try:
             self.vbox.cleanup()
             del self.vbox
-        except: pass
+        except: 
+            pass
         self.kill_resilient_vbox()
         self.cleanup()
-
-    def global_prepare(self):
-        self.prepare()
 
     def run(self):
         logging.debug("BIN path: " + conf.BIN)
@@ -592,10 +611,10 @@ class OSBackend(object):
 
         # prepare environement
         logging.debug("Preparing environment")
-        self.global_prepare()
+        self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()
-
+        
         gui.app.initialize_tray_icon()
         
         # generate raw vmdk for usb key
@@ -605,23 +624,24 @@ class OSBackend(object):
         if ret == conf.STATUS_NORMAL:
             logging.debug("awaited device found on " + str(conf.DEV))
             if self.prepare_device(conf.DEV):
-                logging.debug("Unable to umount %s, exiting script" % (conf.DEV,))
                 sys.exit(1)
             create_vmdk = True
+            
         elif ret == conf.STATUS_IGNORE:
             logging.debug("no vmdk generation needed")
+            
         elif ret == conf.STATUS_EXIT:
             logging.debug("no device found, do not start machine")
             sys.exit(1)
         
         # build virtual machine as host capabilities
-        logging.debug("Creating Virtual Machine")
+        logging.debug("Creating virtual machine")
         self.init_vbox_hypervisor()
         self.create_virtual_machine()
         self.configure_virtual_machine(create_vmdk = create_vmdk)
 
         # launch vm
-        logging.debug("Launching Virtual Machine")
+        logging.debug("Launching virtual machine")
         self.run_virtual_machine(self.env)
         self.wait_for_termination()
 

@@ -5,9 +5,9 @@ VBOXAPP=dist/UFO.app/Contents/Resources/VirtualBox.app
 VBOXMACOS=dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
 
 py2app:
-	if [ ! -f UFO.py ]; \
+	if [ ! -f ../src/UFO.py ]; \
 	then \
-		ln -s launcher.py UFO.py; \
+		ln -s launcher.py ../src/UFO.py; \
 	fi; \
 	rm -rf dist build
 	python setup-mac.py py2app # --no-strip --packages=PyQt4
