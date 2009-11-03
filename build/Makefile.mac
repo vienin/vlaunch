@@ -10,7 +10,7 @@ py2app:
 		ln -s launcher.py ../src/UFO.py; \
 	fi; \
 	rm -rf dist build
-	python ../src/setup-mac.py py2app # --no-strip --packages=PyQt4
+	python setup-mac.py py2app # --no-strip --packages=PyQt4
 
 pkg: py2app
 	mkdir -p dist/packagemaker/Applications
@@ -82,7 +82,7 @@ mac-launcher: clean py2app
 	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython.so
 
 	cd dist && tar cvzf mac-intel.tgz UFO.app
-	cp *.png *.bmp *.mng dist/UFO.app/Contents/Resources/.VirtualBox
+	cp ../graphics/*.png ../graphics/*.bmp ../graphics/*.mng dist/UFO.app/Contents/Resources/.VirtualBox
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt; \
