@@ -1,0 +1,13 @@
+
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Terminal=false
+Name[fr_FR]=Toggle Fullscreen
+Exec=/usr/bin/toggle-fullscreen
+Comment[fr_FR]=Passer du mode Plein Ecran au mode Fenêtré et inversement
+Name=Toggle Fullscreen
+Comment=Passer du mode Plein Ecran au mode Fenêtré et inversement
+Icon=/usr/share/icons/hicolor/48x48/actions/actions-toggle-fullscreen.png
+NoDisplay=true

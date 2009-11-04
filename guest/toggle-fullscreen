@@ -1,0 +1,3 @@
+#!/bin/sh
+
+VBoxControl guestproperty set /UFO/GUI/Fullscreen "1"

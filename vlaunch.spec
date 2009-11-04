@@ -20,7 +20,7 @@ Requires:       kernel-vbox python-augeas
 %package guest
 Summary: Install guest part files
 Group: Applications/System
-Requires: VirtualBox-OSE-guest >= 2.2.4
+Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui
 
 %package generic
 Summary: Install specific files for generic distribution
@@ -146,17 +146,22 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/pam.d/vbox-client-dnd
 %{_sysconfdir}/pam.d/vbox-client-symlink
 %{_sysconfdir}/pam.d/vbox-get-property
+%{_sysconfdir}/pam.d/toggle-fullscreen
 %{_sysconfdir}/security/console.apps/vbox-client-dnd
 %{_sysconfdir}/security/console.apps/vbox-client-symlink
 %{_sysconfdir}/security/console.apps/vbox-get-property
+%{_sysconfdir}/security/console.apps/toggle-fullscreen
 %{_bindir}/vbox-client-symlink
 %{_bindir}/vbox-client-dnd
 %{_bindir}/vbox-get-property
+%{_bindir}/toggle-fullscreen
 %{_sbindir}/vbox-client-symlink
 %{_sbindir}/vbox-client-dnd
 %{_sbindir}/vbox-get-property
+%{_sbindir}/toggle-fullscreen
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
+%{_datadir}/applications/toggle-fullscreen.desktop
 
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp

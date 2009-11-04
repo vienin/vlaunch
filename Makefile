@@ -2,6 +2,7 @@ NAME=vlaunch
 VERSION=0.9
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
+        guest/toggle-fullscreen* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/animated-bar.mng \
         graphics/UFO.ico graphics/UFO.svg graphics/UFO.png  graphics/.background graphics/VolumeIcon.icns \
         build/settings.conf build/bootfloppy.img build/.autorun build/autorun.inf build/DS_Store
@@ -84,21 +85,26 @@ install:
 	install -D -m 644 vbox-client-symlink.pam $(DESTDIR)/etc/pam.d/vbox-client-symlink
 	install -D -m 644 vbox-client-dnd.pam $(DESTDIR)/etc/pam.d/vbox-client-dnd
 	install -D -m 644 vbox-get-property.pam $(DESTDIR)/etc/pam.d/vbox-get-property
+	install -D -m 644 toggle-fullscreen.pam $(DESTDIR)/etc/pam.d/toggle-fullscreen
 
 	install -D -m 644 vbox-client-symlink.console $(DESTDIR)/etc/security/console.apps/vbox-client-symlink
 	install -D -m 644 vbox-client-dnd.console $(DESTDIR)/etc/security/console.apps/vbox-client-dnd
 	install -D -m 644 vbox-get-property.console $(DESTDIR)/etc/security/console.apps/vbox-get-property
+	install -D -m 644 toggle-fullscreen.console $(DESTDIR)/etc/security/console.apps/vtoggle-fullscreen
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
 	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-symlink
 	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-dnd
 	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-get-property
+	ln -s consolehelper $(DESTDIR)/usr/bin/toggle-fullscreen
 	install -D -m 755 vbox-client-symlink $(DESTDIR)/usr/sbin/vbox-client-symlink
 	install -D -m 644 vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart/vbox-client-symlink.desktop
 	install -D -m 755 vbox-client-dnd $(DESTDIR)/usr/sbin
 	install -D -m 644 vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 755 vbox-get-property $(DESTDIR)/usr/sbin
+	install -D -m 755 toggle-fullscreen $(DESTDIR)/usr/sbin
+	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications
 	
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \

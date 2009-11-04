@@ -430,8 +430,8 @@ class OSBackend(object):
                 gui.app.hide_balloon()
                 if self.vbox.is_vbox_OSE():
                     # We hope that is it our VirtualBox OSE
-                    self.vbox.current_machine.set_guest_property("/VirtualBox/GuestAdd/tFS/tFS", "1")
-                    gui.app.console_window.showNormal()
+                    self.vbox.current_machine.machine.showConsoleFullscreen(False)
+                    #gui.app.console_window.showNormal()
                 else:
                     gui.app.fullscreen_window(self.vbox.current_machine.get_winid())
                 
@@ -469,11 +469,11 @@ class OSBackend(object):
                                               msg=u"UFO est en cours de redémarrage.")
                 
         # Fullscreen management
-        # elif name == "/VirtualBox/GuestAdd/tFS/tFS":
-        #    if newValue == "1":
-        #        self.window.showFullScreen()
-        #    else:
-        #        self.window.showNormal()
+        elif name == "/UFO/GUI/Fullscreen":
+            if newValue == "1":
+                self.vbox.current_machine.machine.showConsoleFullscreen(True)
+            else:
+                self.vbox.current_machine.machine.showConsoleFullscreen(False)
         
     def onMachineStateChange(self, state):
 
@@ -486,9 +486,8 @@ class OSBackend(object):
             time.sleep(2)
             
             winid = self.vbox.current_machine.get_winid()
-            logging.debug("Get winid : " + str(winid))
             gui.app.minimize_window(winid)
-            if winid != 0:
+            if self.vbox.is_vbox_OSE() or winid != 0:
                 gui.app.show_balloon_progress(title=u"Démarrage de UFO",
                                               msg=u"UFO est en cours de démarrage.")
             else:
