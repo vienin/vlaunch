@@ -5,7 +5,7 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/toggle-fullscreen* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/animated-bar.mng \
         graphics/UFO.ico graphics/UFO.svg graphics/UFO.png  graphics/.background graphics/VolumeIcon.icns \
-        build/settings.conf build/bootfloppy.img build/.autorun build/autorun.inf build/DS_Store
+        setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -90,7 +90,7 @@ install:
 	install -D -m 644 vbox-client-symlink.console $(DESTDIR)/etc/security/console.apps/vbox-client-symlink
 	install -D -m 644 vbox-client-dnd.console $(DESTDIR)/etc/security/console.apps/vbox-client-dnd
 	install -D -m 644 vbox-get-property.console $(DESTDIR)/etc/security/console.apps/vbox-get-property
-	install -D -m 644 toggle-fullscreen.console $(DESTDIR)/etc/security/console.apps/vtoggle-fullscreen
+	install -D -m 644 toggle-fullscreen.console $(DESTDIR)/etc/security/console.apps/toggle-fullscreen
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
@@ -104,7 +104,7 @@ install:
 	install -D -m 644 vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 755 vbox-get-property $(DESTDIR)/usr/sbin
 	install -D -m 755 toggle-fullscreen $(DESTDIR)/usr/sbin
-	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications
+	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
 	
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \

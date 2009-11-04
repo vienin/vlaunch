@@ -34,6 +34,10 @@ class VBoxHypervisor():
         from vboxapi import VirtualBoxManager
         from vboxapi import VirtualBoxReflectionInfo
 
+        self.current_machine = None
+        self.session = None
+        self.cleaned = False
+        
         self.vm_manager = VirtualBoxManager(None, None)
         self.constants = VirtualBoxReflectionInfo()
         self.mgr  = self.vm_manager.mgr
@@ -50,9 +54,6 @@ class VBoxHypervisor():
             self.vbox_callback_obj = vbox_callback_arg
             self.callbacks_aware = False
             
-        self.current_machine = None
-        self.session = None
-        self.cleaned = False
         self.vbox.saveSettings()
     
     def __del__(self):
