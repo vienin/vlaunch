@@ -405,6 +405,13 @@ class OSBackend(object):
         elif os.path.dirname(name) == "/UFO/Com/HostToGuest/Shares/Remove":
             self.vbox.current_machine.remove_shared_folder(os.path.basename(name))
         
+        # UFO settings management
+	elif os.path.dirname(name) == "/UFO/Settings":
+            cp = ConfigParser()
+            cp.read(conf.conf_file)
+            cp.set("guest", string.lower(os.path.basename(name)), newValue)
+            cp.write(open(conf.conf_file, "w"))
+        
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
             if not self.vbox.current_machine.is_booting:
