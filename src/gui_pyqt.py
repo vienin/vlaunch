@@ -29,6 +29,7 @@ import logging
 import glob
 
 class QtUFOGui(QtGui.QApplication):
+        
     def __init__(self, argv):
         QtGui.QApplication.__init__(self, argv)
 
@@ -89,11 +90,19 @@ class QtUFOGui(QtGui.QApplication):
                     self.console_window = QtGui.QWidget()
                     self.console_window.create(int(event.winid), False, False)
                     
-                if event.show:
-                    self.console_window.showFullScreen()
-                else:
-                    self.console_window.show()
+                self.console_window.show()
+                if event.type == ConsoleWindowEvent.defs.get('ShowMinimized'):
                     self.console_window.showMinimized()
+                
+                if event.type == ConsoleWindowEvent.defs.get('ShowFullscreen'):
+                    self.console_window.showMaximized()
+                elif event.type == ConsoleWindowEvent.defs.get('ToggleFullscreen'):
+                    if self.console_window.isFullscreen() or self.console_window.isMaximized():
+                        self.console_window.showNormal()
+                    else:
+                        self.console_window.showMinimized()
+                else:
+                    return False
                     
         elif isinstance(event, TimerEvent):
             if event.stop:
@@ -164,31 +173,43 @@ class QtUFOGui(QtGui.QApplication):
                                                100))
 
     def show_balloon_message(self, title, msg, timeout=0):
-        self.postEvent(self, BalloonMessageEvent(title, 
-                                                 msg, 
-                                                 timeout))
+        self.postEvent(self, 
+                       BalloonMessageEvent(title, 
+                                           msg, 
+                                           timeout))
         
     def show_balloon_progress(self, title, msg):
-        self.postEvent(self, BalloonMessageEvent(title, 
-                                                 msg, 
-                                                 timeout=0, 
-                                                 progress=True))
+        self.postEvent(self, 
+                       BalloonMessageEvent(title, 
+                                           msg, 
+                                           timeout=0, 
+                                           progress=True))
         
     def hide_balloon(self):
-        self.postEvent(self, BalloonMessageEvent(title=None, 
-                                                 msg=None, 
-                                                 timeout=0, 
-                                                 progress=None, 
-                                                 show=False))
+        self.postEvent(self, 
+                       BalloonMessageEvent(title=None, 
+                                           msg=None, 
+                                           timeout=0, 
+                                           progress=None, 
+                                           show=False))
         
     def set_tooltip(self, tip):
         self.postEvent(self, ToolTipEvent(tip))
         
-    def fullscreen_window(self, winid):
-        self.postEvent(self, ConsoleWindowEvent(winid, True))
+    def fullscreen_window(self, winid, toggle):
+        if toggle:
+            type = 'ToggleFullscreen'
+        else:
+            type = 'ShowFullscreen'
+            
+        self.postEvent(self, 
+                       ConsoleWindowEvent(winid, 
+                                          ConsoleWindowEvent.defs.get(type)))
         
     def minimize_window(self, winid):
-        self.postEvent(self, ConsoleWindowEvent(winid, False))
+        self.postEvent(self, 
+                       ConsoleWindowEvent(winid, 
+                                          ConsoleWindowEvent.defs.get('ShowMinimized')))
         
     def process_gui_events(self):
         self.processEvents()
@@ -241,10 +262,15 @@ class ToolTipEvent(QtCore.QEvent):
         self.tip = tip
 
 class ConsoleWindowEvent(QtCore.QEvent):
-    def __init__(self, winid, show):
+    
+    defs = {'ShowMinimized':0,
+            'ShowFullscreen':1,
+            'ToggleFullscreen':2}
+    
+    def __init__(self, winid, type):
         super(ConsoleWindowEvent, self).__init__(QtCore.QEvent.None)
         self.winid = winid
-        self.show  = show
+        self.type  = type
 
 class FinishedEvent(QtCore.QEvent):
     def __init__(self, error=False):

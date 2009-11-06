@@ -29,7 +29,7 @@ import gui
 import sys
 
 class VBoxHypervisor():
-
+                        
     def __init__(self, vbox_callback_class = None, vbox_callback_arg = None):
         from vboxapi import VirtualBoxManager
         from vboxapi import VirtualBoxReflectionInfo
@@ -39,7 +39,7 @@ class VBoxHypervisor():
         self.cleaned = False
         
         self.vm_manager = VirtualBoxManager(None, None)
-        self.constants = VirtualBoxReflectionInfo()
+        self.constants = VirtualBoxReflectionInfo(False)
         self.mgr  = self.vm_manager.mgr
         self.vbox = self.vm_manager.vbox
         
@@ -249,13 +249,38 @@ class VBoxMachine():
         del self.machine
         
     def get_winid(self):
-        if self.winid == 0:
+        if self.winid == 0 and \
+           self.hypervisor.session.state == self.hypervisor.constants.SessionState_Open:
             try:
                 self.winid = self.machine.showConsoleWindow()
             except:
                 self.winid = 0
         return self.winid
-
+    
+    def showFullscreen(self, toggle):
+        if self.hypervisor.is_vbox_OSE():
+            # We hope that is it our VirtualBox OSE
+            try:
+                self.machine.showConsoleFullscreen(toggle)
+                return
+            except:
+                raise
+                logging.debug("showConsoleFullscreen isn't defined in this OSE version")
+                
+        gui.app.fullscreen_window(self.get_winid(), toggle)
+                    
+    def showMinimized(self):
+        if self.hypervisor.is_vbox_OSE():
+            # We hope that is it our VirtualBox OSE
+            try:
+                self.machine.showConsoleMinimized()
+                return
+            except:
+                raise
+                logging.debug("showConsoleMinimized isn't defined in this OSE version")
+                
+        gui.app.minimize_window(self.get_winid())
+        
     def start(self):
         session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
         progress = self.hypervisor.vm_manager.vbox.openRemoteSession(session, self.uuid, "gui", "")

@@ -212,8 +212,10 @@ class OSBackend(object):
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
                 logging.debug("Enabling virtualization extensions")
                 self.vbox.current_machine.machine.HWVirtExEnabled = True
-                # nbprocs = int(self.vbox.host.get_nb_procs())
-                nbprocs = 1
+                if False:
+                    nbprocs = int(self.vbox.host.get_nb_procs())
+                else:
+                    nbprocs = 1
                 logging.debug(str(nbprocs) + " processors available on host")
                 if nbprocs >= 2:
                     nbprocs = max(2, nbprocs / 2)
@@ -322,7 +324,7 @@ class OSBackend(object):
 
                 # TODO:
                 # Set guest prop about max size of the overlay to 
-                # to set apropriate quota within guest side.
+                # to set appropriate quota within guest side.
                 #
                 # free_size = self.get_free_size(self.tmp_overlaydir)
                 # if free_size:
@@ -420,7 +422,9 @@ class OSBackend(object):
         
         # Resolution changes management
         elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
-            # Sometimes, we don't receive last percent event
+            # we NEVER receive last percent event,
+            # so we use /VirtualBox/GuestAdd/Vbgl/Video/SavedMode event
+            # raised at slim startup to catch end of oot progress
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
                 gui.app.update_progress(gui.app.tray.progress, str("1.000"))
@@ -428,12 +432,8 @@ class OSBackend(object):
                 
                 time.sleep(1)
                 gui.app.hide_balloon()
-                if self.vbox.is_vbox_OSE():
-                    # We hope that is it our VirtualBox OSE
-                    self.vbox.current_machine.machine.showConsoleFullscreen(False)
-                    #gui.app.console_window.showNormal()
-                else:
-                    gui.app.fullscreen_window(self.vbox.current_machine.get_winid())
+                self.vbox.current_machine.showFullscreen(False)
+                self.vbox.current_machine.set_guest_property('/VirtualBox/GuestAdd/Vbgl/Video/SavedMode', '800x600x32')
                 
         # Overlay data reintegration infos
         elif name == "/UFO/Overlay/Size":
@@ -442,11 +442,11 @@ class OSBackend(object):
         # Custom machine state management
         elif name == "/UFO/State":
             if newValue == "LOGGED_IN":
-                #start usb check loop
+                # Start usb check loop
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
                 
             elif newValue == "CLOSING_SESSION":
-                gui.app.minimize_window(self.vbox.current_machine.get_winid())
+                self.vbox.current_machine.showMinimized()
                 gui.app.show_balloon_message(title=u"Sauvegarde des données", 
                                              msg=u"UFO est en train d'enregistrer les modifications du système (" + 
                                                  str(self.vbox.current_machine.overlay_data_size) + 
@@ -471,9 +471,10 @@ class OSBackend(object):
         # Fullscreen management
         elif name == "/UFO/GUI/Fullscreen":
             if newValue == "1":
-                self.vbox.current_machine.machine.showConsoleFullscreen(True)
+                toggle = True
             else:
-                self.vbox.current_machine.machine.showConsoleFullscreen(False)
+                toggle = False
+            self.vbox.current_machine.showFullscreen(toggle)
         
     def onMachineStateChange(self, state):
 
@@ -484,16 +485,9 @@ class OSBackend(object):
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting
             time.sleep(2)
-            
-            winid = self.vbox.current_machine.get_winid()
-            gui.app.minimize_window(winid)
-            if self.vbox.is_vbox_OSE() or winid != 0:
-                gui.app.show_balloon_progress(title=u"Démarrage de UFO",
-                                              msg=u"UFO est en cours de démarrage.")
-            else:
-                gui.app.show_balloon_message(title=u"Démarrage de UFO",
-                                             msg=u"UFO est en cours de démarrage.",
-                                             timeout=10000)
+            self.vbox.current_machine.showMinimized()
+            gui.app.show_balloon_progress(title=u"Démarrage de UFO",
+                                          msg=u"UFO est en cours de démarrage.")
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
