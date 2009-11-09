@@ -258,14 +258,13 @@ class VBoxMachine():
                 self.winid = 0
         return self.winid
     
-    def showFullscreen(self, toggle):
+    def showFullscreen(self, toggle, rwidth=0, rheigth=0):
         if self.hypervisor.is_vbox_OSE():
             # We hope that is it our VirtualBox OSE
             try:
-                self.machine.showConsoleFullscreen(toggle)
+                self.machine.showConsoleFullscreen(toggle, rwidth, rheigth)
                 return
             except:
-                raise
                 logging.debug("showConsoleFullscreen isn't defined in this OSE version")
                 
         gui.app.fullscreen_window(self.get_winid(), toggle)
@@ -277,7 +276,6 @@ class VBoxMachine():
                 self.machine.showConsoleMinimized()
                 return
             except:
-                raise
                 logging.debug("showConsoleMinimized isn't defined in this OSE version")
                 
         gui.app.minimize_window(self.get_winid())
