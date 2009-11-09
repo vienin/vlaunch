@@ -597,9 +597,9 @@ class OSBackend(object):
         if self.dnddir:
             shutil.rmtree(self.dnddir)
         if self.tmp_swapdir:
-            os.unlink(path.join(self.tmp_swapdir, conf.SWAPFILE))
+            os.unlink(path.join(self.tmp_swapdir, path.basename(conf.SWAPFILE)))
         if self.tmp_overlaydir:
-            os.unlink(path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
+            os.unlink(path.join(self.tmp_overlaydir, path.basename(conf.OVERLAYFILE)))
 
         logging.debug("Cleaning VBoxHypervisor")
         try:

@@ -47,7 +47,7 @@ setup(zipfile = None,
                               # 'dll_excludes': [ "PyQt4\\QtCore.pyd", "PyQt4\\QtGui.pyd",
                               #                   "PyQt4\\QtNetwork.pyd",
                               #                   "QtCore4.dll", "QtGui4.dll", "QtNetwork4.dll" ],
-                              "typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 3)],
+                              "typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 0)],
                 }},
 
       windows = [{'script': "../src/ufo.py",

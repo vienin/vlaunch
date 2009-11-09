@@ -1,4 +1,4 @@
-set VBOX_PATH=F:\VirtualBox-3.0.4_OSE\out\win.x86\release\bin
+set VBOX_PATH=F:\vbox\out\win.x86\release\bin
 set OLDPATH=%PATH%
 set PATH=F:\Qt\4.5.2\bin;%PATH%;%VBOX_PATH%;
 cmd /C comregister.cmd
@@ -6,7 +6,10 @@ set PATH=%OLDPATH%
 del /F /Q /S dist build
 copy ..\src\launcher.py ..\src\ufo.py
 del ..\src\subprocess.py*
+cd ..\src
 setup.py py2exe
+copy dist\ufo.exe ..\setup\dist
+cd ..\setup
 rem copy ufo.exe.manifest dist
 mkdir dist\settings
 mkdir dist\.VirtualBox

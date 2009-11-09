@@ -570,6 +570,7 @@ class BalloonMessage(QtGui.QWidget):
 
         self.parent = parent
         self.mAnchor = QtCore.QPoint()
+        self.up = True
         BalloonLayout = QtGui.QHBoxLayout(self)
 
         Layout2 = QtGui.QVBoxLayout()
@@ -599,7 +600,6 @@ class BalloonMessage(QtGui.QWidget):
 
         self.setAutoFillBackground(True)
         deskRect = QtCore.QRect(desktop.availableGeometry())
-        self.up = self.mAnchor.y() < deskRect.height() / 2
         self.currentAlpha = 0
         self.setWindowOpacity(0.0)
         self.resize(250, 80)
@@ -626,13 +626,14 @@ class BalloonMessage(QtGui.QWidget):
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
 
     def resizeEvent(self, evt):
+        deskRect = QtCore.QRect(desktop.availableGeometry())
+        self.up = app.tray.geometry().y() < deskRect.height() / 2
         mask = self.draw()
         self.setMask(mask)
-        deskRect = QtCore.QRect(desktop.availableGeometry())
         if self.up:
             y = app.tray.geometry().bottom() + 10
         else:
-            y = app.tray.geometry().up() - self.height() - 10
+            y = app.tray.geometry().top() - self.height() - 10
         self.move(deskRect.width() - self.width() - 10, y)
 
     def draw(self, paintEvent=False):
