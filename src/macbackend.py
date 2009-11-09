@@ -332,16 +332,8 @@ class MacBackend(OSBackend):
         if conf.PARTS == "all":
             self.call([ "diskutil", "mountDisk", conf.DEV ])
 
-        if conf.MOBILE and conf.PARTS == "all":
-            shutil.copyfile(conf.LOG, path.join(tempfile.gettempdir(), path.basename(conf.LOG)))
-            logging.debug("Got VBOX_USER_HOME from parent : " + str(os.environ.get("VBOX_USER_HOME")))
-            if os.environ.has_key("VBOX_USER_HOME"):
-                logging.debug("Overwriting " + os.path.join(os.environ["VBOX_USER_HOME"], "VirtualBox.xml") + \
-                              " with " + os.path.join(conf.HOME, "VirtualBox.xml"))
-                shutil.copyfile(os.path.join(conf.HOME, "VirtualBox.xml"),
-                                os.path.join(os.environ["VBOX_USER_HOME"], "VirtualBox.xml"))
-            if self.tmpdir:
-                shutil.rmtree(self.tmpdir)
+        if self.tmpdir:
+            shutil.rmtree(self.tmpdir)
 
     def run_vbox(self, command, env):
         self.call(command, env = env, cwd = conf.BIN)

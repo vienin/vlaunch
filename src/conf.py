@@ -106,13 +106,13 @@ cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                startvmkey : "1",
                                vmkey : "UFO",
                                oskey : "Fedora",
-                               vmdkkey : "ufo_key.vmdk",
+                               vmdkkey : ".VirtualBox/HardDisks/ufo_key.vmdk",
                                partskey : "all",
-                               bootfloppykey : "Images/UFO-VirtualBox-boot.img",
+                               bootfloppykey : ".VirtualBox/Images/UFO-VirtualBox-boot.img",
                                bootisokey : "",
-                               swapfile : "ufo_swap.vdi",
+                               swapfile : ".VirtualBox/HardDisks/ufo_swap.vdi",
                                swapsize : "512",
-                               overlayfile : "ufo_overlay.vdi",
+                               overlayfile : ".VirtualBox/HardDisks/ufo_overlay.vdi",
                                nettypekey : "2",
                                hostnetkey : "",
                                macaddrkey : "",
@@ -148,7 +148,7 @@ cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                              })
                              
 try:
-    files = ["settings.conf", # Used on Mac OS LiveCD
+    files = [path.join(SCRIPT_DIR, "settings.conf"), # Used on Mac OS LiveCD
              path.join(SCRIPT_DIR, "..", ".data", "settings", "settings.conf"), # Windows & Linux - Normal case
              path.join(SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf")] # Mac - Normal case
     if os.environ.has_key("_MEIPASS2"): # Used on Windows & Linux Live
@@ -177,11 +177,10 @@ if sys.platform == "linux2":
 
 elif sys.platform == "darwin":
     if LIVECD:
-        DATA_DIR = path.join(path.dirname(SCRIPT_PATH), "..", "Resources")
-        # no BIN as the livecd always provides a settings.conf
+        DATA_DIR = path.join(path.dirname(SCRIPT_PATH), "..", "Resources", ".data")
     else:
         if not DATA_DIR: DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH))))), ".data")
-        BIN = path.join(SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
+    BIN = path.join(SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
 else:
     if LIVECD:
@@ -190,6 +189,12 @@ else:
     else:
         if not DATA_DIR: DATA_DIR = path.join(SCRIPT_DIR, "..", ".data")
         BIN = path.join(SCRIPT_DIR, "bin")
+
+def make_path(base, section, key):
+    value = cp.get(section, key)
+    if value:
+        return path.normpath(path.join(base,path.expanduser(value)))
+    return ""
 
 # Is BIN overridden in settings.conf ?
 bin  = cp.get(globalsection, binkey)
@@ -214,7 +219,7 @@ UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
 NOUPDATE = int(cp.get(launchersection, noupdatekey))
 ISOURL = cp.get(launchersection, isourlkey)
 UPDATEURL = cp.get(launchersection, updateurlkey)
-VBOXDRIVERS = path.normpath(path.join(BIN, cp.get(launchersection, vboxdriverskey)))
+VBOXDRIVERS = make_path(BIN, launchersection, vboxdriverskey)
 
 DEV = cp.get(rawdisksection, devkey)
 PARTS = cp.get(rawdisksection, partskey)
@@ -224,8 +229,8 @@ MODEL = cp.get(rawdisksection, modelkey)
 
 VM = cp.get(vmsection, vmkey)
 OS = cp.get(vmsection, oskey)
-BOOTFLOPPY = cp.get(vmsection, bootfloppykey)
-BOOTISO = cp.get(vmsection, bootisokey)
+BOOTFLOPPY = make_path(DATA_DIR, vmsection, bootfloppykey)
+BOOTISO = make_path(DATA_DIR, vmsection, bootisokey)
 NETTYPE = int(cp.get(vmsection, nettypekey))
 HOSTNET = cp.get(vmsection, hostnetkey)
 MACADDR = cp.get(vmsection, macaddrkey)
@@ -233,12 +238,11 @@ RAMSIZE = cp.get(vmsection, ramsizekey)
 MINRAM = int(cp.get(vmsection, minramkey))
 KIOSKMODE = int(cp.get(vmsection, kioskmodekey))
 DRIVERANK = int(cp.get(vmsection, driverankkey))
-SWAPFILE  = cp.get(vmsection, swapfile)
+SWAPFILE  = make_path(DATA_DIR, vmsection, swapfile)
 SWAPSIZE  = int(cp.get(vmsection, swapsize))
-OVERLAYFILE  = cp.get(vmsection, overlayfile)
-BOOTDISK = cp.get(vmsection, bootdiskkey)
+OVERLAYFILE  = make_path(DATA_DIR, vmsection, overlayfile)
+BOOTDISK = make_path(DATA_DIR, vmsection, bootdiskkey)
 BOOTDISKUUID = cp.get(vmsection, bootdiskuuidkey)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)
-

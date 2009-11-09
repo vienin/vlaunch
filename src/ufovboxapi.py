@@ -254,6 +254,7 @@ class VBoxMachine():
             try:
                 self.winid = self.machine.showConsoleWindow()
             except:
+                raise
                 self.winid = 0
         return self.winid
     
@@ -282,14 +283,14 @@ class VBoxMachine():
         gui.app.minimize_window(self.get_winid())
         
     def start(self):
-        session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
-        progress = self.hypervisor.vm_manager.vbox.openRemoteSession(session, self.uuid, "gui", "")
+        self.hypervisor.session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
+        progress = self.hypervisor.vm_manager.vbox.openRemoteSession(self.hypervisor.session, self.uuid, "gui", "")
         progress.waitForCompletion(-1)
         completed = progress.completed
         rc = int(progress.resultCode)
         if rc == 0:
-            self.machine = session.machine
-            session.close()
+            self.machine = self.hypervisor.session.machine
+            "session.close()"
             return 0
         else:
             return 1

@@ -53,13 +53,14 @@ mac-launcher: clean py2app
 	cp -f /Library/Frameworks/Python.framework/Python ${FRAMEWORKS}/Python.framework/Versions/2.5/Python
 	cp -R /Library/Frameworks/QtGui.framework ${VBOXAPP}/Contents/Frameworks/QtGui.framework
 	cp -R /Library/Frameworks/QtNetwork.framework ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework
-	mv ${VBOXMACOS}/VBoxPython{2_3.so,.so}
+	rm ${VBOXMACOS}/VBoxPython2_{5,6}.so
+	mv ${VBOXMACOS}/VBoxPython{2_3.so,2_5.so}
+	cp /opt/local/lib/libiconv.2.dylib /opt/local/lib/libz.1.dylib /opt/local/lib/libcrypto.0.9.8.dylib /opt/local/lib/libcurl.4.dylib ${VBOXMACOS}/
 	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
 	strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
 	rm -rf ${VBOXMACOS}/testcase 
 	rm -rf ${VBOXMACOS}/tst* 
 	rm -f ${RESOURCES}/site.pyc
-	mkdir ${RESOURCES}/.VirtualBox
 	
 	for lib in QtGui QtNetwork; \
 	do \
@@ -69,7 +70,7 @@ mac-launcher: clean py2app
 	done
 	
 	# install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework/Versions/4/QtNetwork.framework/Versions/Current/QtGui
-	install_name_tool -change /Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython.so
+	install_name_tool -change /Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython2_5.so
 	
 	install_name_tool -change QtCore.framework/Versions/4/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/4/QtCore ${VBOXMACOS}/VirtualBoxVM
 	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui ${VBOXMACOS}/VirtualBoxVM
@@ -79,16 +80,34 @@ mac-launcher: clean py2app
 	install_name_tool -change QtGui.framework/Versions/4/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/4/QtGui ${VBOXMACOS}/VirtualBox
 	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork ${VBOXMACOS}/VirtualBox
 
-	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython.so
+	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython2_5.so
 
-	cd dist && tar cvzf mac-intel.tgz UFO.app
-	cp ../graphics/*.png ../graphics/*.bmp ../graphics/*.mng dist/UFO.app/Contents/Resources/.VirtualBox
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt; \
 	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \
 	done
+
+	install_name_tool -change /opt/local/lib/libiconv.2.dylib @executable_path/libiconv.2.dylib ${VBOXMACOS}/VBoxRT.dylib
+	install_name_tool -change /opt/local/lib/libz.1.dylib /usr/lib/libz.1.dylib ${VBOXMACOS}/VBoxRT.dylib
+	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/libcrypto.0.9.8.dylib ${VBOXMACOS}/VBoxRT.dylib
+	install_name_tool -change /opt/local/lib/libcurl.4.dylib @executable_path/libcurl.4.dylib ${VBOXMACOS}/VBoxRT.dylib
+
+tar-mac-launcher:
+	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
+
+upload-mac-launcher: mac-launcher tar-mac-launcher
 	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
+
+livecd-testing: mac-launcher
+	mkdir -p dist/UFO.app/Contents/Resources/.data/images
+	cp ../graphics/*.png ../graphics/*.bmp ../graphics/*.mng dist/UFO.app/Contents/Resources/.data/images
+	cp settings.conf.livecd.macos dist/UFO.app/Contents/Resources/settings.conf
+	cp bootdisk.vdi ufo_swap.vdi dist/UFO.app/Contents/Resources/.data
+
+upload-livecd-testing: livecd-testing
+	cd dist && tar cvzf mac-intel-livecd-testing.tgz UFO.app && cd ..
+	scp dist/mac-intel-livecd-testing.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/
 
 testing: mac-launcher
 	rm -rf testing
@@ -99,6 +118,7 @@ testing: mac-launcher
 	mkdir -p testing/.data/.VirtualBox/Images
 	mkdir -p testing/.data/.VirtualBox/HardDisks
 	mkdir -p testing/.data/logs
+	cp ../graphics/*.png ../graphics/*.bmp ../graphics/*.mng testing/.data/images
 	cp settings.conf testing/.data/settings
 	cp UFO-VirtualBox-boot.img testing/.data/.VirtualBox/Images
 	cp ufo_swap.vdi ufo_overlay.vdi testing/.data/.VirtualBox/HardDisks

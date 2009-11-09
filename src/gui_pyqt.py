@@ -60,8 +60,8 @@ class QtUFOGui(QtGui.QApplication):
             self._destroy_splash_screen()
 
         elif self.progress_dialog and isinstance(event, NoneEvent):
-           self.progressDialog.setMaximum(event.total)
-           self.progressDialog.setValue(event.size)
+           self.progress_dialog.setMaximum(event.total)
+           self.progress_dialog.setValue(event.size)
            
         elif self.wait_window and isinstance(event, CommandEvent):
             self.wait_window.finished(event.error)
@@ -315,7 +315,7 @@ class Downloader(threading.Thread):
                 self.count = count
                 self.maximum = totalSize
                 self.downloaded = blockSize*count*100/totalSize
-                app.postEvent(app, NoneEvent(int(self.downloaded), 100))
+                app.sendEvent(app, NoneEvent(int(self.downloaded), 100))
 
         def stop(self):
                 self.toBeStop = True
@@ -399,7 +399,7 @@ class DownloadWindow(QtGui.QDialog):
         self.autostart = autostart
         self.statusLabel = QtGui.QLabel(msg)
         self.progressDialog = QtGui.QProgressDialog(self)
-        app.progressDialog = self.progressDialog
+        app.progress_dialog = self.progressDialog
         self.progressDialog.setCancelButtonText(u"Annuler")
         self.downloadButton = QtGui.QPushButton(u"Télécharger")
         self.downloadButton.setDefault(True)
@@ -666,9 +666,12 @@ def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuille
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
     if not autostart:
         downloadWin.show()
-        return downloadWin.exec_()
+        return downloadWin.exec_() != QtGui.QDialog.Accepted
     else:
-        downloadWin.progressDialog.exec_()
+        ret = downloadWin.progressDialog.exec_()
+        if downloadWin.progressDialog.wasCanceled():
+            return 1
+        return ret!= QtGui.QDialog.Accepted
 
 def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
     cmdWin = WaitWindow(cmd, title, msg)

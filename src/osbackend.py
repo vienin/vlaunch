@@ -167,7 +167,7 @@ class OSBackend(object):
             if conf.LIVECD:
                 rank += 1
             
-            vmdk = path.normpath(path.join(conf.HOME, "HardDisks", conf.VMDK))
+            vmdk = path.normpath(path.join(conf.DATA_DIR, conf.VMDK))
             if os.path.exists(vmdk):
                 os.unlink(vmdk)
             if conf.PARTS == "all":
@@ -237,11 +237,11 @@ class OSBackend(object):
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
-                self.vbox.current_machine.attach_floppy(os.path.join(conf.HOME, "Images", conf.BOOTFLOPPY))
+                self.vbox.current_machine.attach_floppy(conf.BOOTFLOPPY)
                 self.vbox.current_machine.set_boot_device('Floppy') 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                self.vbox.current_machine.attach_dvd(os.path.join(conf.HOME, "Images", conf.BOOTISO))
+                self.vbox.current_machine.attach_dvd(conf.BOOTISO)
                 if not conf.LIVECD:
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
@@ -254,7 +254,7 @@ class OSBackend(object):
                 self.vbox.current_machine.set_boot_device('HardDisk') 
                 
             if conf.LIVECD:
-                logging.debug("Setting bootdisk for Live CD at rank %d" % (conf.DRIVERANK,))
+                logging.debug("Setting bootdisk %s for Live CD at rank %d" % (conf.BOOTDISK, conf.DRIVERANK,))
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
             
             if conf.WIDTH and conf.HEIGHT:
@@ -291,16 +291,16 @@ class OSBackend(object):
         logging.debug("conf.SWAPFILE: " + conf.SWAPFILE)
         if conf.SWAPFILE:
             try:
-                if not conf.LIVECD or sys.platform() != "win32":
+                if not conf.LIVECD or sys.platform != "win32":
                     self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
                     logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
                     conf.DRIVERANK += 1
                     swap_rank = conf.DRIVERANK
-                    shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.SWAPFILE), 
+                    shutil.copyfile(conf.SWAPFILE, 
                                     path.join(self.tmp_swapdir, path.basename(conf.SWAPFILE)))
                 else:
-                    self.tmp_swapdir = conf.DATADIR
-                self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, conf.SWAPFILE), swap_rank)
+                    self.tmp_swapdir = conf.DATA_DIR
+                self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, path.basename(conf.SWAPFILE)), swap_rank)
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
                 self.vbox.current_machine.set_guest_property("/UFO/Storages/Swap/Device", swap_dev)
@@ -319,8 +319,9 @@ class OSBackend(object):
                 logging.debug("self.tmp_overlaydir = " + self.tmp_overlaydir);
                 conf.DRIVERANK += 1
                 overlay_rank = conf.DRIVERANK
-                shutil.copyfile(path.join(conf.HOME, "HardDisks", conf.OVERLAYFILE), path.join(self.tmp_overlaydir, conf.OVERLAYFILE))
-                self.vbox.current_machine.attach_harddisk(path.join(self.tmp_overlaydir, conf.OVERLAYFILE), overlay_rank)
+                tmp_overlay = path.join(self.tmp_overlaydir, path.basename(conf.OVERLAYFILE))
+                shutil.copyfile(conf.OVERLAYFILE, tmp_overlay)
+                self.vbox.current_machine.attach_harddisk(tmp_overlay, overlay_rank)
 
                 # TODO:
                 # Set guest prop about max size of the overlay to 
@@ -536,12 +537,11 @@ class OSBackend(object):
                 self.vbox.vm_manager.waitForEvents(int(interval * 1000))
             else:
                 time.sleep(interval)
-
+                
                 # Special case when Qt backend unavailale and virtualbox < 3.0.0,
                 # in this case we are not able to catch termination
                 if gui.backend != "PyQt":
                     sys.exit(1)
-                    
             gui.app.process_gui_events()
 
     def check_usb_devices(self):

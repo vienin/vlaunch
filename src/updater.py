@@ -112,7 +112,9 @@ def self_update(ufo_dir, relaunch):
     filename = tempfile.mkstemp()[1]
     logging.debug("Downloading " + url + " to " + filename)
     retcode  = gui.download_file(url, filename, title=u"Téléchargement de la mise à jour",
-                                 msg=u"Merci de bien vouloir patientier", autostart=True)
+                                 msg=u"Merci de bien vouloir patienter", autostart=True)
+    if retcode:
+        raise "Download was canceled"
      
     if not splash_down == None:
         splash_down.destroy()

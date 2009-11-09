@@ -6,6 +6,7 @@ VMDK=../ufo_key.vmdk
 [vm]
 width=full
 height=full
+BOOTFLOPPY=
 BOOTISO=UFO.iso
 BOOTDISK=../bootdisk.vdi
 BOOTDISKUUID=bed47518-6bd0-4d1c-a953-e85f41962d04

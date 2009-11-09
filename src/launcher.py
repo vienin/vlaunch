@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+    # -*- coding: utf-8 -*-
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
