@@ -410,7 +410,7 @@ class OSBackend(object):
             self.vbox.current_machine.remove_shared_folder(os.path.basename(name))
         
         # UFO settings management
-	elif os.path.dirname(name) == "/UFO/Settings":
+        elif os.path.dirname(name) == "/UFO/Settings":
             cp = ConfigParser()
             cp.read(conf.conf_file)
             cp.set("guest", string.lower(os.path.basename(name)), newValue)
