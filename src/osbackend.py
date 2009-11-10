@@ -71,7 +71,6 @@ class OSBackend(object):
         self.tmp_overlaydir = ""
         self.puel           = False
         self.splash         = None
-        self.first_toggle   = True
         self.do_not_update  = False
         
         self.env = self.update_env()
@@ -436,7 +435,7 @@ class OSBackend(object):
                 
                 time.sleep(1)
                 gui.app.hide_balloon()
-                self.vbox.current_machine.showFullscreen(False)
+                self.vbox.current_machine.showFullscreen(False, 800, 600)
                 
         # Overlay data reintegration infos
         elif name == "/UFO/Overlay/Size":
@@ -474,11 +473,7 @@ class OSBackend(object):
         # Fullscreen management
         elif name == "/UFO/GUI/Fullscreen":
             if newValue == "1":
-                if self.first_toggle:
-                    self.vbox.current_machine.showFullscreen(True, 800, 600)
-                    self.first_toggle = False
-                else:
-                    self.vbox.current_machine.showFullscreen(True)
+                self.vbox.current_machine.showFullscreen(True)
             else:
                 self.vbox.current_machine.showFullscreen(False)
         
