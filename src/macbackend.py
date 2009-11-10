@@ -340,7 +340,7 @@ class MacBackend(OSBackend):
 
     def find_resolution(self):
         if gui.backend == "PyQt":
-            return str(gui.screenRect.width()) + "x" + str(screenRect.height())
+            return str(gui.screenRect.width()) + "x" + str(gui.screenRect.height())
         
         return ""
         
