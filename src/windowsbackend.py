@@ -321,6 +321,9 @@ class WindowsBackend(OSBackend):
         return drive
     
     def find_resolution(self):
+        if gui.backend == "PyQt4":
+            return str(gui.screenRect.width()) + "x" + str(screenRect.height())
+        
         display = self.WMI.Win32_DisplayControllerConfiguration()
     
         if len(display) > 0:

@@ -201,6 +201,9 @@ class LinuxBackend(OSBackend):
         return [], []
 
     def find_resolution(self):
+        if gui.backend == "PyQt4":
+            return str(gui.screenRect.width()) + "x" + str(screenRect.height())
+        
         if path.exists("/usr/bin/xrandr"):
             try:
                 return self.call([["/usr/bin/xrandr"], ["grep", "*"]], output=True)[1].split()[0]
