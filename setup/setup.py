@@ -39,15 +39,15 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 sys.path.append("..")
 sys.path.append("../src")
 
-setup(zipfile = None,
-      options = {'py2exe': { 'bundle_files': 1,
+setup(zipfile = "bin\\library.zip",
+      options = {'py2exe': { 'bundle_files': 3,
                               'includes': ['sip', 'win32com.server.util', 'pythoncom'],
                               'excludes' : [ "Tkconstants", "Tkinter", "tcl" ],
                               #               "PyQt4.QtCore", "PyQt4.QtGui", "PyQt4.QtNetwork", "PyQt4" ],
                               # 'dll_excludes': [ "PyQt4\\QtCore.pyd", "PyQt4\\QtGui.pyd",
                               #                   "PyQt4\\QtNetwork.pyd",
                               #                   "QtCore4.dll", "QtGui4.dll", "QtNetwork4.dll" ],
-                              "typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 0)],
+                              "typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 3)],
                 }},
 
       windows = [{'script': "../src/ufo.py",

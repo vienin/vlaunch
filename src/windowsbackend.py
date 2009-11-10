@@ -20,14 +20,13 @@
 
 
 import _winreg
-import win32gui, win32con, win32api
+import win32con
 import os, os.path as path
 import wmi
 import sys
 import logging
 import conf
 import tempfile
-import time
 import platform
 import glob
 import gui
@@ -42,7 +41,6 @@ class WindowsBackend(OSBackend):
     HOST_AUDIO_DRIVER = "DirectSound"
 
     RELATIVE_VMDK_POLICY = False
-    systemdir = win32api.GetSystemDirectory ()
 
     def __init__(self):
         OSBackend.__init__(self)
@@ -86,26 +84,6 @@ class WindowsBackend(OSBackend):
     def start_services(self):
         start_service = True
         if conf.CREATESRVS:
-            logging.debug("Creating services :")
-
-            """
-            services = self.WMI.Win32_Service(name="PortableVBoxDrv")
-            logging.debug("WMI services: " + str(services))
-            if services:
-                logging.debug("Service PortableVBoxDrv exists")
-                if services[0].State == "Running":
-                    logging.debug("Service PortableVBoxDrv is running")
-                else:
-                    logging.debug("Removing PortableVBoxDrv")
-                    elf.call([ "sc", "delete", "PortableVBoxDrv" ], shell=True)
-
-            if self.call([ "sc", "create", "PortableVBoxDrv",
-                      "binpath=", path.join(conf.BIN, "drivers", "VBoxDrv", "VBoxDrv.sys"),
-                      "type=", "kernel", "start=", "demand", "error=", "normal", 
-                      "displayname=", "PortableVBoxDrv" ], shell=True) == 5:
-                return 1
-            """
-        
             logging.debug("Checking if service PortableVBoxDrv exists")
             retcode, output = self.call([ "sc", "query", "PortableVBoxDrv" ], shell=True, output=True)
             create_service = True
@@ -125,6 +103,7 @@ class WindowsBackend(OSBackend):
                             start_service = False
 
             if create_service:
+                logging.debug("Creating services :")
                 ret, output = self.call([ "sc", "create", "PortableVBoxDrv",
                                            "binpath=", path.join(conf.VBOXDRIVERS, "VBoxDrv.sys"),
                                            "type=", "kernel", "start=", "demand", "error=", "normal", 
@@ -173,21 +152,6 @@ class WindowsBackend(OSBackend):
     def kill_resilient_vbox(self):
         self.call([ 'taskkill', '/F', '/IM', 'VBoxSVC.exe' ], shell=True) 
 
-    """
-    def process_wait_close(self, process):
-        processes = self.WMI.Win32_Process(name=process)
-        while processes:
-            time.sleep(2)
-            processes = self.WMI.Win32_Process(name=process)
-            self.check_usb_devices()
-
-    def wait_for_termination(self):
-        self.process_wait_close("VBoxSDL.exe")
-        self.process_wait_close("VirtualBox.exe")
-        self.process_wait_close("VBoxManage.exe")
-        self.process_wait_close("VBoxSVC.exe")
-    """
-
     def stop_services(self):
         if conf.STARTSRVS:
             # self.call([ "sc", "stop", "PortableVBoxDRV" ], shell=True)
@@ -197,7 +161,6 @@ class WindowsBackend(OSBackend):
             self.call([ "regsvr32.exe", "/S", "/U", path.join(conf.BIN, "VBoxC.dll") ], shell=True)
 
         if conf.CREATESRVS:
-            pass
             # Do not delete service because some Windows reports "service mark as deleted"
             # self.call([ "sc", "delete", "PortableVBoxDRV" ], shell=True)
             if self.puel:
@@ -282,20 +245,6 @@ class WindowsBackend(OSBackend):
             print disk.Model
 
     def find_network_device(self):
-        if conf.NETTYPE == conf.NET_HOST and \
-           not conf.VBOX_INSTALLED and \
-           not path.exists(path.join(self.systemdir, "VBoxNetFltNotify.dll")):
-            logging.debug("Installing VirtualBox driver")
-            protocolpath = path.join(conf.BIN, "drivers", "network", "netflt")
-            snetcfg = path.join(conf.BIN, "snetcfg_x86.exe")
-            self.call([snetcfg, "-v", "-u", "sun_VBoxNetFlt"], shell=True)
-            self.call([snetcfg, "-v", "-l", "drivers\\network\\netflt\\VBoxNetFlt.inf",
-                   "-m", "drivers\\network\\netflt\\VBoxNetFlt_m.inf",
-                   "-c", "s", "-i", "sun_VBoxNetFlt"], shell=True, cwd=conf.BIN)
-            shutil.copy(path.join(protocolpath, "VBoxNetFltNotify.dll"), self.systemdir)
-            shutil.copy(path.join(protocolpath, "VBoxNetFlt.sys"), path.join(self.systemdir, "drivers"))
-            self.call(["regsvr32.exe", "/S", path.join(self.systemdir, "VBoxNetFltNotify.dll")], shell=True)
-
         if conf.NETTYPE == conf.NET_HOST:
             if conf.HOSTNET != "":
                 return conf.NET_HOST, conf.HOSTNET
@@ -380,12 +329,6 @@ class WindowsBackend(OSBackend):
 
     def cleanup(self):
         self.stop_services()
-        if conf.NETTYPE == conf.NET_HOST and not conf.VBOX_INSTALLED and conf.UNINSTALLDRIVERS:
-            self.call(["regsvr32.exe", "/S", "/U", path.join(self.systemdir, "VBoxNetFltNotify.dll")])
-            self.call([path.join(conf.BIN, "snetcfg_x86.exe"), "-v", "-u", "sun_VBoxNetFlt"])
-            # self.call(["sc", "delete", "VBoxNetFlt" ])
-            # os.unlink(path.join(self.systemdir, "VBoxNetFltNotify.dll"))
-            # os.unlink(path.join(self.systemdir, "drivers", "VBoxNetFlt.sys"))
 
     def run_vbox(self, command, env):
         self.call(command, env = env, shell=True)
