@@ -69,10 +69,10 @@ class OSBackend(object):
         self.usb_devices    = []
         self.tmp_swapdir    = ""
         self.tmp_overlaydir = ""
-        self.puel   = False
-        self.splash = None
-        self.first_toggle = True
-        self.do_not_update = False
+        self.puel           = False
+        self.splash         = None
+        self.first_toggle   = True
+        self.do_not_update  = False
         
         self.env = self.update_env()
 
@@ -85,7 +85,9 @@ class OSBackend(object):
         os.environ.update({ "VBOX_USER_HOME"    : conf.HOME, 
                             "VBOX_PROGRAM_PATH" : conf.BIN,
                             "PYTHONPATH"        : conf.BIN,
-                            "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, "bin", "sdk")
+                            "VBOX_SDK_PATH"     : os.path.join(conf.SCRIPT_DIR, 
+                                                               "bin", 
+                                                               "sdk")
                           })
 
         sys.path.append(conf.BIN)
@@ -385,7 +387,7 @@ class OSBackend(object):
         return conf.STATUS_EXIT
 
     def look_for_virtualbox(self):
-        # check virtualbox binaries
+        # Check virtualbox binaries
         logging.debug("Checking VirtualBox binaries")
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
            not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
@@ -424,7 +426,7 @@ class OSBackend(object):
         
         # Resolution changes management
         elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
-            # we NEVER receive last percent event,
+            # We NEVER receive last percent event,
             # so we use /VirtualBox/GuestAdd/Vbgl/Video/SavedMode event
             # raised at slim startup to catch end of oot progress
             if self.vbox.current_machine.is_booting and \

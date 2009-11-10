@@ -249,12 +249,10 @@ class VBoxMachine():
         del self.machine
         
     def get_winid(self):
-        if self.winid == 0 and \
-           self.hypervisor.session.state == self.hypervisor.constants.SessionState_Open:
+        if self.winid == 0:
             try:
                 self.winid = self.machine.showConsoleWindow()
             except:
-                raise
                 self.winid = 0
         return self.winid
     
