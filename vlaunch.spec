@@ -120,8 +120,9 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/UFO.png
 %dir %{TARGET_PATH}/.data/logs
 
-%{TARGET_PATH}/Windows/MSVCR71.dll
+%{TARGET_PATH}/Windows/msvcr71.dll
 %{TARGET_PATH}/Windows/msvcp71.dll
+%{TARGET_PATH}/Windows/python25.dll
 %{TARGET_PATH}/Windows/ufo.exe
 %{TARGET_PATH}/Windows/bin
 

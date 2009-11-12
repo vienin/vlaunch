@@ -76,13 +76,13 @@ class QtUFOGui(QtGui.QApplication):
             if not event.show:
                 self.tray.hide_balloon()
             elif event.progress:
-                self.tray.show_progress(event.title, event.msg)
+                self.tray.show_progress(event.title, event.msg, credentials=event.credentials)
             else:
                 self.tray.show_message(event.title, event.msg, event.timeout)
                 
         elif isinstance(event, ToolTipEvent):
             self.tray.setToolTip(QtCore.QString(event.tip))
-        
+
         elif isinstance(event, ConsoleWindowEvent):
             if event.winid != 0:
                 if self.console_winid != event.winid:
@@ -178,12 +178,13 @@ class QtUFOGui(QtGui.QApplication):
                                            msg, 
                                            timeout))
         
-    def show_balloon_progress(self, title, msg):
+    def show_balloon_progress(self, title, msg, credentials=None):
         self.postEvent(self, 
                        BalloonMessageEvent(title, 
                                            msg, 
                                            timeout=0, 
-                                           progress=True))
+                                           progress=True,
+                                           credentials=credentials))
         
     def hide_balloon(self):
         self.postEvent(self, 
@@ -195,7 +196,7 @@ class QtUFOGui(QtGui.QApplication):
         
     def set_tooltip(self, tip):
         self.postEvent(self, ToolTipEvent(tip))
-        
+
     def fullscreen_window(self, winid, toggle):
         if toggle:
             type = 'ToggleFullscreen'
@@ -240,13 +241,14 @@ class ProgressEvent(QtCore.QEvent):
         self.total    = total
 
 class BalloonMessageEvent(QtCore.QEvent):
-    def __init__(self, title, msg, timeout, progress=False, show=True):
+    def __init__(self, title, msg, timeout, progress=False, show=True, credentials=None):
         super(BalloonMessageEvent, self).__init__(QtCore.QEvent.None)
         self.show     = show
         self.title    = title
         self.msg      = msg
         self.timeout  = timeout
         self.progress = progress
+        self.credentials = credentials
 
 class TimerEvent(QtCore.QEvent):
     def __init__(self, timer, time, function, stop=False):
@@ -530,7 +532,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         menu = QtGui.QMenu()
         self.setContextMenu(menu)
         self.connect(self, QtCore.SIGNAL("activate()"), self.activate)
-        #self.activated.connect(self.activate)
         
         self.progress = None
         self.balloon  = None
@@ -542,14 +543,14 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
                                       title=title, msg=msg, timeout=timeout)
 
-    def show_progress(self, title, msg, timeout=0, no_text=False, invert=False):
+    def show_progress(self, title, msg, timeout=0, no_text=False, invert=False, credentials=None):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
-                                     title=title, msg=msg, progress=True)
-        self.progress = self.balloon.progressBar
-        #if no_text:
-        #    self.progress.setTextVisible(False)
-        #if invert:
-        #    self.progress.setInvertedAppearance(True)
+                                     title=title, msg=msg, progress=True, credentials=credentials)
+        self.progress = self.balloon.progressBar        
+        if no_text:
+            self.progress.setTextVisible(False)
+        if invert:
+            self.progress.setInvertedAppearance(True)
 
     def hide_balloon(self):
         if self.balloon:
@@ -563,10 +564,10 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
 
 class BalloonMessage(QtGui.QWidget):
-    def __init__(self, parent, icon, title, msg, timeout=0, progress=False):
+    def __init__(self, parent, icon, title, msg, timeout=0, progress=False, credentials=None):
 
         QtGui.QWidget.__init__(self, None, 
-                         QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.ToolTip)
+                         QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.Popup)
 
         self.parent = parent
         self.mAnchor = QtCore.QPoint()
@@ -598,6 +599,19 @@ class BalloonMessage(QtGui.QWidget):
             self.progressBar = QtGui.QProgressBar()
             Layout2.addWidget(self.progressBar)
 
+        if credentials:
+            self.credentials = credentials
+            hbox = QtGui.QHBoxLayout()
+            hbox.addWidget(QtGui.QLabel("Mot de passe UFO"))
+            password = QtGui.QLineEdit()
+            password.setEchoMode(QtGui.QLineEdit.Password)
+            #password.activateWindow()
+            #password.setFocus()
+            self.connect(password, QtCore.SIGNAL("returnPressed()"), self.return_pressed)
+            hbox.addWidget(password)
+            self.password = password
+            Layout2.addLayout(hbox)
+
         self.setAutoFillBackground(True)
         deskRect = QtCore.QRect(desktop.availableGeometry())
         self.currentAlpha = 0
@@ -618,6 +632,9 @@ class BalloonMessage(QtGui.QWidget):
 
     def destroy(self):
         self.close()
+
+    def return_pressed(self):
+        self.credentials(self.password.text())
 
     def timeout(self):
         if self.currentAlpha <= 255:

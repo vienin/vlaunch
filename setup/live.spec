@@ -1,4 +1,4 @@
-a = Analysis([os.path.join(HOMEPATH,'support\\_mountzlib.py'), os.path.join(HOMEPATH,'support\\useUnicode.py'), 'launcher.py'],
+a = Analysis([os.path.join(HOMEPATH,'support', '_mountzlib.py'), os.path.join(HOMEPATH,'support', 'useUnicode.py'), '../src/launcher.py'],
              pathex=['.'])
 pyz = PYZ(a.pure)
 

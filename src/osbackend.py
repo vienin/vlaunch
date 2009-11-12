@@ -72,6 +72,7 @@ class OSBackend(object):
         self.puel           = False
         self.splash         = None
         self.do_not_update  = False
+        self.credentials    = None
         
         self.env = self.update_env()
 
@@ -335,6 +336,15 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
 
+        try:
+            password = self.get_password()
+            if password:
+                self.set_credentials(password)
+            else:
+                self.credentials = self.set_credentials
+        except:
+            self.credentials = self.set_credentials
+
         self.vbox.close_session()
 
     def find_device(self):
@@ -476,7 +486,7 @@ class OSBackend(object):
                 self.vbox.current_machine.showFullscreen(True)
             else:
                 self.vbox.current_machine.showFullscreen(False)
-        
+
     def onMachineStateChange(self, state):
 
         last_state = self.vbox.current_machine.last_state
@@ -488,7 +498,8 @@ class OSBackend(object):
             time.sleep(2)
             self.vbox.current_machine.showMinimized()
             gui.app.show_balloon_progress(title=u"Démarrage de UFO",
-                                          msg=u"UFO est en cours de démarrage.")
+                                          msg=u"UFO est en cours de démarrage.",
+                                          credentials=self.credentials)
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
@@ -513,6 +524,11 @@ class OSBackend(object):
             
         self.vbox.current_machine.last_state = state
 
+    def set_credentials(self, password):
+        self.set_password(password)
+        self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Credentials",
+                                                     str(password))
+        
     def wait_for_termination(self):
         # Destroy our own splash screen
         self.destroy_splash_screen()
@@ -543,6 +559,7 @@ class OSBackend(object):
                 if gui.backend != "PyQt":
                     sys.exit(1)
             gui.app.process_gui_events()
+        os.setreuid(0, 0)
 
     def check_usb_devices(self):
         # manage removable media shared folders
@@ -607,6 +624,18 @@ class OSBackend(object):
         self.kill_resilient_vbox()
         self.cleanup()
 
+    def set_password(self, password):
+        try:
+            import keyring
+            keyring.set_password("UFO", "password", str(password))
+        except: pass
+
+    def get_password(self):
+        try:
+            import keyring
+            return keyring.get_password("UFO", "password")
+        except: pass
+
     def run(self):
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
@@ -616,7 +645,7 @@ class OSBackend(object):
         self.prepare()
         self.look_for_virtualbox()
         self.remove_settings_files()
-        
+
         gui.app.initialize_tray_icon()
         
         # generate raw vmdk for usb key
@@ -650,3 +679,4 @@ class OSBackend(object):
         # clean environement
         logging.debug("Clean up")
         self.global_cleanup()
+

@@ -172,6 +172,26 @@ class LinuxBackend(OSBackend):
         if path.exists("/dev/cdrom"):
             return "/dev/cdrom"
 
+    def set_password(self, password):
+        os.setreuid(0, self.get_user_uid())
+        OSBackend.set_password(self, password)
+        os.setreuid(0, 0)
+
+    def get_password(self):
+        os.setreuid(0, self.get_user_uid())
+        password = OSBackend.get_password(self)
+        os.setreuid(0, 0)
+        return password
+
+    def get_user_uid(self):
+        if os.environ.has_key("SUDO_UID"):
+            uid = os.getenv("SUDO_UID")
+        elif os.environ.has_key("USERHELPER_UID"):
+            uid = os.getenv("USERHELPER_UID")
+        else:
+            uid = os.getuid()
+        return int(uid)
+
     def get_host_home(self):
         if os.environ.has_key("SUDO_USER"):
             user = os.getenv("SUDO_USER", "")
@@ -358,10 +378,12 @@ class BeesuRunAsRoot(RunAsRoot):
         RunAsRoot.__init__(self)
     
     def call(self, command, replace=False):
+        if os.environ.has_key("GNOME_KEYRING_SOCKET"):
+            command = [ "GNOME_KEYRING_SOCKET=/tmp/keyring-bfvyek/socket" ] + command
         if replace:
-            os.execv("/usr/bin/beesu", ["/usr/bin/beesu"] + command)
+            os.execv("/usr/bin/beesu", ["/usr/bin/beesu", "-m" ] + command)
         else:
-            utils.call(["/usr/bin/beesu"] + command)
+            utils.call(["/usr/bin/beesu", "-m" ] + command)
 
 
 class KdeSudoRunAsRoot(RunAsRoot):

@@ -30,8 +30,6 @@ SCRIPT_NAME = path.basename(sys.argv[0])
 SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
 print "SCRIPT_PATH", SCRIPT_PATH
-print "SCRIPT_NAME", SCRIPT_NAME
-print "SCRIPT_DIR", SCRIPT_DIR
 
 args = [ arg for arg in sys.argv[1:] if not arg.startswith("-psn_") ]
 parser = OptionParser()
