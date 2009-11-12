@@ -49,9 +49,9 @@ try:
     print "Logging to " + log_path
 except:
     try:
-        temp = path.join(tempfile.gettempdir(), log_file_name)
-        #logging.basicConfig(format=format, level=logging.DEBUG,
-        #                    filename=temp)
+        temp = path.join(tempfile.gettempdir(), path.basename(conf.LOG))
+        logging.basicConfig(format=format, level=logging.DEBUG,
+                            filename=temp)
         log_path = temp
         print "Logging to " + log_path
     except:

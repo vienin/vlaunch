@@ -30,6 +30,7 @@ import shutil
 import gui
 import tempfile
 import utils
+import re
 
 from osbackend import OSBackend
 
@@ -59,14 +60,18 @@ class MacBackend(OSBackend):
 
     def check_process(self):
         logging.debug("Checking UFO process")
-        processes = self.call([ ["ps", "ax", "-o", "pid,command"],
-                                ["grep", "-i", "\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)"] ], output = True)[1].strip().split("\n")
+        # We used to use a pipe, but Satan knows why, it returns a shadow
+        # of the running program. So we run two separate commands
+        psout = self.call(["ps", "ax", "-o", "pid,command"], output = True)[1]
+        processes = [ x[0].strip() for x in re.findall(r"(.*/UFO(\n| .*))", psout) ]
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [ i.strip().split(" ")[0] for i in processes ]
             i = len(pids) - 1
             while i >= 0:
-                if self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].strip().split("\n")[-1].strip() in pids:
+                ppid = self.call(["ps", "-p", pids[i], "-o", "ppid"], output=True)[1].split("\n")[-1].strip()
+                logging.debug("Process %s is a child of %s" % (pids[i], ppid))
+                if ppid in pids:
                     del pids[i]
                     del processes[i]
                 i -= 1
@@ -103,7 +108,7 @@ class MacBackend(OSBackend):
         return path.join(tmpdir, "UFO.app", "Contents", "MacOS", "UFO")
 
     def get_model(self, dev):
-        medianame = utils.grep(self.call(["/usr/sbin/diskutil", "info", dev]), "Media Name:")
+        medianame = utils.grep(self.call(["/usr/sbin/diskutil", "info", dev], output=True)[1], "Media Name:")
         if medianame:
             return medianame[medianame.find(':') + 1:]
 
@@ -241,8 +246,9 @@ class MacBackend(OSBackend):
             tries = 0
             while tries < 3:
                 logging.debug("Asking user password")
-                password, ok = gui.dialog_password(rcode=True)
-                if not ok:
+                password, remember = gui.dialog_password(remember=False)
+                print password, remember
+                if password == None:
                     ret = -1
                     break
 
@@ -250,10 +256,15 @@ class MacBackend(OSBackend):
                 ret = self.call([ [ "echo", str(password)], 
                                   [ "sudo", "-S", "touch", sys.executable ] ])[0]
                 if ret == 0:
+                    if remember:
+                        output = self.call( [ "sudo", "-l" ], output=True)[1]
+                        if not "NOPASSWD: /Volumes/UFO/Mac-Intel/UFO.app/Contents/MacOS/UFO" in output:
+                            sudoline = os.environ["USER"] + " ALL=(ALL) NOPASSWD: /Volumes/UFO/Mac-Intel/UFO.app/Contents/MacOS/UFO"
+                            self.call([ "sudo", "-n", "-s", "echo -e " + sudoline + " >> /etc/sudoers" ])
                     break
                 else:
                     gui.dialog_info(title="Erreur", 
-                                     msg="Erreur lors de la saisie du mot de passe", 
+                                     msg="Erreur lors de la saisie du mot de passe",
                                      error=True)
                     tries += 1
 
@@ -264,16 +275,14 @@ class MacBackend(OSBackend):
                     cmd = [ sys.executable ] + sys.argv
                 cmd += [ "--respawn" ]
                 logging.debug("Environment: " + str(os.environ))
-                logging.debug("Sudoing and execv: " + " ".join([ "/usr/bin/sudo" ] + cmd))
+                logging.debug("Sudoing and execv: " + " ".join([ "/usr/bin/sudo", "-n" ] + cmd))
                 logging.shutdown()
                 if False:
-                    os.execv("/usr/bin/sudo", [ "/usr/bin/sudo" ] + cmd)
+                    os.execv("/usr/bin/sudo", [ "/usr/bin/sudo", "-n" ] + cmd)
                     # self.call([ "sudo" ] + cmd, fork=False)
                 else:
-                    self.call([ "sudo" ] + cmd)
-                logging.debug("Should not be displayed....")
-                sys.exit(0)
-            
+                    self.call([ "sudo" ] + cmd, spawn=True)
+
             sys.exit(0)
 
     def load_kexts(self):

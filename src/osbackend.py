@@ -95,8 +95,8 @@ class OSBackend(object):
 
         return os.environ.copy()
 
-    def call(self, cmd, env = None, shell = False, cwd = None, output = False, input = False, fork=True):
-        return utils.call(cmd, env = env, shell = shell, cwd = cwd, output = output, input = input, fork=fork)
+    def call(self, *args, **keywords):
+        return utils.call(*args, **keywords)
 
     def find_network_device(self):
         if not conf.HOSTNET:
@@ -634,7 +634,7 @@ class OSBackend(object):
         try:
             import keyring
             return keyring.get_password("UFO", "password")
-        except: pass
+        except: return ""
 
     def run(self):
         logging.debug("BIN path: " + conf.BIN)

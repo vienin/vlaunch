@@ -81,6 +81,7 @@ mac-launcher: clean py2app
 	install_name_tool -change QtNetwork.framework/Versions/4/QtNetwork @executable_path/../Frameworks/QtNetwork.framework/Versions/4/QtNetwork ${VBOXMACOS}/VirtualBox
 
 	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython2_5.so
+	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.3/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython2_5.so
 
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
 	do \
@@ -92,6 +93,16 @@ mac-launcher: clean py2app
 	install_name_tool -change /opt/local/lib/libz.1.dylib /usr/lib/libz.1.dylib ${VBOXMACOS}/VBoxRT.dylib
 	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/libcrypto.0.9.8.dylib ${VBOXMACOS}/VBoxRT.dylib
 	install_name_tool -change /opt/local/lib/libcurl.4.dylib @executable_path/libcurl.4.dylib ${VBOXMACOS}/VBoxRT.dylib
+
+	install_name_tool -change /opt/local/lib/libz.1.dylib /usr/lib/libz.1.dylib ${VBOXMACOS}/libcrypto.0.9.8.dylib
+	install_name_tool -change /opt/local/lib/libcrypto.0.9.8.dylib @executable_path/libcrypto.0.9.8.dylib ${VBOXMACOS}/libcrypto.0.9.8.dylib
+
+	install_name_tool -change /opt/local/lib/libcurl.4.dylib @executable_path/libcurl.4.dylib ${VBOXMACOS}/libcurl.4.dylib
+	install_name_tool -change /opt/local/lib/libz.1.dylib /usr/lib/libz.1.dylib ${VBOXMACOS}/libcurl.4.dylib
+
+	install_name_tool -change /opt/local/lib/libz.1.dylib /usr/lib/libz.1.dylib ${VBOXMACOS}/libz.1.dylib
+
+	install_name_tool -change /opt/local/lib/libiconv.2.dylib @executable_path/libiconv.2.dylib ${VBOXMACOS}/libiconv.2.dylib
 
 tar-mac-launcher:
 	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
