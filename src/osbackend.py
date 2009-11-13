@@ -124,10 +124,7 @@ class OSBackend(object):
         self.vbox.create_machine(conf.VM, conf.OS)
         self.vbox.open_machine(conf.VM)
 
-        if sys.platform == "win32":
-            self.vbox.current_machine.set_bios_params(acpi_enabled = True, ioapic_enabled = False)
-        else:
-            self.vbox.current_machine.set_bios_params(acpi_enabled = True, ioapic_enabled = True)
+        self.vbox.current_machine.set_bios_params(acpi_enabled = 1, ioapic_enabled = 1)
         self.vbox.current_machine.set_vram_size(32)
         self.vbox.current_machine.set_network_adapter(adapter_type = "I82540EM")
         self.vbox.current_machine.disable_boot_menu()
@@ -173,7 +170,7 @@ class OSBackend(object):
             vmdk = path.normpath(path.join(conf.DATA_DIR, conf.VMDK))
             if os.path.exists(vmdk):
                 os.unlink(vmdk)
-            if conf.PARTS == "all":
+            if sys.platform == "win32" or conf.PARTS == "all":
                 logging.debug("Getting size of " + conf.DEV)
                 blockcount = self.get_device_size(conf.DEV)
                 logging.debug("Creating VMDK file %s with %s of size %d: " % (vmdk, conf.DEV, blockcount))

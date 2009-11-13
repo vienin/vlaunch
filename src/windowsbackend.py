@@ -182,15 +182,15 @@ class WindowsBackend(OSBackend):
         disks = self.WMI.Win32_DiskDrive(Name = device_name)
         if not disks:
             return {}
-        
-        partitions = disks[0].associators(wmi_association_class="Win32_LogicalDiskToPartition")
+
+        partitions = disks[0].associators(wmi_association_class="Win32_DiskDriveToDiskPartition")
         if not partitions:
             return {}
 
         device_parts = {}
         for part in partitions:
             part_info = [ device_name, part.NumberOfBlocks ]
-            device_parts.update({ part.Index : part_info })
+            device_parts.update({ (int(part.Index) + 1) : part_info })
         return device_parts
 
     def find_device_by_volume(self, dev_volume):

@@ -94,7 +94,7 @@ def createrawvmdk (target_path, device_name, device_size, partitions = {}, relat
             else:   
                 vmdk_file.write("RW " + str(part_infos[1]) + " ZERO " + "\n")
 
-            incremental_size += part_infos[1]
+            incremental_size += int(part_infos[1])
             current_part += 1
 
         vmdk_file.write("RW " + str(device_size - incremental_size) + " ZERO " + "\n")

@@ -587,9 +587,14 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
 class BalloonMessage(QtGui.QWidget):
     def __init__(self, parent, title, msg, icon=None, timeout=0, progress=False, credentials=None):
-
-        QtGui.QWidget.__init__(self, None, 
-                         QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.Popup)
+        if sys.platform == "win32":
+            flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Popup
+        elif sys.platform == "linux2":
+            flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.Popup
+        else:
+            flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Popup
+        
+        QtGui.QWidget.__init__(self, None, flags)
 
         self.parent = parent
         self.mAnchor = QtCore.QPoint()
