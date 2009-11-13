@@ -76,7 +76,7 @@ class QtUFOGui(QtGui.QApplication):
             if not event.show:
                 self.tray.hide_balloon()
             elif event.progress:
-                self.tray.show_progress(event.title, event.msg, credentials=event.credentials)
+                self.tray.show_progress(event.title, event.msg, event.timeout, credentials=event.credentials)
             else:
                 self.tray.show_message(event.title, event.msg, event.timeout)
                 
@@ -567,7 +567,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
     def show_progress(self, title, msg, timeout=0, no_text=False, invert=False, credentials=None):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
-                                     title=title, msg=msg, progress=True, credentials=credentials)
+                                     title=title, msg=msg, progress=True, timeout=timeout, credentials=credentials)
         self.progress = self.balloon.progressBar        
         if no_text:
             self.progress.setTextVisible(False)
@@ -628,14 +628,13 @@ class BalloonMessage(QtGui.QWidget):
 
         if credentials:
             self.credentials = credentials
-            vbox = QtGui.QVBoxLayout()
-            self.credentials_layout = vbox
-            self.credentials_button = button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "credentials.png")), u"S'authentifier", self)
-            button.setFlat(True)
-            button.setDefault(True)
-            self.connect(button, QtCore.SIGNAL("clicked()"), self.show_login)
-            vbox.addWidget(button, 0, QtCore.Qt.AlignLeft)
-            Layout2.addLayout(vbox)
+            self.creds_layout = QtGui.QVBoxLayout()
+            self.credentials_button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "credentials.png")), u"S'authentifier", self)
+            self.credentials_button.setFlat(True)
+            self.credentials_button.setDefault(True)
+            self.connect(self.credentials_button, QtCore.SIGNAL("clicked()"), self.show_login)
+            self.creds_layout.addWidget(self.credentials_button, 0, QtCore.Qt.AlignLeft)
+            Layout2.addLayout(self.creds_layout)
 
         self.setAutoFillBackground(True)
         deskRect = QtCore.QRect(desktop.availableGeometry())
@@ -656,41 +655,43 @@ class BalloonMessage(QtGui.QWidget):
         self.connect(self, QtCore.SIGNAL("clicked()"), self.destroy)
 
     def show_login(self):
-        frame = QtGui.QFrame(self)
-        frame.setFrameShape(QtGui.QFrame.HLine)
-        frame.setFrameShadow(QtGui.QFrame.Sunken)
-        self.credentials_layout.addWidget(frame)
-        self.credentials_layout.removeItem(self.credentials_layout.itemAt(0))
-        self.credentials_layout.removeWidget(self.credentials_button)
+        self.hline = QtGui.QFrame(self)
+        self.hline.setFrameShape(QtGui.QFrame.HLine)
+        self.hline.setFrameShadow(QtGui.QFrame.Sunken)
+        self.creds_layout.addWidget(self.hline)
+        self.creds_layout.removeItem(self.creds_layout.itemAt(0))
+        self.creds_layout.removeWidget(self.credentials_button)
         self.credentials_button.hide()
         self.credentials_button = None
-        self.credentials_hbox = QtGui.QHBoxLayout()
+        self.creds_hbox = QtGui.QHBoxLayout()
         self.pass_label = QtGui.QLabel("Mot de passe UFO")
-        self.credentials_hbox.addWidget(self.pass_label)
+        self.creds_hbox.addWidget(self.pass_label)
         self.password = QtGui.QLineEdit(self)
         self.password.setEchoMode(QtGui.QLineEdit.Password)
         self.connect(self.password, QtCore.SIGNAL("returnPressed()"), self.return_pressed)
-        self.credentials_hbox.addWidget(self.password, 100)
+        self.creds_hbox.addWidget(self.password, 100)
         self.ok_button = QtGui.QPushButton("Ok", self)
         self.connect(self.ok_button, QtCore.SIGNAL("clicked()"), self.return_pressed)
         self.ok_button.setMaximumSize(32, 28)
-        self.credentials_hbox.addWidget(self.ok_button)
-        self.credentials_layout.addLayout(self.credentials_hbox)
+        self.creds_hbox.addWidget(self.ok_button)
+        self.creds_layout.addLayout(self.creds_hbox)
         self.remember = QtGui.QCheckBox(u"Enregistrer mon mot de passe")
-        self.credentials_layout.addWidget(self.remember)
+        self.creds_layout.addWidget(self.remember)
 
     def hide_login(self):
-        for control in [ self.pass_label, self.password, self.ok_button, self.remember ]:
+        for control in [ self.pass_label, self.password, self.ok_button, self.remember, self.hline ]:
             control.hide()
-        self.credentials_layout.removeWidget(self.remember)
-        self.credentials_hbox.removeWidget(self.password)
-        self.credentials_hbox.removeWidget(self.ok_button)
-        self.credentials_hbox.removeWidget(self.pass_label)
+        self.creds_layout.removeWidget(self.remember)
+        self.creds_hbox.removeWidget(self.password)
+        self.creds_hbox.removeWidget(self.ok_button)
+        self.creds_hbox.removeWidget(self.pass_label)
+        self.creds_hbox.removeWidget(self.hline)
         self.layout().activate()
         self.resize(350, 20)
         self.show()
 
     def destroy(self):
+        self.hide()
         self.close()
 
     def return_pressed(self):

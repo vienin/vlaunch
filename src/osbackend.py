@@ -331,14 +331,10 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
 
-        try:
-            password = self.get_password()
-            if password:
-                self.set_credentials(password)
-            else:
-                self.credentials = self.set_credentials
-        except:
-            self.credentials = self.set_credentials
+        password = self.get_password()
+        if password:
+            self.set_credentials(password)
+        self.credentials = self.set_credentials
 
         self.vbox.close_session()
 
@@ -519,12 +515,24 @@ class OSBackend(object):
             
         self.vbox.current_machine.last_state = state
 
-    def set_credentials(self, password, remember):
-        self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Credentials",
+    def set_credentials(self, password, remember=False):
+        self.vbox.current_machine.set_guest_property("/UFO/Credentials/AuthTok",
                                                      str(password))
         if remember:
             self.set_password(password)
         
+    def set_password(self, password):
+        try:
+            import keyring
+            keyring.set_password("UFO", "password", str(password))
+        except: pass
+
+    def get_password(self):
+        try:
+            import keyring
+            return keyring.get_password("UFO", "password")
+        except: pass
+
     def wait_for_termination(self):
         # Destroy our own splash screen
         self.destroy_splash_screen()
@@ -618,18 +626,6 @@ class OSBackend(object):
             pass
         self.kill_resilient_vbox()
         self.cleanup()
-
-    def set_password(self, password):
-        try:
-            import keyring
-            keyring.set_password("UFO", "password", str(password))
-        except: pass
-
-    def get_password(self):
-        try:
-            import keyring
-            return keyring.get_password("UFO", "password")
-        except: return ""
 
     def run(self):
         logging.debug("BIN path: " + conf.BIN)
