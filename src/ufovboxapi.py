@@ -560,37 +560,37 @@ class VBoxMonitor:
         pass
     
     def onMachineStateChange(self, id, state):
-        logging.debug("onMachineStateChange: %s %d" %(id, state))
+        pass
         
     def onMachineDataChange(self,id):
-        logging.debug("onMachineDataChange: %s" %(id))
+        pass
 
     def onExtraDataCanChange(self, id, key, value):
-        logging.debug("onExtraDataCanChange: %s %s=>%s" %(id, key, value))
+        pass
 
     def onExtraDataChange(self, id, key, value):
-        logging.debug("onExtraDataChange: %s %s=>%s" %(id, key, value))
+        pass
 
     def onMediaRegistred(self, id, type, registred):
-        logging.debug("onMediaRegistred: %s" %(id))
+        pass
 
     def onMachineRegistered(self, id, registred):
-        logging.debug("onMachineRegistred: %s" %(id))
+        pass
 
     def onSessionStateChange(self, id, state):
-        logging.debug("onSessionStateChange: %s %d" %(id, state))
+        pass
 
     def onSnapshotTaken(self, mach, id):
-        logging.debug("onSnapshotTaken: %s %s" %(mach, id))
+        pass
 
     def onSnapshotDiscarded(self, mach, id):
-        logging.debug("onSnapshotDiscarded: %s %s" %(mach, id))
+        pass
 
     def onSnapshotChange(self, mach, id):
-        logging.debug("onSnapshotChange: %s %s" %(mach, id))
+        pass
 
     def onGuestPropertyChange(self, id, name, newValue, flags):
-        logging.debug("onGuestPropertyChange: %s: %s=%s" %(id, name, newValue))
+        pass
 
         
 def test_cases():
