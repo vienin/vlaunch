@@ -48,19 +48,17 @@ class UFOVboxMonitor(VBoxMonitor):
         self.os_backend = os_backend
         
     def onGuestPropertyChange(self, id, name, newValue, flags):
-        logging.debug("onGuestPropertyChange: %s: %s=%s" %(id, name, newValue))
         
         if self.os_backend.vbox.current_machine.uuid == id:
             self.os_backend.onGuestPropertyChange(name, newValue, flags)
             
     def onMachineStateChange(self, id, state):
-        logging.debug("onMachineStateChange: %s %d" %(id, state))
+        logging.debug("Machine state changed: %d => %d" %(self.os_backend.vbox.current_machine.last_state, state))
 
         if self.os_backend.vbox.current_machine.uuid == id:
             self.os_backend.onMachineStateChange(state)
             
     def onExtraDataCanChange(self, id, key, value):
-        logging.debug("onExtraDataCanChange: %s %s=>%s" %(id, key, value))
         return self.os_backend.onExtraDataCanChange(key, value)
 
 

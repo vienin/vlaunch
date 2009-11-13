@@ -71,7 +71,7 @@ class LinuxBackend(OSBackend):
         processes = self.call([["ps", "ax", "-o", "pid,command"],
                                ["grep", "VBoxXPCOMIPCD"],
                                ["grep", "-v", "grep"]], output = True)[1]
-        if processes and os.environ.has_key("NOVBOXCHECK"):
+        if processes and not os.environ.has_key("NOVBOXCHECK"):
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
             if gui.dialog_error_report(u"Impossible de lancer UFO", 
                                        u"VirtualBox semble déjà en cours d'utilisation. \n" + \
@@ -265,7 +265,7 @@ class LinuxBackend(OSBackend):
         
 class FedoraLinuxBackend(LinuxBackend):
     
-    AGORAOX_VBOX_REPO = "http://downloads.agorabox.org/virtualbox/yum/"
+    AGORABOX_VBOX_REPO = "http://downloads.agorabox.org/virtualbox/yum/"
     
     def __init__(self, dist, version, codename):
         LinuxBackend.__init__(self, dist, version, codename)
@@ -300,7 +300,7 @@ class FedoraLinuxBackend(LinuxBackend):
                               "Installation de \"yum-priorities\"")
             gui.wait_command(["rpm", 
                               "-ivf", 
-                              self.AGORAOX_VBOX_REPO + "agorabox-virtualbox-yum-repository-1.0.noarch.rpm"], 
+                              self.AGORABOX_VBOX_REPO + "agorabox-virtualbox-yum-repository-1.0.noarch.rpm"], 
                              "Installation",
                              "Installation de \"agorabox-virtualbox-yum-repository\"")
             
