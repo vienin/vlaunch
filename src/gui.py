@@ -52,10 +52,12 @@ except:
         
 
 if __name__ == "__main__":
-    balloon = BalloonMessage(None, None, "Do you Glumol ?")
+    app.initialize_tray_icon()
+    app.process_gui_events()
+    balloon = BalloonMessage(None, "Title", "Do you Glumol ?", timeout=1000, credentials=(lambda x: x))
     #balloon.setAnchor(QtCore.QPoint(100, 100))
-    balloon.showMessage(timeout=5000)
-    app.exec_()
+    #balloon.showMessage(timeout=5000)
+    #app.exec_()
     print dialog_choices(title="Title", msg="Messages", column="Objects",
                          choices = [ "a", "b", "c" ])
     dialog_question("Titre", "Message")
@@ -64,4 +66,4 @@ if __name__ == "__main__":
     download_file("http://www.glumol.com", "toto")
     splash = SplashScreen(image="ufo-generic.png")
     import time
-    time.sleep(5)
+    time.sleep(2)

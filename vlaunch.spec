@@ -118,6 +118,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/animated-bar.mng
 %{TARGET_PATH}/.data/images/UFO.svg
 %{TARGET_PATH}/.data/images/UFO.png
+%{TARGET_PATH}/.data/images/credentials.png
 %dir %{TARGET_PATH}/.data/logs
 
 %{TARGET_PATH}/Windows/msvcr71.dll

@@ -586,7 +586,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
 
 class BalloonMessage(QtGui.QWidget):
-    def __init__(self, parent, icon, title, msg, timeout=0, progress=False, credentials=None):
+    def __init__(self, parent, title, msg, icon=None, timeout=0, progress=False, credentials=None):
 
         QtGui.QWidget.__init__(self, None, 
                          QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.Popup)
@@ -623,22 +623,20 @@ class BalloonMessage(QtGui.QWidget):
 
         if credentials:
             self.credentials = credentials
-            hbox = QtGui.QHBoxLayout()
-            hbox.addWidget(QtGui.QLabel("Mot de passe UFO"))
-            password = QtGui.QLineEdit()
-            password.setEchoMode(QtGui.QLineEdit.Password)
-            #password.activateWindow()
-            #password.setFocus()
-            self.connect(password, QtCore.SIGNAL("returnPressed()"), self.return_pressed)
-            hbox.addWidget(password)
-            self.password = password
-            Layout2.addLayout(hbox)
+            vbox = QtGui.QVBoxLayout()
+            self.credentials_layout = vbox
+            self.credentials_button = button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "credentials.png")), u"S'authentifier", self)
+            button.setFlat(True)
+            button.setDefault(True)
+            self.connect(button, QtCore.SIGNAL("clicked()"), self.show_login)
+            vbox.addWidget(button, 0, QtCore.Qt.AlignLeft)
+            Layout2.addLayout(vbox)
 
         self.setAutoFillBackground(True)
         deskRect = QtCore.QRect(desktop.availableGeometry())
         self.currentAlpha = 0
         self.setWindowOpacity(0.0)
-        self.resize(250, 80)
+        self.resize(350, 80)
     
         self.timer = QtCore.QTimer(self)
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.timeout)
@@ -652,11 +650,48 @@ class BalloonMessage(QtGui.QWidget):
         self.show()
         self.connect(self, QtCore.SIGNAL("clicked()"), self.destroy)
 
+    def show_login(self):
+        frame = QtGui.QFrame(self)
+        frame.setFrameShape(QtGui.QFrame.HLine)
+        frame.setFrameShadow(QtGui.QFrame.Sunken)
+        self.credentials_layout.addWidget(frame)
+        self.credentials_layout.removeItem(self.credentials_layout.itemAt(0))
+        self.credentials_layout.removeWidget(self.credentials_button)
+        self.credentials_button.hide()
+        self.credentials_button = None
+        self.credentials_hbox = QtGui.QHBoxLayout()
+        self.pass_label = QtGui.QLabel("Mot de passe UFO")
+        self.credentials_hbox.addWidget(self.pass_label)
+        self.password = QtGui.QLineEdit(self)
+        self.password.setEchoMode(QtGui.QLineEdit.Password)
+        self.connect(self.password, QtCore.SIGNAL("returnPressed()"), self.return_pressed)
+        self.credentials_hbox.addWidget(self.password, 100)
+        self.ok_button = QtGui.QPushButton("Ok", self)
+        self.connect(self.ok_button, QtCore.SIGNAL("clicked()"), self.return_pressed)
+        self.ok_button.setMaximumSize(32, 28)
+        self.credentials_hbox.addWidget(self.ok_button)
+        self.credentials_layout.addLayout(self.credentials_hbox)
+        self.remember = QtGui.QCheckBox(u"Enregistrer mon mot de passe")
+        self.credentials_layout.addWidget(self.remember)
+
+    def hide_login(self):
+        for control in [ self.pass_label, self.password, self.ok_button, self.remember ]:
+            control.hide()
+        self.credentials_layout.removeWidget(self.remember)
+        self.credentials_hbox.removeWidget(self.password)
+        self.credentials_hbox.removeWidget(self.ok_button)
+        self.credentials_hbox.removeWidget(self.pass_label)
+        self.layout().activate()
+        self.resize(350, 20)
+        self.show()
+
     def destroy(self):
         self.close()
 
     def return_pressed(self):
-        self.credentials(self.password.text())
+        if self.password.text():
+            self.credentials(self.password.text(), self.remember.isChecked())
+        self.hide_login()
 
     def timeout(self):
         if self.currentAlpha <= 255:

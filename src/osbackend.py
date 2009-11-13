@@ -524,10 +524,11 @@ class OSBackend(object):
             
         self.vbox.current_machine.last_state = state
 
-    def set_credentials(self, password):
-        self.set_password(password)
+    def set_credentials(self, password, remember):
         self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Credentials",
                                                      str(password))
+        if remember:
+            self.set_password(password)
         
     def wait_for_termination(self):
         # Destroy our own splash screen
@@ -559,7 +560,6 @@ class OSBackend(object):
                 if gui.backend != "PyQt":
                     sys.exit(1)
             gui.app.process_gui_events()
-        os.setreuid(0, 0)
 
     def check_usb_devices(self):
         # manage removable media shared folders

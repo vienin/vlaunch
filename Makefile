@@ -3,8 +3,9 @@ VERSION=0.9
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
         guest/toggle-fullscreen* \
-        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/animated-bar.mng \
-        graphics/UFO.ico graphics/UFO.svg graphics/UFO.png  graphics/.background graphics/VolumeIcon.icns \
+        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png \
+        graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png \
+        graphics/.background graphics/VolumeIcon.icns graphics/credentials.png \
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store
 
 DIR=$(NAME)-$(VERSION)
@@ -34,7 +35,7 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
 
 	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
-	cp UFO.svg UFO.png ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng $(DESTDIR)$(TARGET_PATH)/.data/images/
+	cp UFO.svg UFO.png ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng credentials.png $(DESTDIR)$(TARGET_PATH)/.data/images/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks/
 
