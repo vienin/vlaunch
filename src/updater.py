@@ -89,7 +89,8 @@ def check_update(backend):
 
 def self_update(ufo_dir, relaunch):
   try:
-    latest_version, x = ".".join(map(str, get_latest_version()))
+    latest_version, latest_size = get_latest_version()
+    latest_version = ".".join(map(str, latest_version))
 
     try:
         if sys.platform == "darwin":
@@ -112,7 +113,7 @@ def self_update(ufo_dir, relaunch):
     filename = tempfile.mkstemp()[1]
     logging.debug("Downloading " + url + " to " + filename)
     retcode  = gui.download_file(url, filename, title=u"Téléchargement de la mise à jour",
-                                 msg=u"Merci de bien vouloir patienter", autostart=True)
+                                 msg=u"Merci de bien vouloir patienter", autostart=True, autoclose=True)
     if retcode:
         raise "Download was canceled"
      
@@ -121,6 +122,19 @@ def self_update(ufo_dir, relaunch):
  
     splash_install = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-install.png"))
     logging.debug("Extracting update " + filename + " to " + ufo_dir)
+
+    tgz = tarfile.open(filename)
+    filelist = path.join(ufo_dir, ".data", "launcher.filelist")
+    if path.exists(filelist):
+       files = list(set(map(str.strip, open(filelist).readlines())) - set(tgz.getnames()))
+       for f in [ path.join(ufo_dir, f) for f in files if path]:
+           if path.islink(f) or path.isfile(f):
+               try: os.unlink(f)
+               except: logging.debug("Could not remove file " + f)
+       for d in [ path.join(ufo_dir, d) for d in files if path ]:
+           if path.isdir(d):
+               try: os.rmdir(d)
+               except: logging.debug("Could not remove directory " + d)
     
     if sys.platform == "darwin":
         utils.call([ "tar", "-C", ufo_dir, "-xjf", filename ])
@@ -131,9 +145,8 @@ def self_update(ufo_dir, relaunch):
             utils.call([ "diskutil", "mount", dev ])
 
     else:
-        tgz = tarfile.open(filename)
         tgz.extractall(os.path.normcase(ufo_dir))
-        tgz.close()
+    tgz.close()
  
     logging.debug("Updating settings.conf")
     cp = ConfigParser()
