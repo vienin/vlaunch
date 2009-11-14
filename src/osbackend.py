@@ -415,7 +415,9 @@ class OSBackend(object):
         elif os.path.dirname(name) == "/UFO/Settings":
             cp = ConfigParser()
             cp.read(conf.conf_file)
-            cp.set("guest", string.lower(os.path.basename(name)), newValue)
+            if not cp.has_section("guest"):
+                cp.add_section("guest")
+            cp.set("guest", os.path.basename(name), newValue)
             cp.write(open(conf.conf_file, "w"))
         
         # Boot progress management
