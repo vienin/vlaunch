@@ -33,9 +33,6 @@ class QtUFOGui(QtGui.QApplication):
     def __init__(self, argv):
         QtGui.QApplication.__init__(self, argv)
 
-        self.progress        = None
-        self.download_window = None
-        self.wait_window     = None
         self.animation       = None
         self.tray            = None
         self.splash          = None
@@ -50,8 +47,8 @@ class QtUFOGui(QtGui.QApplication):
         if isinstance(event, SetTrayIconEvent):
             self.tray = TrayIcon()
 
-        elif isinstance(event, FinishedEvent):
-            self.download_window.http_request_finished(event.error)
+        elif isinstance(event, DownloadFinishedEvent):
+            event.callback(event.error)
 
         elif isinstance(event, CreateSplashEvent):
             self._create_splash_screen()
@@ -59,15 +56,11 @@ class QtUFOGui(QtGui.QApplication):
         elif isinstance(event, DestroySplashEvent):
             self._destroy_splash_screen()
 
-        elif self.progress and isinstance(event, NoneEvent):
-           self.progress.setMaximum(event.total)
-           self.progress.setValue(event.size)
-           
-        elif self.wait_window and isinstance(event, CommandEvent):
-            self.wait_window.finished(event.error)
+        elif isinstance(event, CommandEvent):
+            event.callback(event.error)
             
-        elif self.wait_window and isinstance(event, UpdateEvent):
-            self.wait_window.update()
+        elif isinstance(event, UpdateEvent):
+            event.callback()
             
         elif isinstance(event, ProgressEvent):
             event.progress.setValue(int(event.value * 100))
@@ -264,7 +257,6 @@ class ToolTipEvent(QtCore.QEvent):
         self.tip = tip
 
 class ConsoleWindowEvent(QtCore.QEvent):
-    
     defs = {'ShowMinimized':0,
             'ShowFullscreen':1,
             'ToggleFullscreen':2}
@@ -274,20 +266,22 @@ class ConsoleWindowEvent(QtCore.QEvent):
         self.winid = winid
         self.type  = type
 
-class FinishedEvent(QtCore.QEvent):
-    def __init__(self, error=False):
-        super(FinishedEvent, self).__init__(QtCore.QEvent.None)
+class DownloadFinishedEvent(QtCore.QEvent):
+    def __init__(self, callback, error=False):
+        super(DownloadFinishedEvent, self).__init__(QtCore.QEvent.None)
+        self.callback = callback
         self.error = error
 
 class CommandEvent(QtCore.QEvent):
-    def __init__(self, error=False):
+    def __init__(self, callback, error=False):
         super(CommandEvent, self).__init__(QtCore.QEvent.None)
+        self.callback = callback
         self.error = error
 
 class UpdateEvent(QtCore.QEvent):
-    def __init__(self, error=False):
+    def __init__(self, callback):
         super(UpdateEvent, self).__init__(QtCore.QEvent.None)
-        self.error = error
+        self.callback = callback
 
 
 # Gere le téléchargement dans un thread a part.
@@ -296,48 +290,52 @@ class UpdateEvent(QtCore.QEvent):
 #   2. FinishedEvent quand il termine(sur une erreur ou non)
 # ATTENTION: pour chaque appel de stop par le thread principale il faut recréer l'objet downloader
 class Downloader(threading.Thread):
-    def __init__(self, file, dest): 
+    def __init__(self, file, dest, progress, finished_callback):
         threading.Thread.__init__(self)
         self.file = file
         self.dest = dest
         self.to_be_stopped = False
+        self.progress = progress
+        self.finished_callback = finished_callback
 
     def run(self):
         try:
-            filename, headers = urlretrieve(self.file, self.dest, reporthook=self.progress)
-        except :
-            app.postEvent(app, FinishedEvent(True))
-        else: 
-            app.postEvent(app, FinishedEvent(False))
+            filename, headers = urlretrieve(self.file, self.dest, reporthook=self.on_progress)
+        except:
+            app.postEvent(app, DownloadFinishedEvent(self.finished_callback, True))
+        else:
+            app.postEvent(app, DownloadFinishedEvent(self.finished_callback, False))
         sys.exit()
 
-    def progress(self, count, blockSize, totalSize):
+    def on_progress(self, count, blockSize, totalSize):
+        if not self.progress: return
         if self.to_be_stopped == True:
             sys.exit()
         self.count = count
         self.maximum = totalSize
-        self.downloaded = blockSize*count*100/totalSize
-        app.sendEvent(app, NoneEvent(int(self.downloaded), 100))
+        self.downloaded = float(blockSize*count)/totalSize
+        app.update_progress(self.progress, self.downloaded)
 
     def stop(self):
         self.to_be_stopped = True
 
 
 class CommandLauncher(threading.Thread):
-        def __init__(self, cmd): 
-            threading.Thread.__init__(self)
-            self.cmd = cmd
+    def __init__(self, cmd, callback): 
+        threading.Thread.__init__(self)
+        self.cmd = cmd
+        self.callback = callback
 
-        def update(self):
-            app.postEvent(app, UpdateEvent())
+    def update(self):
+        app.postEvent(app, UpdateEvent(self.update))
             
-        def run(self):
-            t = utils.call(self.cmd, spawn=True)
-            while t.poll() == None:
-                self.update()
-                time.sleep(1)
-            app.postEvent(app, CommandEvent(False))
-            sys.exit()
+    def run(self):
+        t = utils.call(self.cmd, spawn=True)
+        while t.poll() == None:
+            self.update()
+            time.sleep(1)
+        app.postEvent(app, CommandEvent(self.callback, False))
+        sys.exit()
     
 
 class WaitWindow(QtGui.QDialog):
@@ -345,9 +343,8 @@ class WaitWindow(QtGui.QDialog):
         super(WaitWindow, self).__init__(main)
         self.cmd = cmd
         self.setWindowTitle(title)
-        self.command = CommandLauncher(self.cmd)
+        self.command = CommandLauncher(self.cmd, self.finished)
         self.msg = msg
-        app.wait_window = self
         self.statusLabel = QtGui.QLabel(self.msg)
         self.cancelButton = QtGui.QPushButton(u"Annuler")
         self.animation = QtGui.QLabel()
@@ -387,18 +384,16 @@ class WaitWindow(QtGui.QDialog):
 
 
 class DownloadWindow(QtGui.QDialog):
-    def __init__(self, url, filename, title, msg, parent=None, autostart=False, embedded_progress=True):
+    def __init__(self, url, filename, title, msg, parent=None, autostart=False, autoclose=False, embedded_progress=True):
         super(DownloadWindow, self).__init__(main)
-
-        app.download_window = self
         self.url = url
         self.fileName = filename
         self.autostart = autostart
+        self.autoclose = autoclose
         self.outFile = None
         self.httpGetId = 0
         self.http_request_aborted = False
         self.finished = False
-        self.autostart = autostart
         self.statusLabel = QtGui.QLabel(msg)
         self.embedded_progress = embedded_progress
         self.progress_dialog = None
@@ -411,8 +406,6 @@ class DownloadWindow(QtGui.QDialog):
         buttonBox.addButton(self.downloadButton,
                 QtGui.QDialogButtonBox.ActionRole)
         buttonBox.addButton(self.actionButton, QtGui.QDialogButtonBox.RejectRole)
-        # On prépare le thread qui gérera le téléchargement
-        self.init_downloader()
         # On se connecte au Slot Qt pointant sur les evenement C++, sender, SIGNAL, callable
         self.connect(self.downloadButton, QtCore.SIGNAL("clicked()"), self.download_file)
         self.connect(self.actionButton, QtCore.SIGNAL("clicked()"), self.action)
@@ -427,19 +420,31 @@ class DownloadWindow(QtGui.QDialog):
             self.download_file()
 
     def action(self):
-        if self.embedded_progress and self.progress_bar:
-            self.cancel_download()
-            self.actionButton.setText(u"Quitter")
-            self.progress_bar.hide()
-            self.layout().removeWidget(self.progress_bar)
-            self.progress_bar = None
+        if self.embedded_progress:
+            if self.downloading:
+                self.cancel_download()
+                self.progress_bar.hide()
+                self.layout().removeWidget(self.progress_bar)
+                self.progress_bar = None
+                self.actionButton.setText(u"Quitter")
+                return
+        if self.finished:
+            self.accept()
         else:
-            self.close()
+            self.reject()
 
     def init_downloader(self):
-        self.downloader = Downloader(self.url, self.fileName)
+        if self.progress_dialog:
+            progress = self.progress_dialog
+        else:
+            progress = self.progress_bar
+        self.downloader = Downloader(self.url, self.fileName, progress=progress, finished_callback=self.http_request_finished)
+
+    def was_canceled(self):
+        return self.http_request_aborted
         
     def download_file(self):
+        self.http_request_aborted = False
         if self.finished:
             self.accept()
         fileName = self.fileName
@@ -454,6 +459,7 @@ class DownloadWindow(QtGui.QDialog):
             app.progress = self.progress_bar
             self.layout().insertWidget(self.layout().count() - 1, self.progress_bar)
             self.actionButton.setText("Annuler")
+            self.connect(self.actionButton, QtCore.SIGNAL("clicked()"), self.cancel_download)
         else:
             self.progress_dialog = QtGui.QProgressDialog(self)
             app.progress = self.progress_dialog
@@ -463,18 +469,22 @@ class DownloadWindow(QtGui.QDialog):
             self.progress_dialog.setLabelText(u"Téléchargement en cours : %s"%(fileName, ))
             self.progress_dialog.show()
             
+        self.downloading = True
         self.downloadButton.setEnabled(False)
+        # On prépare le thread qui gérera le téléchargement
+        self.init_downloader()
         self.downloader.start()
 
     def cancel_download(self):
         self.statusLabel.setText(u"Téléchargement annulé. \n"
                                  u"Cliquer sur 'Télécharger' pour recommencer.")
         self.http_request_aborted = True
+        self.downloading = False
         self.downloader.stop()
-        self.init_downloader()
         self.downloadButton.setEnabled(True)
 
     def http_request_finished(self,  error):
+        self.downlading = False
         if self.downloader.isAlive():
             self.downloader.join()
 
@@ -502,8 +512,8 @@ class DownloadWindow(QtGui.QDialog):
             self.actionButton.setText(u"Continuer")
             self.statusLabel.setText(u"Téléchargement terminé.")
 
-        if self.autostart:
-            self.close()
+        if self.autoclose:
+            self.accept()
             
         self.downloadButton.setEnabled(True)
         self.outFile = None
@@ -743,16 +753,19 @@ class BalloonMessage(QtGui.QWidget):
 
 # Globals
 
-def download_file(url, filename, title = u"Téléchargement...", msg = u"Veuillez patienter le téléchargement est en cours", autostart=False):
-    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg, autostart=autostart)
+def download_file(url, filename, title = u"Téléchargement...",
+                  msg = u"Veuillez patienter le téléchargement est en cours",
+                  autostart=False, autoclose=False):
+    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg,
+                                 autostart=autostart, autoclose=autoclose, embedded_progress=True)
     if not autostart:
         downloadWin.show()
         return downloadWin.exec_() != QtGui.QDialog.Accepted
     else:
-        ret = downloadWin.progress_dialog.exec_()
-        if downloadWin.progressDialog.wasCanceled():
+        ret = downloadWin.exec_()
+        if downloadWin.was_canceled():
             return 1
-        return ret!= QtGui.QDialog.Accepted
+        return ret != QtGui.QDialog.Accepted
 
 def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
     cmdWin = WaitWindow(cmd, title, msg)
