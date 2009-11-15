@@ -246,8 +246,8 @@ class MacBackend(OSBackend):
             tries = 0
             while tries < 3:
                 logging.debug("Asking user password")
-                password, remember = gui.dialog_password(remember=False)
-                print password, remember
+                remember = False
+                password = gui.dialog_password(remember=False)
                 if password == None:
                     ret = -1
                     break
