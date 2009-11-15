@@ -20,7 +20,7 @@ Requires:       kernel-vbox python-augeas
 %package guest
 Summary: Install guest part files
 Group: Applications/System
-Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui
+Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui pam_vbox
 
 %package generic
 Summary: Install specific files for generic distribution
@@ -90,9 +90,14 @@ make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH}
 
 
 %post guest
+if [ $1 == 1 ]; then
+    authconfig --enablevbox --update
+fi
 
-
-%preun guest
+%postun guest
+if [ $1 == 0 ]; then
+    authconfig --disablevbox --update
+fi
 
 
 %clean
