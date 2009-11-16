@@ -210,15 +210,18 @@ class OSBackend(object):
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
                 logging.debug("Enabling virtualization extensions")
                 self.vbox.current_machine.machine.HWVirtExEnabled = True
-                if False:
+                if conf.CPUS == "autodetect":
                     nbprocs = int(self.vbox.host.get_nb_procs())
+                    logging.debug(str(nbprocs) + " processor(s) available on host")
+                    if nbprocs >= 2:
+                        nbprocs = max(2, nbprocs / 2)
                 else:
-                    nbprocs = 1
-                logging.debug(str(nbprocs) + " processors available on host")
-                if nbprocs >= 2:
-                    nbprocs = max(2, nbprocs / 2)
-                    logging.debug("Setting number of processors to " + str(nbprocs))
-                    self.vbox.current_machine.set_procs(nbprocs)
+                    try:
+                        nbprocs = int(conf.CPUS)
+                    except:
+                        nbprocs = 1
+                logging.debug("Setting number of processor to " + str(nbprocs))
+                self.vbox.current_machine.set_procs(nbprocs)
                 
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()

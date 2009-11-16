@@ -98,6 +98,7 @@ bootdiskuuidkey = "BOOTDISKUUID"
 isourlkey = "ISOURL"
 updateurlkey = "UPDATEURL"
 vboxdriverskey = "VBOXDRIVERS"
+cpuskey = "CPUS"
 
 cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                imgdirkey : "images",
@@ -142,7 +143,8 @@ cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                bootdiskkey : "",
                                isourlkey : "http://downloads.agorabox.org/launcher/latest",
                                updateurlkey : "http://downloads.agorabox.org/launcher/",
-                               vboxdriverskey : "drivers\\VBoxDrv"
+                               vboxdriverskey : "drivers\\VBoxDrv",
+                               cpuskey : "1"
                              })
                              
 try:
@@ -241,6 +243,7 @@ SWAPSIZE  = int(cp.get(vmsection, swapsize))
 OVERLAYFILE  = make_path(DATA_DIR, vmsection, overlayfile)
 BOOTDISK = make_path(DATA_DIR, vmsection, bootdiskkey)
 BOOTDISKUUID = cp.get(vmsection, bootdiskuuidkey)
+CPUS = cp.get(vmsection, cpuskey)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)

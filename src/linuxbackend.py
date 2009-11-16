@@ -225,10 +225,7 @@ class LinuxBackend(OSBackend):
             return str(gui.screenRect.width()) + "x" + str(gui.screenRect.height())
         
         if path.exists("/usr/bin/xrandr"):
-            try:
-                return self.call([["/usr/bin/xrandr"], ["grep", "*"]], output=True)[1].split()[0]
-            except:
-                raise
+            return self.call([["/usr/bin/xrandr"], ["grep", "*"]], output=True)[1].split()[0]
         return ""
         
     def get_free_size(self, path):
