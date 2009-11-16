@@ -467,6 +467,9 @@ class VBoxMachine():
         if save:
             self.machine.saveSettings()
         return 0
+    
+    def get_guest_property(self, key):
+        return self.machine.getGuestPropertyValue(key)
 
     def set_extra_data(self, key, value, save = False):
         self.machine.setExtraData(key, value)

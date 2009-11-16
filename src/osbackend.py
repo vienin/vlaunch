@@ -423,6 +423,17 @@ class OSBackend(object):
             cp.set("guest", os.path.basename(name), newValue)
             cp.write(open(conf.conf_file, "w"))
         
+        # Credentials management
+        elif os.path.dirname(name) == "/UFO/Credentials":
+            if os.path.basename(name) == "Status":
+                if newValue == "OK":
+                    # Here, we know that given password
+                    # is the good password
+                    pass
+                elif newValue == "FAILED" or newValue == "NO_PASSWORD":
+                    gui.app.hide_balloon()
+                    self.vbox.current_machine.showFullscreen(False, 800, 600)
+                
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
             if not self.vbox.current_machine.is_booting:
@@ -439,9 +450,9 @@ class OSBackend(object):
                 gui.app.update_progress(gui.app.tray.progress, str("1.000"))
                 self.vbox.current_machine.is_booted = True
                 
-                time.sleep(1)
-                gui.app.hide_balloon()
-                self.vbox.current_machine.showFullscreen(False, 800, 600)
+                #time.sleep(1)
+                #gui.app.hide_balloon()
+                #self.vbox.current_machine.showFullscreen(False, 800, 600)
                 
         # Overlay data reintegration infos
         elif name == "/UFO/Overlay/Size":
@@ -452,6 +463,10 @@ class OSBackend(object):
             if newValue == "LOGGED_IN":
                 # Start usb check loop
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
+                
+                if self.vbox.current_machine.get_guest_property("/UFO/Credentials/Status") == "OK":
+                    gui.app.hide_balloon()
+                    self.vbox.current_machine.showFullscreen(False, 800, 600)
                 
             elif newValue == "CLOSING_SESSION":
                 self.vbox.current_machine.showMinimized()
@@ -475,7 +490,7 @@ class OSBackend(object):
                 gui.app.hide_balloon()
                 gui.app.show_balloon_progress(title=u"Redémarrage de UFO",
                                               msg=u"UFO est en cours de redémarrage.")
-                
+        
         # Fullscreen management
         elif name == "/UFO/GUI/Fullscreen":
             if newValue == "1":
