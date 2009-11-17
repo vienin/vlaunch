@@ -102,23 +102,21 @@ def self_update(ufo_dir, relaunch):
     except:
         pass
 
-    gui.dialog_info(title=u"Attention",
-                    msg=u"Lancement de la mise à jour.\n" \
-                        u"NE RETIREZ PAS LA CLE.\n" \
-                        u"NE TOUCHEZ A AUCUN FICHIER SUR LA CLE. \n\nLa mise à jour peut durer plusieurs minutes")
- 
-    splash_down = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-download.png"))
+    # splash_down = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-download.png"))
     url = conf.UPDATEURL + "/launcher-" + latest_version + ".tar.bz2"
  
     filename = tempfile.mkstemp()[1]
     logging.debug("Downloading " + url + " to " + filename)
     retcode  = gui.download_file(url, filename, title=u"Téléchargement de la mise à jour",
-                                 msg=u"Merci de bien vouloir patienter", autostart=True, autoclose=True)
+                                 msg=u"Merci de bien vouloir patienter pendant le téléchargement de la mise à jour", autostart=True,
+                                 success_msg=u"Votre clé va maintenant être mise à jour.<br>\n" \
+                                             u"Cette opération peut durer plusieurs minutes<br><br>\n" \
+                                             u"<b>La clé ne doit pas être retirée avant la fin de la mise à jour</b>")
     if retcode:
         raise "Download was canceled"
      
-    if not splash_down == None:
-        splash_down.destroy()
+    # if not splash_down == None:
+    #     splash_down.destroy()
  
     splash_install = gui.SplashScreen(image=os.path.join(conf.IMGDIR, "updater-install.png"))
     logging.debug("Extracting update " + filename + " to " + ufo_dir)

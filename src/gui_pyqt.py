@@ -401,12 +401,14 @@ class WaitWindow(QtGui.QDialog):
 
 
 class DownloadWindow(QtGui.QDialog):
-    def __init__(self, url, filename, title, msg, parent=None, autostart=False, autoclose=False, embedded_progress=True):
+    def __init__(self, url, filename, title, msg, parent=None, autostart=False,
+                 success_msg=u"Téléchargement terminé.", autoclose=False, embedded_progress=True):
         super(DownloadWindow, self).__init__(main)
         self.url = url
         self.fileName = filename
         self.autostart = autostart
         self.autoclose = autoclose
+        self.success_msg = success_msg
         self.outFile = None
         self.httpGetId = 0
         self.http_request_aborted = False
@@ -436,13 +438,16 @@ class DownloadWindow(QtGui.QDialog):
         if self.autostart:
             self.download_file()
 
+    def hide_progress(self):
+        self.progress_bar.hide()
+        self.layout().removeWidget(self.progress_bar)
+        self.progress_bar = None
+
     def action(self):
         if self.embedded_progress:
             if self.downloading:
                 self.cancel_download()
-                self.progress_bar.hide()
-                self.layout().removeWidget(self.progress_bar)
-                self.progress_bar = None
+                self.hide_progress()
                 self.actionButton.setText(u"Quitter")
                 return
         if self.finished:
@@ -476,7 +481,7 @@ class DownloadWindow(QtGui.QDialog):
             app.progress = self.progress_bar
             self.layout().insertWidget(self.layout().count() - 1, self.progress_bar)
             self.actionButton.setText("Annuler")
-            self.connect(self.actionButton, QtCore.SIGNAL("clicked()"), self.cancel_download)
+            # self.connect(self.actionButton, QtCore.SIGNAL("clicked()"), self.cancel_download)
         else:
             self.progress_dialog = QtGui.QProgressDialog(self)
             app.progress = self.progress_dialog
@@ -501,7 +506,7 @@ class DownloadWindow(QtGui.QDialog):
         self.downloadButton.setEnabled(True)
 
     def http_request_finished(self,  error):
-        self.downlading = False
+        self.downloading = False
         if self.downloader.isAlive():
             self.downloader.join()
 
@@ -527,7 +532,8 @@ class DownloadWindow(QtGui.QDialog):
             # On cache les boutons
             self.downloadButton.hide()
             self.actionButton.setText(u"Continuer")
-            self.statusLabel.setText(u"Téléchargement terminé.")
+            self.statusLabel.setText(self.success_msg)
+            self.hide_progress()
 
         if self.autoclose:
             self.accept()
@@ -802,9 +808,9 @@ class BalloonMessage(QtGui.QWidget):
 
 def download_file(url, filename, title = u"Téléchargement...",
                   msg = u"Veuillez patienter le téléchargement est en cours",
-                  autostart=False, autoclose=False):
+                  success_msg = u"Téléchargement terminé.", autostart=False, autoclose=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg,
-                                 autostart=autostart, autoclose=autoclose, embedded_progress=True)
+                                 autostart=autostart, autoclose=autoclose, success_msg=success_msg, embedded_progress=True)
     if not autostart:
         downloadWin.show()
         return downloadWin.exec_() != QtGui.QDialog.Accepted
@@ -841,7 +847,7 @@ def dialog_info(title, msg, error=False):
         msgbox.setIcon(QtGui.QMessageBox.Information)
     msgbox.exec_()
 
-def dialog_question(title, msg, button1="Yes", button2="No"):
+def dialog_question(title, msg, button1="Oui", button2="Non"):
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
     msgbox.setIcon(QtGui.QMessageBox.Question)
     reply = msgbox.exec_()

@@ -254,7 +254,7 @@ class MacBackend(OSBackend):
 
                 self.call([ "sudo", "-k" ])
                 ret = self.call([ [ "echo", str(password)], 
-                                  [ "sudo", "-S", "touch", sys.executable ] ])[0]
+                                  [ "sudo", "-S", "touch", sys.executable ] ], log=False)[0]
                 if ret == 0:
                     if remember:
                         output = self.call( [ "sudo", "-l" ], output=True)[1]

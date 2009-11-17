@@ -107,6 +107,9 @@ install:
 	install -D -m 755 toggle-fullscreen $(DESTDIR)/usr/sbin
 	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
 	
+	cd $(DESTDIR)$(TARGET_PATH) && find . . -not -path "./.data*" > /tmp/launcher.filelist
+	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
+	
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \
 	echo Revision: $$REV; \

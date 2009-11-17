@@ -167,7 +167,8 @@ except:
 print "Using configuration file:", conf_file
 
 LIVECD = int(cp.get(launchersection, livecdkey))
-DATA_DIR = options.update
+if options.update:
+    DATA_DIR = path.join(options.update, ".data")
 BIN = ""
 
 if sys.platform == "linux2":

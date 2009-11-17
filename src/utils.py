@@ -70,13 +70,13 @@ try:
         return -1
 
 except:
-    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True, spawn=False):
+    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True, spawn=False, log=True):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
         procs = []
         for i, cmd in enumerate(cmds):
-            logging.debug(" ".join(cmd) + " with environment : " + str(env))
+            if log: logging.debug(" ".join(cmd) + " with environment : " + str(env))
             if lastproc:
                 stdin = lastproc.stdout
             else:
