@@ -63,7 +63,10 @@ class QtUFOGui(QtGui.QApplication):
             event.callback()
             
         elif isinstance(event, ProgressEvent):
-            event.progress.setValue(int(event.value * 100))
+            event.value = int(event.value * 100)
+            event.progress.setValue(int(event.value))
+            if event.msg:
+                self.tray.authentication(event.msg)
             
         elif isinstance(event, BalloonMessageEvent):
             if not event.show:
@@ -164,6 +167,13 @@ class QtUFOGui(QtGui.QApplication):
             self.postEvent(self, ProgressEvent(progress, 
                                                float(value), 
                                                100))
+            
+    def authentication(self, msg):
+        if self.tray.progress:
+            self.postEvent(self, ProgressEvent(self.tray.progress, 
+                                               100, 
+                                               100,
+                                               msg))
 
     def show_balloon_message(self, title, msg, timeout=0):
         self.postEvent(self, 
@@ -227,11 +237,12 @@ class DestroySplashEvent(QtCore.QEvent):
         super(DestroySplashEvent, self).__init__(QtCore.QEvent.None)
 
 class ProgressEvent(QtCore.QEvent):
-    def __init__(self, progress, value, total):
+    def __init__(self, progress, value, total, msg=None):
         super(ProgressEvent, self).__init__(QtCore.QEvent.None)
         self.progress = progress
         self.value    = value
         self.total    = total
+        self.msg      = msg
 
 class BalloonMessageEvent(QtCore.QEvent):
     def __init__(self, title, msg, timeout, progress=False, show=True, credentials=None):
@@ -591,6 +602,10 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.balloon = None
         self.progress = None
 
+    def authentication(self, msg):
+        if self.balloon:
+            self.balloon.authentication(msg)
+        
     def activate(self):
         pass
 
@@ -607,11 +622,12 @@ class BalloonMessage(QtGui.QWidget):
         QtGui.QWidget.__init__(self, None, flags)
 
         self.parent = parent
+        self.title = title
         self.mAnchor = QtCore.QPoint()
         self.up = True
-        BalloonLayout = QtGui.QHBoxLayout(self)
+        self.BalloonLayout = QtGui.QHBoxLayout(self)
 
-        Layout2 = QtGui.QVBoxLayout()
+        self.Layout2 = QtGui.QVBoxLayout()
         self.mTitle = QtGui.QLabel("<b>" + title + "</b>")
         self.mTitle.setPalette(QtGui.QToolTip.palette())
         self.mTitle.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
@@ -625,16 +641,16 @@ class BalloonMessage(QtGui.QWidget):
             mImage = QtGui.QLabel(self)
             mImage.setScaledContents(False);
             mImage.setPixmap(pixmap)
-            BalloonLayout.addWidget(mImage)
+            self.BalloonLayout.addWidget(mImage)
 
-        Layout2.addWidget(self.mTitle)
-        Layout2.addWidget(self.mCaption)
+        self.Layout2.addWidget(self.mTitle)
+        self.Layout2.addWidget(self.mCaption)
 
-        BalloonLayout.addLayout(Layout2)
+        self.BalloonLayout.addLayout(self.Layout2)
 
         if progress:
             self.progressBar = QtGui.QProgressBar()
-            Layout2.addWidget(self.progressBar)
+            self.Layout2.addWidget(self.progressBar)
 
         if credentials:
             self.credentials = credentials
@@ -644,7 +660,7 @@ class BalloonMessage(QtGui.QWidget):
             self.credentials_button.setDefault(True)
             self.connect(self.credentials_button, QtCore.SIGNAL("clicked()"), self.show_login)
             self.creds_layout.addWidget(self.credentials_button, 0, QtCore.Qt.AlignLeft)
-            Layout2.addLayout(self.creds_layout)
+            self.Layout2.addLayout(self.creds_layout)
 
         self.setAutoFillBackground(True)
         deskRect = QtCore.QRect(desktop.availableGeometry())
@@ -699,6 +715,9 @@ class BalloonMessage(QtGui.QWidget):
         self.layout().activate()
         self.resize(350, 20)
         self.show()
+
+    def authentication(self, msg):
+        self.mCaption.setText(msg)
 
     def destroy(self):
         self.hide()

@@ -427,9 +427,8 @@ class OSBackend(object):
         elif os.path.dirname(name) == "/UFO/Credentials":
             if os.path.basename(name) == "Status":
                 if newValue == "OK":
-                    # Here, we know that given password
-                    # is the good password
-                    pass
+                    gui.app.authentication(u"Ouverture de la session en cours")
+                    
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
                     gui.app.hide_balloon()
                     self.vbox.current_machine.showFullscreen(False, 800, 600)
@@ -448,6 +447,7 @@ class OSBackend(object):
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
                 gui.app.update_progress(gui.app.tray.progress, str("1.000"))
+                gui.app.authentication(u"Authentification en cours")
                 self.vbox.current_machine.is_booted = True
                 
                 #time.sleep(1)
