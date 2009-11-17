@@ -54,6 +54,7 @@ globalsection = "virtualbox"
 launchersection = "launcher"
 rawdisksection = "rawdisk"
 vmsection = "vm"
+guestsection = "guest"
 startvmkey = "STARTVM"
 vmkey = "VM"
 oskey = "OS"
@@ -99,6 +100,7 @@ isourlkey = "ISOURL"
 updateurlkey = "UPDATEURL"
 vboxdriverskey = "VBOXDRIVERS"
 cpuskey = "CPUS"
+userkey = "USER"
 
 cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                imgdirkey : "images",
@@ -144,7 +146,8 @@ cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
                                isourlkey : "http://downloads.agorabox.org/launcher/latest",
                                updateurlkey : "http://downloads.agorabox.org/launcher/",
                                vboxdriverskey : "drivers\\VBoxDrv",
-                               cpuskey : "1"
+                               cpuskey : "1",
+                               userkey : ""
                              })
                              
 try:
@@ -247,3 +250,5 @@ CPUS = cp.get(vmsection, cpuskey)
 
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)
+
+USER = cp.get(guestsection, userkey)

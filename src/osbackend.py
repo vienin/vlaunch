@@ -71,6 +71,8 @@ class OSBackend(object):
         self.splash         = None
         self.do_not_update  = False
         self.credentials    = None
+        self.keyring_valid  = False
+        self.remember_pass  = None
         
         self.env = self.update_env()
 
@@ -336,6 +338,7 @@ class OSBackend(object):
 
         password = self.get_password()
         if password:
+            self.keyring_valid = True
             self.set_credentials(password)
         self.credentials = self.set_credentials
 
@@ -427,6 +430,8 @@ class OSBackend(object):
         elif os.path.dirname(name) == "/UFO/Credentials":
             if os.path.basename(name) == "Status":
                 if newValue == "OK":
+                    if self.remember_pass:
+                        self.set_password(self.remember_pass)
                     gui.app.authentication(u"Ouverture de la session en cours")
                     
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
@@ -508,9 +513,14 @@ class OSBackend(object):
             # minimize window while booting
             time.sleep(2)
             self.vbox.current_machine.showMinimized()
-            gui.app.show_balloon_progress(title=u"Démarrage de UFO",
+            if conf.USER != "":
+                title = u"Démarrage de UFO"
+            else:
+                title = u"1<SUP>er</SUP> démarrage de UFO"
+            gui.app.show_balloon_progress(title=title,
                                           msg=u"UFO est en cours de démarrage.",
-                                          credentials=self.credentials)
+                                          credentials=self.credentials,
+                                          keyring=self.keyring_valid)
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
@@ -539,19 +549,21 @@ class OSBackend(object):
         self.vbox.current_machine.set_guest_property("/UFO/Credentials/AuthTok",
                                                      str(password))
         if remember:
-            self.set_password(password)
+            self.remember_pass = password
         
     def set_password(self, password):
         try:
             import keyring
             keyring.set_password("UFO", "password", str(password))
-        except: pass
+        except: 
+            logging.debug("import keyring failed, (keyring.set_password)!")
 
     def get_password(self):
         try:
             import keyring
             return keyring.get_password("UFO", "password")
-        except: pass
+        except: 
+            logging.debug("import keyring failed, (keyring.get_password)!")
 
     def wait_for_termination(self):
         # Destroy our own splash screen
