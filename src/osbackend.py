@@ -547,7 +547,7 @@ class OSBackend(object):
 
     def set_credentials(self, password, remember=False):
         self.vbox.current_machine.set_guest_property("/UFO/Credentials/AuthTok",
-                                                     str(password))
+                                                     unicode(password))
         if remember:
             self.remember_pass = password
         

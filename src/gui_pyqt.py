@@ -629,6 +629,7 @@ class BalloonMessage(QtGui.QWidget):
             flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Popup
         
         QtGui.QWidget.__init__(self, None, flags)
+        self.startTimer(500)
 
         self.parent = parent
         self.title = title
@@ -695,7 +696,10 @@ class BalloonMessage(QtGui.QWidget):
 
         self.show()
         self.connect(self, QtCore.SIGNAL("clicked()"), self.destroy)
-
+        
+    def timerEvent (self, event):
+        self.raise_()
+         
     def show_login(self):
         if self.login_shown:
             self.hide_login()
@@ -745,7 +749,11 @@ class BalloonMessage(QtGui.QWidget):
     def return_pressed(self):
         if self.password.text():
             self.credentials(self.password.text(), self.remember.isChecked())
-            self.credentials_button.setText(QtCore.QString("(" + conf.USER + ")"))
+            if len(self.credentials_button.text()) - len(conf.USER) - 10 > len("S'authentifier"):
+                offset = "                                          "
+            else:
+                offset = "                       "
+            self.credentials_button.setText(QtCore.QString("(" + conf.USER + ")" + offset))
         self.hide_login()
 
     def timeout(self):
