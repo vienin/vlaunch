@@ -209,6 +209,8 @@ if bin: BIN = path.join(DATA_DIR, bin)
 HOME = path.join(DATA_DIR, cp.get(globalsection, homekey))
 VMDK = cp.get(globalsection, vmdkkey)
 
+if not cp.has_section(launchersection):
+    cp.add_section(launchersection)
 USESERVICE = int(cp.get(launchersection, useservicekey))
 CREATESRVS = int(cp.get(launchersection, createsrvskey))
 STARTSRVS = int(cp.get(launchersection, startsrvskey))
@@ -227,12 +229,16 @@ ISOURL = cp.get(launchersection, isourlkey)
 UPDATEURL = cp.get(launchersection, updateurlkey)
 VBOXDRIVERS = make_path(BIN, launchersection, vboxdriverskey)
 
+if not cp.has_section(rawdisksection):
+    cp.add_section(rawdisksection)
 DEV = cp.get(rawdisksection, devkey)
 PARTS = cp.get(rawdisksection, partskey)
 ROOTUUID = cp.get(rawdisksection, rootuuidkey)
 VOLUME = cp.get(rawdisksection, volumekey)
 MODEL = cp.get(rawdisksection, modelkey)
 
+if not cp.has_section(vmsection):
+    cp.add_section(vmsection)
 VM = cp.get(vmsection, vmkey)
 OS = cp.get(vmsection, oskey)
 BOOTFLOPPY = make_path(DATA_DIR, vmsection, bootfloppykey)
@@ -254,4 +260,6 @@ CPUS = cp.get(vmsection, cpuskey)
 WIDTH = cp.get(vmsection, widthkey)
 HEIGHT = cp.get(vmsection, heightkey)
 
+if not cp.has_section(guestsection):
+    cp.add_section(guestsection)
 USER = cp.get(guestsection, userkey)
