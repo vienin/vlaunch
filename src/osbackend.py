@@ -36,10 +36,18 @@ import gui
 import time
 import platform
 import utils
-
 from ufovboxapi import *
 from ConfigParser import ConfigParser
 
+try:
+    import keyring
+    print "Using keyring backend"
+except:
+    try:
+        import keyring_ctypes as keyring
+        print "Using keyring_ctypes backend"
+    except:
+        print "Could find a keyring backend"
 
 class UFOVboxMonitor(VBoxMonitor):
     
@@ -340,6 +348,8 @@ class OSBackend(object):
         if password:
             self.keyring_valid = True
             self.set_credentials(password)
+        else:
+            logging.debug("Found no credentials")
         self.credentials = self.set_credentials
 
         self.vbox.close_session()
@@ -546,6 +556,7 @@ class OSBackend(object):
         self.vbox.current_machine.last_state = state
 
     def set_credentials(self, password, remember=False):
+        logging.debug("Settings guest credentials")
         self.vbox.current_machine.set_guest_property("/UFO/Credentials/AuthTok",
                                                      unicode(password))
         if remember:
@@ -553,14 +564,14 @@ class OSBackend(object):
         
     def set_password(self, password):
         try:
-            import keyring
+            logging.debug("Storing password in the keyring")
             keyring.set_password("UFO", "password", str(password))
         except: 
             logging.debug("import keyring failed, (keyring.set_password)!")
 
     def get_password(self):
         try:
-            import keyring
+            logging.debug("Get credentials")
             return keyring.get_password("UFO", "password")
         except: 
             logging.debug("import keyring failed, (keyring.get_password)!")

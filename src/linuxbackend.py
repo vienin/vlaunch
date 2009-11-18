@@ -28,6 +28,7 @@ import gui
 import glob
 import tempfile
 import utils
+import re
 
 from osbackend import OSBackend
 from shutil import copytree
@@ -49,8 +50,10 @@ class LinuxBackend(OSBackend):
 
     def check_process(self):
         logging.debug("Checking UFO process")
-        processes = self.call([["ps", "ax", "-o", "pid,command"],
-                               ["grep", "\\/ufo\\(-updater.py\\)\\?\\( \\|$\\)"]], output=True)[1].strip().split("\n")
+        # We used to use a pipe, but Satan knows why, it returns a shadow
+        # of the running program. So we run two separate commands
+        psout = self.call(["ps", "ax", "-o", "pid,command"], output = True)[1]
+        processes = [ x[0].strip() for x in re.findall(r"(.*/[Uu][Ff][Oo](\n| .*))", psout) ]
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1 :
             pids = [i.strip().split(" ")[0] for i in processes]
@@ -376,7 +379,7 @@ class BeesuRunAsRoot(RunAsRoot):
     
     def call(self, command, replace=False):
         if os.environ.has_key("GNOME_KEYRING_SOCKET"):
-            command = [ "GNOME_KEYRING_SOCKET=/tmp/keyring-bfvyek/socket" ] + command
+            command = [ "GNOME_KEYRING_SOCKET=" + os.environ["GNOME_KEYRING_SOCKET"] ] + command
         if replace:
             os.execv("/usr/bin/beesu", ["/usr/bin/beesu", "-m" ] + command)
         else:
