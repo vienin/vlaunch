@@ -25,7 +25,10 @@ from optparse import OptionParser
 
 path.supports_unicode_filenames = True
 
-SCRIPT_PATH = path.realpath(sys.argv[0])
+if sys.platform == "darwin" and getattr(sys, "frozen", None):
+    SCRIPT_PATH = path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO"))
+else:
+    SCRIPT_PATH = path.realpath(sys.argv[0])
 SCRIPT_NAME = path.basename(sys.argv[0])
 SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
