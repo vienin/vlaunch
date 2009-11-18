@@ -35,7 +35,7 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
 
 	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
-	cp UFO.svg UFO.png ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng credentials.png $(DESTDIR)$(TARGET_PATH)/.data/images/
+	cp UFO.svg UFO.png ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng credentials.png close.png $(DESTDIR)$(TARGET_PATH)/.data/images/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks/
 

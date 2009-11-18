@@ -56,7 +56,7 @@ class UFOVboxMonitor(VBoxMonitor):
         self.os_backend = os_backend
         
     def onGuestPropertyChange(self, id, name, newValue, flags):
-        
+        logging.debug("Guest property: %s" % name)
         if self.os_backend.vbox.current_machine.uuid == id:
             self.os_backend.onGuestPropertyChange(name, newValue, flags)
             
@@ -445,8 +445,10 @@ class OSBackend(object):
                     gui.app.authentication(u"Ouverture de la session en cours")
                     
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
+                    if newValue == "FAILED":
+                        self.set_password("")
                     gui.app.hide_balloon()
-                    self.vbox.current_machine.showFullscreen(False, 800, 600)
+                    self.vbox.current_machine.showNormal()
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -465,10 +467,6 @@ class OSBackend(object):
                 gui.app.authentication(u"Authentification en cours")
                 self.vbox.current_machine.is_booted = True
                 
-                #time.sleep(1)
-                #gui.app.hide_balloon()
-                #self.vbox.current_machine.showFullscreen(False, 800, 600)
-                
         # Overlay data reintegration infos
         elif name == "/UFO/Overlay/Size":
             self.vbox.current_machine.overlay_data_size = int(newValue)
@@ -479,9 +477,9 @@ class OSBackend(object):
                 # Start usb check loop
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
                 
-                if self.vbox.current_machine.get_guest_property("/UFO/Credentials/Status") == "OK":
-                    gui.app.hide_balloon()
-                    self.vbox.current_machine.showFullscreen(False, 800, 600)
+                #if self.vbox.current_machine.get_guest_property("/UFO/Credentials/Status") == "OK":
+                gui.app.hide_balloon()
+                self.vbox.current_machine.showFullscreen(False, 800, 600)
                 
             elif newValue == "CLOSING_SESSION":
                 self.vbox.current_machine.showMinimized()

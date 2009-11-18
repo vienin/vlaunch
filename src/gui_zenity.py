@@ -38,43 +38,55 @@ if not os.path.lexists(zenity):
 class NoneUFOGui():
     def __init__(self, argv):
         pass
-    
+
+    def create_splash_screen(self):
+        pass
+
+    def destroy_splash_screen(self):
+        pass
+
     def initialize_tray_icon(self):
         pass
         
     def start_usb_check_timer(self, time, function):
         pass
-        
+    
     def stop_usb_check_timer(self):
         pass
-    
+ 
     def start_callbacks_timer(self, time, function):
         pass
-        
+      
     def stop_callbacks_timer(self):
         pass
 
     def update_progress(self, progress, value):
         pass
+       
+    def authentication(self, msg):
+        pass
 
     def show_balloon_message(self, title, msg, timeout=0):
         pass
         
-    def show_balloon_progress(self, title, msg):
+    def show_balloon_progress(self, title, msg, credentials=None, keyring=False):
         pass
-        
+
     def hide_balloon(self):
         pass
-        
+
     def set_tooltip(self, tip):
         pass
-        
-    def fullscreen_window(self, winid):
+
+    def fullscreen_window(self, winid, toggle):
         pass
-        
+
     def minimize_window(self, winid):
-        pass
-    
+         pass
+
+    def normalize_window(self, winid):
+         pass
+        
     def process_gui_events(self):
         pass
 

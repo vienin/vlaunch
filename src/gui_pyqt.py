@@ -93,9 +93,13 @@ class QtUFOGui(QtGui.QApplication):
                 self.console_window.show()
                 if event.type == ConsoleWindowEvent.defs.get('ShowMinimized'):
                     self.console_window.showMinimized()
+                    
+                if event.type == ConsoleWindowEvent.defs.get('ShowNormal'):
+                    self.console_window.showNormal()
                 
                 if event.type == ConsoleWindowEvent.defs.get('ShowFullscreen'):
                     self.console_window.showMaximized()
+                    
                 elif event.type == ConsoleWindowEvent.defs.get('ToggleFullscreen'):
                     if self.console_window.isFullscreen() or self.console_window.isMaximized():
                         self.console_window.showNormal()
@@ -220,6 +224,11 @@ class QtUFOGui(QtGui.QApplication):
                        ConsoleWindowEvent(winid, 
                                           ConsoleWindowEvent.defs.get('ShowMinimized')))
         
+    def normalize_window(self, winid):
+        self.postEvent(self, 
+                       ConsoleWindowEvent(winid, 
+                                          ConsoleWindowEvent.defs.get('ShowNormal')))
+        
     def process_gui_events(self):
         self.processEvents()
 
@@ -275,8 +284,9 @@ class ToolTipEvent(QtCore.QEvent):
 
 class ConsoleWindowEvent(QtCore.QEvent):
     defs = {'ShowMinimized':0,
-            'ShowFullscreen':1,
-            'ToggleFullscreen':2}
+            'ShowNormal':1,
+            'ShowFullscreen':2,
+            'ToggleFullscreen':3}
     
     def __init__(self, winid, type):
         super(ConsoleWindowEvent, self).__init__(QtCore.QEvent.None)
@@ -586,8 +596,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
         menu = QtGui.QMenu()
         self.setContextMenu(menu)
-        self.connect(self, QtCore.SIGNAL("activate()"), self.activate)
-        
+        self.connect(self, QtCore.SIGNAL("activated()"), self.activate)
         self.progress = None
         self.balloon  = None
         
@@ -620,7 +629,8 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.balloon.authentication(msg)
         
     def activate(self):
-        pass
+        if self.balloon:
+            self.ballon.show()
 
 
 class BalloonMessage(QtGui.QWidget):
@@ -646,10 +656,17 @@ class BalloonMessage(QtGui.QWidget):
         self.BalloonLayout = QtGui.QHBoxLayout(self)
 
         self.Layout2 = QtGui.QVBoxLayout()
+        self.title_layout = QtGui.QHBoxLayout()
+        self.close_button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "close.png")), "", self)
+        self.close_button.setFlat(True)
+        self.close_button.setDefault(True)
+        self.connect(self.close_button, QtCore.SIGNAL("clicked()"), self.hide)
         self.mTitle = QtGui.QLabel("<b>" + title + "</b>")
         self.mTitle.setPalette(QtGui.QToolTip.palette())
         self.mTitle.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-
+        self.title_layout.addWidget(self.mTitle)
+        self.title_layout.addWidget(self.close_button, 0, QtCore.Qt.AlignRight)
+        
         self.mCaption = QtGui.QLabel(msg)
         self.mCaption.setPalette(QtGui.QToolTip.palette())
         self.mCaption.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
@@ -661,7 +678,7 @@ class BalloonMessage(QtGui.QWidget):
             mImage.setPixmap(pixmap)
             self.BalloonLayout.addWidget(mImage, 0, QtCore.Qt.AlignTop)
 
-        self.Layout2.addWidget(self.mTitle)
+        self.Layout2.addLayout(self.title_layout)
         self.Layout2.addWidget(self.mCaption)
 
         self.BalloonLayout.addLayout(self.Layout2)
@@ -701,7 +718,6 @@ class BalloonMessage(QtGui.QWidget):
             self.destroytimer.start(timeout)
 
         self.show()
-        self.connect(self, QtCore.SIGNAL("clicked()"), self.destroy)
         
     def timerEvent (self, event):
         self.raise_()
@@ -744,7 +760,7 @@ class BalloonMessage(QtGui.QWidget):
         self.layout().activate()
         self.resize(350, 20)
         self.show()
-
+    
     def authentication(self, msg):
         self.mCaption.setText(msg)
 
