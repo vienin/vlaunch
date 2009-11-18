@@ -826,7 +826,7 @@ def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en c
 
 def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"
-    msgbox = OurMessageBox(main)
+    msgbox = OurMessageBox()
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
     if False: # darwin:
