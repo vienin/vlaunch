@@ -169,6 +169,8 @@ print "Using configuration file:", conf_file
 LIVECD = int(cp.get(launchersection, livecdkey))
 if options.update:
     DATA_DIR = path.join(options.update, ".data")
+else:
+    DATA_DIR = ""
 BIN = ""
 
 if sys.platform == "linux2":
