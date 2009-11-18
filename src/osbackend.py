@@ -448,7 +448,10 @@ class OSBackend(object):
                     if newValue == "FAILED":
                         self.set_password("")
                     gui.app.hide_balloon()
-                    self.vbox.current_machine.showNormal()
+                    if conf.USER != "":
+                        self.vbox.current_machine.showNormal()
+                    else:
+                        self.vbox.current_machine.showFullscreen(False)
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -479,7 +482,7 @@ class OSBackend(object):
                 
                 #if self.vbox.current_machine.get_guest_property("/UFO/Credentials/Status") == "OK":
                 gui.app.hide_balloon()
-                self.vbox.current_machine.showFullscreen(False, 800, 600)
+                self.vbox.current_machine.showFullscreen(False)
                 
             elif newValue == "CLOSING_SESSION":
                 self.vbox.current_machine.showMinimized()
