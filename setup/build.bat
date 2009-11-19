@@ -9,6 +9,7 @@ copy ..\src\launcher.py ..\src\ufo.py
 del ..\src\subprocess.py*
 setup.py py2exe --custom-boot-script custom-boot-script.py
 copy %QT_PATH%\QtNetwork*.dll dist\bin
+rename dist\MSVCR71.dll msvcr71.dll
 rem copy dist\ufo.exe ..\setup\dist
 rem cd ..\setup
 rem copy ufo.exe.manifest dist

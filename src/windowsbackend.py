@@ -30,9 +30,11 @@ import tempfile
 import platform
 import glob
 import gui
+import time
+import utils
 
 from osbackend import OSBackend
-from shutil import copyfile, copytree
+from shutil import copyfile
 
 class WindowsBackend(OSBackend):
     VBOXMANAGE_EXECUTABLE = "VBoxManage.exe"
@@ -73,9 +75,18 @@ class WindowsBackend(OSBackend):
 
     def prepare_update(self):
         updater_path = tempfile.mkdtemp(prefix="ufo-updater")
-        logging.debug("Copying " + conf.SCRIPT_PATH + " to " + updater_path)
+        logging.debug("Copying updater to " + updater_path)
         exe_path = path.join(updater_path, "ufo.exe")
-        shutil.copyfile(conf.SCRIPT_PATH, exe_path)
+        patterns = [ "*.exe", "*.dll", "bin\\library.zip", "bin\\Qt*.dll", "bin\\msv*.dll", "bin\\*.pyd", "bin\\py*.dll" ]
+        files = []
+        for pattern in patterns:
+            files += [ utils.relpath(x, conf.SCRIPT_DIR) for x in glob.glob(path.join(conf.SCRIPT_DIR, pattern)) ]
+        for file in files:
+            dest = path.join(updater_path, file)
+            folder = path.dirname(dest)
+            if not path.exists(folder):
+                os.makedirs(folder)
+            copyfile(file, dest)
         return exe_path
 
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
