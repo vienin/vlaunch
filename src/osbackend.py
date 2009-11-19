@@ -566,14 +566,14 @@ class OSBackend(object):
     def set_password(self, password):
         try:
             logging.debug("Storing password in the keyring")
-            keyring.set_password("UFO", "password", str(password))
+            keyring.set_password("UFO", conf.USER, str(password))
         except: 
             logging.debug("import keyring failed, (keyring.set_password)!")
 
     def get_password(self):
         try:
             logging.debug("Get credentials")
-            return keyring.get_password("UFO", "password")
+            return keyring.get_password("UFO", conf.USER)
         except: 
             logging.debug("import keyring failed, (keyring.get_password)!")
 

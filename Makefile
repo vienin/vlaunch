@@ -3,7 +3,7 @@ VERSION=0.9
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
         guest/toggle-fullscreen* \
-        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png \
+        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png \
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store

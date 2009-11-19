@@ -124,6 +124,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/UFO.svg
 %{TARGET_PATH}/.data/images/UFO.png
 %{TARGET_PATH}/.data/images/credentials.png
+%{TARGET_PATH}/.data/images/close.png
 %{TARGET_PATH}/.data/launcher.filelist
 %dir %{TARGET_PATH}/.data/logs
 
