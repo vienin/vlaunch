@@ -445,7 +445,7 @@ class OSBackend(object):
                     gui.app.authentication(u"Ouverture de la session en cours")
                     
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
-                    if newValue == "FAILED":
+                    if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
                     gui.app.hide_balloon()
                     if conf.USER != "":
