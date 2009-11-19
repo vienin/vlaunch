@@ -151,7 +151,7 @@ class MacBackend(OSBackend):
         disks = []
         try: 
             for device in glob.glob("/dev/disk[0-9]s[0-9]"):
-                infos = self.call([ "diskutil", "info", device ], output=True)[1]
+                infos = self.call([ "diskutil", "info", device ], output=True, log=log)[1]
                 if utils.grep(infos, "Protocol:").split()[1] == "USB" and \
                    len(utils.grep(infos, "Volume Name:").split()) > 2 and \
                    len(utils.grep(infos, "Mount Point:").split()) > 2:

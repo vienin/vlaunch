@@ -442,16 +442,13 @@ class OSBackend(object):
                 if newValue == "OK":
                     if self.remember_pass:
                         self.set_password(self.remember_pass)
-                    gui.app.authentication(u"Ouverture de la session en cours")
+                    gui.app.authentication(u"Ouverture de la session en cours...")
                     
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
                     if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
                     gui.app.hide_balloon()
-                    if conf.USER != "":
-                        self.vbox.current_machine.showNormal()
-                    else:
-                        self.vbox.current_machine.showFullscreen(False)
+                    self.vbox.current_machine.showNormal()
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -467,7 +464,7 @@ class OSBackend(object):
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
                 gui.app.update_progress(gui.app.tray.progress, str("1.000"))
-                gui.app.authentication(u"Authentification en cours")
+                gui.app.authentication(u"Authentification en cours...")
                 self.vbox.current_machine.is_booted = True
                 
         # Overlay data reintegration infos
@@ -507,6 +504,9 @@ class OSBackend(object):
                 gui.app.show_balloon_progress(title=u"Redémarrage de UFO",
                                               msg=u"UFO est en cours de redémarrage.")
         
+            elif newValue == "FIRSTBOOT":
+                self.vbox.current_machine.showFullscreen(False)
+                
         # Fullscreen management
         elif name == "/UFO/GUI/Fullscreen":
             if newValue == "1":
