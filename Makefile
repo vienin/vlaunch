@@ -107,7 +107,8 @@ install:
 	install -D -m 755 toggle-fullscreen $(DESTDIR)/usr/sbin
 	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
 	
-	cd $(DESTDIR)$(TARGET_PATH) && find . . -not -path "./.data*" > /tmp/launcher.filelist
+	cd $(DESTDIR)$(TARGET_PATH) && find . -name .svn | xargs rm -rf
+	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
 	
 updater:

@@ -344,12 +344,13 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
 
-        password = self.get_password()
-        if password:
-            self.keyring_valid = True
-            self.set_credentials(password)
-        else:
-            logging.debug("Found no credentials")
+        if conf.USER:
+            password = self.get_password()
+            if password:
+                self.keyring_valid = True
+                self.set_credentials(password)
+            else:
+                logging.debug("Found no credentials")
         self.credentials = self.set_credentials
 
         self.vbox.close_session()
