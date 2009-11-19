@@ -52,7 +52,7 @@ class WindowsBackend(OSBackend):
     def check_process(self):
         logging.debug("Checking UFO process")
         # TODO: Get pid for possible kill
-        processes = self.WMI.Win32_Process(name="ufo.exe")
+        processes = self.WMI.Win32_Process(Name="ufo.exe")
         logging.debug("ufo process : "+str(processes))
         if len(processes)>1 :
             logging.debug("U.F.O launched twice. Exiting")
@@ -64,7 +64,7 @@ class WindowsBackend(OSBackend):
             sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
-        processes = self.WMI.Win32_Process(name="VBoxSVC.exe")
+        processes = self.WMI.Win32_Process(Name="VBoxSVC.exe")
         if len(processes)>1 :
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
             gui.dialog_info(title=u"Impossible de lancer UFO",
