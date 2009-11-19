@@ -352,6 +352,7 @@ class UbuntuLinuxBackend(LinuxBackend):
             os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
             gui.wait_command(["apt-get", "update"], u"Mise-à-jour", u"Votre système est en train d'être mis à jour")
             gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.0"], "Installation", "Veuillez patienter,\nl'installation de \"VirtualBox 3\" est en cours.")
+            gui.wait_command(["/etc/init.d/vboxdrv", "setup"], "Configuration", "Configuration en cours de \"VirtualBox 3\".")
          
         OSBackend.look_for_virtualbox(self)
 
