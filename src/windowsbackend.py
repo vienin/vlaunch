@@ -332,7 +332,14 @@ class WindowsBackend(OSBackend):
 
     def run_vbox(self, command, env):
         self.call(command, env = env, shell=True)
-        
+
+    def wait_for_events(self, interval):
+        # Overloaded on Windows because of a VERY STRANGE bug
+        # After the first call to VBox's waitForEvents, the
+        # characters typed into the balloon windows are uppercase...
+        time.sleep(interval)
+        gui.app.process_gui_events()
+
     def get_free_size(self, path):
         logical_disks = self.WMI.Win32_LogicalDisk (Caption = path[0:2])
         if not logical_disks:

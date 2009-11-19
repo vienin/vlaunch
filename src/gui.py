@@ -54,7 +54,22 @@ except:
 if __name__ == "__main__":
     app.initialize_tray_icon()
     app.process_gui_events()
-    balloon = BalloonMessage(None, "Title", "Do you Glumol ?", timeout=1000, credentials=(lambda x: x))
+    conf.USER = "ufo"
+    app.show_balloon_progress(title="Demarrage",
+                                          msg=u"UFO est en cours de demarrage.",
+                                          credentials=True,
+                                          keyring=False)
+        
+    #balloon = BalloonMessage(None, "Title", "Do you Glumol ?", timeout=10000, credentials=(lambda x, y: x))
+    times = 0
+    interval = 0.05
+    import time
+    while times < 10:
+        time.sleep(interval)
+        times += interval
+        app.process_gui_events()
+
+    #app.exec_()
     #balloon.setAnchor(QtCore.QPoint(100, 100))
     #balloon.showMessage(timeout=5000)
     #app.exec_()
@@ -62,7 +77,7 @@ if __name__ == "__main__":
                          choices = [ "a", "b", "c" ])
     dialog_question("Titre", "Message")
     dialog_info("Titre", "Message")
-    print dialog_password()
+    print dialog_password(msg="Merci d'entrer votre mot de passe")
     download_file("http://www.glumol.com", "toto")
     splash = SplashScreen(image="ufo-generic.png")
     wait_command([ "sleep", "3" ])

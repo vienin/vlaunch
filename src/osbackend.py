@@ -415,7 +415,6 @@ class OSBackend(object):
              sys.exit(1)
 
     def onGuestPropertyChange(self, name, newValue, flags):
-        
         # Shared folder management
         if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":
             share_label = os.path.basename(name)
@@ -586,7 +585,12 @@ class OSBackend(object):
         # and call corresponding callback method
         if not self.vbox.callbacks_aware:
             gui.app.start_callbacks_timer(1, self.vbox.minimal_callbacks_maker_loop)
-        
+
+        # Special case when Qt backend unavailale and virtualbox < 3.0.0,
+        # in this case we are not able to catch termination
+        if gui.backend != "PyQt":
+            sys.exit(1)
+
         # As we use waitForEvents(interval) from vboxapi,
         # we are not able to use another type of loop, as 
         # Qt one, because we d'ont receive any vbox callbacks
@@ -594,19 +598,17 @@ class OSBackend(object):
         #
         # So we handle Qt events ourself with the configurable
         # following interval value (default: 50ms)
-        times = 0
-        interval = 0.05
         while not self.vbox.current_machine.is_finished:
-            if self.vbox.callbacks_aware:
-                self.vbox.vm_manager.waitForEvents(int(interval * 1000))
-            else:
-                time.sleep(interval)
-                
-                # Special case when Qt backend unavailale and virtualbox < 3.0.0,
-                # in this case we are not able to catch termination
-                if gui.backend != "PyQt":
-                    sys.exit(1)
-            gui.app.process_gui_events()
+            self.wait_for_events(0.05)
+
+    def wait_for_events(self, interval):
+        # This function is overloaded only on Windows
+        if self.vbox.callbacks_aware:
+            self.vbox.vm_manager.waitForEvents(int(interval * 1000))
+        else:
+            time.sleep(interval)
+
+        gui.app.process_gui_events()
 
     def check_usb_devices(self):
         # manage removable media shared folders

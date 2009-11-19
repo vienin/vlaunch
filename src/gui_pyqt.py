@@ -221,12 +221,12 @@ class QtUFOGui(QtGui.QApplication):
         
     def minimize_window(self, winid):
         self.postEvent(self, 
-                       ConsoleWindowEvent(winid, 
+                       ConsoleWindowEvent(winid,
                                           ConsoleWindowEvent.defs.get('ShowMinimized')))
         
     def normalize_window(self, winid):
         self.postEvent(self, 
-                       ConsoleWindowEvent(winid, 
+                       ConsoleWindowEvent(winid,
                                           ConsoleWindowEvent.defs.get('ShowNormal')))
         
     def process_gui_events(self):
@@ -427,6 +427,7 @@ class DownloadWindow(QtGui.QDialog):
         self.embedded_progress = embedded_progress
         self.progress_dialog = None
         self.progress_bar = None
+        self.downloading = False
         self.downloadButton = QtGui.QPushButton(u"Télécharger")
         self.downloadButton.setDefault(True)
         self.actionButton = QtGui.QPushButton(u"Quitter")
@@ -638,7 +639,7 @@ class BalloonMessage(QtGui.QWidget):
                  progress=False, credentials=None, keyring=False):
         
         if sys.platform == "win32":
-            flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Popup
+            flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.ToolTip
         elif sys.platform == "linux2":
             flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.X11BypassWindowManagerHint | QtCore.Qt.Popup
         else:
