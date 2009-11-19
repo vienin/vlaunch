@@ -17,6 +17,7 @@ keyring.gnome_keyring_set_network_password_sync.argtypes = \
       c_char_p, c_char_p,
       c_char_p, c_int,
       c_char_p, POINTER(c_int) ]
+    
 class GnomeKeyringNetworkPasswordData(Structure):
   _fields_ = [("keyring", c_char_p),
               ("item_id", c_int),
