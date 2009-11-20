@@ -619,10 +619,18 @@ class ListDialog(QtGui.QDialog):
 class TrayIcon(QtGui.QSystemTrayIcon):
     def __init__(self):
         QtGui.QSystemTrayIcon.__init__(self)
+        
         self.setIcon(QtGui.QApplication.windowIcon())
         self.setVisible(True)
-        menu = QtGui.QMenu()
-        self.setContextMenu(menu)
+        
+        self.action = QtGui.QAction(QtCore.QString(u"A propos de UFO..."), self);
+        self.action.setShortcut(u"Ctrl+A");
+        self.action.setStatusTip(u"Obtenir des informations à propos de UFO.");
+        self.connect(self.action, QtCore.SIGNAL("triggered()"), self.about);
+        self.menu = QtGui.QMenu()
+        self.menu.addAction(self.action)
+        self.setContextMenu(self.menu)
+        
         self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"), self.activate)
         self.progress  = None
         self.balloon   = None
@@ -664,9 +672,16 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             else:
                 app.minimize_window()
                 self.minimized = True
-        else:
+        elif reason != QtGui.QSystemTrayIcon.Context:
             if self.balloon:
                 self.balloon.show()
+    
+    def about(self):
+        QtGui.QMessageBox.about(main, 
+                                QtCore.QString("A propos du lanceur UFO"), 
+                                QtCore.QString("Version: " + str(conf.VERSION) + 
+                                               "<br><br>Copyright (C) 2009 Agorabox<br><br>" \
+                                               "Pour plus d'informations visiter http://ufo.agorabox.org"))
 
 
 class BalloonMessage(QtGui.QWidget):
