@@ -46,7 +46,6 @@ class WindowsBackend(OSBackend):
 
     def __init__(self):
         OSBackend.__init__(self)
-        self.create_splash_screen()
         self.WMI = wmi.WMI()
 
     def check_process(self):
@@ -326,8 +325,9 @@ class WindowsBackend(OSBackend):
 
     def prepare(self):
         # Ajusting paths
-        if not conf.HOME: conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
-        images = glob.glob(path.join(conf.HOME, "ufo-*.png"))
+        if not conf.HOME: 
+            conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
+
         try:
             key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
             conf.VBOX_INSTALLED = True

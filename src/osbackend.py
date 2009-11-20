@@ -75,6 +75,7 @@ class OSBackend(object):
         self.usb_devices    = []
         self.tmp_swapdir    = ""
         self.tmp_overlaydir = ""
+        self.vbox           = None
         self.puel           = False
         self.splash         = None
         self.do_not_update  = False
@@ -112,7 +113,11 @@ class OSBackend(object):
         return conf.NET_HOST
 
     def create_splash_screen(self):
-        gui.app.create_splash_screen()
+        try:
+            logging.debug("Creating splash screen")
+            gui.app.create_splash_screen()
+        except:
+            logging.debug("Failed to create splash screen")
         
     def destroy_splash_screen(self):
         gui.app.destroy_splash_screen()
@@ -156,7 +161,7 @@ class OSBackend(object):
         self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
         # self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
-        self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "powerOff")
+        self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "shutdown")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
         
         self.vbox.current_machine.set_guest_property("/UFO/HostPlatform", platform.platform())
@@ -448,7 +453,7 @@ class OSBackend(object):
                     if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
                     gui.app.hide_balloon()
-                    self.vbox.current_machine.showNormal()
+                    gui.app.normalize_window()
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -476,13 +481,12 @@ class OSBackend(object):
             if newValue == "LOGGED_IN":
                 # Start usb check loop
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
-                
-                #if self.vbox.current_machine.get_guest_property("/UFO/Credentials/Status") == "OK":
+
                 gui.app.hide_balloon()
-                self.vbox.current_machine.showFullscreen(False)
+                gui.app.fullscreen_window(False)
                 
             elif newValue == "CLOSING_SESSION":
-                self.vbox.current_machine.showMinimized()
+                gui.app.minimize_window()
                 gui.app.show_balloon_message(title=u"Sauvegarde des données", 
                                              msg=u"UFO est en train d'enregistrer les modifications du système (" + 
                                                  str(self.vbox.current_machine.overlay_data_size) + 
@@ -505,14 +509,14 @@ class OSBackend(object):
                                               msg=u"UFO est en cours de redémarrage.")
         
             elif newValue == "FIRSTBOOT":
-                self.vbox.current_machine.showFullscreen(False)
+                gui.app.fullscreen_window(False)
                 
         # Fullscreen management
         elif name == "/UFO/GUI/Fullscreen":
             if newValue == "1":
-                self.vbox.current_machine.showFullscreen(True)
+                gui.app.fullscreen_window(True)
             else:
-                self.vbox.current_machine.showFullscreen(False)
+                gui.app.fullscreen_window(False)
 
     def onMachineStateChange(self, state):
 
@@ -523,7 +527,7 @@ class OSBackend(object):
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting
             time.sleep(2)
-            self.vbox.current_machine.showMinimized()
+            gui.app.minimize_window()
             if conf.USER != "":
                 title = u"Démarrage de UFO"
             else:
@@ -681,10 +685,13 @@ class OSBackend(object):
         # prepare environement
         logging.debug("Preparing environment")
         self.prepare()
+        self.create_splash_screen()
         self.look_for_virtualbox()
         self.remove_settings_files()
 
-        gui.app.initialize_tray_icon()
+        logging.debug("Initializing vbox and graphics")
+        self.init_vbox_hypervisor()
+        gui.app.initialize(self.vbox)
         
         # generate raw vmdk for usb key
         create_vmdk = False
@@ -705,7 +712,6 @@ class OSBackend(object):
         
         # build virtual machine as host capabilities
         logging.debug("Creating virtual machine")
-        self.init_vbox_hypervisor()
         self.create_virtual_machine()
         self.configure_virtual_machine(create_vmdk = create_vmdk)
 

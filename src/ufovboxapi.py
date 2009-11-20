@@ -256,38 +256,14 @@ class VBoxMachine():
                 self.winid = 0
         return self.winid
     
-    def showFullscreen(self, toggle, rwidth=0, rheigth=0):
-        if self.hypervisor.is_vbox_OSE():
-            # We hope that is it our VirtualBox OSE
-            try:
-                self.machine.showConsoleFullscreen(toggle, rwidth, rheigth)
-                return
-            except:
-                logging.debug("showConsoleFullscreen isn't defined in this OSE version")
-                
-        gui.app.fullscreen_window(self.get_winid(), toggle)
+    def show_fullscreen(self, toggle, rwidth=0, rheigth=0):
+        self.machine.showConsoleFullscreen(toggle, rwidth, rheigth)
     
-    def showNormal(self):
-        if self.hypervisor.is_vbox_OSE():
-            # We hope that is it our VirtualBox OSE
-            try:
-                self.machine.showConsoleNormal()
-                return
-            except:
-                logging.debug("showConsoleNormal isn't defined in this OSE version")
-                
-        gui.app.normalize_window(self.get_winid())
+    def show_normal(self):
+        self.machine.showConsoleNormal()
         
-    def showMinimized(self):
-        if self.hypervisor.is_vbox_OSE():
-            # We hope that is it our VirtualBox OSE
-            try:
-                self.machine.showConsoleMinimized()
-                return
-            except:
-                logging.debug("showConsoleMinimized isn't defined in this OSE version")
-                
-        gui.app.minimize_window(self.get_winid())
+    def show_minimized(self):
+        self.machine.showConsoleMinimized()
         
     def start(self):
         self.hypervisor.session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)

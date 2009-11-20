@@ -102,7 +102,6 @@ class LinuxBackend(OSBackend):
         self.call(["rmmod", "kvm-intel"])
         self.call(["rmmod", "kvm-amd"])
         self.call(["rmmod", "kvm"])
-        self.create_splash_screen()
                                              
     def cleanup(self):
         pass

@@ -30,9 +30,10 @@ import glob
 
 class QtUFOGui(QtGui.QApplication):
         
-    def __init__(self, argv):
-        QtGui.QApplication.__init__(self, argv)
+    def __init__(self):
+        QtGui.QApplication.__init__(self, sys.argv)
 
+        self.vbox            = None
         self.animation       = None
         self.tray            = None
         self.splash          = None
@@ -42,7 +43,7 @@ class QtUFOGui(QtGui.QApplication):
         self.console_winid   = 0
 
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
-
+    
     def event(self, event):
         if isinstance(event, SetTrayIconEvent):
             self.tray = TrayIcon()
@@ -76,7 +77,8 @@ class QtUFOGui(QtGui.QApplication):
             if not event.show:
                 self.tray.hide_balloon()
             elif event.progress:
-                self.tray.show_progress(event.title, event.msg, event.timeout, credentials=event.credentials, keyring=event.keyring)
+                self.tray.show_progress(event.title, event.msg, event.timeout, 
+                                        credentials=event.credentials, keyring=event.keyring)
             else:
                 self.tray.show_message(event.title, event.msg, event.timeout)
                 
@@ -101,10 +103,10 @@ class QtUFOGui(QtGui.QApplication):
                     self.console_window.showMaximized()
                     
                 elif event.type == ConsoleWindowEvent.defs.get('ToggleFullscreen'):
-                    if self.console_window.isFullscreen() or self.console_window.isMaximized():
+                    if self.console_window.isFullScreen() or self.console_window.isMaximized():
                         self.console_window.showNormal()
                     else:
-                        self.console_window.showMinimized()
+                        self.console_window.showMaximized()
                 else:
                     return False
                     
@@ -123,6 +125,10 @@ class QtUFOGui(QtGui.QApplication):
             return False
 
         return True
+    
+    def initialize(self, vbox):
+        self.vbox = vbox
+        self.postEvent(self, SetTrayIconEvent())
         
     def _create_splash_screen(self):
         images = glob.glob(os.path.join(conf.IMGDIR, "ufo-*.bmp"))
@@ -144,9 +150,6 @@ class QtUFOGui(QtGui.QApplication):
 
     def destroy_splash_screen(self):
         self.sendEvent(self, DestroySplashEvent())
-
-    def initialize_tray_icon(self):
-        self.postEvent(self, SetTrayIconEvent())
         
     def start_usb_check_timer(self, time, function):
         self.postEvent(self, TimerEvent(self.usb_check_timer,
@@ -209,24 +212,47 @@ class QtUFOGui(QtGui.QApplication):
     def set_tooltip(self, tip):
         self.postEvent(self, ToolTipEvent(tip))
 
-    def fullscreen_window(self, winid, toggle):
+    def fullscreen_window(self, toggle, rwidth=0, rheigth=0):
+        # We hope that is it our VirtualBox OSE
+        try:
+            if self.vbox.is_vbox_OSE():
+                self.vbox.current_machine.show_fullscreen(toggle, rwidth, rheigth)
+                return
+        except:
+            logging.debug("showConsoleFullscreen isn't defined in this OSE version")
+        
         if toggle:
             type = 'ToggleFullscreen'
         else:
             type = 'ShowFullscreen'
-            
         self.postEvent(self, 
-                       ConsoleWindowEvent(winid, 
+                       ConsoleWindowEvent(self.vbox.current_machine.get_winid(),
                                           ConsoleWindowEvent.defs.get(type)))
         
-    def minimize_window(self, winid):
+    def minimize_window(self):
+        # We hope that is it our VirtualBox OSE
+        try:
+            if self.vbox.is_vbox_OSE():
+                self.vbox.current_machine.show_minimized()
+                return
+        except:
+            logging.debug("showConsoleMinimized isn't defined in this OSE version")
+        
         self.postEvent(self, 
-                       ConsoleWindowEvent(winid,
+                       ConsoleWindowEvent(self.vbox.current_machine.get_winid(),
                                           ConsoleWindowEvent.defs.get('ShowMinimized')))
         
-    def normalize_window(self, winid):
+    def normalize_window(self):
+        # We hope that is it our VirtualBox OSE
+        try:
+            if self.vbox.is_vbox_OSE():
+                self.vbox.current_machine.show_normal()
+                return
+        except:
+            logging.debug("showConsoleNormal isn't defined in this OSE version")
+                
         self.postEvent(self, 
-                       ConsoleWindowEvent(winid,
+                       ConsoleWindowEvent(self.vbox.current_machine.get_winid(),
                                           ConsoleWindowEvent.defs.get('ShowNormal')))
         
     def process_gui_events(self):
@@ -597,10 +623,11 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
         menu = QtGui.QMenu()
         self.setContextMenu(menu)
-        self.connect(self, QtCore.SIGNAL("activated()"), self.activate)
-        self.progress = None
-        self.balloon  = None
-        
+        self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"), self.activate)
+        self.progress  = None
+        self.balloon   = None
+        self.minimized = False
+
         self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
         self.show()
 
@@ -629,9 +656,18 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         if self.balloon:
             self.balloon.authentication(msg)
         
-    def activate(self):
-        if self.balloon:
-            self.ballon.show()
+    def activate(self, reason):
+        global app
+        if reason == QtGui.QSystemTrayIcon.DoubleClick:
+            if self.minimized:
+                app.normalize_window()
+                self.minimized = False
+            else:
+                app.minimize_window()
+                self.minimized = True
+        else:
+            if self.balloon:
+                self.balloon.show()
 
 
 class BalloonMessage(QtGui.QWidget):
@@ -843,7 +879,7 @@ def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en c
 
 def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"
-    msgbox = OurMessageBox()
+    msgbox = OurMessageBox(main)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
     if False: # darwin:
@@ -915,19 +951,18 @@ def dialog_choices(title, msg, column, choices):
     dlg.exec_()
     return dlg.choicelist.currentRow()
 
-def create_app():
+def create_app(vbox):
+    print "tamere 3"
     global app
-    app = QtGui.QApplication(sys.argv)
-    # After this line, subprocess needs to be patch as in Ubuntu
-    # http://svn.python.org/view?view=rev&revision=65475
-    # http://twistedmatrix.com/trac/ticket/733
+    print "tamere 4"
+    app = QtUFOGui(vbox)
 
 def destroy_app(app):
     app.exit()
     app = None
-    
-app = QtUFOGui(sys.argv)
-desktop = app.desktop()
+
+app = QtUFOGui()
+desktop = QtGui.QApplication.desktop()
 screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())

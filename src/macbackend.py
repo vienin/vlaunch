@@ -310,11 +310,6 @@ class MacBackend(OSBackend):
 
     def prepare(self):
         self.check_privileges()
-        try:
-            logging.debug("Creating splash screen")
-            self.create_splash_screen()
-        except:
-            logging.debug("Failed to create splash screen")
 
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):
