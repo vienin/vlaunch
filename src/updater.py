@@ -65,14 +65,7 @@ def check_update(backend):
                         path.dirname(conf.DATA_DIR), ".".join(map(str, latest_version)),
                         "--relaunch", conf.SCRIPT_PATH ]
                 logging.debug("Launching updater : " + " ".join(cmd))
-                # For some reason, execv does not work on Mac OS
-                # I get Operation not permitted
-                if sys.platform == "darwin":
-                    subprocess.Popen(cmd, shell=False, close_fds=True)
-                    logging.debug("Exiting for good")
-                    logging.shutdown()
-                else:
-                    os.execv(executable, cmd)
+                os.execv(executable, cmd)
                 sys.exit(0)
             else:
                 backend.do_not_update = True
