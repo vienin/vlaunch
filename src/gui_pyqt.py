@@ -624,7 +624,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
         
         self.action = QtGui.QAction(QtCore.QString(u"A propos de UFO..."), self);
-        self.action.setShortcut(u"Ctrl+A");
         self.action.setStatusTip(u"Obtenir des informations à propos de UFO.");
         self.connect(self.action, QtCore.SIGNAL("triggered()"), self.about);
         self.menu = QtGui.QMenu()
@@ -679,7 +678,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
     def about(self):
         QtGui.QMessageBox.about(main, 
                                 QtCore.QString("A propos du lanceur UFO"), 
-                                QtCore.QString("Version: " + str(conf.VERSION) + 
+                                QtCore.QString("Version " + str(conf.VERSION) + 
                                                "<br><br>Copyright (C) 2009 Agorabox<br><br>" \
                                                "Pour plus d'informations visiter http://ufo.agorabox.org"))
 
