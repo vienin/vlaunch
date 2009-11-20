@@ -836,8 +836,11 @@ class BalloonMessage(QtGui.QWidget):
         mask = QtGui.QRegion()
 
         path = QtGui.QPainterPath()
-        path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
-        
+        if hasattr(path, "addRoundedRect"):
+            path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
+        else:
+            path.addRect(QtCore.QRectF(0, 0, self.width(), self.height()))
+
         if paintEvent:
             painter = QtGui.QPainter(self)
         else:
