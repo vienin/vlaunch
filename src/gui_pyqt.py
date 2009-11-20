@@ -78,7 +78,7 @@ class QtUFOGui(QtGui.QApplication):
                 self.tray.hide_balloon()
             elif event.progress:
                 self.tray.show_progress(event.title, event.msg, event.timeout, 
-                                        credentials=event.credentials, keyring=event.keyring)
+                                        credentials_cb=event.credentials_cb, credentials=event.credentials)
             else:
                 self.tray.show_message(event.title, event.msg, event.timeout)
                 
@@ -192,14 +192,14 @@ class QtUFOGui(QtGui.QApplication):
                                            msg, 
                                            timeout))
         
-    def show_balloon_progress(self, title, msg, credentials=None, keyring=False):
+    def show_balloon_progress(self, title, msg, credentials_cb=None, credentials=False):
         self.postEvent(self, 
                        BalloonMessageEvent(title, 
                                            msg, 
                                            timeout=0, 
                                            progress=True,
-                                           credentials=credentials,
-                                           keyring=keyring))
+                                           credentials_cb=credentials_cb,
+                                           credentials=credentials))
         
     def hide_balloon(self):
         self.postEvent(self, 
@@ -285,15 +285,15 @@ class ProgressEvent(QtCore.QEvent):
         self.msg      = msg
 
 class BalloonMessageEvent(QtCore.QEvent):
-    def __init__(self, title, msg, timeout, progress=False, show=True, credentials=None, keyring=False):
+    def __init__(self, title, msg, timeout, progress=False, show=True, credentials_cb=None, credentials=False):
         super(BalloonMessageEvent, self).__init__(QtCore.QEvent.None)
         self.show     = show
         self.title    = title
         self.msg      = msg
         self.timeout  = timeout
         self.progress = progress
-        self.credentials = credentials
-        self.keyring  = keyring
+        self.credentials_cb = credentials_cb
+        self.credentials  = credentials
 
 class TimerEvent(QtCore.QEvent):
     def __init__(self, timer, time, function, stop=False):
@@ -635,10 +635,10 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
                                       title=title, msg=msg, timeout=timeout)
 
-    def show_progress(self, title, msg, timeout=0, no_text=False, invert=False, credentials=None, keyring=False):
+    def show_progress(self, title, msg, timeout=0, no_text=False, invert=False, credentials_cb=None, credentials=False):
         self.balloon = BalloonMessage(self, icon = os.path.join(conf.IMGDIR, "UFO.png"),
                                      title=title, msg=msg, progress=True, timeout=timeout, 
-                                     credentials=credentials, keyring=keyring)
+                                     credentials_cb=credentials_cb, credentials=credentials)
         self.progress = self.balloon.progressBar        
         if no_text:
             self.progress.setTextVisible(False)
@@ -657,7 +657,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.balloon.authentication(msg)
         
     def activate(self, reason):
-        global app
         if reason == QtGui.QSystemTrayIcon.DoubleClick:
             if self.minimized:
                 app.normalize_window()
@@ -672,7 +671,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
 class BalloonMessage(QtGui.QWidget):
     def __init__(self, parent, title, msg, icon=None, timeout=0, 
-                 progress=False, credentials=None, keyring=False):
+                 progress=False, credentials_cb=None, credentials=None):
         
         if sys.platform == "win32":
             flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.ToolTip
@@ -682,14 +681,15 @@ class BalloonMessage(QtGui.QWidget):
             flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.Popup
         
         QtGui.QWidget.__init__(self, None, flags)
-        self.startTimer(500)
 
         self.parent = parent
         self.title = title
         self.mAnchor = QtCore.QPoint()
         self.up = True
         self.login_shown = False
-        
+        self.credentials_cb = credentials_cb
+        self.credentials = credentials
+
         self.BalloonLayout = QtGui.QHBoxLayout(self)
 
         self.Layout2 = QtGui.QVBoxLayout()
@@ -724,11 +724,10 @@ class BalloonMessage(QtGui.QWidget):
             self.progressBar = QtGui.QProgressBar()
             self.Layout2.addWidget(self.progressBar)
 
-        if credentials and conf.USER != "":
-            self.credentials = credentials
+        if credentials_cb and conf.USER != "":
             self.creds_layout = QtGui.QVBoxLayout()
             msg = "(" + conf.USER + ") - "
-            if keyring:
+            if credentials:
                 msg += u"Vous êtes déjà authentifié"
             else:
                 msg += u"S'authentifier"
@@ -756,9 +755,6 @@ class BalloonMessage(QtGui.QWidget):
 
         self.show()
         
-    def timerEvent (self, event):
-        self.raise_()
-         
     def show_login(self):
         if self.login_shown:
             self.hide_login()
@@ -783,13 +779,15 @@ class BalloonMessage(QtGui.QWidget):
         self.creds_hbox.addWidget(self.ok_button)
         self.creds_layout.addLayout(self.creds_hbox)
         self.remember = QtGui.QCheckBox(u"Enregistrer mon mot de passe")
-        self.creds_layout.addWidget(self.remember)
+        if self.credentials != None:
+            self.creds_layout.addWidget(self.remember)
 
     def hide_login(self):
         self.login_shown = False
         for control in [ self.pass_label, self.password, self.ok_button, self.remember, self.hline ]:
             control.hide()
-        self.creds_layout.removeWidget(self.remember)
+        if self.credentials != None:
+            self.creds_layout.removeWidget(self.remember)
         self.creds_hbox.removeWidget(self.password)
         self.creds_hbox.removeWidget(self.ok_button)
         self.creds_hbox.removeWidget(self.pass_label)
@@ -807,7 +805,7 @@ class BalloonMessage(QtGui.QWidget):
 
     def return_pressed(self):
         if self.password.text():
-            self.credentials(self.password.text(), self.remember.isChecked())
+            self.credentials_cb(self.password.text(), self.remember.isChecked())
             if len(self.credentials_button.text()) - len(conf.USER) - 10 > len("S'authentifier"):
                 offset = "                                          "
             else:

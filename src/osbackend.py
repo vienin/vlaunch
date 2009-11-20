@@ -47,6 +47,7 @@ except:
         import keyring_ctypes as keyring
         print "Using keyring_ctypes backend"
     except:
+        keyring = None
         print "Could find a keyring backend"
 
 class UFOVboxMonitor(VBoxMonitor):
@@ -349,13 +350,17 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
 
-        if conf.USER:
-            password = self.get_password()
-            if password:
-                self.keyring_valid = True
-                self.set_credentials(password)
-            else:
-                logging.debug("Found no credentials")
+        if keyring:
+            if conf.USER:
+                password = self.get_password()
+                if password:
+                    self.keyring_valid = True
+                    self.set_credentials(password)
+                else:
+                    logging.debug("Found no credentials")
+        else:
+            self.keyring_valid = None
+
         self.credentials = self.set_credentials
 
         self.vbox.close_session()
@@ -534,8 +539,8 @@ class OSBackend(object):
                 title = u"1<SUP>er</SUP> démarrage de UFO"
             gui.app.show_balloon_progress(title=title,
                                           msg=u"UFO est en cours de démarrage.",
-                                          credentials=self.credentials,
-                                          keyring=self.keyring_valid)
+                                          credentials_cb=self.credentials,
+                                          credentials=self.keyring_valid)
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
