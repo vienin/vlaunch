@@ -96,6 +96,11 @@ elif sys.platform == "linux2":
 else:
     raise "Unsupported platform"
 
+if conf.USER:
+    logging.debug("Customer: " + conf.USER)
+else:
+    logging.debug("Customer: None")
+    
 if conf.options.update and conf.options.relaunch:
     updater.self_update(conf.options.update, conf.options.relaunch)
 elif not conf.NOUPDATE and not conf.options.respawn:
