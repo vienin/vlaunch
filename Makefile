@@ -71,7 +71,7 @@ install:
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py easygui.py conf.py utils.py ask-password subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py keyring_ctypes.py conf.py utils.py ask-password subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	# cp VolumeIcon-OS-trick $(DESTDIR)$(TARGET_PATH)/
 	# pushd . && cd $(DESTDIR)$(TARGET_PATH) && python -c "import os; os.rename('VolumeIcon-OS-trick', '._\xef\x80\xa9')" && popd
@@ -108,7 +108,7 @@ install:
 	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -name .svn | xargs rm -rf
-	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" > /tmp/launcher.filelist
+	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
 	
 updater:
