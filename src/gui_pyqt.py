@@ -710,7 +710,6 @@ class BalloonMessage(QtGui.QWidget):
         self.title_layout = QtGui.QHBoxLayout()
         self.close_button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "close.png")), "", self)
         self.close_button.setFlat(True)
-        self.close_button.setDefault(True)
         self.connect(self.close_button, QtCore.SIGNAL("clicked()"), self.hide)
         self.mTitle = QtGui.QLabel("<b>" + title + "</b>")
         self.mTitle.setPalette(QtGui.QToolTip.palette())
@@ -806,6 +805,7 @@ class BalloonMessage(QtGui.QWidget):
         self.creds_hbox.removeWidget(self.ok_button)
         self.creds_hbox.removeWidget(self.pass_label)
         self.creds_hbox.removeWidget(self.hline)
+        self.close_button.clearFocus()
         self.layout().activate()
         self.resize(350, 20)
         self.show()
@@ -967,9 +967,7 @@ def dialog_choices(title, msg, column, choices):
     return dlg.choicelist.currentRow()
 
 def create_app(vbox):
-    print "tamere 3"
     global app
-    print "tamere 4"
     app = QtUFOGui(vbox)
 
 def destroy_app(app):
