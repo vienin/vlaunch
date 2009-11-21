@@ -2,7 +2,7 @@ NAME=vlaunch
 VERSION=0.9
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
-        guest/toggle-fullscreen* \
+        guest/toggle-fullscreen* guest/notify-logged-in* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png \
@@ -83,29 +83,21 @@ install:
 	# Kit de survie
 	cp "Manuel d'utilisation.pdf" $(DESTDIR)$(TARGET_PATH)
 
-	install -D -m 644 vbox-client-symlink.pam $(DESTDIR)/etc/pam.d/vbox-client-symlink
-	install -D -m 644 vbox-client-dnd.pam $(DESTDIR)/etc/pam.d/vbox-client-dnd
-	install -D -m 644 vbox-get-property.pam $(DESTDIR)/etc/pam.d/vbox-get-property
-	install -D -m 644 toggle-fullscreen.pam $(DESTDIR)/etc/pam.d/toggle-fullscreen
-
-	install -D -m 644 vbox-client-symlink.console $(DESTDIR)/etc/security/console.apps/vbox-client-symlink
-	install -D -m 644 vbox-client-dnd.console $(DESTDIR)/etc/security/console.apps/vbox-client-dnd
-	install -D -m 644 vbox-get-property.console $(DESTDIR)/etc/security/console.apps/vbox-get-property
-	install -D -m 644 toggle-fullscreen.console $(DESTDIR)/etc/security/console.apps/toggle-fullscreen
-
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
-	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-symlink
-	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-client-dnd
-	ln -s consolehelper $(DESTDIR)/usr/bin/vbox-get-property
-	ln -s consolehelper $(DESTDIR)/usr/bin/toggle-fullscreen
-	install -D -m 755 vbox-client-symlink $(DESTDIR)/usr/sbin/vbox-client-symlink
+	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property toggle-fullscreen notify-logged-in; \
+	do \
+	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
+	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \
+	    ln -s consolehelper $(DESTDIR)/usr/bin/$$prog; \
+	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin/$$prog; \
+	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin; \
+	done
+	
 	install -D -m 644 vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart/vbox-client-symlink.desktop
-	install -D -m 755 vbox-client-dnd $(DESTDIR)/usr/sbin
 	install -D -m 644 vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
-	install -D -m 755 vbox-get-property $(DESTDIR)/usr/sbin
-	install -D -m 755 toggle-fullscreen $(DESTDIR)/usr/sbin
 	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
+	install -D -m 644 notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -name .svn | xargs rm -rf
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
