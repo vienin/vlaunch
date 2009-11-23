@@ -184,7 +184,7 @@ class OSBackend(object):
             vmdk = path.normpath(path.join(conf.DATA_DIR, conf.VMDK))
             if os.path.exists(vmdk):
                 os.unlink(vmdk)
-            if sys.platform == "win32" or conf.PARTS == "all":
+            if conf.PARTS == "all":
                 logging.debug("Getting size of " + conf.DEV)
                 blockcount = self.get_device_size(conf.DEV)
                 logging.debug("Creating VMDK file %s with %s of size %d: " % (vmdk, conf.DEV, blockcount))
@@ -544,7 +544,7 @@ class OSBackend(object):
                                           credentials_cb=self.credentials,
                                           credentials=self.keyring_valid)
             
-            self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
+            gui.app.set_tooltip(u"UFO: en cours de démarrage"))
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
