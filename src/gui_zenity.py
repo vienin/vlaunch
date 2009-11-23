@@ -208,4 +208,4 @@ def dialog_choices(title, msg, column, choices):
     output = output.strip()
     return choices.index(output)
 
-app = NoneUFOGui()
+app = NoneUFOGui(sys.argv)
