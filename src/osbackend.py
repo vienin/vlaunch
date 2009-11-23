@@ -459,6 +459,7 @@ class OSBackend(object):
                         self.set_password("")
                     gui.app.hide_balloon()
                     gui.app.normalize_window()
+                    gui.app.set_tooltip(u"UFO: en cours d'authentification")
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -489,6 +490,7 @@ class OSBackend(object):
 
                 gui.app.hide_balloon()
                 gui.app.fullscreen_window(False)
+                gui.app.set_tooltip(u"UFO: en cours d'exécution")
                 
             elif newValue == "CLOSING_SESSION":
                 gui.app.minimize_window()
@@ -541,6 +543,8 @@ class OSBackend(object):
                                           msg=u"UFO est en cours de démarrage.",
                                           credentials_cb=self.credentials,
                                           credentials=self.keyring_valid)
+            
+            self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
