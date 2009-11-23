@@ -544,7 +544,7 @@ class OSBackend(object):
                                           credentials_cb=self.credentials,
                                           credentials=self.keyring_valid)
             
-            gui.app.set_tooltip(u"UFO: en cours de démarrage"))
+            gui.app.set_tooltip(u"UFO: en cours de démarrage")
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
