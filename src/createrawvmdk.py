@@ -73,7 +73,7 @@ def createrawvmdk (target_path, device_name, device_size, partitions = {}, relat
         partition_table_target_path = target_path[ 0 : len(target_path) - 5] + "-pt.vmdk"
 
         # copy partition table
-        open(partition_table_target_path, 'a').write(open(device_name).read(512))
+        open(partition_table_target_path, "ab").write(open(device_name, "rb").read(512))
 
         # iterate on device partitions
         vmdk_file.write("RW 1 FLAT \"" + os.path.basename(partition_table_target_path) + "\"\n")
