@@ -275,7 +275,7 @@ class FedoraLinuxBackend(LinuxBackend):
            (self.dist == "U.F.O" and version >= 1.0):
             if not os.path.exists("/usr/bin/beesu"):
                 msg = u"Veuillez patienter pendant l'installation de " + \
-                      "composants\nnécessaires au lancement d'UFO"
+                      u"composants\nnécessaires au lancement d'UFO"
                 # if os.path.exists("/usr/bin/gpk-install-package-name"):
                 #    print (["/usr/bin/gpk-install-package-name", "beesu"], msg)'
                 #else:
