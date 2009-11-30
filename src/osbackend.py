@@ -25,7 +25,6 @@ import glob
 import shutil
 import os, os.path as path
 import sys
-import subprocess
 import createrawvmdk
 import os
 import conf
@@ -413,11 +412,13 @@ class OSBackend(object):
 
         return conf.STATUS_EXIT
 
+    def checking_pyqt(self):
+        logging.debug("Checking PyQt")
+
     def look_for_virtualbox(self):
         # Check virtualbox binaries
         logging.debug("Checking VirtualBox binaries")
-        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
-           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
              gui.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
                                  u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce " + \
@@ -695,6 +696,7 @@ class OSBackend(object):
         logging.debug("Preparing environment")
         self.prepare()
         self.create_splash_screen()
+        self.checking_pyqt()
         self.look_for_virtualbox()
         self.remove_settings_files()
 

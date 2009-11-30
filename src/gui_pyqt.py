@@ -23,7 +23,6 @@ from PyQt4 import QtGui, QtCore
 import threading, sys, os
 from urllib import urlretrieve
 import time, utils
-import subprocess
 import conf
 import logging
 import glob

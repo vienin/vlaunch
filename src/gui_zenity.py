@@ -22,14 +22,15 @@
 import os
 import sys
 import threading
-import subprocess
 import time
 import urllib
+if sys.platform == "win32": import subprocess
+else: import ufo_subprocess as subprocess
 import tempfile
 import signal
 import utils
 
-zenity = subprocess.Popen(["which", "zenity"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0].strip()
+zenity = utils.call(["which", "zenity"], output=True, log=False)[1].strip()
 
 if not os.path.lexists(zenity):
     raise Exception("Could not find 'zenity'")
@@ -103,26 +104,11 @@ class CommandLauncher(threading.Thread):
 
     def run(self):
         returncode = 0
-        fi = tempfile.mkstemp()
-        os.write(fi[0],"\n")
-        self.exe = subprocess.Popen([ zenity, "--progress", "--pulsate", u"--title=%s"%(self.titre,), u"--text=%s"%(self.msg,)], stdin=fi[0])
-        t = subprocess.Popen(self.cmd)
-        while t.poll() == None and self.exe.poll() == None:
-            time.sleep(1)
-
-        if t.poll() == None:
-            try:
-                os.kill(t.pid, signal.SIGKILL)
-            except OSError, e:
-                pass
-        if self.exe.poll() == None:
-            returncode = 1
-            try:
-                os.kill(self.exe.pid, signal.SIGKILL) 
-            except OSError, e:
-                pass
-
-        os.remove(fi[1])
+        def print_echo():
+            print
+        self.exe = utils.call([ self.cmd,
+                                [ zenity, "--progress", "--auto-close", "--pulsate", u"--title=%s"%(self.titre,), u"--text=%s"%(self.msg,)]
+                              ], preexec_fn=print_echo)
         self.retcode = returncode
         sys.exit(returncode)
 
@@ -145,7 +131,6 @@ class Downloader(threading.Thread):
             # stdin, progress bar doesn't start her animation.
             sys.stdout.flush()
             self.fi = tempfile.mkstemp()
-            os.write(self.fi[0],"\n")
             self.exe = subprocess.Popen([ zenity, "--progress", "--pulsate",
                                           "--title", self.title,
                                           "--text", self.msg ], stdin=self.fi[0])
@@ -183,16 +168,15 @@ def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en c
     return launch.retcode
 
 def dialog_info(title, msg, error = False):
-    subprocess.call([ zenity, "--info", "--title=" + title, "--text=" + msg ])
+    utils.call([ zenity, "--info", "--title=" + title, "--text=" + msg ])
 
 def dialog_question(title, msg, button1=None , button2=None):
-    return (button1, button2)[ subprocess.call([ zenity, "--question", "--title=" + title, "--text=" + msg ])]
+    return (button1, button2)[ utils.call([ zenity, "--question", "--title=" + title, "--text=" + msg ])]
 
 def dialog_password(root=None):
-    return subprocess.Popen([ zenity, "--entry", "--title", u'Autorisation nécessaire',
+    return utils.call([ zenity, "--entry", "--title", u'Autorisation nécessaire',
                               "--text", 'Veuillez entrer votre mot de passe:',
-                              "--entry-text", '', "--hide-text" ],
-                            stdout=subprocess.PIPE).communicate()[0]
+                              "--entry-text", '', "--hide-text" ]).communicate()[0]
 
 def SplashScreen(*args, **kw):
     print "Can't display a splash screen with zenity"

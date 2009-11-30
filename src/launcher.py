@@ -29,7 +29,6 @@ import urllib
 import shutil
 from shutil import rmtree
 import socket
-import subprocess
 import traceback
 import gui
 import updater

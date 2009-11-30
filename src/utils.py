@@ -20,7 +20,9 @@
 
 
 import logging
-import subprocess
+import sys
+if sys.platform == "win32": import subprocess
+else: import ufo_subprocess as subprocess
 import os, os.path
 
 def grep(input, pattern, inverse=False):
@@ -71,7 +73,7 @@ try:
         return -1
 
 except:
-    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True, spawn=False, log=True):
+    def call(cmds, env = None, shell = False, cwd = None, output = False, input = None, fork=True, spawn=False, log=True, preexec_fn=None):
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
@@ -83,29 +85,31 @@ except:
             else:
                 stdin = None
             stdout = None
+            preexec_fn_ = None
             if (len(cmds) and i != len(cmds) - 1):
                 stdout = subprocess.PIPE
             if output and i == len(cmds) - 1:
                 stdout = subprocess.PIPE
+                preexec_fn_ = preexec_fn
             if fork:
-                proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout)
+                proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, preexec_fn=preexec_fn_)
             else:
-                proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, fork=fork)
+                proc = subprocess.Popen(cmd, env=env, shell=shell, cwd=cwd, stdin=stdin, stdout=stdout, preexec_fn_=preexec_fn_, fork=fork)
             lastproc = proc
 
         if spawn:
             return lastproc
         elif output or len(cmds) > 1:
             output = lastproc.communicate()[0]
-            logging.debug("Returned : " + str(lastproc.returncode))
+            if log: logging.debug("Returned : " + str(lastproc.returncode))
             return lastproc.returncode, output
         elif input:
             lastproc.communicate(input)[0]
-            logging.debug("Returned : " + str(lastproc.returncode))
+            if log: logging.debug("Returned : " + str(lastproc.returncode))
             return lastproc.returncode
         else:
             retcode = lastproc.wait()
-            logging.debug("Returned : " + str(retcode))
+            if log: logging.debug("Returned : " + str(retcode))
             return retcode
 
 def relpath(path, start=os.path.curdir):

@@ -22,6 +22,7 @@
 import os, os.path as path, sys
 from ConfigParser import ConfigParser
 from optparse import OptionParser
+import utils
 
 path.supports_unicode_filenames = True
 
@@ -182,7 +183,9 @@ if sys.platform == "linux2":
         # no BIN as the livecd always provides a settings.conf
     else:
         if not DATA_DIR: DATA_DIR = path.join(path.dirname(path.dirname(SCRIPT_PATH)), ".data")
-        BIN = "/usr/lib/virtualbox"
+        vbox_path = utils.call(["which", "VirtualBox"], output=True, log=False)[1].strip()
+        if not path.lexists(vbox_path): BIN = ""
+        else: BIN = path.dirname(vbox_path)
 
 elif sys.platform == "darwin":
     if LIVECD:

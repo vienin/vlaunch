@@ -237,6 +237,9 @@ class LinuxBackend(OSBackend):
     def onExtraDataCanChange(self, key, value):
         # xpcom only return the both out parameters
         return True, ""
+        
+    def checking_pyqt(self):
+        raise Exception("Implemented in subclasses")
 
     def look_for_virtualbox(self):
         raise Exception("Implemented in subclasses")
@@ -282,17 +285,17 @@ class FedoraLinuxBackend(LinuxBackend):
                 gui.wait_command(["/usr/bin/pkcon", "install", "beesu"], msg=msg)
         return LinuxBackend.create_run_as_root(self)
 
-    def look_for_virtualbox(self):
+    def checking_pyqt(self):
         logging.debug("Checking PyQt")
         if gui.backend != "PyQt":
-            gui.wait_command(["yum", "-y", "install", "PyQt4"], "Installation", "Installation de \"PyQt4\"")
+            gui.wait_command(["yum", "-y", "install", "PyQt4"], "Installation", "Installation de \"PyQt4\"", prefix=self.run_as_root.get_prefix())
             reload(gui)
             if gui.backend != "PyQt":
                 logging.debug("Could not enable PyQt")
-                
+
+    def look_for_virtualbox(self):
         logging.debug("Checking VirtualBox binaries")
-        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
-           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)):
             logging.debug("Installing Agorabox repository for VirtualBox")
             gui.wait_command(["yum", "-y", "install", "yum-priorities"], 
                               "Installation",
@@ -313,7 +316,7 @@ class FedoraLinuxBackend(LinuxBackend):
                               u"Téléchargement", 
                               u"Téléchargement, décompression de \"VirtualBox-OSE\"\n(Cette opération peut prendre quelques minutes)")
             version = self.call(["rpm", "-q", "--queryformat", "%{VERSION}", "VirtualBox-OSE"], output=True)[1]
-            kmod_name = "VirtualBox-OSE-kmod-" + version
+            kmod_name = "VirtualBox-OSE-kmod-" + str(version)
             
             logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar" % (kmod_name, kmod_name, ))
             tarfile = glob.glob("/usr/share/%s/%s.tar.*" % (kmod_name, kmod_name, ))[0]
@@ -329,24 +332,30 @@ class FedoraLinuxBackend(LinuxBackend):
             
             logging.debug("Loading vboxdrv module")
             self.call(["/etc/sysconfig/modules/VirtualBox-OSE.modules"])
-                
+            
+        if platform.architecture()[0]=='64bit' and path.isdir('/usr/lib64/virtualbox') : conf.BIN = '/usr/lib64/virtualbox'
+        elif platform.architecture()[0]=='32bit' and path.isdir('/usr/lib/virtualbox') : conf.BIN = '/usr/lib/virtualbox'
+        else: conf.BIN = path.dirname(self.call(["which", "VirtualBox"], output=True)[1].strip())
+        OSBackend.update_env(self)
         OSBackend.look_for_virtualbox(self)
+        
 
 class UbuntuLinuxBackend(LinuxBackend):
     def __init__(self, dist, version, codename):
         LinuxBackend.__init__(self, dist, version, codename)
 
-    def look_for_virtualbox(self):
+    def checking_pyqt(self):
         logging.debug("Checking PyQt")
         if gui.backend != "PyQt":
-            gui.wait_command(["apt-get", "-y", "install", "python-qt4"], "Installation", u"Veuillez patienter,\nl'installation de \"python Qt4\" est en cours.")
+            gui.wait_command(["apt-get", "-y", "install", "python-qt4"], "Installation", u"Veuillez patienter,\nl'installation de \"python Qt4\" est en cours.", prefix=self.run_as_root.get_prefix())
             reload(gui)
             if gui.backend != "PyQt":
                 logging.debug("Could not enable PyQt")
-                
+
+    def look_for_virtualbox(self):
         logging.debug("Checking VirtualBox binaries")
-        if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)) or \
-           not path.exists(path.join(conf.BIN, self.VBOXMANAGE_EXECUTABLE)):
+        vbox_path = utils.call(["which", "VirtualBox"], output=True)[1].strip()
+        if not os.path.lexists(vbox_path):
             open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
             os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
             gui.wait_command(["apt-get", "update"], u"Mise-à-jour", u"Votre système est en train d'être mis à jour")

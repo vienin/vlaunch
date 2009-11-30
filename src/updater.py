@@ -25,7 +25,6 @@ import os, os.path as path
 import urllib
 import sys
 import tarfile
-import subprocess
 from ConfigParser import ConfigParser
 import gui
 import tempfile
@@ -58,6 +57,7 @@ def check_update(backend):
             logging.debug("Got : " + str(input))
             if input == "Oui":
                 # Run Updater and close launcher
+                backend.checking_pyqt()
                 executable = backend.prepare_update()
  
                 cmd = [ executable,
