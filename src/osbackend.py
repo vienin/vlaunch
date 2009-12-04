@@ -224,7 +224,7 @@ class OSBackend(object):
             # Set number of processors
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
                 logging.debug("Enabling virtualization extensions")
-                self.vbox.current_machine.machine.HWVirtExEnabled = True
+                self.vbox.current_machine.enable_vt(True)
                 if conf.CPUS == "autodetect":
                     nbprocs = int(self.vbox.host.get_nb_procs())
                     logging.debug(str(nbprocs) + " processor(s) available on host")
