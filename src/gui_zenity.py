@@ -161,7 +161,9 @@ def download_file(url, filename, title, msg, autostart=False):
     downloader.join()
     return downloader.retcode
 
-def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
+def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours", prefix=None):
+    if prefix:
+        cmd = prefix + cmd
     launch = CommandLauncher(cmd, title, msg)
     launch.start()
     launch.join()

@@ -375,36 +375,41 @@ class GenericLinuxBackend(LinuxBackend):
 
 class RunAsRoot():
     def __init__(self):
-        pass
+        self.prefix = None
     
     def call(self, command, replace=False):
         raise Exception("Implemented in subclasses")
+
+    def get_prefix(self):
+        return self.prefix
     
     
 class BeesuRunAsRoot(RunAsRoot):
     def __init__(self):
         logging.debug("Using Beesu command for run as root")
         RunAsRoot.__init__(self)
+        self.prefix = ["/usr/bin/beesu", "-m" ]
     
     def call(self, command, replace=False):
         if os.environ.has_key("GNOME_KEYRING_SOCKET"):
             command = [ "GNOME_KEYRING_SOCKET=" + os.environ["GNOME_KEYRING_SOCKET"] ] + command
         if replace:
-            os.execv("/usr/bin/beesu", ["/usr/bin/beesu", "-m" ] + command)
+            os.execv("/usr/bin/beesu", self.prefix + command)
         else:
-            utils.call(["/usr/bin/beesu", "-m" ] + command)
+            utils.call(self.prefix + command)
 
 
 class KdeSudoRunAsRoot(RunAsRoot):
     def __init__(self):
         logging.debug("Using KdeSudo command for run as root")
         RunAsRoot.__init__(self)
+        self.prefix = ["/usr/bin/kdesudo", "--"]
     
     def call(self, command, replace=False):
         if replace: 
-            os.execv("/usr/bin/kdesudo", ["/usr/bin/kdesudo", "--"] + command)
+            os.execv("/usr/bin/kdesudo", self.prefix + command)
         else:
-            utils.call(["/usr/bin/kdesudo", "--"] + command, "Veuillez patientez lors de l\'installation des composants", interactive)
+            utils.call( self.prefix + command, "Veuillez patientez lors de l\'installation des composants", interactive)
 
 
 class GkSudoRunAsRoot(RunAsRoot):
@@ -412,6 +417,7 @@ class GkSudoRunAsRoot(RunAsRoot):
     def __init__(self):
         logging.debug("Using GkSudo command for run as root")
         RunAsRoot.__init__(self)
+        self.prefix = ["/usr/bin/gksudo" , "--"]
     
     def call(self, command, replace=False):
         if replace: 
@@ -425,6 +431,7 @@ class SudoRunAsRoot(RunAsRoot):
     def __init__(self):
         logging.debug("Using Sudo command for run as root")
         RunAsRoot.__init__(self)
+        self.prefix = ["/usr/bin/sudo", "-A"]
     
     def call(self, command, replace=False):
         if replace: 
@@ -438,6 +445,7 @@ class XtermRunAsRoot(RunAsRoot):
     def __init__(self):
         logging.debug("Using Xterm command for run as root")
         RunAsRoot.__init__(self)
+        self.prefix = ["xterm", "-e", "su", "-c"]
     
     def call(self, command, replace=False):
         # TODO: utils.call (bug in subprocess)
