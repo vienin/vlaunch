@@ -887,7 +887,9 @@ def download_file(url, filename, title = u"Téléchargement...",
             return 1
         return ret != QtGui.QDialog.Accepted
 
-def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours"):
+def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours", prefix=None):
+    if prefix:
+        cmd = prefix + cmd
     cmdWin = WaitWindow(cmd, title, msg)
     cmdWin.run()
 
