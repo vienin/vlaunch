@@ -71,7 +71,7 @@ install:
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py keyring_ctypes.py conf.py utils.py ask-password subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py keyring_ctypes.py conf.py utils.py ask-password ufo_subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 	# cp VolumeIcon-OS-trick $(DESTDIR)$(TARGET_PATH)/
 	# pushd . && cd $(DESTDIR)$(TARGET_PATH) && python -c "import os; os.rename('VolumeIcon-OS-trick', '._\xef\x80\xa9')" && popd
