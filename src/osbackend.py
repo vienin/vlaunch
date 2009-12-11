@@ -237,6 +237,9 @@ class OSBackend(object):
                         nbprocs = 1
                 logging.debug("Setting number of processor to " + str(nbprocs))
                 self.vbox.current_machine.set_procs(nbprocs)
+
+            # Set 3D acceleration
+            self.vbox.current_machine.enable_3D(self.vbox.supports_3D())
                 
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
@@ -279,7 +282,7 @@ class OSBackend(object):
                     resolution = self.find_resolution()
                 if resolution != "":
                     self.vbox.current_machine.set_resolution(resolution)
-            
+
             self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMGDIR, "ufo-*.bmp"))[0])
 
             # set host home shared folder

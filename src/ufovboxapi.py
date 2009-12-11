@@ -187,6 +187,12 @@ class VBoxHypervisor():
             self.vbox.saveSettings()
         return 0
 
+    def supports_3D(self):
+        if self.vbox_version() < "2.1.0":
+            return False
+        else:
+            return self.host.host.Acceleration3DAvailable
+
     def license_agreed(self):
         if self.vbox.getExtraData("GUI/LicenseAgreed"):
             return 1
@@ -552,6 +558,9 @@ class VBoxMachine():
             self.machine.setHWVirtExProperty(self.hypervisor.constants.HWVirtExPropertyType_Enabled, state)
         else:
             self.machine.HWVirtExEnabled = state
+
+    def enable_3D(self, state):
+        self.machine.accelerate3DEnabled = state
 
 
 class VBoxHost():
