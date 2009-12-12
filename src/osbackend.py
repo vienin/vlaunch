@@ -164,6 +164,9 @@ class OSBackend(object):
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "shutdown")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
         
+        if conf.HOSTKEY:
+            self.vbox.set_host_key(conf.HOSTKEY)
+        
         self.vbox.current_machine.set_guest_property("/UFO/HostPlatform", platform.platform())
         
         logging.debug("VM successfully initialized")
@@ -254,7 +257,8 @@ class OSBackend(object):
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
                 self.vbox.current_machine.attach_floppy(conf.BOOTFLOPPY)
-                self.vbox.current_machine.set_boot_device('Floppy') 
+                self.vbox.current_machine.set_boot_device('Floppy')
+
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
                 self.vbox.current_machine.attach_dvd(conf.BOOTISO)

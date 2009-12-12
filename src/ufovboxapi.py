@@ -187,7 +187,10 @@ class VBoxHypervisor():
     def license_agreed(self):
         if self.vbox.getExtraData("GUI/LicenseAgreed"):
             return 1
-        return 0 
+        return 0
+        
+    def set_host_key(self, key):
+        self.set_extra_data("GUI/Input/HostKey", str(key))
 
     def minimal_callbacks_maker_loop(self):
         try:
