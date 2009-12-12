@@ -54,7 +54,8 @@ class VBoxHypervisor():
             self.vbox_callback_obj = vbox_callback_arg
             self.callbacks_aware = False
             
-        self.vbox.saveSettings()
+        if hasattr(self.vbox, "saveSettings"):
+            self.vbox.saveSettings()
     
     def __del__(self):
         logging.debug("Destroying VBoxHypervisor")
@@ -63,7 +64,8 @@ class VBoxHypervisor():
         if self.current_machine:
             del self.current_machine
             self.current_machine = None
-        self.vbox.saveSettings()
+        if hasattr(self.vbox, "saveSettings"):
+            self.vbox.saveSettings()
         self.vm_manager.deinit()
         del self.vm_manager
 
@@ -117,7 +119,8 @@ class VBoxHypervisor():
     
     def close_session(self):
         self.current_machine.machine.saveSettings()
-        self.vbox.saveSettings()
+        if hasattr(self.vbox, "saveSettings"):
+            self.vbox.saveSettings()
         if self.session == None:
             return 1
         self.session.close()
@@ -180,9 +183,15 @@ class VBoxHypervisor():
 
     def set_extra_data(self, key, value, save = False):
         self.vbox.setExtraData(key, value)
-        if save:
+        if save and hasattr(self.vbox, "saveSettings"):
             self.vbox.saveSettings()
         return 0
+
+    def supports_3D(self):
+        if self.vbox_version() < "2.1.0":
+            return False
+        else:
+            return self.host.host.Acceleration3DAvailable
 
     def license_agreed(self):
         if self.vbox.getExtraData("GUI/LicenseAgreed"):
@@ -308,7 +317,11 @@ class VBoxMachine():
         if disk_rank >= 2:
             disk_rank += 1
         try:
-            if self.hypervisor.vbox_version() >= "2.2.0":
+            if self.hypervisor.vbox_version() >= "3.1.0":
+                controller = self.get_controller("IDE")
+                self.machine.attachDevice(controller.name, disk_rank // 2, disk_rank % 2,
+                                          self.hypervisor.constants.DeviceType_HardDisk, disk.id)
+            elif self.hypervisor.vbox_version() >= "2.2.0":
                 self.machine.attachHardDisk(disk.id, "IDE", 
                                             disk_rank // 2, disk_rank % 2)
             elif self.hypervisor.vbox_version() >= "2.1.0":
@@ -335,10 +348,27 @@ class VBoxMachine():
             if dvd == None:
                 return 1
 
-        self.machine.DVDDrive.mountImage(dvd.id)
+        if self.hypervisor.vbox_version() >= "3.1.0":
+            controller = self.get_controller("DVD")
+            self.machine.attachDevice(controller.name, 0, 0, self.hypervisor.constants.DeviceType_DVD, dvd.id)
+            self.machine.mountMedium(controller.name, 0, 0, dvd.id, False)
+        else:
+            self.machine.DVDDrive.mountImage(dvd.id)
         if save:
             self.machine.saveSettings()
         return 0
+
+    def get_controller(self, kind):
+        buses = { "Floppy" : self.hypervisor.constants.StorageBus_Floppy,
+                  "IDE" : self.hypervisor.constants.StorageBus_IDE }
+        if not buses.has_key(kind):
+            logging.debug("Unknown type of controller")
+            return None
+        try:
+            controller = self.machine.getStorageControllerByName(kind + " Controller")
+        except:
+            controller = self.machine.addStorageController(kind + " Controller", buses[kind])
+        return controller
 
     def attach_floppy(self, location = '', host_drive = False, save = False):
         if host_drive:
@@ -351,7 +381,11 @@ class VBoxMachine():
             if floppy == None:
                 return 1
 
-        if self.hypervisor.vbox_version() >= "2.1.0":
+        if self.hypervisor.vbox_version() >= "3.1.0":
+            controller = self.get_controller("Floppy")
+            self.machine.attachDevice(controller.name, 0, 0, self.hypervisor.constants.DeviceType_Floppy, floppy.id)
+            self.machine.mountMedium(controller.name, 0, 0, floppy.id, False)
+        elif self.hypervisor.vbox_version() >= "2.1.0":
             self.machine.floppyDrive.enabled = True
             self.machine.floppyDrive.mountImage(floppy.id)
         else:
@@ -522,18 +556,27 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
+    def enable_vt(self, state):
+        if self.hypervisor.vbox_version() >= "3.1.0":
+            self.machine.setHWVirtExProperty(self.hypervisor.constants.HWVirtExPropertyType_Enabled, state)
+        else:
+            self.machine.HWVirtExEnabled = state
+
+    def enable_3D(self, state):
+        self.machine.accelerate3DEnabled = state
+
 
 class VBoxHost():
 
     def __init__(self, host, constants):
         self.host = host
-        self.contants = constants
+        self.constants = constants
 
     def __del__(self):
         del self.host
 
     def is_virt_ex_available(self):
-        return self.host.getProcessorFeature(self.contants.ProcessorFeature_HWVirtEx)
+        return self.host.getProcessorFeature(self.constants.ProcessorFeature_HWVirtEx)
     
     def get_nb_procs(self):
         return self.host.processorCount

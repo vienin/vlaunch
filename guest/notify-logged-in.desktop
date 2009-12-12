@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Version=1.0
+Name=vboxclientdnd
+Name[C]=vboxclientdnd
+Comment[C]=VirtualBox Client drag and drop service
+Comment=VirtualBox Client drag and drop service
+Exec=/usr/bin/notify-logged-in
+X-GNOME-Autostart-enabled=true
+
