@@ -20,7 +20,7 @@
 
 
 import os, os.path as path, sys
-from ConfigParser import ConfigParser
+from ConfigParser import ConfigParser, NoOptionError
 from optparse import OptionParser
 import utils
 
@@ -54,105 +54,73 @@ NET_LOCAL = 0
 NET_HOST = 1
 NET_NAT = 2
 
-globalsection = "virtualbox"
-launchersection = "launcher"
-rawdisksection = "rawdisk"
-vmsection = "vm"
-guestsection = "guest"
-startvmkey = "STARTVM"
-vmkey = "VM"
-oskey = "OS"
-vmdkkey = "VMDK"
-partskey = "PARTS"
-bootfloppykey = "BOOTFLOPPY"
-bootisokey = "BOOTISO"
-nettypekey = "NETTYPE"
-hostnetkey = "HOSTNET"
-macaddrkey = "MACADDR"
-ramsizekey = "RAMSIZE"
-minramkey = "MINRAM"
-kioskmodekey = "KIOSKMODE"
-widthkey = "WIDTH"
-heightkey = "HEIGHT"
-driverankkey = "DRIVERANK"
-swapfile = "SWAPFILE"
-swapsize = "SWAPSIZE"
-overlayfile = "OVERLAYFILE"
-needdevkey = "NEEDDEV"
-debugkey = "DEBUG"
-devkey = "DEV"
-modelkey = "MODEL"
-rootuuidkey = "ROOTUUID"
-volumekey = "VOLUME"
-logkey = "LOG"
-imgdirkey = "IMGDIR"
-versionkey = "VERSION"
-licensekey = "LICENSE"
-configurevmkey = "CONFIGUREVM"
-homekey = "HOME"
-binkey = "BIN"
-reporturlkey = "REPORTURL"
-useservicekey = "USESERVICE"
-createsrvskey = "CREATESRVS"
-startsrvskey = "STARTSRVS"
-uninstalldriverskey = "UNINSTALLDRIVERS"
-noupdatekey = "NOUPDATE"
-livecdkey = "LIVECD"
-bootdiskkey = "BOOTDISK"
-bootdiskuuidkey = "BOOTDISKUUID"
-isourlkey = "ISOURL"
-updateurlkey = "UPDATEURL"
-vboxdriverskey = "VBOXDRIVERS"
-cpuskey = "CPUS"
-userkey = "USER"
+config = \
+    {
+      "virtualbox" :
+        {
+          "home" : ".VirtualBox",
+          "bin" : "",
+          "vmdk" : ".VirtualBox/HardDisks/ufo_key.vmdk"
+        },
+      "launcher" :
+        {
+          "useservice" : 0,
+          "createsrvs" : 1,
+          "startsrvs" : 1,
+          "startvm" : 1,
+          "needdev" : 0,
+          "debug" : 0,
+          "reporturl" : "http://reporting.agorabox.org/services/reporting",
+          "log" : "logs/launcher.log",
+          "imgdir" : "images",
+          "version" : "0.0",
+          "license" : 0,
+          "configurevm" : 1,
+          "uninstalldrivers" : 0,
+          "noupdate" : 0,
+          "isourl" : "http://downloads.agorabox.org/launcher/latest",
+          "updateurl" : "http://downloads.agorabox.org/launcher/",
+          "vboxdrivers" : "drivers\\VBoxDrv",
+          "livecd" : 0,
+          "hostkey" : 0
+        },
+      "rawdisk" :
+        {
+          "dev" : "",
+          "parts" : "all",
+          "rootuuid" : "",
+          "volume" : "UFO",
+          "model" : ""
+        },
+      "vm" :
+        {
+          "vm" : "UFO",
+          "os" : "Fedora",
+          "nettype" : 2,
+          "hostnet" : "",
+          "macaddr" : "",
+          "ramsize" : "auto",
+          "minram" : 256,
+          "kioskmode" : 0,
+          "driverank" : 0,
+          "swapfile" : ".VirtualBox/HardDisks/ufo_swap.vdi",
+          "swapsize" : 512,
+          "overlayfile" : ".VirtualBox/HardDisks/ufo_overlay.vdi",
+          "bootdisk" : "",
+          "bootdiskuuid" : "",
+          "bootfloppy" : ".VirtualBox/Images/UFO-VirtualBox-boot.img",
+          "bootiso" : "",
+          "cpus" : "1",
+          "width" : "800",
+          "height" : "600"
+        },
+      "guest" :
+        {
+          "user" : ""
+        }
+    }
 
-cp = ConfigParser(defaults = { logkey : "logs/launcher.log",
-                               imgdirkey : "images",
-                               startvmkey : "1",
-                               vmkey : "UFO",
-                               oskey : "Fedora",
-                               vmdkkey : ".VirtualBox/HardDisks/ufo_key.vmdk",
-                               partskey : "all",
-                               bootfloppykey : ".VirtualBox/Images/UFO-VirtualBox-boot.img",
-                               bootisokey : "",
-                               swapfile : ".VirtualBox/HardDisks/ufo_swap.vdi",
-                               swapsize : "512",
-                               overlayfile : ".VirtualBox/HardDisks/ufo_overlay.vdi",
-                               nettypekey : "2",
-                               hostnetkey : "",
-                               macaddrkey : "",
-                               ramsizekey : "auto",
-                               minramkey : "256",
-                               kioskmodekey : "0",
-                               heightkey : "600",
-                               widthkey : "800",
-                               driverankkey : "0",
-                               configurevmkey : "1",
-                               needdevkey : "0",
-                               debugkey : "0",
-                               devkey : "",
-                               modelkey : "",
-                               volumekey : "UFO",
-                               rootuuidkey : "",
-                               binkey : "",
-                               reporturlkey : "http://reporting.agorabox.org/services/reporting",
-                               homekey : ".VirtualBox",
-                               useservicekey : "0",
-                               createsrvskey : "1",
-                               startsrvskey : "1",
-                               uninstalldriverskey : "0",
-                               versionkey : "0",
-                               licensekey : "0",
-                               noupdatekey : "0",
-                               livecdkey : "0",
-                               bootdiskuuidkey : "",
-                               bootdiskkey : "",
-                               isourlkey : "http://downloads.agorabox.org/launcher/latest",
-                               updateurlkey : "http://downloads.agorabox.org/launcher/",
-                               vboxdriverskey : "drivers\\VBoxDrv",
-                               cpuskey : "1",
-                               userkey : ""
-                             })
+cp = ConfigParser()
                              
 try:
     files = [path.join(SCRIPT_DIR, "settings.conf"), # Used on Mac OS LiveCD
@@ -170,7 +138,15 @@ except:
 
 print "Using configuration file:", conf_file
 
-LIVECD = int(cp.get(launchersection, livecdkey))
+for section, keys in config.items():
+    if not cp.has_section(section):   
+        cp.add_section(section)
+    for key, default in keys.items():
+        try:
+            globals()[key.upper()] = type(default)(cp.get(section, key))
+        except NoOptionError, err:
+            globals()[key.upper()] = default
+
 if options.update:
     DATA_DIR = path.join(options.update, ".data")
 else:
@@ -202,70 +178,18 @@ else:
         if not DATA_DIR: DATA_DIR = path.join(SCRIPT_DIR, "..", ".data")
         BIN = path.join(SCRIPT_DIR, "bin")
 
-def make_path(base, section, key):
-    value = cp.get(section, key)
+def make_path(base, value):
     if value:
         return path.normpath(path.join(base,path.expanduser(value)))
-    return ""
+    else:
+        return ""
 
-# Is BIN overridden in settings.conf ?
-bin  = cp.get(globalsection, binkey)
-if bin: BIN = path.join(DATA_DIR, bin)
-
-HOME = path.join(DATA_DIR, cp.get(globalsection, homekey))
-VMDK = cp.get(globalsection, vmdkkey)
-
-if not cp.has_section(launchersection):
-    cp.add_section(launchersection)
-USESERVICE = int(cp.get(launchersection, useservicekey))
-CREATESRVS = int(cp.get(launchersection, createsrvskey))
-STARTSRVS = int(cp.get(launchersection, startsrvskey))
-STARTVM = int(cp.get(launchersection, startvmkey))
-NEEDDEV = int(cp.get(launchersection, needdevkey))
-DEBUG = int(cp.get(launchersection, debugkey))
-REPORTURL = cp.get(launchersection, reporturlkey)
-LOG = path.join(DATA_DIR, cp.get(launchersection, logkey))
-IMGDIR = path.join(DATA_DIR, cp.get(launchersection, imgdirkey))
-VERSION = cp.get(launchersection, versionkey)
-LICENSE = int(cp.get(launchersection, licensekey))
-CONFIGUREVM = int(cp.get(launchersection, configurevmkey))
-UNINSTALLDRIVERS = int(cp.get(launchersection, uninstalldriverskey))
-NOUPDATE = int(cp.get(launchersection, noupdatekey))
-ISOURL = cp.get(launchersection, isourlkey)
-UPDATEURL = cp.get(launchersection, updateurlkey)
-VBOXDRIVERS = make_path(BIN, launchersection, vboxdriverskey)
-
-if not cp.has_section(rawdisksection):
-    cp.add_section(rawdisksection)
-DEV = cp.get(rawdisksection, devkey)
-PARTS = cp.get(rawdisksection, partskey)
-ROOTUUID = cp.get(rawdisksection, rootuuidkey)
-VOLUME = cp.get(rawdisksection, volumekey)
-MODEL = cp.get(rawdisksection, modelkey)
-
-if not cp.has_section(vmsection):
-    cp.add_section(vmsection)
-VM = cp.get(vmsection, vmkey)
-OS = cp.get(vmsection, oskey)
-BOOTFLOPPY = make_path(DATA_DIR, vmsection, bootfloppykey)
-BOOTISO = make_path(DATA_DIR, vmsection, bootisokey)
-NETTYPE = int(cp.get(vmsection, nettypekey))
-HOSTNET = cp.get(vmsection, hostnetkey)
-MACADDR = cp.get(vmsection, macaddrkey)
-RAMSIZE = cp.get(vmsection, ramsizekey)
-MINRAM = int(cp.get(vmsection, minramkey))
-KIOSKMODE = int(cp.get(vmsection, kioskmodekey))
-DRIVERANK = int(cp.get(vmsection, driverankkey))
-SWAPFILE  = make_path(DATA_DIR, vmsection, swapfile)
-SWAPSIZE  = int(cp.get(vmsection, swapsize))
-OVERLAYFILE  = make_path(DATA_DIR, vmsection, overlayfile)
-BOOTDISK = make_path(DATA_DIR, vmsection, bootdiskkey)
-BOOTDISKUUID = cp.get(vmsection, bootdiskuuidkey)
-CPUS = cp.get(vmsection, cpuskey)
-
-WIDTH = cp.get(vmsection, widthkey)
-HEIGHT = cp.get(vmsection, heightkey)
-
-if not cp.has_section(guestsection):
-    cp.add_section(guestsection)
-USER = cp.get(guestsection, userkey)
+if BIN: BIN = path.join(DATA_DIR, BIN)
+LOG = path.join(DATA_DIR, LOG)
+IMGDIR = path.join(DATA_DIR, IMGDIR)
+VBOXDRIVERS = make_path(BIN, VBOXDRIVERS)
+BOOTFLOPPY = make_path(DATA_DIR, BOOTFLOPPY)
+BOOTISO = make_path(DATA_DIR, BOOTISO)
+SWAPFILE  = make_path(DATA_DIR, SWAPFILE)
+OVERLAYFILE  = make_path(DATA_DIR, OVERLAYFILE)
+BOOTDISK = make_path(DATA_DIR, BOOTDISK)
