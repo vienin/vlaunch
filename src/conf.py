@@ -82,11 +82,7 @@ config = \
           "updateurl" : "http://downloads.agorabox.org/launcher/",
           "vboxdrivers" : "drivers\\VBoxDrv",
           "livecd" : 0,
-          "hostkey" : 0,
-          "pae" : True,
-          "vt" : True,
-          "nestedpaging" : True,
-          "accel3d" : True
+          "hostkey" : 0
         },
       "rawdisk" :
         {
@@ -116,7 +112,11 @@ config = \
           "bootiso" : "",
           "cpus" : "1",
           "width" : "800",
-          "height" : "600"
+          "height" : "600",
+          "pae" : True,
+          "vt" : True,
+          "nestedpaging" : True,
+          "accel3d" : True
         },
       "guest" :
         {
@@ -147,7 +147,10 @@ for section, keys in config.items():
         cp.add_section(section)
     for key, default in keys.items():
         try:
-            globals()[key.upper()] = type(default)(cp.get(section, key))
+            if type(default) == bool:
+                globals()[key.upper()] = type(default)(int(cp.get(section, key)))
+            else:
+                globals()[key.upper()] = type(default)(cp.get(section, key))
         except NoOptionError, err:
             globals()[key.upper()] = default
 
