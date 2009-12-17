@@ -189,8 +189,10 @@ class VBoxHypervisor():
 
     def supports_3D(self):
         if self.vbox_version() < "2.1.0":
+            logging.debug("This version of VirtualBox does not support 3D")
             return False
         else:
+            logging.debug("Enabling 3D acceleration")
             return self.host.host.Acceleration3DAvailable
 
     def license_agreed(self):
@@ -562,8 +564,19 @@ class VBoxMachine():
         else:
             self.machine.HWVirtExEnabled = state
 
+    def enable_pae(self, state):
+        if self.hypervisor.vbox_version() >= "3.1.0":
+            self.machine.setCpuProperty(self.hypervisor.constants.CpuPropertyType_PAE, state)
+        else:
+            self.machine.PAEEnabled = state
+            
+    def set_cpu_capabilities(self, PAE=False, VT=False):
+        self.enable_vt(VT)
+        self.enable_pae(PAE)
+
     def enable_3D(self, state):
-        self.machine.accelerate3DEnabled = state
+        if self.hypervisor.vbox_version() >= "2.1.0":
+            self.machine.accelerate3DEnabled = state
 
 
 class VBoxHost():

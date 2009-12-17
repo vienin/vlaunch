@@ -226,8 +226,8 @@ class OSBackend(object):
             
             # Set number of processors
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
-                logging.debug("Enabling virtualization extensions")
-                self.vbox.current_machine.enable_vt(True)
+                logging.debug("Settings CPU capabilities: VT=%s PAE=%s" % (conf.PAE, conf.VT))
+                self.vbox.current_machine.set_cpu_capabilities(PAE=conf.PAE, VT=conf.VT)
                 if conf.CPUS == "autodetect":
                     nbprocs = int(self.vbox.host.get_nb_procs())
                     logging.debug(str(nbprocs) + " processor(s) available on host")
@@ -242,7 +242,7 @@ class OSBackend(object):
                 self.vbox.current_machine.set_procs(nbprocs)
 
             # Set 3D acceleration
-            self.vbox.current_machine.enable_3D(self.vbox.supports_3D())
+            self.vbox.current_machine.enable_3D(conf.ACCEL3D and self.vbox.supports_3D())
                 
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()

@@ -82,7 +82,10 @@ config = \
           "updateurl" : "http://downloads.agorabox.org/launcher/",
           "vboxdrivers" : "drivers\\VBoxDrv",
           "livecd" : 0,
-          "hostkey" : 0
+          "hostkey" : 0,
+          "pae" : True,
+          "vt" : True,
+          "accel3d" : True
         },
       "rawdisk" :
         {
