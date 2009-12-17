@@ -85,6 +85,7 @@ config = \
           "hostkey" : 0,
           "pae" : True,
           "vt" : True,
+          "nestedpaging" : True,
           "accel3d" : True
         },
       "rawdisk" :

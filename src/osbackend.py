@@ -226,8 +226,9 @@ class OSBackend(object):
             
             # Set number of processors
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
-                logging.debug("Settings CPU capabilities: VT=%s PAE=%s" % (conf.PAE, conf.VT))
-                self.vbox.current_machine.set_cpu_capabilities(PAE=conf.PAE, VT=conf.VT)
+                logging.debug("Settings CPU capabilities: VT=%s PAE=%s nested_paging=%s" % (conf.PAE, conf.VT, conf.NESTEDPAGING))
+                self.vbox.current_machine.set_cpu_capabilities(PAE=conf.PAE, VT=conf.VT,
+                                                               nested_paging=conf.NESTEDPAGING)
                 if conf.CPUS == "autodetect":
                     nbprocs = int(self.vbox.host.get_nb_procs())
                     logging.debug(str(nbprocs) + " processor(s) available on host")

@@ -570,9 +570,16 @@ class VBoxMachine():
         else:
             self.machine.PAEEnabled = state
             
-    def set_cpu_capabilities(self, PAE=False, VT=False):
+    def enable_nested_paging(self, state):
+        if self.hypervisor.vbox_version() >= "3.1.0":
+            self.machine.setHWVirtExProperty(self.hypervisor.constants.HWVirtExPropertyType_NestedPaging, state)
+        else:
+            self.machine.HWVirtExNestedPagingEnabled = state
+
+    def set_cpu_capabilities(self, PAE=False, VT=False, nested_paging=False):
         self.enable_vt(VT)
         self.enable_pae(PAE)
+        self.enable_nested_paging(nested_paging)
 
     def enable_3D(self, state):
         if self.hypervisor.vbox_version() >= "2.1.0":
