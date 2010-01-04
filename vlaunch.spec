@@ -90,14 +90,16 @@ make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH}
 
 
 %post guest
-if [ $1 == 1 ]; then
-    authconfig --enablevbox --update
-fi
+# Temporarely disables pam_vbox
+# if [ $1 == 1 ]; then
+#     authconfig --enablevbox --update
+# fi
 
 %postun guest
-if [ $1 == 0 ]; then
-    authconfig --disablevbox --update
-fi
+# Temporarely disables pam_vbox
+# if [ $1 == 0 ]; then
+#     authconfig --disablevbox --update
+# fi
 
 
 %clean
