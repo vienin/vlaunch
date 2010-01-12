@@ -25,8 +25,23 @@ import uuid as uuid_lib
 import traceback
 import logging
 import time
-import gui
 import sys
+
+try:
+    import pywintypes
+    COMError = pywintypes.com_error
+except:
+    COMError = Exception
+
+class VBoxInterfaceWrapper:
+    def __init__(self, machine):
+        self.__dict__["machine"] = machine
+                
+    def __getattr__(self, name):
+        return getattr(self.__dict__["machine"], name[0].upper() + name[1:])
+
+    def __setattr__(self, name, value):
+        return setattr(self.__dict__["machine"], name[0].upper() + name[1:])
 
 class VBoxHypervisor():
                         
@@ -142,11 +157,32 @@ class VBoxHypervisor():
             attr = 'machines'
         return self.vm_manager.getArray(self.vm_manager.vbox, attr)
 
+    def find_disk(self, location):
+        for disk in self.vbox.hardDisks:
+            if disk.location == location:
+                return disk
+
+    def find_floppy(self, location):
+        for floppy in self.vbox.floppyImages:
+            if floppy.location == location:
+                return floppy
+
+    def find_dvd(self, location):
+        for dvd in self.vbox.DVDImages:
+            if dvd.location == location:
+                return dvd
+
     def add_harddisk(self, location):
+        uuid = str(uuid_lib.uuid4())
         try:
             if self.vbox_version() >= "3.0.0":
-                disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly,
-                                              False, '', False, '')
+                try:
+                    disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly,
+                                                  False, '', False, uuid)
+                except COMError, e:
+                    # Harddisk was created but it failed returning an IMedium
+                    disk = self.find_disk(location)
+
             elif self.vbox_version() >= "2.2.0":
                 disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly)
             elif self.vbox_version() >= "2.1.0":
@@ -162,7 +198,10 @@ class VBoxHypervisor():
     def add_dvd(self, location):
         uuid = str(uuid_lib.uuid4())
         try:
-            dvd = self.vbox.openDVDImage(location, uuid)
+            try:
+                dvd = self.vbox.openDVDImage(location, uuid)
+            except COMError, e:
+                dvd = self.find_dvd(location)
             if self.vbox_version() < "2.1.0":
                 self.vbox.registerDVDImage(dvd)
         except Exception, e:
@@ -173,7 +212,11 @@ class VBoxHypervisor():
     def add_floppy(self, location):
         uuid = str(uuid_lib.uuid4())
         try:
-            floppy = self.vbox.openFloppyImage(location, uuid)
+            try:
+                floppy = self.vbox.openFloppyImage(location, uuid)
+            except COMError, e:
+                # Floppy was created but it failed returning an IMedium
+                floppy = self.find_floppy(location)
             if self.vbox_version() < "2.1.0":
                 self.vbox.registerFloppyImage(floppy)
         except Exception, e:
@@ -310,10 +353,11 @@ class VBoxMachine():
         if disk_rank >= 3:
             logging.debug("Maximum IDE disk rank is 2, " + str(disk_rank) + " given")
             return 1
-        try:
-            disk = self.hypervisor.vbox.findHardDisk(location)
-        except Exception, e:
+        disk = self.hypervisor.find_disk(location)
+        if disk == None:
             disk = self.hypervisor.add_harddisk(location)
+        if disk == None:
+            return 1
 
         # device 1, port 0 is busy by cd-rom...
         if disk_rank >= 2:
@@ -343,9 +387,8 @@ class VBoxMachine():
         if host_drive:
             dvd = self.machine.DVDDrive.captureHostDrive(self.machine.DVDDrive.getHostDrive())
         else:
-            try:
-                dvd = self.hypervisor.vbox.findDVDImage(location)
-            except Exception, e:
+            dvd = self.vbox.find_dvd(location)
+            if dvd == None:
                 dvd = self.hypervisor.add_dvd(location)
             if dvd == None:
                 return 1
@@ -376,9 +419,8 @@ class VBoxMachine():
         if host_drive:
             floppy = self.machine.floppyDrive.captureHostDrive(self.machine.floppyDrive.getHostDrive())
         else:
-            try:
-                floppy = self.hypervisor.vbox.findFloppyImage(location)
-            except Exception, e:
+            floppy = self.hypervisor.find_floppy(location)
+            if floppy == None:
                 floppy = self.hypervisor.add_floppy(location)
             if floppy == None:
                 return 1
@@ -483,7 +525,7 @@ class VBoxMachine():
 
     def set_resolution(self, resolution, save = False):
         self.machine.setGuestProperty('/VirtualBox/GuestAdd/Vbgl/Video/SavedMode', 
-                                      resolution + 'x32', '')
+                                     resolution + 'x32', '')
         if save:
             self.machine.saveSettings()
         return 0
@@ -539,7 +581,7 @@ class VBoxMachine():
                 if mac_address:
                     self.machine.getNetworkAdapter(0).MACAddress = mac_address
                 self.machine.getNetworkAdapter(0).hostInterface = host_adapter
-		if self.hypervisor.vbox_version() < "2.2.0":
+                if self.hypervisor.vbox_version() < "2.2.0":
                     self.machine.getNetworkAdapter(0).attachToHostInterface()
                 else:
                     self.machine.getNetworkAdapter(0).attachToBridgedInterface()
