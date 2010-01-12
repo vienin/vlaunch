@@ -85,7 +85,7 @@ install:
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
-	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property toggle-fullscreen notify-logged-in; \
+	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property toggle-fullscreen; \
 	do \
 	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
 	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \
@@ -97,7 +97,7 @@ install:
 	install -D -m 644 vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart/vbox-client-symlink.desktop
 	install -D -m 644 vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
-	install -D -m 644 notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
+	# install -D -m 644 notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -name .svn | xargs rm -rf
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist

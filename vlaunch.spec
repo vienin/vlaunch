@@ -90,14 +90,16 @@ make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH}
 
 
 %post guest
-if [ $1 == 1 ]; then
-    authconfig --enablevbox --update
-fi
+# Temporarely disables pam_vbox
+# if [ $1 == 1 ]; then
+#     authconfig --enablevbox --update
+# fi
 
 %postun guest
-if [ $1 == 0 ]; then
-    authconfig --disablevbox --update
-fi
+# Temporarely disables pam_vbox
+# if [ $1 == 0 ]; then
+#     authconfig --disablevbox --update
+# fi
 
 
 %clean
@@ -156,25 +158,25 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/pam.d/vbox-client-symlink
 %{_sysconfdir}/pam.d/vbox-get-property
 %{_sysconfdir}/pam.d/toggle-fullscreen
-%{_sysconfdir}/pam.d/notify-logged-in
+# %{_sysconfdir}/pam.d/notify-logged-in
 %{_sysconfdir}/security/console.apps/vbox-client-dnd
 %{_sysconfdir}/security/console.apps/vbox-client-symlink
 %{_sysconfdir}/security/console.apps/vbox-get-property
 %{_sysconfdir}/security/console.apps/toggle-fullscreen
-%{_sysconfdir}/security/console.apps/notify-logged-in
+# %{_sysconfdir}/security/console.apps/notify-logged-in
 %{_bindir}/vbox-client-symlink
 %{_bindir}/vbox-client-dnd
 %{_bindir}/vbox-get-property
 %{_bindir}/toggle-fullscreen
-%{_bindir}/notify-logged-in
+# %{_bindir}/notify-logged-in
 %{_sbindir}/vbox-client-symlink
 %{_sbindir}/vbox-client-dnd
 %{_sbindir}/vbox-get-property
 %{_sbindir}/toggle-fullscreen
-%{_sbindir}/notify-logged-in
+# %{_sbindir}/notify-logged-in
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
-%{_sysconfdir}/xdg/autostart/notify-logged-in.desktop
+# %{_sysconfdir}/xdg/autostart/notify-logged-in.desktop
 %{_datadir}/applications/toggle-fullscreen.desktop
 
 %files generic

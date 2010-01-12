@@ -82,9 +82,6 @@ for label in ${share_labels[@]}; do
 	i=$(( $i + 1 ))
 done
 
-# Signal that user is logged in and ready to answer to usb connections
-/usr/bin/VBoxControl -nologo guestproperty set "/UFO/State" "LOGGED_IN"
-
 awaited_share_time="0"
 while [ 1 ]; do
 	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "/UFO/Com/HostToGuest/Shares/*" -timestamp "$awaited_share_time"`; do
