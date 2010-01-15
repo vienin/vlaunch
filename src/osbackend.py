@@ -498,7 +498,8 @@ class OSBackend(object):
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
 
                 gui.app.hide_balloon()
-                gui.app.fullscreen_window(False)
+                if conf.AUTOFULLSCREEN:
+                    gui.app.fullscreen_window(False)
                 gui.app.set_tooltip(u"UFO: en cours d'exécution")
                 
             elif newValue == "CLOSING_SESSION":
