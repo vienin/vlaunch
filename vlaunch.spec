@@ -128,6 +128,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/credentials.png
 %{TARGET_PATH}/.data/images/close.png
 %{TARGET_PATH}/.data/launcher.filelist
+%{TARGET_PATH}/.data/locale/fr_FR/LC_MESSAGES/vlaunch.mo
 %dir %{TARGET_PATH}/.data/logs
 
 %{TARGET_PATH}/Windows/msvcr71.dll
@@ -182,7 +183,6 @@ rm -rf $RPM_BUILD_ROOT
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp
 %{TARGET_PATH}/.data/images/ufo-generic.png
-%{TARGET_PATH}/.data/locale/fr_FR/LC_MESSAGES/vlaunch.mo
 
 %files polenumerique
 %{TARGET_PATH}/.data/images/ufo-polenumerique.bmp
