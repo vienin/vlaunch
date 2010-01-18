@@ -1,0 +1,384 @@
+# vlaunch french translation.
+# Copyright (C) 2010 Agorabox
+# Sylvain Baubeau <sylvain.baubeau@agorabox.orgS>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: vlaunch 0.9\n"
+"POT-Creation-Date: 2010-01-18 14:53+CET\n"
+"PO-Revision-Date: 2010-01-18 09:20+CET\n"
+"Last-Translator: Sylvain Baubeau <sylvain.baubeau@agorabox.org>\n"
+"Language-Team: Agorabox <translations@agorabox.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: UTF-8\n"
+"Generated-By: pygettext.py 1.5\n"
+
+#: src/gui_pyqt.py:403 src/gui_pyqt.py:460 src/gui_pyqt.py:489
+#: src/gui_pyqt.py:521
+msgid "Cancel"
+msgstr "Annuler"
+
+#: src/gui_pyqt.py:458
+msgid "Download"
+msgstr "Télécharger"
+
+#: src/gui_pyqt.py:513 src/gui_pyqt.py:566 src/launcher.py:117
+#: src/macbackend.py:260 src/updater.py:160
+msgid "Error"
+msgstr "Erreur"
+
+#: src/gui_pyqt.py:514
+msgid "Could not write to file %s: %s."
+msgstr "Impossible d'écrire dans le fichier %s: %s."
+
+#: src/gui_pyqt.py:528 src/gui_pyqt.py:877
+msgid "Downloading"
+msgstr "En cours de téléchargement"
+
+#: src/gui_pyqt.py:529
+msgid "Downloading to %s"
+msgstr "Téléchargement de %s"
+
+#: src/gui_pyqt.py:539
+msgid ""
+"Download canceled.\n"
+"Press 'Download' to retry"
+msgstr ""
+"Téléchargement annulé.\n"
+"Cliquez sur 'Télécharger' pour recommencer"
+
+#: src/gui_pyqt.py:567
+msgid "Download has failed. Please check your Internet connection"
+msgstr ""
+"Le téléchargement a echoué. Veuillez vérifier votre connexion à Internet"
+
+#: src/gui_pyqt.py:572
+msgid "Continue"
+msgstr "Continuer"
+
+#: src/gui_pyqt.py:627
+msgid "About UFO..."
+msgstr "A propos d'UFO..."
+
+#: src/gui_pyqt.py:628
+msgid "Get informations about UFO"
+msgstr "Obtenir des informations à propos d'UFO"
+
+#: src/gui_pyqt.py:680
+msgid "About the UFO launcher"
+msgstr "A propos du lanceur UFO"
+
+#: src/gui_pyqt.py:681
+msgid "Version "
+msgstr "Version "
+
+#: src/gui_pyqt.py:683
+msgid "For more information, please visit"
+msgstr "Pour plus d'informations, visitez "
+
+#: src/gui_pyqt.py:744
+msgid "You already are authenticated"
+msgstr "Vous êtes déjà authentifié"
+
+#: src/gui_pyqt.py:746 src/gui_pyqt.py:823
+#, fuzzy
+msgid "Authenticate"
+msgstr "S'authentifier"
+
+#: src/gui_pyqt.py:783
+msgid "UFO password:"
+msgstr "Mot de passe UFO:"
+
+#: src/gui_pyqt.py:794 src/gui_pyqt.py:955
+msgid "Remember my password"
+msgstr "Se souvenir de mon mot de passe"
+
+#: src/gui_pyqt.py:878 src/gui_pyqt.py:891 src/gui_zenity.py:164
+#: src/linuxbackend.py:254
+msgid "Please wait"
+msgstr "Veuillez patienter"
+
+#: src/gui_pyqt.py:879
+msgid "Download completed"
+msgstr "Téléchargement terminé"
+
+#: src/gui_pyqt.py:891 src/gui_zenity.py:164
+msgid "Operation in progress"
+msgstr "Opération en cours"
+
+#: src/gui_pyqt.py:892 src/gui_zenity.py:165
+msgid "Operation successfully completed"
+msgstr "Opération effectué avec succès"
+
+#: src/gui_pyqt.py:919 src/osbackend.py:403 src/updater.py:56
+#: src/updater.py:58
+msgid "Yes"
+msgstr "Oui"
+
+#: src/gui_pyqt.py:919 src/osbackend.py:404 src/osbackend.py:405
+#: src/updater.py:56
+msgid "No"
+msgstr "Non"
+
+#: src/gui_pyqt.py:948
+msgid "Please enter the password for user "
+msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
+
+#: src/gui_pyqt.py:952 src/gui_zenity.py:178
+msgid "Password required"
+msgstr "Mot de passe requis"
+
+#: src/gui_zenity.py:179
+msgid "Please enter your password:"
+msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
+
+#: src/launcher.py:74
+msgid "A U.F.O Live CD is required to continue."
+msgstr "Un live U.F.O est nécessaire pour continuer."
+
+#: src/launcher.py:75
+msgid "Press 'Download' to start downloading the U.F.O Live image."
+msgstr "Cliquez sur 'Télécharger' pour commencer le téléchargement."
+
+#: src/launcher.py:76
+msgid ""
+"This operation can take up to a few hours, depending on your connection "
+"speed."
+msgstr ""
+"Cette opération peut prendre de quelques minutes à plusieurs heures\n"
+"suivant la vitesse de votre connexion."
+
+#: src/launcher.py:118
+msgid "UFO a encountered a fatal error and will now be closed."
+msgstr "UFO a rencontré une erreur fatale et doit fermer."
+
+#: src/launcher.py:119
+msgid "You can help fixing this problem by submitting an error report"
+msgstr ""
+"Vous pouvez aider à la correction du problème en soumettant le rapport "
+"d'erreur."
+
+#: src/launcher.py:120
+msgid "Send a report"
+msgstr "Envoyer le rapport d'erreur"
+
+#: src/linuxbackend.py:255
+#, fuzzy
+msgid "Installing %s for Python (required by UFO)"
+msgstr "Installation de %s (composant réquis par UFO)"
+
+#: src/linuxbackend.py:256
+msgid "%s was successfully installed"
+msgstr "%s a été installé avec succès"
+
+#: src/linuxbackend.py:257
+msgid "An error occurred while installing %s"
+msgstr "Une erreur est survenue lors de l'installation de %s"
+
+#: src/linuxbackend.py:294
+msgid "Setting Yum Agorabox repository"
+msgstr "Configuration des dépôts Agorabox pour Yum"
+
+#: src/linuxbackend.py:302
+msgid "Installing VirtualBox Open Source edition. This can take a few minutes"
+msgstr ""
+"Installation de VirtualBox Open Source Edition. Ceci peut prendre plusieurs "
+"minutes"
+
+#: src/linuxbackend.py:315
+msgid "Compiling VirtualBox drivers"
+msgstr "Compilation des pilotes VirtualBox"
+
+#: src/macbackend.py:232
+msgid "Unable to unmount the volume "
+msgstr "Impossible de démonter le volume "
+
+#: src/macbackend.py:261
+msgid "Sorry, couldn't authenticate. Please check your password."
+msgstr "Impossible de s'authentifier. Veuillez vérifier votre mot de passe."
+
+#: src/osbackend.py:218 src/osbackend.py:401
+msgid "Warning"
+msgstr "Attention"
+
+#: src/osbackend.py:219
+msgid ""
+"The available memory on this computer is low.\n"
+"This can deeply impact the speed of the UFO virtual machine.\n"
+"\n"
+"Closing some applications or restarting the computer may help"
+msgstr ""
+"La mémoire vive disponible est faible,\n"
+"cela peut influer sur la vitesse d'exécution de la machine virtuelle UFO.\n"
+"\n"
+"Fermer des applications ou redémarrer l'ordinateur peut améliorer les "
+"performances."
+
+#: src/osbackend.py:402
+msgid "Could not find an UFO key, try again ?"
+msgstr "Aucune clé UFO n'a été trouvée, réessayer ?"
+
+#: src/osbackend.py:411
+msgid "Select the USB device you want to install UFO on"
+msgstr "Selectionnez le périphérique USB sur lequel vous voulez installer UFO"
+
+#: src/osbackend.py:412
+msgid "Device"
+msgstr "Périphérique"
+
+#: src/osbackend.py:412
+msgid "No USB device found"
+msgstr "Aucune clée trouvée"
+
+#: src/osbackend.py:428
+msgid "UFO can not be launched"
+msgstr "UFO n'a pas pu être démarré"
+
+#: src/osbackend.py:429
+msgid ""
+"An already running of instance %s has been found.\n"
+"Please close all %s windows and processes."
+msgstr ""
+
+#: src/osbackend.py:431
+msgid "Force to close"
+msgstr "Forcer à quitter"
+
+#: src/osbackend.py:438
+msgid "The VirtualBox binaries could not be found"
+msgstr "Les fichiers binaires de VirtualBox sont introuvables"
+
+#: src/osbackend.py:439
+msgid "Missing binaries"
+msgstr "Binaires VirtualBox manquants"
+
+#: src/osbackend.py:469
+msgid "Opening session..."
+msgstr "Ouverture de la session en cours..."
+
+#: src/osbackend.py:476
+msgid "UFO: authenticating"
+msgstr "UFO: en cours d'authentification"
+
+#: src/osbackend.py:492
+msgid "Authenticating..."
+msgstr "Authentification en cours..."
+
+#: src/osbackend.py:508
+#, fuzzy
+msgid "UFO: running"
+msgstr "UFO: en cours d'exécution"
+
+#: src/osbackend.py:512
+msgid "Recording changes"
+msgstr "Sauvegarde des données"
+
+#: src/osbackend.py:513
+msgid ""
+"Please wait while UFO is recording the system modifications (%s Mo)\n"
+"you absolutely must not unplug the key !"
+msgstr "UFO est en train d'enregistrer les modifications du système (%s méga-octets),\n"
+"ne débranchez surtout pas la clé !"
+
+msgid "UFO: recording changes"
+msgstr "UFO: en cours de sauvegarde"
+
+#: src/osbackend.py:529
+msgid "Restart UFO"
+msgstr "Redémarrage de UFO"
+
+#: src/osbackend.py:530
+msgid "UFO is rebooting"
+msgstr "UFO est en cours de redémarrage"
+
+#: src/osbackend.py:553
+msgid "UFO is starting"
+msgstr "Démarrage de UFO"
+
+#: src/osbackend.py:555
+msgid "1<SUP>st</SUP> launch of UFO"
+msgstr "1<SUP>er</SUP> démarrage de UFO"
+
+#: src/osbackend.py:557
+msgid "UFO is starting."
+msgstr "UFO est en cours de démarrage"
+
+#: src/osbackend.py:561
+msgid "UFO: starting"
+msgstr "UFO: en cours de démarrage"
+
+#: src/osbackend.py:573
+msgid "UFO: terminated"
+msgstr "UFO: terminé"
+
+#: src/osbackend.py:574
+msgid "Goodbye"
+msgstr "Au revoir"
+
+#: src/osbackend.py:575
+msgid "You can now safely eject your UFO key."
+msgstr "Vous pouvez éjecter votre clé UFO en toute securité."
+
+#: src/osbackend.py:651
+msgid "New USB device"
+msgstr "Nouveau périphérique USB"
+
+#: src/osbackend.py:652
+msgid "you can link this device to your U.F.O desktop."
+msgstr "vous pouvez relier ce nouveau périphérique à votre bureau UFO."
+
+#: src/updater.py:53
+msgid "Update available"
+msgstr "Mise à jour disponible"
+
+#: src/updater.py:54
+msgid ""
+"A more recent version of the U.F.O launcher is available,do you want to "
+"install it ? (%s Mo to download) ?"
+msgstr ""
+"Une version plus récente du lanceur U.F.O est disponible,voulez-vous "
+"l'installer (%s Mo à télécharger) ?"
+
+#: src/updater.py:103
+msgid "Downloading update"
+msgstr "Téléchargement de la mise à jour"
+
+#: src/updater.py:104
+msgid "Please wait while the update is being downloaded"
+msgstr "Veuillez patienter pendant que la mise à jour est télécharger"
+
+#: src/updater.py:105
+msgid ""
+"Your key will now be updated.<br>This operation can take a few "
+"minutes<br><br>\n"
+"<b>The USB key absolutely must not be unplugged during this process.</b>"
+msgstr ""
+
+#: src/updater.py:161
+msgid "An error occurred. You key could not be updated."
+msgstr "Une erreur est intervenue. Votre clé n'a pas pu être mise à jour."
+
+#: src/windowsbackend.py:310
+msgid "You don't have enough permissions to run UFO."
+msgstr "Vous ne disposez des autorisations nécessaires pour lancer UFO."
+
+#: src/windowsbackend.py:313
+msgid ""
+"Run UFO as Administrator by right clicking on UFO and select : 'Run as "
+"administrator'"
+msgstr ""
+"Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et en "
+"choisissant 'Lancer en tant qu'administrateur'"
+
+#: src/windowsbackend.py:315
+msgid ""
+"Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'"
+msgstr ""
+"Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et en "
+"choisissant 'Lancer en tant que...'"
+
+#: src/windowsbackend.py:316
+msgid "Not enough permissions"
+msgstr "Permissions insuffisantes"
+

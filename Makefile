@@ -6,7 +6,8 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png \
-        setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store
+        setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
+        locale
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -23,6 +24,12 @@ all:
 install:
 	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf', 'w'))"
 
+	for lang in `ls locale`; \
+	do \
+	    mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES; \
+	    msgfmt -o $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo locale/$$lang/vlaunch.po; \
+	done
+
 	# build vdi file for swap device
 	./createvdi.py -p `pwd`/ufo_swap.vdi
 
@@ -33,7 +40,7 @@ install:
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Images
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/images
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
-
+	
 	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
 	cp UFO.svg UFO.png ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng credentials.png close.png $(DESTDIR)$(TARGET_PATH)/.data/images/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
@@ -85,7 +92,7 @@ install:
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
-	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property toggle-fullscreen; \
+	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property toggle-fullscreen notify-logged-in; \
 	do \
 	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
 	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \
@@ -97,12 +104,25 @@ install:
 	install -D -m 644 vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart/vbox-client-symlink.desktop
 	install -D -m 644 vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 644 toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
-	# install -D -m 644 notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
+	install -D -m 644 notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -name .svn | xargs rm -rf
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
 	
+generate-pot:
+	pygettext.py -d vlaunch src
+
+update-po: generate-pot
+	msgmerge -U locale/fr_FR/vlaunch.po vlaunch.pot
+
+generate-mo:
+	for lang in `ls locale`; \
+	do \
+		mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES; \
+		msgfmt -o $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo locale/$$lang/vlaunch.po; \
+	done
+                                        	
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \
 	echo Revision: $$REV; \

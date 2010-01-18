@@ -157,21 +157,27 @@ class VBoxHypervisor():
             attr = 'machines'
         return self.vm_manager.getArray(self.vm_manager.vbox, attr)
 
+    def find(self, location, type):
+        prop = type[0].lower() + type[1:] + "s"
+        if hasattr(self.vbox, prop):
+            for obj in getattr(self.vbox, prop):
+                if obj.location == location:
+                    return obj
+        else:
+            try:
+                return getattr(self.vbox, "find" + type[0].upper() + type[1:])(location)
+            except:
+                return None
+                
     def find_disk(self, location):
-        for disk in self.vbox.hardDisks:
-            if disk.location == location:
-                return disk
+        return self.find(location, "hardDisk")
 
     def find_floppy(self, location):
-        for floppy in self.vbox.floppyImages:
-            if floppy.location == location:
-                return floppy
-
+        return self.find(location, "floppyImage")
+        
     def find_dvd(self, location):
-        for dvd in self.vbox.DVDImages:
-            if dvd.location == location:
-                return dvd
-
+        return self.find(location, "DVDImage")
+        
     def add_harddisk(self, location):
         uuid = str(uuid_lib.uuid4())
         try:
@@ -181,6 +187,8 @@ class VBoxHypervisor():
                                                   False, '', False, uuid)
                 except COMError, e:
                     # Harddisk was created but it failed returning an IMedium
+                    import traceback
+                    traceback.print_stack()
                     disk = self.find_disk(location)
 
             elif self.vbox_version() >= "2.2.0":

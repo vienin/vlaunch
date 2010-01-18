@@ -18,9 +18,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
 
+import conf
 import logging
 import datetime
-import conf
 import os
 import sys
 import os.path as path
@@ -71,10 +71,9 @@ if conf.LIVECD:
         sys.path.append(conf.BIN)
         res = gui.download_file(conf.ISOURL,
                                 filename=conf.BOOTISO,
-                                msg=u"Un live U.F.O est nécessaire pour continuer. \n"
-                                    u"Cliquez sur 'Télécharger' pour commencer le téléchargement.\n\n"
-                                    u"Cette opération peut prendre de quelques minutes à plusieurs heures\n" 
-                                    u"suivant la vitesse de votre connexion.")
+                                msg=_("A U.F.O Live CD is required to continue.") + "\n" + \
+                                    _("Press 'Download' to start downloading the U.F.O Live image.") + "\n\n" + \
+                                    _("This operation can take up to a few hours, depending on your connection speed."))
         if res:
             sys.exit(1)
 
@@ -115,9 +114,10 @@ if __name__ == "__main__":
         import gui
         trace = traceback.format_exc()
         logging.debug(trace)
-        if gui.dialog_error_report(u"Erreur", u"UFO à rencontré une erreur fatale et doit fermer.\n" + \
-                                   u"Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur.",
-                                   u"Envoyer le rapport d'erreur", trace):
+        if gui.dialog_error_report(_("Error"),
+                                   _("UFO a encountered a fatal error and will now be closed.") + "\n" + \
+                                   _("You can help fixing this problem by submitting an error report"),
+                                   _("Send a report"), trace):
             import urllib
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
             try:

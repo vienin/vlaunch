@@ -23,6 +23,7 @@ import os, os.path as path, sys
 from ConfigParser import ConfigParser, NoOptionError
 from optparse import OptionParser
 import utils
+import gettext
 
 path.supports_unicode_filenames = True
 
@@ -83,7 +84,8 @@ config = \
           "vboxdrivers" : "drivers\\VBoxDrv",
           "livecd" : 0,
           "hostkey" : 0,
-          "autofullscreen" : False
+          "autofullscreen" : False,
+          "language" : "en"
         },
       "rawdisk" :
         {
@@ -201,3 +203,12 @@ BOOTISO = make_path(DATA_DIR, BOOTISO)
 SWAPFILE  = make_path(DATA_DIR, SWAPFILE)
 OVERLAYFILE  = make_path(DATA_DIR, OVERLAYFILE)
 BOOTDISK = make_path(DATA_DIR, BOOTDISK)
+
+try:
+    # gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE], unicode=True).install()
+    gettext.install('vlaunch', path.join(DATA_DIR, "locale2"), languages=[LANGUAGE], unicode=True)
+except:
+    print "Could find a translation for " + LANGUAGE
+    print "Available translations", gettext.find("vlaunch", all=1)
+    gettext.install('vlaunch')
+

@@ -77,9 +77,7 @@ class MacBackend(OSBackend):
                 i -= 1
             if len(pids) > 1:
                 logging.debug("U.F.O launched twice. Exiting")
-                if gui.dialog_error_report(u"Impossible de lancer UFO", u"UFO semble déjà en cours d'utilisation.\n" + \
-                                           u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.",
-                                           u"Forcer à quitter", "Processus " + str("\nProcessus ".join(processes).strip())):
+                if self.error_already_running("\nProcessus ".join(processes)):
                     for pid in pids:
                         self.call([ "kill", "-9", pid ])
 
@@ -90,11 +88,7 @@ class MacBackend(OSBackend):
                        ["grep", "VBoxXPCOMIPCD"],
                        ["grep", "-v", "grep" ] ], output = True)[1]:
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            gui.dialog_info(title=u"Impossible de lancer UFO",
-                             error=True,
-                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, " \
-                                 u"et relancer le programme.")
+            self.error_already_running('', 'VirtualBox')
             sys.exit(0)
 
     def prepare_update(self):
@@ -235,7 +229,7 @@ class MacBackend(OSBackend):
                     if not retcode: 
                         logging.debug("Unable to umount %s, exiting script" % (conf.DEV,))
                         gui.dialog_info(title="Erreur", 
-                                        msg=u"Impossible de démonter le volume " + str(volname), 
+                                        msg=_('Unable to unmount the volume ') + str(volname), 
                                         error=True)
                         return retcode
             return 0
@@ -263,9 +257,9 @@ class MacBackend(OSBackend):
                             self.call([ "sudo", "-n", "-s", "echo -e " + sudoline + " >> /etc/sudoers" ])
                     break
                 else:
-                    gui.dialog_info(title="Erreur", 
-                                     msg="Erreur lors de la saisie du mot de passe",
-                                     error=True)
+                    gui.dialog_info(title=_("Error"), 
+                                    msg=_("Sorry, couldn't authenticate. Please check your password."),
+                                    error=True)
                     tries += 1
 
             if ret == 0:
@@ -354,3 +348,4 @@ class MacBackend(OSBackend):
     def onExtraDataCanChange(self, key, value):
         # xpcom only return the both out parameters
         return True, ""
+

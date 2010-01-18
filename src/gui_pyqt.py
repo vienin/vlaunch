@@ -391,14 +391,16 @@ class CommandLauncher(threading.Thread):
     
 
 class WaitWindow(QtGui.QDialog):
-    def __init__(self,  cmd="", title="", msg="", parent=None):
+    def __init__(self,  cmd, title, msg, success_msg, error_msg, parent=None):
         super(WaitWindow, self).__init__(main)
         self.cmd = cmd
         self.setWindowTitle(title)
         self.command = CommandLauncher(self.cmd, self.finished)
         self.msg = msg
+        self.success_msg = success_msg
+        self.error_msg = error_msg
         self.statusLabel = QtGui.QLabel(self.msg)
-        self.cancelButton = QtGui.QPushButton(u"Annuler")
+        self.cancelButton = QtGui.QPushButton(_("Cancel"))
         self.animation = QtGui.QLabel()
         self.animation.setAlignment(QtCore.Qt.AlignCenter)
         self.animation.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
@@ -423,9 +425,9 @@ class WaitWindow(QtGui.QDialog):
 
     def finished(self, error):
         if error:
-            self.statusLabel.setText("Une erreur est survenue")
+            self.statusLabel.setText(self.error_msg)
         else:
-            self.statusLabel.setText(u"Installation terminée")
+            self.statusLabel.setText(self.success_msg)
         self.close()
 
     def run(self):
@@ -436,8 +438,8 @@ class WaitWindow(QtGui.QDialog):
 
 
 class DownloadWindow(QtGui.QDialog):
-    def __init__(self, url, filename, title, msg, parent=None, autostart=False,
-                 success_msg=u"Téléchargement terminé.", autoclose=False, embedded_progress=True):
+    def __init__(self, url, filename, title, msg, autostart,
+                 success_msg, autoclose=False, embedded_progress=True):
         super(DownloadWindow, self).__init__(main)
         self.url = url
         self.fileName = filename
@@ -453,9 +455,9 @@ class DownloadWindow(QtGui.QDialog):
         self.progress_dialog = None
         self.progress_bar = None
         self.downloading = False
-        self.downloadButton = QtGui.QPushButton(u"Télécharger")
+        self.downloadButton = QtGui.QPushButton(_("Download"))
         self.downloadButton.setDefault(True)
-        self.actionButton = QtGui.QPushButton(u"Quitter")
+        self.actionButton = QtGui.QPushButton(_("Cancel"))
         self.actionButton.setAutoDefault(False)
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.addButton(self.downloadButton,
@@ -484,7 +486,7 @@ class DownloadWindow(QtGui.QDialog):
             if self.downloading:
                 self.cancel_download()
                 self.hide_progress()
-                self.actionButton.setText(u"Quitter")
+                self.actionButton.setText(_("Cancel"))
                 return
         if self.finished:
             self.accept()
@@ -508,23 +510,23 @@ class DownloadWindow(QtGui.QDialog):
         fileName = self.fileName
         self.outFile = QtCore.QFile(fileName)
         if not self.outFile.open(QtCore.QIODevice.WriteOnly):
-            QtGui.QMessageBox.information(self, "HTTP",
-                    u"Impossible d'écrire dans le fichier %s: %s."%(fileName, self.outFile.errorString()))
+            QtGui.QMessageBox.information(self, _("Error"),
+                    _("Could not write to file %s: %s.") % (fileName, self.outFile.errorString()))
             self.outFile = None
             return
         if self.embedded_progress:
             self.progress_bar = QtGui.QProgressBar(self)
             app.progress = self.progress_bar
             self.layout().insertWidget(self.layout().count() - 1, self.progress_bar)
-            self.actionButton.setText("Annuler")
+            self.actionButton.setText(_("Cancel"))
             # self.connect(self.actionButton, QtCore.SIGNAL("clicked()"), self.cancel_download)
         else:
             self.progress_dialog = QtGui.QProgressDialog(self)
             app.progress = self.progress_dialog
             self.connect(self.progress_dialog, QtCore.SIGNAL("canceled()"), self.cancel_download)
             self.progress_dialog.setCancelButtonText(u"Annuler")
-            self.progress_dialog.setWindowTitle(u"Téléchargement de l'image")
-            self.progress_dialog.setLabelText(u"Téléchargement en cours : %s"%(fileName, ))
+            self.progress_dialog.setWindowTitle(_("Downloading"))
+            self.progress_dialog.setLabelText(_("Downloading to %s") %(fileName, ))
             self.progress_dialog.show()
             
         self.downloading = True
@@ -534,8 +536,8 @@ class DownloadWindow(QtGui.QDialog):
         self.downloader.start()
 
     def cancel_download(self):
-        self.statusLabel.setText(u"Téléchargement annulé. \n"
-                                 u"Cliquer sur 'Télécharger' pour recommencer.")
+        self.statusLabel.setText(_("Download canceled.\n"
+                                   "Press 'Download' to retry"))
         self.http_request_aborted = True
         self.downloading = False
         self.downloader.stop()
@@ -561,13 +563,13 @@ class DownloadWindow(QtGui.QDialog):
         self.outFile.close()
         if error:
             self.outFile.remove()
-            QtGui.QMessageBox.information(self, "HTTP",
-                    u"Le téléchargement a échoué. Vérifiez votre connexion Internet.")
+            QtGui.QMessageBox.information(self, _("Error"),
+                                          _("Download has failed. Please check your Internet connection"))
         else:
             self.finished = True
             # On cache les boutons
             self.downloadButton.hide()
-            self.actionButton.setText(u"Continuer")
+            self.actionButton.setText(_("Continue"))
             self.statusLabel.setText(self.success_msg)
             self.hide_progress()
 
@@ -622,8 +624,8 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setIcon(QtGui.QApplication.windowIcon())
         self.setVisible(True)
         
-        self.action = QtGui.QAction(QtCore.QString(u"A propos de UFO..."), self);
-        self.action.setStatusTip(u"Obtenir des informations à propos de UFO.");
+        self.action = QtGui.QAction(QtCore.QString(_("About UFO...")), self);
+        self.action.setStatusTip(_("Get informations about UFO"))
         self.connect(self.action, QtCore.SIGNAL("triggered()"), self.about);
         self.menu = QtGui.QMenu()
         self.menu.addAction(self.action)
@@ -634,7 +636,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.balloon   = None
         self.minimized = False
 
-        self.setToolTip(QtCore.QString(u"UFO: en cours de démarrage"))
         self.show()
 
     def show_message(self, title, msg, timeout=0):
@@ -676,10 +677,10 @@ class TrayIcon(QtGui.QSystemTrayIcon):
     
     def about(self):
         QtGui.QMessageBox.about(main, 
-                                QtCore.QString("A propos du lanceur UFO"), 
-                                QtCore.QString("Version " + str(conf.VERSION) + 
-                                               "<br><br>Copyright (C) 2009 Agorabox<br><br>" \
-                                               "Pour plus d'informations visiter http://ufo.agorabox.org"))
+                                QtCore.QString(_("About the UFO launcher")),
+                                QtCore.QString(_("Version ") + str(conf.VERSION) + 
+                                               "<br><br>Copyright (C) 2009 Agorabox<br><br>" +
+                                               _("For more information, please visit") + " http://ufo.agorabox.org"))
 
 
 class BalloonMessage(QtGui.QWidget):
@@ -740,9 +741,9 @@ class BalloonMessage(QtGui.QWidget):
             self.creds_layout = QtGui.QVBoxLayout()
             msg = "(" + conf.USER + ") - "
             if credentials:
-                msg += u"Vous êtes déjà authentifié"
+                msg += _("You already are authenticated")
             else:
-                msg += u"S'authentifier"
+                msg += _("Authenticate")
             self.credentials_button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "credentials.png")), msg, self)
             self.credentials_button.setFlat(True)
             self.credentials_button.setDefault(True)
@@ -779,7 +780,7 @@ class BalloonMessage(QtGui.QWidget):
         self.hline.setFrameShadow(QtGui.QFrame.Sunken)
         self.creds_layout.addWidget(self.hline)
         self.creds_hbox = QtGui.QHBoxLayout()
-        self.pass_label = QtGui.QLabel("Mot de passe UFO: ")
+        self.pass_label = QtGui.QLabel(_("UFO password:"))
         self.creds_hbox.addWidget(self.pass_label)
         self.password = QtGui.QLineEdit(self)
         self.password.setEchoMode(QtGui.QLineEdit.Password)
@@ -790,7 +791,7 @@ class BalloonMessage(QtGui.QWidget):
         self.ok_button.setMaximumSize(32, 28)
         self.creds_hbox.addWidget(self.ok_button)
         self.creds_layout.addLayout(self.creds_hbox)
-        self.remember = QtGui.QCheckBox(u"Enregistrer mon mot de passe")
+        self.remember = QtGui.QCheckBox(_("Remember my password"))
         if self.credentials != None:
             self.creds_layout.addWidget(self.remember)
 
@@ -819,7 +820,7 @@ class BalloonMessage(QtGui.QWidget):
     def return_pressed(self):
         if self.password.text():
             self.credentials_cb(self.password.text(), self.remember.isChecked())
-            if len(self.credentials_button.text()) - len(conf.USER) - 10 > len("S'authentifier"):
+            if len(self.credentials_button.text()) - len(conf.USER) - 10 > len(_("Authenticate")):
                 offset = "                                          "
             else:
                 offset = "                       "
@@ -873,9 +874,9 @@ class BalloonMessage(QtGui.QWidget):
 
 # Globals
 
-def download_file(url, filename, title = u"Téléchargement...",
-                  msg = u"Veuillez patienter le téléchargement est en cours",
-                  success_msg = u"Téléchargement terminé.", autostart=False, autoclose=False):
+def download_file(url, filename, title = _("Downloading"),
+                  msg = _("Please wait"),
+                  success_msg = _("Download completed"), autostart=False, autoclose=False):
     downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg,
                                  autostart=autostart, autoclose=autoclose, success_msg=success_msg, embedded_progress=True)
     if not autostart:
@@ -887,10 +888,9 @@ def download_file(url, filename, title = u"Téléchargement...",
             return 1
         return ret != QtGui.QDialog.Accepted
 
-def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours", prefix=None):
-    if prefix:
-        cmd = prefix + cmd
-    cmdWin = WaitWindow(cmd, title, msg)
+def wait_command(cmd, title=_("Please wait"), msg=_("Operation in progress"),
+                 success_msg=_("Operation successfully completed"), error_msg=("An error has occurred")):
+    cmdWin = WaitWindow(cmd, title, msg, success_msg, error_msg)
     cmdWin.run()
 
 def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
@@ -916,7 +916,7 @@ def dialog_info(title, msg, error=False):
         msgbox.setIcon(QtGui.QMessageBox.Information)
     msgbox.exec_()
 
-def dialog_question(title, msg, button1="Oui", button2="Non"):
+def dialog_question(title, msg, button1=_("Yes"), button2=_("No")):
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
     msgbox.setIcon(QtGui.QMessageBox.Question)
     reply = msgbox.exec_()
@@ -945,14 +945,14 @@ def dialog_error_report(title, msg, action=None, details=None):
 def dialog_password(msg=None, remember=False):
     w = QtGui.QWidget()
     if not msg:
-        msg = u"Veuillez entrer le mot de passe de l'utilisateur " + os.environ["USER"]
+        msg = _("Please enter the password for user ") + os.environ["USER"]
 
     dlg = QtGui.QInputDialog(w)
     dlg.setLabelText(msg)
-    dlg.setWindowTitle("Saisie de mot de passe")
+    dlg.setWindowTitle(_("Password required"))
     dlg.setTextEchoMode(QtGui.QLineEdit.Password)
     if remember:
-        check = QtGui.QCheckBox("Ne plus me poser la question")
+        check = QtGui.QCheckBox(_("Remember my password"))
         dlg.show()
         dlg.layout().addWidget(check)
     retcode = dlg.exec_()

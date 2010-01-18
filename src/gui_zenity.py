@@ -161,9 +161,8 @@ def download_file(url, filename, title, msg, autostart=False):
     downloader.join()
     return downloader.retcode
 
-def wait_command(cmd, title=u"Veuillez patienter", msg=u"Une opération est en cours", prefix=None):
-    if prefix:
-        cmd = prefix + cmd
+def wait_command(cmd, title=_("Please wait"), msg=_("Operation in progress"),
+                 success_msg=_("Operation successfully completed"), error_msg=("An error has occurred")):
     launch = CommandLauncher(cmd, title, msg)
     launch.start()
     launch.join()
@@ -176,8 +175,8 @@ def dialog_question(title, msg, button1=None , button2=None):
     return (button1, button2)[ utils.call([ zenity, "--question", "--title=" + title, "--text=" + msg ])]
 
 def dialog_password(root=None):
-    return utils.call([ zenity, "--entry", "--title", u'Autorisation nécessaire',
-                              "--text", 'Veuillez entrer votre mot de passe:',
+    return utils.call([ zenity, "--entry", "--title", _('Password required'),
+                              "--text", _("Please enter your password:"),
                               "--entry-text", '', "--hide-text" ]).communicate()[0]
 
 def SplashScreen(*args, **kw):

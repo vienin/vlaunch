@@ -53,23 +53,15 @@ class WindowsBackend(OSBackend):
         # TODO: Get pid for possible kill
         processes = self.WMI.Win32_Process(Name="ufo.exe")
         logging.debug("ufo process : "+str(processes))
-        if len(processes)>1 :
-            logging.debug("U.F.O launched twice. Exiting")
+        if len(processes) > 1:
             logging.debug(str([ x.Name for x in processes if x.ProcessId != os.getpid() ]))
-            gui.dialog_error_report(title=u"Impossible de lancer UFO",
-                                    msg=u"UFO semble déjà en cours d'utilisation.\n" + \
-                                        u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.\n" + \
-                                        "Processus :\n" + "\n".join([ x.Name for x in processes if x.ProcessId != os.getpid() ]).strip())
-            sys.exit(0)
+            self.error_already_running("\n".join([ x.Name for x in processes if x.ProcessId != os.getpid() ]).strip())
 
         logging.debug("Checking VBoxXPCOMIPCD process")
         processes = self.WMI.Win32_Process(Name="VBoxSVC.exe")
         if len(processes)>1 :
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            gui.dialog_info(title=u"Impossible de lancer UFO",
-                             error=True,
-                             msg=u"VirtualBox semble déjà en cours d'utilisation. \n" \
-                                 u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.")
+            self.error_already_running("\n".join([ x.Name for x in processes ]), "VirtualBox")
             sys.exit(0)
 
     def prepare_update(self):
@@ -127,6 +119,7 @@ class WindowsBackend(OSBackend):
                              "type=", "kernel", "start=", "demand", "error=", "normal", 
                              "displayname=", "PortableVBoxUSBMon" ], shell=True)
                          
+
                 try:
                     key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 
                                           "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
@@ -314,13 +307,13 @@ class WindowsBackend(OSBackend):
         return [[ disk.Name, disk.Model ] for disk in disks if disk.InterfaceType == "USB" ]
 
     def rights_error(self):
-        msg = u"Vous ne possédez pas les permissions nécessaires pour lancer UFO."
+        msg = _("You don't have enough permissions to run UFO.")
         logging.debug("Using Windows version " + str(platform.win32_ver()))
         if platform.win32_ver()[0].lower() == "vista":
-            msg += u"\n\nExécutez UFO en tant qu'administrateur en sélectionnant :\nClic droit -> Exécuter en tant qu'administrateur"
+            msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as administrator'")
         else:
-            msg += u"\n\nExécutez UFO en tant qu'administrateur en sélectionnant :\nClic droit -> Exécuter en tant qu'administrateur"
-        gui.dialog_info(title=u"Permissions insuffisantes", msg=msg)
+            msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'")
+        gui.dialog_info(title=_("Not enough permissions"), msg="\n\n" + msg)
         sys.exit(1)
 
     def prepare(self):
@@ -361,3 +354,4 @@ class WindowsBackend(OSBackend):
     def onExtraDataCanChange(self, key, value):
         # win32com need 3 return values (2 out parameters and return value)
         return "", True, 0
+

@@ -64,10 +64,7 @@ class LinuxBackend(OSBackend):
                 i -= 1
             if len(pids) > 1: 
                 logging.debug("U.F.O launched twice. Exiting")
-                gui.dialog_info(title=u"Impossible de lancer UFO",
-                                 error=True,
-                                 msg=u"UFO semble déjà en cours d'utilisation. \n" \
-                                    u"Veuillez fermer toutes les fenêtres UFO, et relancer le programme.")
+                self.error_already_running('\n'.join(processes))
                 sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
@@ -76,22 +73,11 @@ class LinuxBackend(OSBackend):
                                ["grep", "-v", "grep"]], output = True)[1]
         if processes and not os.environ.has_key("NOVBOXCHECK"):
             logging.debug("VBoxXPCOMIPCD is still running. Exiting")
-            if gui.dialog_error_report(u"Impossible de lancer UFO", 
-                                       u"VirtualBox semble déjà en cours d'utilisation. \n" + \
-                                       u"Veuillez fermer toutes les fenêtres de VirtualBox, et relancer le programme.",
-                                       u"Forcer à quitter", processes):
+            if self.error_already_running(processes, "VirtualBox"):
                 self.kill_resilient_vbox()
-            sys.exit(0)
+            else:
+                sys.exit(0)
     
-    def check_privileges(self):
-        if os.geteuid() != 0:
-            dialog_info(title="Droits insuffisants",
-                        msg="Vos permissions ne sont pas suffisantes pour lancer UFO. " + \
-                        "Veuillez entrer le mot de passe administrateur dans l'invite de " + \
-                        "la console :")
-            self.call(["su", "-c", sys.executable])
-            sys.exit(0)
-
     def prepare_update(self):
         return conf.SCRIPT_PATH
     
@@ -263,6 +249,12 @@ class LinuxBackend(OSBackend):
                         return SudoRunAsRoot()
                 return XtermRunAsRoot()
         raise "No 'run as root' command available"
+        
+    def get_generic_installation_messages(self, component):
+        return { "title" : _("Please wait"),
+                 "msg" : _('Installing %s for Python (required by UFO)') % (component,),
+                 "success_msg" : _("%s was successfully installed") % (component,),
+                 "error_msg" : _("An error occurred while installing %s") % (component,) }
 
         
 class FedoraLinuxBackend(LinuxBackend):
@@ -277,18 +269,17 @@ class FedoraLinuxBackend(LinuxBackend):
         if (self.dist == "Fedora" and version >= 10) or \
            (self.dist == "U.F.O" and version >= 1.0):
             if not os.path.exists("/usr/bin/beesu"):
-                msg = u"Veuillez patienter pendant l'installation de " + \
-                      u"composants\nnécessaires au lancement d'UFO"
                 # if os.path.exists("/usr/bin/gpk-install-package-name"):
                 #    print (["/usr/bin/gpk-install-package-name", "beesu"], msg)'
                 #else:
-                gui.wait_command(["/usr/bin/pkcon", "install", "beesu"], msg=msg)
+                gui.wait_command(["/usr/bin/pkcon", "install", "beesu"], **self.get_generic_installation_messages("beesu"))
         return LinuxBackend.create_run_as_root(self)
 
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
         if gui.backend != "PyQt":
-            gui.wait_command(["yum", "-y", "install", "PyQt4"], "Installation", "Installation de \"PyQt4\"", prefix=self.run_as_root.get_prefix())
+            gui.wait_command(self.run_as_root.get_prefix() + [ "yum", "-y", "install", "PyQt4"],
+                             **self.get_generic_installation_messages("Qt4 for Python"))
             reload(gui)
             if gui.backend != "PyQt":
                 logging.debug("Could not enable PyQt")
@@ -297,15 +288,10 @@ class FedoraLinuxBackend(LinuxBackend):
         logging.debug("Checking VirtualBox binaries")
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)):
             logging.debug("Installing Agorabox repository for VirtualBox")
-            gui.wait_command(["yum", "-y", "install", "yum-priorities"], 
-                              "Installation",
-                              "Installation de \"yum-priorities\"")
-            gui.wait_command(["rpm", 
-                              "-ivf", 
-                              self.AGORABOX_VBOX_REPO + "agorabox-virtualbox-yum-repository-1.0.noarch.rpm"], 
-                             "Installation",
-                             "Installation de \"agorabox-virtualbox-yum-repository\"")
-            
+            gui.wait_command(["yum", "-y", "install", "yum-priorities"],
+                             **self.get_generic_installation_messages("yum-priorities"))
+            gui.wait_command(["rpm", "-ivf", self.AGORABOX_VBOX_REPO + "agorabox-virtualbox-yum-repository-1.0.noarch.rpm"],
+                             msg=_("Setting Yum Agorabox repository"))
             kernel = "kernel"
             if os.uname()[2].endswith("PAE"):
                 kernel += "-PAE"
@@ -313,8 +299,7 @@ class FedoraLinuxBackend(LinuxBackend):
             
             logging.debug("Installing VirtualBox")
             gui.wait_command(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma"],
-                              u"Téléchargement", 
-                              u"Téléchargement, décompression de \"VirtualBox-OSE\"\n(Cette opération peut prendre quelques minutes)")
+                             msg=_("Installing VirtualBox Open Source edition. This can take a few minutes"))
             version = self.call(["rpm", "-q", "--queryformat", "%{VERSION}", "VirtualBox-OSE"], output=True)[1]
             kmod_name = "VirtualBox-OSE-kmod-" + str(version)
             
@@ -327,8 +312,7 @@ class FedoraLinuxBackend(LinuxBackend):
             compdir = os.path.join(tempfile.gettempdir(), kmod_name, "vboxdrv")
             logging.debug("Compiling vboxdrv source code in %s" % (compdir, ))
             gui.wait_command(["make", "install", "-C", compdir], 
-                             "Installation", 
-                             "Installation de \"VirtualBox-OSE\"")
+                             msg=_("Compiling VirtualBox drivers"))
             
             logging.debug("Loading vboxdrv module")
             self.call(["/etc/sysconfig/modules/VirtualBox-OSE.modules"])
@@ -347,7 +331,8 @@ class UbuntuLinuxBackend(LinuxBackend):
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
         if gui.backend != "PyQt":
-            gui.wait_command(["apt-get", "-y", "install", "python-qt4"], "Installation", u"Veuillez patienter,\nl'installation de \"python Qt4\" est en cours.", prefix=self.run_as_root.get_prefix())
+            gui.wait_command(self.run_as_root.get_prefix() + ["apt-get", "-y", "install", "python-qt4"], 
+                             **self.get_generic_installation_messages("Qt4 for Python"))
             reload(gui)
             if gui.backend != "PyQt":
                 logging.debug("Could not enable PyQt")
@@ -358,9 +343,12 @@ class UbuntuLinuxBackend(LinuxBackend):
         if not os.path.lexists(vbox_path):
             open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
             os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
-            gui.wait_command(["apt-get", "update"], u"Mise-à-jour", u"Votre système est en train d'être mis à jour")
-            gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.0"], "Installation", "Veuillez patienter,\nl'installation de \"VirtualBox 3\" est en cours.")
-            gui.wait_command(["/etc/init.d/vboxdrv", "setup"], "Configuration", "Configuration en cours de \"VirtualBox 3\".")
+            gui.wait_command(["apt-get", "update"],
+                              msg="Votre système est en train d'être mis à jour")
+            gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.0"],
+                             **self.get_generic_installation_messages())
+            gui.wait_command(["/etc/init.d/vboxdrv", "setup"],
+                             msg="Configuration en cours de \"VirtualBox 3\".")
          
         OSBackend.look_for_virtualbox(self)
 

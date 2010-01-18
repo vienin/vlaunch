@@ -50,12 +50,12 @@ def check_update(backend):
         latest_version, latest_size = get_latest_version()
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to user...")
-            input = gui.dialog_question(title=u"Mise à jour",
-                msg=u"Une version plus récente du lanceur U.F.O est disponible, " + \
-                    u"voulez-vous l'installer (" + str( latest_size / 1000000) + u" Mo de téléchargement) ?",
-                button1=u"Oui", button2=u"Non")
+            input = gui.dialog_question(title=_("Update available"),
+                msg=_("A more recent version of the U.F.O launcher is available,"
+                      "do you want to install it ? (%s Mo to download) ?") % (latest_size / 1000000,),
+                button1=_("Yes"), button2=_("No"))
             logging.debug("Got : " + str(input))
-            if input == "Oui":
+            if input == _("Yes"):
                 # Run Updater and close launcher
                 backend.checking_pyqt()
                 executable = backend.prepare_update()
@@ -100,11 +100,11 @@ def self_update(ufo_dir, relaunch):
  
     filename = tempfile.mkstemp()[1]
     logging.debug("Downloading " + url + " to " + filename)
-    retcode  = gui.download_file(url, filename, title=u"Téléchargement de la mise à jour",
-                                 msg=u"Merci de bien vouloir patienter pendant le téléchargement de la mise à jour", autostart=True,
-                                 success_msg=u"Votre clé va maintenant être mise à jour.<br>\n" \
-                                             u"Cette opération peut durer plusieurs minutes<br><br>\n" \
-                                             u"<b>La clé ne doit pas être retirée avant la fin de la mise à jour</b>")
+    retcode  = gui.download_file(url, filename, title=_("Downloading update"),
+                                 msg=_("Please wait while the update is being downloaded"),
+                                 success_msg=_("Your key will now be updated.<br>"
+                                               "This operation can take a few minutes<br><br>\n"
+                                               "<b>The USB key absolutely must not be unplugged during this process.</b>"))
     if retcode:
         raise "Download was canceled"
      
@@ -157,8 +157,8 @@ def self_update(ufo_dir, relaunch):
         pass
      
   except:
-    gui.dialog_info(title=u"Erreur",
-                    msg=u"La mise à jour n'a pas été réalisée correctement.")
+    gui.dialog_info(title=_("Error"),
+                    msg=_("An error occurred. You key could not be updated."))
 
     import traceback
     info = sys.exc_info()

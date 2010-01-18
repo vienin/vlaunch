@@ -215,10 +215,10 @@ class OSBackend(object):
                 conf.RAMSIZE = max(2 * freeram / 3, conf.MINRAM)
 
             if int(conf.RAMSIZE) <= int(conf.MINRAM):
-                gui.dialog_info(title=u"Attention", 
-                                msg=u"La mémoire vive disponible est faible, \n" + \
-                                    u"cela peut influer sur la vitesse d'exécution de la machine virtuelle UFO.\n\n" + \
-                                    u"Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances.", 
+                gui.dialog_info(title=_("Warning"), 
+                                msg=_("The available memory on this computer is low.\n"
+                                      "This can deeply impact the speed of the UFO virtual machine.\n\n"
+                                      "Closing some applications or restarting the computer may help"),
                                 error=False)
         
             logging.debug("Setting RAM to " + str(conf.RAMSIZE))
@@ -398,18 +398,18 @@ class OSBackend(object):
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
             if not conf.LIVECD:
-                input = gui.dialog_question(title=u"Attention",
-                                         msg=u"Aucune clé UFO n'a été trouvée, réessayer ?",
-                                         button1=u"Oui",
-                                         button2=u"Non")
-                if input == "Non":
+                input = gui.dialog_question(title=_("Warning"),
+                                         msg=_("Could not find an UFO key, try again ?"),
+                                         button1=_("Yes"),
+                                         button2=_("No"))
+                if input == _("No"):
                     if conf.NEEDDEV: return conf.STATUS_EXIT
                     return conf.STATUS_EXIT
             else:
                 usb = self.get_usb_sticks()
                 names = [ x[1] for x in usb ]
-                ret = gui.dialog_choices(msg=u"Selectionnez le périphérique USB sur lequel vous voulez installer UFO",
-                                         title=u"UFO", column=u"Périphérique", choices= [ u"Aucune clée" ] + names)
+                ret = gui.dialog_choices(msg=_("Select the USB device you want to install UFO on"),
+                                         title="UFO", column=_("Device"), choices= [ _("No USB device found") ] + names)
                 if not ret:
                     return conf.STATUS_IGNORE
                     
@@ -423,15 +423,20 @@ class OSBackend(object):
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
 
+    def error_already_running(self, processes, prog="UFO"):
+        logging.debug("U.F.O launched twice. Exiting")
+        return gui.dialog_error_report(title=_("UFO can not be launched"),
+                                       msg=_("An already running of instance %s has been found.\n"
+                                             "Please close all %s windows and processes.") % (prog,),
+                                       action=_("Force to close"), details = processes)
+
     def look_for_virtualbox(self):
         # Check virtualbox binaries
         logging.debug("Checking VirtualBox binaries")
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)):
              logging.debug("Missing binaries in " + conf.BIN)
-             gui.dialog_info(msg=u"Les fichiers binaires de VirtualBox sont introuvables\n" + \
-                                 u"Vérifiez votre PATH ou télecharger VirtualBox en suivant ce " + \
-                                 u"lien http://downloads.virtualbox.org/virtualbox/",
-                            title=u"Binaires manquants")
+             gui.dialog_info(msg=_("The VirtualBox binaries could not be found"),
+                             title=_("Missing binaries"))
              sys.exit(1)
 
     def onGuestPropertyChange(self, name, newValue, flags):
@@ -461,14 +466,14 @@ class OSBackend(object):
                 if newValue == "OK":
                     if self.remember_pass:
                         self.set_password(self.remember_pass)
-                    gui.app.authentication(u"Ouverture de la session en cours...")
+                    gui.app.authentication(_("Opening session..."))
                     
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
                     if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
                     gui.app.hide_balloon()
                     gui.app.normalize_window()
-                    gui.app.set_tooltip(u"UFO: en cours d'authentification")
+                    gui.app.set_tooltip(_("UFO: authenticating"))
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -484,7 +489,7 @@ class OSBackend(object):
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
                 gui.app.update_progress(gui.app.tray.progress, str("1.000"))
-                gui.app.authentication(u"Authentification en cours...")
+                gui.app.authentication(_("Authenticating..."))
                 self.vbox.current_machine.is_booted = True
                 
         # Overlay data reintegration infos
@@ -500,15 +505,14 @@ class OSBackend(object):
                 gui.app.hide_balloon()
                 if conf.AUTOFULLSCREEN:
                     gui.app.fullscreen_window(False)
-                gui.app.set_tooltip(u"UFO: en cours d'exécution")
+                gui.app.set_tooltip(_("UFO: running"))
                 
             elif newValue == "CLOSING_SESSION":
                 gui.app.minimize_window()
-                gui.app.show_balloon_message(title=u"Sauvegarde des données", 
-                                             msg=u"UFO est en train d'enregistrer les modifications du système (" + 
-                                                 str(self.vbox.current_machine.overlay_data_size) + 
-                                                 u" méga-octets),\nne débranchez surtout pas la clé !")
-                gui.app.set_tooltip("UFO: en cours de sauvegarde")
+                gui.app.show_balloon_message(title=_("Recording changes"), 
+                                             msg=_("Please wait while UFO is recording the system modifications (%s Mo)\n"
+                                                   "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),))
+                gui.app.set_tooltip(_("UFO: recording changes"))
             
             elif newValue == "HALTING":
                 pass
@@ -522,8 +526,8 @@ class OSBackend(object):
                 # minimize window while booting
                 time.sleep(2)
                 gui.app.hide_balloon()
-                gui.app.show_balloon_progress(title=u"Redémarrage de UFO",
-                                              msg=u"UFO est en cours de redémarrage.")
+                gui.app.show_balloon_progress(title=_("Restart UFO"),
+                                              msg=_("UFO is rebooting"))
         
             elif newValue == "FIRSTBOOT":
                 gui.app.fullscreen_window(False)
@@ -546,15 +550,15 @@ class OSBackend(object):
             time.sleep(2)
             gui.app.minimize_window()
             if conf.USER != "":
-                title = u"Démarrage de UFO"
+                title = _(u"UFO is starting")
             else:
-                title = u"1<SUP>er</SUP> démarrage de UFO"
+                title = _("1<SUP>st</SUP> launch of UFO")
             gui.app.show_balloon_progress(title=title,
-                                          msg=u"UFO est en cours de démarrage.",
+                                          msg=_("UFO is starting."),
                                           credentials_cb=self.credentials,
                                           credentials=self.keyring_valid)
             
-            gui.app.set_tooltip(u"UFO: en cours de démarrage")
+            gui.app.set_tooltip(_("UFO: starting"))
             
         elif state == self.vbox.constants.MachineState_PoweredOff and \
              (last_state == self.vbox.constants.MachineState_Stopping or \
@@ -566,9 +570,9 @@ class OSBackend(object):
                 gui.app.stop_callbacks_timer()
 
             gui.app.hide_balloon()
-            gui.app.set_tooltip(u"UFO: terminé")
-            gui.app.show_balloon_message(u"Au revoir", 
-                                         u"Vous pouvez éjecter votre clé UFO en toute securité.")
+            gui.app.set_tooltip(_("UFO: terminated"))
+            gui.app.show_balloon_message(_("Goodbye"), 
+                                         _("You can now safely eject your UFO key."))
 
             # Let's show ballon message 3s
             time.sleep(3)
@@ -644,9 +648,9 @@ class OSBackend(object):
                 continue
             if self.vbox.callbacks_aware:
                 guest_prop_type = "/UFO/Com/HostToGuest/Shares/AskToUser/"
-                gui.app.show_balloon_message(u"Nouveau périphérique USB", 
-                                             u'"' + str(usb[1]) + 
-                                             u'", vous pouvez relier ce nouveau périphérique à votre bureau UFO.', 5000)
+                gui.app.show_balloon_message(_("New USB device"), 
+                                             u'"' + str(usb[1]) + '", ' + _("you can link this device to your U.F.O desktop."),
+                                             5000)
             else:
                 guest_prop_type = "/UFO/Com/HostToGuest/Shares/ReadyToMount/"
                 self.vbox.current_machine.add_shared_folder(str(usb[1]), str(usb[0]), writable = True)
