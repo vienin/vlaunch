@@ -21,25 +21,26 @@ endif
 
 all:
 
-install:
+install: generate-mo
 	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf', 'w'))"
-
-	for lang in `ls locale`; \
-	do \
-	    mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES; \
-	    msgfmt -o $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo locale/$$lang/vlaunch.po; \
-	done
 
 	# build vdi file for swap device
 	./createvdi.py -p `pwd`/ufo_swap.vdi
 
-    # Common folder
+	# Common folder
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/settings
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Images
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/images
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
+	mkdir -p $(DESTDIR)/usr/share/locale
+
+	for lang in `ls locale`; \
+	do \
+	    install -D -m 755 locale/$$lang/vlaunch.mo $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo; \
+	    install -D -m 755 locale/$$lang/vlaunch-guest.mo $(DESTDIR)/usr/share/locale/$$lang/LC_MESSAGES/vlaunch-guest.mo; \
+	done
 	
 	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
 	cp UFO.svg UFO.png ufo-*.bmp updater-*.png ufo-*.png animated-bar.mng credentials.png close.png $(DESTDIR)$(TARGET_PATH)/.data/images/
@@ -112,17 +113,20 @@ install:
 	
 generate-pot:
 	pygettext.py -d vlaunch src
+	xgettext --from-code UTF-8 -d vlaunch-guest -L Shell guest/vbox-client-symlink
 
 update-po: generate-pot
 	msgmerge -U locale/fr_FR/vlaunch.po vlaunch.pot
+	msgmerge -U locale/fr_FR/vlaunch-guest.po vlaunch-guest.pot
 
 generate-mo:
 	for lang in `ls locale`; \
 	do \
-		mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES; \
-		msgfmt -o $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo locale/$$lang/vlaunch.po; \
+	    mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES; \
+	    msgfmt -o locale/$$lang/vlaunch.mo locale/$$lang/vlaunch.po; \
+	    msgfmt -o locale/$$lang/vlaunch-guest.mo locale/$$lang/vlaunch-guest.po; \
 	done
-                                        	
+
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \
 	echo Revision: $$REV; \

@@ -1,10 +1,12 @@
 #!/bin/sh
 
+TEXTDOMAIN=vlaunch-guest
+
 # Create symlink as hostos
 cmdline=`cat /proc/cmdline`
 host="${cmdline#*hostos=}"
 host="${host%% *}"
-desktop="$HOME/Bureau"
+desktop=`xdg-user-dir DESKTOP`
 target=/media
 share_id="/UFO/Shares/"
 
@@ -107,7 +109,11 @@ while [ 1 ]; do
     
 	case "$awaited_share_state" in
 	"AskToUser")
-		zenity --question --title="Périphérique USB" --text="Un nouveau périphérique USB a été détecté,\n\n\"$awaited_share_name\" monté sur \"$awaited_share_mntpt\" \n\nVoulez vous monter ce périphérique sur votre bureau UFO ?" --window-icon=/usr/share/icons/UFO/48x48/emblems/emblem-usb.png
+		zenity --question --title=$"USB device"
+		       --text=$"A new USB device has been detected,\n\n"\
+		              $"$awaited_share_name mounted on $awaited_share_mntpt\n\n"\
+		              $"Do you want to mount it on your UFO desktop ?"
+		       --window-icon=/usr/share/icons/UFO/48x48/emblems/emblem-usb.png
 		if [ $? == 0 ]; then
 		    /usr/bin/VBoxControl -nologo guestproperty set "/UFO/Com/GuestToHost/Shares/UserAccept/$awaited_share_label" "$awaited_share_name;$awaited_share_mntpt"
 		fi
@@ -124,4 +130,3 @@ while [ 1 ]; do
 done
 
 IFS=$ORIGIFS
-
