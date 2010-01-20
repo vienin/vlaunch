@@ -505,6 +505,8 @@ class OSBackend(object):
                 gui.app.hide_balloon()
                 if conf.AUTOFULLSCREEN:
                     gui.app.fullscreen_window(False)
+                else:
+                    gui.app.normalize_window()
                 gui.app.set_tooltip(_("UFO: running"))
                 
             elif newValue == "CLOSING_SESSION":
