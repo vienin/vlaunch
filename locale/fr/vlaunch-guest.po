@@ -1,8 +1,6 @@
-# French translations for PACKAGE package
-# Traductions françaises du paquet PACKAGE.
-# Copyright (C) 2010 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# Bob <sylvain.baubeau@agorabox.org>, 2010.
+# vlaunch french translation.
+# Copyright (C) 2010 Agorabox
+# Sylvain Baubeau <sylvain.baubeau@agorabox.org>, 2010.
 #
 msgid ""
 msgstr ""

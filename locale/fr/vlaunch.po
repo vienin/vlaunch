@@ -1,6 +1,6 @@
 # vlaunch french translation.
 # Copyright (C) 2010 Agorabox
-# Sylvain Baubeau <sylvain.baubeau@agorabox.orgS>, 2010.
+# Sylvain Baubeau <sylvain.baubeau@agorabox.org>, 2010.
 #
 msgid ""
 msgstr ""
