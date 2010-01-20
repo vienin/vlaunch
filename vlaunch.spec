@@ -141,6 +141,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Info.plist
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Frameworks
+%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/include
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/lib
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/UFO.py*
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/site.py*
@@ -179,7 +180,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
 %{_sysconfdir}/xdg/autostart/notify-logged-in.desktop
 %{_datadir}/applications/toggle-fullscreen.desktop
-%{_localedir}/fr/LC_MESSAGES/vlaunch-guest.mo
+%{_datadir}/locale/fr/LC_MESSAGES/vlaunch-guest.mo
 
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp
