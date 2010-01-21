@@ -427,7 +427,7 @@ class OSBackend(object):
         logging.debug("U.F.O launched twice. Exiting")
         return gui.dialog_error_report(title=_("UFO can not be launched"),
                                        msg=_("An already running of instance %s has been found.\n"
-                                             "Please close all %s windows and processes.") % (prog,),
+                                             "Please close all %s windows and processes.") % (prog, prog),
                                        action=_("Force to close"), details = processes)
 
     def look_for_virtualbox(self):

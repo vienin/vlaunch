@@ -309,9 +309,6 @@ class MacBackend(OSBackend):
             if os.path.islink("/Applications/VirtualBox.app"):
                 os.unlink("/Applications/VirtualBox.app")
             
-            os.symlink(path.join(conf.BIN, "..", ".."),
-                       "/Applications/VirtualBox.app")
-                         
             # Restore permissions
             # self.call([ "/usr/sbin/chown", "-R", "0:0", conf.APP_PATH ])
             # self.call([ "chmod", "-R", "755", "/Applications/VirtualBox.app/Contents" ])
@@ -320,12 +317,11 @@ class MacBackend(OSBackend):
         
             self.load_kexts()
 
+        os.chdir(path.join(conf.BIN, "..", "Frameworks"))
+
     def cleanup(self):
         if conf.MOBILE and conf.PARTS == "all":
             self.restore_fstab()
-    
-        if not conf.VBOX_INSTALLED:
-            os.unlink("/Applications/VirtualBox.app")
         
         if conf.PARTS == "all":
             self.call([ "diskutil", "mountDisk", conf.DEV ])
@@ -334,7 +330,7 @@ class MacBackend(OSBackend):
             shutil.rmtree(self.tmpdir)
 
     def run_vbox(self, command, env):
-        self.call(command, env = env, cwd = conf.BIN)
+        self.call(command, env = env)
 
     def find_resolution(self):
         if gui.backend == "PyQt":

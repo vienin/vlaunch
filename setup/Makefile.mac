@@ -49,12 +49,13 @@ mac-launcher: clean py2app
 	cp -R ${VBOX_PATH}/../*.kext ${VBOXMACOS}/kexts
 	mv ${VBOXMACOS}/kexts/VBoxDrvTiger.kext ${VBOXMACOS}/kexts/Tiger
 	mkdir ${VBOXAPP}/Contents/Frameworks
-	cp -R /Library/Frameworks/QtCore.framework ${VBOXAPP}/Contents/Frameworks/QtCore.framework
+	cp -R /Library/Frameworks/QtCore.framework ${VBOXAPP}/Contents/Frameworks/
 	cp -f /Library/Frameworks/Python.framework/Python ${FRAMEWORKS}/Python.framework/Versions/2.5/Python
-	cp -R /Library/Frameworks/QtGui.framework ${VBOXAPP}/Contents/Frameworks/QtGui.framework
-	cp -R /Library/Frameworks/QtNetwork.framework ${VBOXAPP}/Contents/Frameworks/QtNetwork.framework
-	rm ${VBOXMACOS}/VBoxPython2_{5,6}.so
-	mv ${VBOXMACOS}/VBoxPython{2_3.so,2_5.so}
+	cp -R /Library/Frameworks/QtGui.framework ${VBOXAPP}/Contents/Frameworks/
+	cp -R /Library/Frameworks/QtNetwork.framework ${VBOXAPP}/Contents/Frameworks/
+	cp -R /Library/Frameworks/QtOpenGL.framework ${VBOXAPP}/Contents/Frameworks/
+	# rm ${VBOXMACOS}/VBoxPython2_{5,6}.so
+	# mv ${VBOXMACOS}/VBoxPython{2_3.so,2_5.so}
 	cp /opt/local/lib/libiconv.2.dylib /opt/local/lib/libz.1.dylib /opt/local/lib/libcrypto.0.9.8.dylib /opt/local/lib/libcurl.4.dylib ${VBOXMACOS}/
 	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
 	strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
@@ -83,7 +84,7 @@ mac-launcher: clean py2app
 	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.5/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython2_5.so
 	install_name_tool -change /System/Library/Frameworks/Python.framework/Versions/2.3/Python @executable_path/../Frameworks/Python.framework/Versions/2.5/Python ${VBOXMACOS}/VBoxPython2_5.so
 
-	for qt in QtCore.framework QtGui.framework QtNetwork.framework; \
+	for qt in QtCore.framework QtGui.framework QtNetwork.framework QtOpenGL.framework; \
 	do \
 	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt; \
 	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \

@@ -29,6 +29,7 @@ plist = dict(
 
 sys.path.append("..")
 sys.path.append("../src")
+sys.path.append("../sdk/bindings/xpcom/python/")
 
 APP = [ "../src/UFO.py" ]
 DATA_FILES = [ ]
