@@ -624,11 +624,17 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setIcon(QtGui.QApplication.windowIcon())
         self.setVisible(True)
         
-        self.action = QtGui.QAction(QtCore.QString(_("About UFO...")), self);
-        self.action.setStatusTip(_("Get informations about UFO"))
-        self.connect(self.action, QtCore.SIGNAL("triggered()"), self.about);
         self.menu = QtGui.QMenu()
-        self.menu.addAction(self.action)
+        self.action_about = QtGui.QAction(QtCore.QString(_("About")), self);
+        self.action_about.setStatusTip(_("Get informations about UFO"))
+        self.action_settings = QtGui.QAction(QtCore.QString(_("Settings...")), self);
+        self.action_settings.setStatusTip(_("Configure your UFO device"))
+        
+        self.connect(self.action_about, QtCore.SIGNAL("triggered()"), self.about);
+        self.connect(self.action_settings, QtCore.SIGNAL("triggered()"), self.settings);
+        
+        self.menu.addAction(self.action_about)
+        self.menu.addAction(self.action_settings)
         self.setContextMenu(self.menu)
         
         self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"), self.activate)
@@ -674,7 +680,14 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         elif reason != QtGui.QSystemTrayIcon.Context:
             if self.balloon:
                 self.balloon.show()
-    
+                
+    def about(self):
+        QtGui.QMessageBox.about(main, 
+                                QtCore.QString(_("About the UFO launcher")),
+                                QtCore.QString(_("Version ") + str(conf.VERSION) + 
+                                               "<br><br>Copyright (C) 2009 Agorabox<br><br>" +
+                                               _("For more information, please visit") + " http://ufo.agorabox.org"))
+        
     def about(self):
         QtGui.QMessageBox.about(main, 
                                 QtCore.QString(_("About the UFO launcher")),
