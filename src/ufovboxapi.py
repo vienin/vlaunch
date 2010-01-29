@@ -187,10 +187,8 @@ class VBoxHypervisor():
                                                   False, '', False, uuid)
                 except COMError, e:
                     # Harddisk was created but it failed returning an IMedium
-                    import traceback
-                    traceback.print_stack()
+                    logging.debug("Got COMError exception in add_harddisk")
                     disk = self.find_disk(location)
-
             elif self.vbox_version() >= "2.2.0":
                 disk = self.vbox.openHardDisk(location, self.constants.AccessMode_ReadOnly)
             elif self.vbox_version() >= "2.1.0":
@@ -209,6 +207,7 @@ class VBoxHypervisor():
             try:
                 dvd = self.vbox.openDVDImage(location, uuid)
             except COMError, e:
+                logging.debug("Got COMError exception in add_dvd")
                 dvd = self.find_dvd(location)
             if self.vbox_version() < "2.1.0":
                 self.vbox.registerDVDImage(dvd)
@@ -224,6 +223,7 @@ class VBoxHypervisor():
                 floppy = self.vbox.openFloppyImage(location, uuid)
             except COMError, e:
                 # Floppy was created but it failed returning an IMedium
+                logging.debug("Got COMError exception in add_floppy")
                 floppy = self.find_floppy(location)
             if self.vbox_version() < "2.1.0":
                 self.vbox.registerFloppyImage(floppy)
