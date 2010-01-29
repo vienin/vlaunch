@@ -131,6 +131,8 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/UFO.png
 %{TARGET_PATH}/.data/images/credentials.png
 %{TARGET_PATH}/.data/images/close.png
+%{TARGET_PATH}/.data/images/settings.png
+%{TARGET_PATH}/.data/images/about.png
 %{TARGET_PATH}/.data/launcher.filelist
 %{TARGET_PATH}/.data/locale/fr/LC_MESSAGES/vlaunch.mo
 %dir %{TARGET_PATH}/.data/logs
