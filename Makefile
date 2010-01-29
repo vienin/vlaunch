@@ -5,7 +5,7 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/toggle-fullscreen* guest/notify-logged-in* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png \
-        graphics/.background graphics/VolumeIcon.icns graphics/credentials.png \
+        graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png\
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
         locale
 

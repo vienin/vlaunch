@@ -56,9 +56,9 @@ if __name__ == "__main__":
     app.process_gui_events()
     conf.USER = "ufo"
     app.show_balloon_progress(title="Demarrage",
-                                          msg=u"UFO est en cours de demarrage.",
-                                          credentials=True,
-                                          keyring=False)
+                              msg=u"UFO est en cours de demarrage.",
+                              credentials=True,
+                              keyring=False)
         
     #balloon = BalloonMessage(None, "Title", "Do you Glumol ?", timeout=10000, credentials=(lambda x, y: x))
     times = 0

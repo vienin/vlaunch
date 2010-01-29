@@ -19,20 +19,14 @@
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. 
 
 
-import logging
-import commands
 import glob
-import shutil
-import os, os.path as path
-import sys
+import os.path as path
 import createrawvmdk
-import os
 import conf
-import shutil
 import tempfile
-import uuid
 import gui
 import time
+import shutil
 import platform
 import utils
 from ufovboxapi import *
@@ -207,36 +201,38 @@ class OSBackend(object):
 
         if conf.CONFIGUREVM:
             # compute reasonable memory size
-            if conf.RAMSIZE == "auto":
+            if conf.RAMSIZE == conf.AUTO_INTEGER:
                 if self.vbox.vbox_version() >= "2.1.0":
                     freeram = self.vbox.host.get_free_ram()
                 else:
                     freeram = self.get_free_ram()
-                conf.RAMSIZE = max(2 * freeram / 3, conf.MINRAM)
-
-            if int(conf.RAMSIZE) <= int(conf.MINRAM):
+                ram = max(2 * freeram / 3, conf.MINRAM)
+            else:
+                ram = conf.RAMSIZE
+                
+            if int(ram) <= int(conf.MINRAM):
                 gui.dialog_info(title=_("Warning"), 
                                 msg=_("The available memory on this computer is low.\n"
                                       "This can deeply impact the speed of the UFO virtual machine.\n\n"
                                       "Closing some applications or restarting the computer may help"),
                                 error=False)
         
-            logging.debug("Setting RAM to " + str(conf.RAMSIZE))
-            self.vbox.current_machine.set_ram_size(conf.RAMSIZE)
+            logging.debug("Setting RAM to " + str(ram))
+            self.vbox.current_machine.set_ram_size(ram)
             
             # Set number of processors
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
                 logging.debug("Settings CPU capabilities: VT=%s PAE=%s nested_paging=%s" % (conf.PAE, conf.VT, conf.NESTEDPAGING))
                 self.vbox.current_machine.set_cpu_capabilities(PAE=conf.PAE, VT=conf.VT,
                                                                nested_paging=conf.NESTEDPAGING)
-                if conf.CPUS == "autodetect":
+                if conf.CPUS == conf.AUTO_INTEGER:
                     nbprocs = int(self.vbox.host.get_nb_procs())
                     logging.debug(str(nbprocs) + " processor(s) available on host")
                     if nbprocs >= 2:
                         nbprocs = max(2, nbprocs / 2)
                 else:
                     try:
-                        nbprocs = int(conf.CPUS)
+                        nbprocs = conf.CPUS
                     except:
                         nbprocs = 1
                 logging.debug("Setting number of processor to " + str(nbprocs))
@@ -281,11 +277,16 @@ class OSBackend(object):
                 logging.debug("Setting bootdisk %s for Live CD at rank %d" % (conf.BOOTDISK, conf.DRIVERANK,))
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
             
-            if conf.WIDTH and conf.HEIGHT:
-                resolution = str(conf.WIDTH) + "x" + str(conf.HEIGHT)
-                if conf.WIDTH == "full" and conf.HEIGHT == "full":
-                    resolution = self.find_resolution()
+            if conf.RESOLUTION:
+                resolution = conf.RESOLUTION
+                hostres = self.find_resolution()
+                if hostres != "" and \
+                    (int(hostres.split("x")[0]) <= int(conf.RESOLUTION.split("x")[0]) or \
+                     int(hostres.split("x")[1]) <= int(conf.RESOLUTION.split("x")[1])):
+                    resolution = hostres
+                    gui.app.fullscreen_window(False)
                 if resolution != "":
+                    logging.debug("Using " + resolution + " as initial resolution")
                     self.vbox.current_machine.set_resolution(resolution)
 
             self.vbox.current_machine.set_boot_logo(glob.glob(path.join(conf.IMGDIR, "ufo-*.bmp"))[0])
@@ -373,7 +374,6 @@ class OSBackend(object):
         self.vbox.close_session()
 
     def find_device(self):
-        found = 0
         try_times = 10
 
         # use user defined device
@@ -434,10 +434,10 @@ class OSBackend(object):
         # Check virtualbox binaries
         logging.debug("Checking VirtualBox binaries")
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)):
-             logging.debug("Missing binaries in " + conf.BIN)
-             gui.dialog_info(msg=_("The VirtualBox binaries could not be found"),
-                             title=_("Missing binaries"))
-             sys.exit(1)
+            logging.debug("Missing binaries in " + conf.BIN)
+            gui.dialog_info(msg=_("The VirtualBox binaries could not be found"),
+                            title=_("Missing binaries"))
+            sys.exit(1)
 
     def onGuestPropertyChange(self, name, newValue, flags):
         # Shared folder management
@@ -510,7 +510,8 @@ class OSBackend(object):
                 gui.app.set_tooltip(_("UFO: running"))
                 
             elif newValue == "CLOSING_SESSION":
-                gui.app.minimize_window()
+                if conf.AUTOMINIMIZE:
+                    gui.app.minimize_window()
                 gui.app.show_balloon_message(title=_("Recording changes"), 
                                              msg=_("Please wait while UFO is recording the system modifications (%s Mo)\n"
                                                    "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),))
@@ -524,9 +525,6 @@ class OSBackend(object):
                 self.vbox.current_machine.is_booted  = False
                 self.vbox.current_machine.is_booting = True
                 
-                # Let's show virtual machine's splash screen 2s,
-                # minimize window while booting
-                time.sleep(2)
                 gui.app.hide_balloon()
                 gui.app.show_balloon_progress(title=_("Restart UFO"),
                                               msg=_("UFO is rebooting"))
@@ -544,13 +542,16 @@ class OSBackend(object):
     def onMachineStateChange(self, state):
 
         last_state = self.vbox.current_machine.last_state
+        print str(last_state) + ":" + str(state)
         if state == self.vbox.constants.MachineState_Running and \
            last_state == self.vbox.constants.MachineState_Starting:
             
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting
-            time.sleep(2)
-            gui.app.minimize_window()
+            if conf.AUTOMINIMIZE:
+                time.sleep(2)
+                gui.app.minimize_window()
+                
             if conf.USER != "":
                 title = _(u"UFO is starting")
             else:

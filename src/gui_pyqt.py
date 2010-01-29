@@ -2,7 +2,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -22,10 +22,12 @@
 from PyQt4 import QtGui, QtCore
 import threading, sys, os
 from urllib import urlretrieve
+from ConfigParser import ConfigParser
 import time, utils
 import conf
 import logging
 import glob
+import math
 
 class QtUFOGui(QtGui.QApplication):
         
@@ -625,10 +627,12 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
         
         self.menu = QtGui.QMenu()
-        self.action_about = QtGui.QAction(QtCore.QString(_("About")), self);
+        self.action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
+                                          QtCore.QString(_("About")), self);
         self.action_about.setStatusTip(_("Get informations about UFO"))
-        self.action_settings = QtGui.QAction(QtCore.QString(_("Settings...")), self);
-        self.action_settings.setStatusTip(_("Configure your UFO device"))
+        self.action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
+                                             QtCore.QString(_("Settings...")), self);
+        self.action_settings.setStatusTip(_("Configure the UFO launcher"))
         
         self.connect(self.action_about, QtCore.SIGNAL("triggered()"), self.about);
         self.connect(self.action_settings, QtCore.SIGNAL("triggered()"), self.settings);
@@ -687,18 +691,16 @@ class TrayIcon(QtGui.QSystemTrayIcon):
                                 QtCore.QString(_("Version ") + str(conf.VERSION) + 
                                                "<br><br>Copyright (C) 2009 Agorabox<br><br>" +
                                                _("For more information, please visit") + " http://ufo.agorabox.org"))
-        
-    def about(self):
-        QtGui.QMessageBox.about(main, 
-                                QtCore.QString(_("About the UFO launcher")),
-                                QtCore.QString(_("Version ") + str(conf.VERSION) + 
-                                               "<br><br>Copyright (C) 2009 Agorabox<br><br>" +
-                                               _("For more information, please visit") + " http://ufo.agorabox.org"))
 
+    def settings(self):
+        settings = Settings()
+        settings.show()
+        settings.exec_()
+        
 
 class BalloonMessage(QtGui.QWidget):
     def __init__(self, parent, title, msg, icon=None, timeout=0, 
-                 progress=False, credentials_cb=None, credentials=None):
+                 progress=False, credentials_cb=None, credentials=None, fake=False):
         
         if sys.platform == "win32":
             flags = QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.ToolTip
@@ -711,26 +713,37 @@ class BalloonMessage(QtGui.QWidget):
 
         self.parent = parent
         self.title = title
+        self.msg = msg
+        self.fake = fake
         self.mAnchor = QtCore.QPoint()
         self.up = True
         self.login_shown = False
         self.credentials_cb = credentials_cb
         self.credentials = credentials
-
+        self.colors = { 'ballooncolor'         : conf.BALLOONCOLOR, 
+                        'ballooncolorgradient' : conf.BALLOONCOLORGRADIENT, 
+                        'ballooncolortext'     : conf.BALLOONCOLORTEXT }
+        
         self.BalloonLayout = QtGui.QHBoxLayout(self)
 
         self.Layout2 = QtGui.QVBoxLayout()
         self.title_layout = QtGui.QHBoxLayout()
         self.close_button = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "close.png")), "", self)
         self.close_button.setFlat(True)
-        self.connect(self.close_button, QtCore.SIGNAL("clicked()"), self.hide)
-        self.mTitle = QtGui.QLabel("<b>" + title + "</b>")
+        if fake:
+            self.close_button.setDisabled(True)
+        else:
+            self.connect(self.close_button, QtCore.SIGNAL("clicked()"), self.hide)
+        
+        self.mTitle = QtGui.QLabel("<b><font color=" + self.colors['ballooncolortext'] + ">" + self.title + "</font></b>")
         self.mTitle.setPalette(QtGui.QToolTip.palette())
         self.mTitle.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         self.title_layout.addWidget(self.mTitle)
+        if fake:
+            self.title_layout.addSpacing(100)
         self.title_layout.addWidget(self.close_button, 0, QtCore.Qt.AlignRight)
         
-        self.mCaption = QtGui.QLabel(msg)
+        self.mCaption = QtGui.QLabel("<font color=" + self.colors['ballooncolortext'] + ">" + msg + "</font>")
         self.mCaption.setPalette(QtGui.QToolTip.palette())
         self.mCaption.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
 
@@ -743,7 +756,7 @@ class BalloonMessage(QtGui.QWidget):
 
         self.Layout2.addLayout(self.title_layout)
         self.Layout2.addWidget(self.mCaption)
-
+        
         self.BalloonLayout.addLayout(self.Layout2)
 
         if progress:
@@ -765,7 +778,6 @@ class BalloonMessage(QtGui.QWidget):
             self.Layout2.addLayout(self.creds_layout)
 
         self.setAutoFillBackground(True)
-        deskRect = QtCore.QRect(desktop.availableGeometry())
         self.currentAlpha = 0
         self.setWindowOpacity(0.0)
         self.resize(350, 80)
@@ -774,7 +786,7 @@ class BalloonMessage(QtGui.QWidget):
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.timeout)
         self.timer.start(1)
 
-        if timeout:
+        if timeout and not fake:
             self.destroytimer = QtCore.QTimer(self)
             self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy)
             self.destroytimer.start(timeout)
@@ -847,6 +859,8 @@ class BalloonMessage(QtGui.QWidget):
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
 
     def resizeEvent(self, evt):
+        if self.fake:
+            return
         deskRect = QtCore.QRect(desktop.availableGeometry())
         self.up = app.tray.geometry().y() < deskRect.height() / 2
         mask = self.draw()
@@ -860,6 +874,9 @@ class BalloonMessage(QtGui.QWidget):
     def draw(self, paintEvent=False):
         mask = QtGui.QRegion()
 
+        self.mTitle.setText("<b><font color=" + self.colors['ballooncolortext'] + ">" + self.title + "</font></b>")
+        self.mCaption.setText("<font color=" + self.colors['ballooncolortext'] + ">" + self.msg + "</font>")
+        
         path = QtGui.QPainterPath()
         if hasattr(path, "addRoundedRect"):
             path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
@@ -876,6 +893,10 @@ class BalloonMessage(QtGui.QWidget):
         painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 2, QtCore.Qt.SolidLine))
         painter.setClipPath(path)
+        gradient = QtGui.QLinearGradient(0, 0, 0, 100);
+        gradient.setColorAt(0.0, QtGui.QColor(self.colors['ballooncolor']));
+        gradient.setColorAt(1.0, QtGui.QColor(self.colors['ballooncolorgradient']));
+        painter.setBrush(gradient);
         painter.drawPath(path)
         mask = painter.clipRegion()
         if not paintEvent:
@@ -884,7 +905,413 @@ class BalloonMessage(QtGui.QWidget):
 
     def paintEvent(self, evt):
         self.draw(paintEvent=True)
+        
+        
+class Settings(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super(Settings, self).__init__(parent)
 
+        self.registred_selections = {}
+        self.custom_handlers      = {}
+        self.groups               = {}
+        
+        "Registering custom handlers and layouts"
+        
+        self.register_custom_handler('ballooncolors',
+                                     self.create_ballon_custom_layout(),
+                                     self.on_balloon_color_selection)
+        
+        "Fill main dialog with configuration tabs"
+        
+        tabWidget = QtGui.QTabWidget()
+        for tab in conf.settings:
+            tabWidget.addTab(self.createOneTab(tab), 
+                             QtGui.QIcon(os.path.join(conf.IMGDIR, tab['iconfile'])), 
+                             self.tr(tab['tabname']))
+
+        mainLayout = QtGui.QVBoxLayout()
+        mainLayout.addWidget(tabWidget)
+        
+        "Build controls buttons"
+        
+        valid_layout   = QtGui.QHBoxLayout()
+        ok_button      = QtGui.QPushButton(self.tr(_("Ok")))
+        cancel_button  = QtGui.QPushButton(self.tr(_("Cancel")))
+        default_button = QtGui.QPushButton(self.tr(_("Defaults")))
+        
+        ok_button.clicked.connect(self.on_validation)
+        cancel_button.clicked.connect(self.on_cancel)
+        default_button.clicked.connect(self.on_default)
+        
+        valid_layout.addWidget(default_button)
+        valid_layout.addWidget(ok_button)
+        valid_layout.addWidget(cancel_button)
+        mainLayout.addLayout(valid_layout)
+        self.setLayout(mainLayout)
+
+        self.setWindowTitle(self.tr(_("UFO settings")))
+        
+    def createOneTab(self, tab):
+        widget     = QtGui.QWidget()
+        tab_layout = QtGui.QVBoxLayout()
+        
+        for setting in tab['settings']:
+            set_layout = QtGui.QVBoxLayout()
+            set_layout.addWidget(QtGui.QLabel(self.tr(setting['label'])))
+            
+            if setting.has_key('group'):
+                item_tab = setting['group']
+                custom = self.custom_handlers.get(setting['grpid'])
+                for i in item_tab:
+                    self.groups.update({ i['confid'] : setting['grpid'] })
+            else:
+                item_tab = [ setting ]
+                custom = self.custom_handlers.get(setting['confid'])
+                
+            for item in item_tab:
+                if type(item.get('values')) == dict:
+                    
+                    "Here build an exclusive radio button group, and associate"
+                    "one combo box list for each radio button of the group"
+                    
+                    group      = QtGui.QButtonGroup()
+                    val_layout = QtGui.QHBoxLayout()
+                    col_tab    = {}
+                    for col in item['values'].keys():
+                        col_layout = QtGui.QVBoxLayout()
+                        radio      = QtGui.QRadioButton(self.tr(col))
+                        group.addButton(radio)
+                        col_layout.addWidget(radio)
+                        
+                        values = QtGui.QComboBox()
+                        for val in item['values'][col]:
+                            values.addItem(val)
+                            
+                        col_tab.update({ radio : values })
+                        
+                        "Connect items to action slot"
+                        
+                        values.conf_infos = item
+                        values.connect(values, 
+                                       QtCore.SIGNAL("activated(const QString &)"), 
+                                       self.on_selection)
+                        if custom and custom['function']:
+                            values.connect(values, 
+                                           QtCore.SIGNAL("activated(const QString &)"), 
+                                           custom['function'])
+                        
+                        col_layout.addWidget(values)
+                        val_layout.addLayout(col_layout)
+                        
+                    set_layout.addLayout(val_layout)
+                    group.setExclusive(True)
+                    for radio in col_tab.keys():
+                        for combo in col_tab.values():
+                            if col_tab[radio] != combo:
+                                radio.toggled.connect(combo.setDisabled)
+                        
+                        "Set current value"
+                        
+                        if self.get_conf(item['confid']) in item['values'][str(radio.text())]:
+                            radio.setChecked(QtCore.Qt.Checked)
+                            index = item['values'][str(radio.text())].index(self.get_conf(item['confid']))
+                            col_tab[radio].setCurrentIndex(index)
+                        
+                elif type(item.get('values')) == list:
+                    
+                    "Here build a combo box list with list values"
+                    
+                    values = QtGui.QComboBox()
+                    for val in item['values']:
+                        values.addItem(val)
+                    
+                    "Connect items to action slot"
+                    
+                    values.conf_infos = item
+                    values.connect(values, 
+                                   QtCore.SIGNAL("activated(const QString &)"), 
+                                   self.on_selection)
+                    if custom and custom['function']:
+                        values.connect(values, 
+                                       QtCore.SIGNAL("activated(const QString &)"), 
+                                       custom['function'])
+                        
+                    "Set current value"
+                    
+                    values.setCurrentIndex(item['values'].index(self.get_conf(item['confid'])))
+                    
+                    set_layout.addWidget(values)
+                    
+                elif type(item.get('range')) == list:
+                    
+                    "Here build integer value edit with specific range"
+                    
+                    val_layout = QtGui.QHBoxLayout()
+                    spin = QtGui.QSpinBox()
+                    spin.setMinimumWidth(75)
+                    min, max = item['range'][0], item['range'][1]
+                    
+                    interval = int(math.ceil((max - min +1) / 16))
+                    spin.setRange(min, max)
+                    spin.setSingleStep(interval)
+                    slider = QtGui.QSlider(QtCore.Qt.Horizontal)
+                    slider.setFocusPolicy(QtCore.Qt.StrongFocus)
+                    slider.setTickPosition(QtGui.QSlider.TicksBothSides)
+                    slider.setRange(min, max)
+                    slider.setTickInterval(interval)
+                    slider.setSingleStep(interval)
+                    
+                    slider.valueChanged.connect(spin.setValue)
+                    spin.valueChanged.connect(slider.setValue)
+                    
+                    "Set current value"
+                    
+                    current_value = self.get_conf(item['confid'])
+                    if current_value != conf.AUTO_INTEGER:
+                        spin.setValue(current_value)
+                        
+                    "Connect items to action slot"
+                    
+                    spin.conf_infos = item
+                    slider.conf_infos = item
+                    spin.valueChanged.connect(self.on_selection)
+                    if custom and custom['function']:
+                        spin.valueChanged.connect(custom['function'])
+                            
+                    if item.get('autocb') == True:
+                        checkbox = QtGui.QCheckBox(self.tr(_("Auto")))
+                                                
+                        checkbox.conf_infos = item
+                        checkbox.toggled.connect(slider.setDisabled)
+                        checkbox.toggled.connect(spin.setDisabled)
+                        
+                        "Set current value"
+                        
+                        if current_value == conf.AUTO_INTEGER:
+                            checkbox.setChecked(QtCore.Qt.Checked)
+                            
+                        "Connect items to action slot"
+                        
+                        checkbox.toggled.connect(self.on_selection)
+                        if custom and custom['function']:
+                            checkbox.toggled.connect(custom['function'])
+                        
+                        val_layout.addWidget(checkbox)
+                    
+                    val_layout.addWidget(spin)
+                    val_layout.addWidget(slider)
+                    set_layout.addLayout(val_layout)
+                    
+                else:
+                    
+                    "Here build value edit item corresponding to variable type"
+                    
+                    current_value = self.get_conf(item['confid'])
+                    
+                    val_layout = QtGui.QHBoxLayout()
+                    if type(current_value) == bool:
+                        edit   = QtGui.QCheckBox(self.tr(item['short']))
+                        signal = edit.toggled
+                        funct  = self.on_selection
+
+                        "Set current value"
+                        
+                        if current_value:
+                            edit.setChecked(QtCore.Qt.Checked)
+                            
+                    elif type(current_value) == str:
+                        if current_value[0] == '#':
+                            
+                            "Set current value"
+                            
+                            edit = QtGui.QPushButton()
+                            edit.buttonforcolor = True
+                            edit.setAutoFillBackground(True);
+                            edit.setStyleSheet("background-color: " + current_value)
+                            edit.setMaximumWidth(40)
+                            edit.setMaximumHeight(20)
+                            signal = edit.clicked
+                            funct  = self.on_color_selection
+                            
+                            "We will call possible custom function in"
+                            "the color_selection handler"
+                            
+                            if custom and custom['function']:
+                                custom = custom.copy()
+                                custom['function'] = None
+                                
+                            val_layout.addWidget(QtGui.QLabel(self.tr(item['short'] + ":")))
+                        
+                        else:
+                            
+                            "Set current value"
+                            
+                            edit   = QtGui.QLineEdit(current_value)
+                            signal = edit.textChanged
+                            funct  = self.on_selection
+                            
+                    else:
+                        raise Exception("Base type not yet supported")
+                        
+                    if item.get('autocb') == True:
+                        checkbox = QtGui.QCheckBox(self.tr(_("Auto")))
+                        
+                        "Connect items to action slot"
+                        
+                        checkbox.conf_infos = item
+                        checkbox.toggled.connect(self.on_selection)
+                        checkbox.toggled.connect(edit.setDisabled)
+                        if custom and custom['function']:
+                            checkbox.toggled.connect(custom['function'])
+                            
+                        val_layout.addWidget(checkbox)
+                        
+                    "Connect items to action slot"
+                        
+                    edit.conf_infos = item
+                    signal.connect(funct)
+                    if custom and custom['function']:
+                        signal.connect(custom['function'])
+                    
+                    val_layout.addWidget(edit)
+                    set_layout.addLayout(val_layout)
+                    
+            tab_layout.addSpacing(15)
+            tab_layout.addLayout(set_layout)
+            
+            if custom and custom['layout']:
+                tab_layout.addLayout(custom['layout'])
+                
+            tab_layout.addStretch(1)
+        
+        tab_layout.addSpacing(15)
+        widget.setLayout(tab_layout)
+        return widget
+        
+    def on_selection(self, value):
+        control = self.sender()
+
+        if hasattr(control, 'text') and control.text() == _("Auto"):
+            value = conf.get_auto_value(self.get_conf(control.conf_infos['confid']))
+        
+        control.conf_infos.update({ 'value' : value })
+        self.registred_selections.update({ control.conf_infos['confid'] : control.conf_infos })
+    
+    def on_color_selection(self):
+        control = self.sender()
+        
+        color = QtGui.QColorDialog.getColor(QtGui.QColor(self.get_conf(control.conf_infos['confid'])), self)
+        if color.isValid():
+            control.setStyleSheet("background-color: " + str(color.name()))
+            
+            self.on_selection(str(color.name()))
+            if self.groups.get(control.conf_infos['confid']):
+                customid = self.groups[control.conf_infos['confid']]
+            else:
+                customid = control.conf_infos['confid']
+            if self.custom_handlers.get(customid):
+                self.custom_handlers[customid]['function'](str(color.name()))
+        
+    def on_validation(self):
+        if len(self.registred_selections) > 0:
+            yes = _("Yes")
+            no  = _("No")
+            msg = _("Would you validate the following changes ?") + "\n\n"
+            msg += self.get_changes_string()
+            input = dialog_question(_("Settings validation"), msg, button1=yes, button2=no)
+            if input == yes:
+                cp = ConfigParser()
+                cp.read(conf.conf_file)
+                for setting in self.registred_selections.keys():
+                    cp.set(self.registred_selections[setting]['sectid'], 
+                           self.registred_selections[setting]['confid'].upper(),
+                           self.file_writable(self.registred_selections[setting]['value']))
+                cp.write(open(conf.conf_file, "w"))
+                reload(conf)
+                self.accept()
+        self.reject()
+        
+    def on_cancel(self):
+        if len(self.registred_selections) > 0:
+            yes = _("Yes")
+            no  = _("No")
+            msg = _("Would you cancel the following changes ?") + "\n\n"
+            msg += self.get_changes_string()
+            input = dialog_question(_("Cancel changes"), msg, button1=yes, button2=no)
+            if input == yes:
+                self.reject()
+        else:
+            self.reject()
+            
+    def on_default(self):
+        yes = _("Yes")
+        no  = _("No")
+        msg = _("Would you reset all settings to default ?")
+        input = dialog_question(_("Return to default"), msg, button1=yes, button2=no)
+        if input == yes:
+            cp = ConfigParser()
+            cp.read(conf.conf_file)
+            for tab in conf.settings:
+                for setting in tab['settings']:
+                    if setting.has_key('group'):
+                        items = setting['group']
+                    else:
+                        items = [ setting ]
+                    for item in items:
+                        cp.remove_option(item['sectid'], item['confid'])
+            cp.write(open(conf.conf_file, "w"))
+            reload(conf)
+    
+    def get_conf(self, name_id):
+        name_id = name_id.upper()
+        return eval("conf." + name_id)
+        
+    def user_readable(self, value):
+        if type(value) == bool:
+            if value:
+                return _("Activated")
+            else:
+                return _("Disabled")
+        elif (type(value) == int and value == conf.AUTO_INTEGER) or \
+              type(value) == str and value == conf.AUTO_STRING:
+            return "auto"
+        else:
+            return value
+        
+    def file_writable(self, value):
+        if type(value) == bool:
+            return int(value)
+        return value
+        
+    def get_changes_string(self):
+        msg = ""
+        for sel in self.registred_selections.keys():
+            if self.registred_selections[sel]['value'] != self.get_conf(self.registred_selections[sel]['confid']):
+                msg += "    - " + self.registred_selections[sel]['short'] + \
+                       " :\t"    + str(self.user_readable(self.get_conf(sel))) + \
+                       " -> "   + str(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
+        return msg
+
+    def register_custom_handler(self, confid, layout, function):
+        self.custom_handlers.update({ confid : { 'layout'   : layout, 'function' : function }})
+    
+    def on_balloon_color_selection(self, color):
+        control = self.sender()
+        self.balloon_preview.colors[control.conf_infos['confid']] = color
+        self.balloon_preview.repaint()
+    
+    def create_ballon_custom_layout(self):
+        custom_layout = QtGui.QVBoxLayout()
+        self.balloon_preview = BalloonMessage(self, 
+                                              fake  = True, 
+                                              icon  = os.path.join(conf.IMGDIR, "UFO.png"),
+                                              title =_("Message title"), 
+                                              msg   = _("Message contents"))
+        custom_layout.addSpacing(15)
+        custom_layout.addWidget(self.balloon_preview)
+        
+        return custom_layout
+        
 # Globals
 
 def download_file(url, filename, title = _("Downloading"),

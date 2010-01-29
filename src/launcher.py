@@ -26,9 +26,6 @@ import sys
 import os.path as path
 import tempfile
 import urllib
-import shutil
-from shutil import rmtree
-import socket
 import traceback
 import gui
 import updater
@@ -109,23 +106,27 @@ backend.check_process()
 
 if __name__ == "__main__":
     try:
+        if '--settings' in sys.argv:
+            settings = gui.Settings()
+            settings.show()
+            print settings.exec_()
+            sys.exit(1)
+            
         backend.run()
     except Exception, e:
-        import gui
         trace = traceback.format_exc()
         logging.debug(trace)
         if gui.dialog_error_report(_("Error"),
                                    _("UFO a encountered a fatal error and will now be closed.") + "\n" + \
                                    _("You can help fixing this problem by submitting an error report"),
                                    _("Send a report"), trace):
-            import urllib
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
-            try:
-                urllib.urlopen(conf.REPORTURL, params)
-            except:
-                pass
+        try:
+            urllib.urlopen(conf.REPORTURL, params)
+        except:
+            pass
 
-    try:
-        shutil.copy(log_path, os.path.join(os.path.dirname(log_path), "last_log.log"))
-    except: pass
+        try:
+            shutil.copy(log_path, os.path.join(os.path.dirname(log_path), "last_log.log"))
+        except: pass
 
