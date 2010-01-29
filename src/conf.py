@@ -205,8 +205,7 @@ OVERLAYFILE  = make_path(DATA_DIR, OVERLAYFILE)
 BOOTDISK = make_path(DATA_DIR, BOOTDISK)
 
 try:
-    # gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE], unicode=True).install()
-    gettext.install('vlaunch', path.join(DATA_DIR, "locale2"), languages=[LANGUAGE], unicode=True)
+    gettext.install('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE], unicode=True)
 except:
     print "Could find a translation for " + LANGUAGE
     print "Available translations", gettext.find("vlaunch", all=1)
