@@ -2,7 +2,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -25,6 +25,9 @@ from optparse import OptionParser
 import utils
 import gettext
 
+AUTO_INTEGER = -1
+AUTO_STRING  = "auto"
+    
 path.supports_unicode_filenames = True
 
 if sys.platform == "darwin" and getattr(sys, "frozen", None):
@@ -44,16 +47,18 @@ parser.add_option("-r", "--respawn", dest="respawn", default=False,
                   action="store_true", help="tells the launcher that it has been respawned ")
 parser.add_option("--relaunch", dest="relaunch", default="",
                   help="tells the launcher the program to relaunch")
+parser.add_option("-s", "--settings", dest="settings", default=False,
+                  action="store_true", help="launch only settings dialog")
 (options, args) = parser.parse_args(args=args)
 
 STATUS_NORMAL = 0
 STATUS_IGNORE = 1
-STATUS_GUEST = 2
-STATUS_EXIT = 3
+STATUS_GUEST  = 2
+STATUS_EXIT   = 3
 
 NET_LOCAL = 0
-NET_HOST = 1
-NET_NAT = 2
+NET_HOST  = 1
+NET_NAT   = 2
 
 config = \
     {
@@ -85,7 +90,11 @@ config = \
           "livecd" : 0,
           "hostkey" : 0,
           "autofullscreen" : False,
-          "language" : "en"
+          "autominimize" : True,
+          "language" : "en",
+          "ballooncolor" : "#FFFFE7",
+          "ballooncolorgradient" : "#FFFFE7",
+          "ballooncolortext" : "#000000"
         },
       "rawdisk" :
         {
@@ -102,7 +111,7 @@ config = \
           "nettype" : 2,
           "hostnet" : "",
           "macaddr" : "",
-          "ramsize" : "auto",
+          "ramsize" : AUTO_INTEGER,
           "minram" : 256,
           "kioskmode" : 0,
           "driverank" : 0,
@@ -113,9 +122,8 @@ config = \
           "bootdiskuuid" : "",
           "bootfloppy" : ".VirtualBox/Images/UFO-VirtualBox-boot.img",
           "bootiso" : "",
-          "cpus" : "1",
-          "width" : "800",
-          "height" : "600",
+          "cpus" : 1,
+          "resolution" : "800x600",
           "pae" : True,
           "vt" : True,
           "nestedpaging" : True,
@@ -212,3 +220,132 @@ except:
     print "Available translations", gettext.find("vlaunch", localedir=path.join(DATA_DIR, "locale"), all=1), "in", path.join(DATA_DIR, "locale")
     gettext.install('vlaunch')
 
+
+"""
+Here is a dictionary based model to represent settings dialog window.
+
+Available settings are organized in many main tabs (categories),
+each one contains a list of settings or group of settings (one setting
+for one configuration variable)
+
+"""
+
+resolutionValues = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600', '640x480'],
+                     '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
+
+languageValues = [ 'fr', 'en']
+
+settings = \
+    [ 
+      { 'tabname'  : _("Behavior"),
+        'iconfile' : "behavior.png",     
+        'settings' : 
+          [ 
+            { 'confid' : "resolution",
+              'sectid' : "vm",
+              'short'  : _("Window resolution"),
+              'label'  : _("Choose the starting resolution of the window.\n" + 
+                           "Note that if the chosen resolution is higher or equal\n" + 
+                           "than the computer one, the window will be displayed in\n" +
+                           "fullscreen mode."),
+              'values' : resolutionValues 
+            },
+            { 'confid' : "autofullscreen",
+              'sectid' : "launcher",
+              'short'  : _("Fullscreen automatic"),
+              'label'  : _("Enable this option if you want the window switch to \n" +
+                           "fullscreen mode at login.")
+            },
+            { 'confid' : "autominimize",
+              'sectid' : "launcher",
+              'short'  : _("Minimize automatic"),
+              'label'  : _("Enable this option if you want the window switch to \n" +
+                           "minimized mode at startup and shutdown.")
+            }
+          ]
+      },
+      { 'tabname'  : _("Appearance"),
+        'iconfile' : "graphics.png", 
+        'settings' : 
+          [ 
+            { 'confid' : "language",
+              'sectid' : "launcher",
+              'short'  : _("Language"),
+              'label'  : _("Choose your language."),
+              'values' : languageValues
+            },
+            { 'grpid'  : "ballooncolors",
+              'group'  : [ 
+                           { 'confid' : "ballooncolor",
+                             'sectid' : "launcher",
+                             'short'  : _("Balloon top color")
+                           },
+                           { 'confid' : "ballooncolorgradient",
+                             'sectid' : "launcher",
+                             'short'  : _("Balloon bottom color")
+                           },
+                           { 'confid' : "ballooncolortext",
+                             'sectid' : "launcher",
+                             'short'  : _("Balloon text color")
+                           }
+                         ],
+              'label'  : _("Customize colors of the balloon message window. \n" + \
+                           "Use different collors for top and bottom to get a \n" + \
+                           "color gradient")
+            }
+          ]
+      },
+      { 'tabname'  : _("Advanced"),
+        'iconfile' : "advanced.png",
+        'settings' : 
+          [ 
+            { 'confid' : "ramsize",
+              'sectid' : "vm",
+              'short'  : _("Memory"),
+              'label'  : _("Set the size of the virtual machine memory."),
+              'range'  : [MINRAM, 4096],
+              'autocb' : True
+            },
+            { 'confid' : "cpus",
+              'sectid' : "vm",
+              'short'  : _("CPU number"),
+              'label'  : _("Set the number of cpus connected to the virtual machine."),
+              'range'  : [1, 16],
+              'autocb' : True
+            },
+            { 'confid' : "accel3d",
+              'sectid' : "vm",
+              'short'  : _("3D acceleration"),
+              'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n" + \
+                           "availability of this feature depends of the host computer\n" + \
+                           "3D device"),
+            },
+            { 'grpid'  : "virtext",
+              'group'  : [ 
+                           { 'confid' : "vt",
+                             'sectid' : "vm",
+                             'short'  : _("VT-x/AMD-V")
+                           },
+                           { 'confid' : "nestedpaging",
+                             'sectid' : "vm",
+                             'short'  : _("Nested paging")
+                           }
+                         ],
+              'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n" + \
+                           "extentions are enabled, availability of this feature depends\n" + \
+                           "of the host computer cpu properties.")
+            }
+          ]
+      }
+    ]
+        
+def get_auto_value(type_instance):
+    assert type(type_instance) != bool
+    
+    if type(type_instance) == int:
+        return AUTO_INTEGER
+    elif type(type_instance) == str:
+        return AUTO_STRING
+
+def get_default_value(section, id):
+    return config[section][id]

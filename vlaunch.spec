@@ -124,6 +124,10 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/updater-install.png
 %{TARGET_PATH}/.data/images/animated-bar.mng
 %{TARGET_PATH}/.data/images/UFO.svg
+%{TARGET_PATH}/.data/images/advanced.png
+%{TARGET_PATH}/.data/images/graphics.png
+%{TARGET_PATH}/.data/images/personal.png
+%{TARGET_PATH}/.data/images/behavior.png
 %{TARGET_PATH}/.data/images/UFO.png
 %{TARGET_PATH}/.data/images/credentials.png
 %{TARGET_PATH}/.data/images/close.png

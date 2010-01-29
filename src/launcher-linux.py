@@ -2,7 +2,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -23,5 +23,5 @@ import sys
 from os.path import realpath, join, dirname
 
 bindir = join(realpath(dirname(sys.argv[0])), "bin")
-sys.path.insert(0, bindir)         
+sys.path.insert(0, bindir)
 execfile(join(bindir, "launcher.py"))
