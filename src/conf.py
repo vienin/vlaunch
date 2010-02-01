@@ -244,22 +244,22 @@ settings = \
             { 'confid' : "resolution",
               'sectid' : "vm",
               'short'  : _("Window resolution"),
-              'label'  : _("Choose the starting resolution of the window.\n" + 
-                           "Note that if the chosen resolution is higher or equal\n" + 
-                           "than the computer one, the window will be displayed in\n" +
+              'label'  : _("Choose the starting resolution of the window.\n"
+                           "Note that if the chosen resolution is higher or equal\n"
+                           "than the computer one, the window will be displayed in\n"
                            "fullscreen mode."),
               'values' : resolutionValues 
             },
             { 'confid' : "autofullscreen",
               'sectid' : "launcher",
               'short'  : _("Fullscreen automatic"),
-              'label'  : _("Enable this option if you want the window switch to \n" +
+              'label'  : _("Enable this option if you want the window switch to \n"
                            "fullscreen mode at login.")
             },
             { 'confid' : "autominimize",
               'sectid' : "launcher",
               'short'  : _("Minimize automatic"),
-              'label'  : _("Enable this option if you want the window switch to \n" +
+              'label'  : _("Enable this option if you want the window switch to \n"
                            "minimized mode at startup and shutdown.")
             }
           ]
@@ -289,8 +289,8 @@ settings = \
                              'short'  : _("Balloon text color")
                            }
                          ],
-              'label'  : _("Customize colors of the balloon message window. \n" + \
-                           "Use different collors for top and bottom to get a \n" + \
+              'label'  : _("Customize colors of the balloon message window. \n"
+                           "Use different collors for top and bottom to get a \n"
                            "color gradient")
             }
           ]
@@ -316,8 +316,8 @@ settings = \
             { 'confid' : "accel3d",
               'sectid' : "vm",
               'short'  : _("3D acceleration"),
-              'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n" + \
-                           "availability of this feature depends of the host computer\n" + \
+              'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n"
+                           "availability of this feature depends of the host computer\n"
                            "3D device"),
             },
             { 'grpid'  : "virtext",
@@ -331,8 +331,8 @@ settings = \
                              'short'  : _("Nested paging")
                            }
                          ],
-              'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n" + \
-                           "extentions are enabled, availability of this feature depends\n" + \
+              'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n"
+                           "extentions are enabled, availability of this feature depends\n"
                            "of the host computer cpu properties.")
             }
           ]
