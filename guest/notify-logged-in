@@ -3,13 +3,4 @@
 runlevel=`runlevel | cut -d " " -f 2`
 [ "$runlevel" != "4" ] && exit
 
-# Signal that user is logged in and ready to answer to usb connections
-pgrep -f /usr/libexec/notification-area-applet
-ready=$?
-while [ $ready -ne 0 ]
-do
-    pgrep -f /usr/libexec/notification-area-applet 2> /dev/null
-    ready=$?
-done
-sleep 5
 /usr/bin/VBoxControl -nologo guestproperty set "/UFO/State" "LOGGED_IN"
