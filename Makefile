@@ -3,7 +3,7 @@ VERSION=0.9
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
         guest/toggle-fullscreen* guest/notify-logged-in* \
-        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png \
+        graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png graphics/VolumeIcon-OS-trick \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png graphics/settings.png graphics/about.png \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png\
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
@@ -36,7 +36,7 @@ install: generate-mo
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
 	mkdir -p $(DESTDIR)/usr/share/locale
 
-	python -c "open(\"$(DESTDIR)$(TARGET_PATH)/._\xef\x80\xa9\", \"w\").write(open(\"/home/bob/dev/chicoutimi.git/tools/generate_key/VolumeIcon-OS-trick\").read())"
+	python -c "open(\"$(DESTDIR)$(TARGET_PATH)/._\xef\x80\xa9\", \"w\").write(open(\"VolumeIcon-OS-trick\").read())"
 
 	for lang in `ls locale`; \
 	do \
@@ -83,9 +83,7 @@ install: generate-mo
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
 	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py keyring_ctypes.py conf.py utils.py ask-password ufo_subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
-	# cp VolumeIcon-OS-trick $(DESTDIR)$(TARGET_PATH)/
-	# pushd . && cd $(DESTDIR)$(TARGET_PATH) && python -c "import os; os.rename('VolumeIcon-OS-trick', '._\xef\x80\xa9')" && popd
-	
+
 	# installs Boot Iso
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Isos
 	cp UFO-VirtualBox-boot.img $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Images/UFO-VirtualBox-boot.img
