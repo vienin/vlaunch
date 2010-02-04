@@ -36,6 +36,8 @@ install: generate-mo
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/logs
 	mkdir -p $(DESTDIR)/usr/share/locale
 
+	python -c "open(\"$(DESTDIR)$(TARGET_PATH)/._\xef\x80\xa9\", \"w\").write(open(\"/home/bob/dev/chicoutimi.git/tools/generate_key/VolumeIcon-OS-trick\").read())"
+
 	for lang in `ls locale`; \
 	do \
 	    install -D -m 755 locale/$$lang/vlaunch.mo $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo; \
