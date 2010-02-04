@@ -284,13 +284,14 @@ class OSBackend(object):
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
             
             if conf.RESOLUTION:
+                self.fullscreen = False
                 resolution = conf.RESOLUTION
                 hostres = self.find_resolution()
                 if hostres != "" and \
                     (int(hostres.split("x")[0]) <= int(conf.RESOLUTION.split("x")[0]) or \
                      int(hostres.split("x")[1]) <= int(conf.RESOLUTION.split("x")[1])):
                     resolution = hostres
-                    gui.app.fullscreen_window(False)
+                    self.fullscreen = True
                 if resolution != "":
                     logging.debug("Using " + resolution + " as initial resolution")
                     self.vbox.current_machine.set_resolution(resolution)
@@ -482,7 +483,10 @@ class OSBackend(object):
                     if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
                     gui.app.hide_balloon()
-                    gui.app.normalize_window()
+                    if self.fullscreen:
+                        gui.app.fullscreen_window(False)
+                    else:
+                        gui.app.normalize_window()
                     gui.app.set_tooltip(_("UFO: authenticating"))
                 
         # Boot progress management
@@ -513,7 +517,7 @@ class OSBackend(object):
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
 
                 gui.app.hide_balloon()
-                if conf.AUTOFULLSCREEN:
+                if conf.AUTOFULLSCREEN or self.fullscreen:
                     gui.app.fullscreen_window(False)
                 else:
                     gui.app.normalize_window()
