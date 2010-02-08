@@ -542,7 +542,6 @@ class OSBackend(object):
     def onMachineStateChange(self, state):
 
         last_state = self.vbox.current_machine.last_state
-        print str(last_state) + ":" + str(state)
         if state == self.vbox.constants.MachineState_Running and \
            last_state == self.vbox.constants.MachineState_Starting:
             

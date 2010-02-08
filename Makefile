@@ -113,7 +113,7 @@ install: generate-mo
 	
 generate-pot:
 	pygettext.py -d vlaunch src
-	xgettext --from-code UTF-8 -d vlaunch-guest -L Shell guest/vbox-client-symlink
+	xgettext --from-code UTF-8 -o vlaunch-guest.pot -d vlaunch-guest -L Shell guest/vbox-client-symlink
 
 update-po: generate-pot
 	msgmerge -U locale/fr_FR/vlaunch.po vlaunch.pot

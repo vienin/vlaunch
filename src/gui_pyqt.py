@@ -42,12 +42,27 @@ class QtUFOGui(QtGui.QApplication):
         self.callbacks_timer = None
         self.console_window  = None
         self.console_winid   = 0
-
+        
+        self.menu = QtGui.QMenu()
+        action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
+                                     QtCore.QString(_("About")), self);
+        action_about.setStatusTip(_("Get informations about UFO"))
+        action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
+                                        QtCore.QString(_("Settings...")), self);
+        action_settings.setStatusTip(_("Configure the UFO launcher"))
+        
+        self.menu.addAction(action_about)
+        self.menu.addAction(action_settings)
+        self.connect(action_about, QtCore.SIGNAL("triggered()"), self.about)
+        self.connect(action_settings, QtCore.SIGNAL("triggered()"), self.settings)
+        
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
     
     def event(self, event):
         if isinstance(event, SetTrayIconEvent):
             self.tray = TrayIcon()
+            if sys.platform != "darwin":
+                self.tray.setContextMenu(self.menu)
 
         elif isinstance(event, DownloadFinishedEvent):
             event.callback(event.error)
@@ -258,6 +273,19 @@ class QtUFOGui(QtGui.QApplication):
         
     def process_gui_events(self):
         self.processEvents()
+    
+    def about(self):
+        QtGui.QMessageBox.about(None, 
+                                QtCore.QString(_("About the UFO launcher")),
+                                QtCore.QString(_("Version ") + str(conf.VERSION) + 
+                                               "<br><br>Copyright (C) 2010 Agorabox<br><br>" +
+                                               _("For more information, please visit") + " http://ufo.agorabox.org"))
+    
+    def settings(self):
+        self.settings = Settings()
+        self.settings.show()
+        self.settings.exec_()
+        del self.settings
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -626,21 +654,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setIcon(QtGui.QApplication.windowIcon())
         self.setVisible(True)
         
-        self.menu = QtGui.QMenu()
-        self.action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
-                                          QtCore.QString(_("About")), self);
-        self.action_about.setStatusTip(_("Get informations about UFO"))
-        self.action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
-                                             QtCore.QString(_("Settings...")), self);
-        self.action_settings.setStatusTip(_("Configure the UFO launcher"))
-        
-        self.connect(self.action_about, QtCore.SIGNAL("triggered()"), self.about);
-        self.connect(self.action_settings, QtCore.SIGNAL("triggered()"), self.settings);
-        
-        self.menu.addAction(self.action_about)
-        self.menu.addAction(self.action_settings)
-        self.setContextMenu(self.menu)
-        
         self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"), self.activate)
         self.progress  = None
         self.balloon   = None
@@ -684,18 +697,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         elif reason != QtGui.QSystemTrayIcon.Context:
             if self.balloon:
                 self.balloon.show()
-                
-    def about(self):
-        QtGui.QMessageBox.about(main, 
-                                QtCore.QString(_("About the UFO launcher")),
-                                QtCore.QString(_("Version ") + str(conf.VERSION) + 
-                                               "<br><br>Copyright (C) 2009 Agorabox<br><br>" +
-                                               _("For more information, please visit") + " http://ufo.agorabox.org"))
-
-    def settings(self):
-        settings = Settings()
-        settings.show()
-        settings.exec_()
         
 
 class BalloonMessage(QtGui.QWidget):
@@ -1218,8 +1219,10 @@ class Settings(QtGui.QDialog):
             no  = _("No")
             msg = _("Would you validate the following changes ?") + "\n\n"
             msg += self.get_changes_string()
-            input = dialog_question(_("Settings validation"), msg, button1=yes, button2=no)
-            if input == yes:
+            # TODO: Spawn confiramagtion dialog, the following code is bugged on MacOs,
+            #       the settings dialog is re-shown at shutdown when ballon is shown...
+            # input = dialog_question(_("Settings validation"), msg, button1=yes, button2=no)
+            if True: #if input == yes:
                 cp = ConfigParser()
                 cp.read(conf.conf_file)
                 for setting in self.registred_selections.keys():
@@ -1228,7 +1231,12 @@ class Settings(QtGui.QDialog):
                            self.file_writable(self.registred_selections[setting]['value']))
                 cp.write(open(conf.conf_file, "w"))
                 reload(conf)
+                self.setVisible(False)
+                self.close()
                 self.accept()
+
+        self.setVisible(False)
+        self.close()
         self.reject()
         
     def on_cancel(self):
@@ -1237,18 +1245,22 @@ class Settings(QtGui.QDialog):
             no  = _("No")
             msg = _("Would you cancel the following changes ?") + "\n\n"
             msg += self.get_changes_string()
-            input = dialog_question(_("Cancel changes"), msg, button1=yes, button2=no)
-            if input == yes:
+            # input = dialog_question(_("Cancel changes"), msg, button1=yes, button2=no)
+            if True: #if input == yes:
+                self.setVisible(False)
+                self.close() 
                 self.reject()
         else:
+            self.setVisible(False)
+            self.close()
             self.reject()
             
     def on_default(self):
         yes = _("Yes")
         no  = _("No")
         msg = _("Would you reset all settings to default ?")
-        input = dialog_question(_("Return to default"), msg, button1=yes, button2=no)
-        if input == yes:
+        # input = dialog_question(_("Return to default"), msg, button1=yes, button2=no)
+        if True: # if input == yes:
             cp = ConfigParser()
             cp.read(conf.conf_file)
             for tab in conf.settings:
@@ -1261,6 +1273,9 @@ class Settings(QtGui.QDialog):
                         cp.remove_option(item['sectid'], item['confid'])
             cp.write(open(conf.conf_file, "w"))
             reload(conf)
+            self.setVisible(False)
+            self.close()
+            self.accept()
     
     def get_conf(self, name_id):
         name_id = name_id.upper()
@@ -1420,3 +1435,6 @@ desktop = QtGui.QApplication.desktop()
 screenRect = desktop.screenGeometry(desktop.primaryScreen())
 main = QtGui.QMainWindow(desktop)
 main.resize(screenRect.width(), screenRect.height())
+
+if sys.platform == "darwin":
+    QtGui.qt_mac_set_dock_menu(app.menu)
