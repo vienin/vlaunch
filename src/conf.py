@@ -214,7 +214,6 @@ BOOTDISK = make_path(DATA_DIR, BOOTDISK)
 
 try:
     gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE]).install()
-    gettext.install('vlaunch', localedir=path.join(DATA_DIR, "locale"), unicode=True)
 except:
     print "Could find a translation for " + LANGUAGE
     print "Available translations", gettext.find("vlaunch", localedir=path.join(DATA_DIR, "locale"), all=1), "in", path.join(DATA_DIR, "locale")
