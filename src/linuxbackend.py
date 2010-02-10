@@ -124,6 +124,18 @@ class LinuxBackend(OSBackend):
 
     def find_device_by_model(self, dev_model):
         return ""
+        
+    def find_device_by_path(self, path):
+        mounts = open('/proc/mounts', 'r').readlines()
+        for mount in reversed(mounts):
+            splitted = mount.split(" ")
+            l = len(splitted)
+            if l > 6:
+                splitted = splitted[:1] + " ".join(splitted[1:l - 5 + 1]) + splitted[-4:]
+            dev, mountpoint, type, options, opt1, opt2 = splitted
+            if path.startswith(mountpoint):
+                return dev[:-1]
+        return ""
 
     def prepare_device(self, disk):
         self.call(["umount", disk + "3"])
