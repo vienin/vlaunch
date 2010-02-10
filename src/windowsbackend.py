@@ -178,7 +178,18 @@ class WindowsBackend(OSBackend):
             except:
                 logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
 
-    def find_device_by_uuid(self, dev_uuid):
+    def find_device_by_volume(self, dev_volume):
+        logical_disks = self.WMI.Win32_LogicalDisk (VolumeSerialNumber = dev_volume)
+        if not logical_disks:
+            return ""
+        
+        partitions = logical_disks[0].associators(wmi_association_class="Win32_LogicalDiskToPartition")
+        if not partitions:
+            return ""
+        
+        disks = partitions[0].associators(wmi_result_class="Win32_DiskDrive")
+        if len(disks) > 0:
+            return disks[0].Name
         return ""
 
     def get_device_parts(self, device_name):
@@ -217,7 +228,20 @@ class WindowsBackend(OSBackend):
         if len(disks) > 0:
             return disks[0].Name
         return ""
-              
+
+    def find_device_by_path(self, path):
+        logical_disks = self.WMI.Win32_LogicalDisk (DriveType = 2)
+        for logical_disk in logical_disks:
+            if path.startswith(logical_disk.Caption):
+                partitions = logical_disk.associators(wmi_association_class="Win32_LogicalDiskToPartition")
+                if not partitions:
+                    return ""
+        
+                disks = partitions[0].associators(wmi_result_class="Win32_DiskDrive")
+                if len(disks) > 0:
+                    return disks[0].Name
+        return ""
+
     def prepare_device(self, dev):
         pass
 

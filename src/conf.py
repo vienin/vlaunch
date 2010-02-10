@@ -101,7 +101,7 @@ config = \
           "dev" : "",
           "parts" : "all",
           "rootuuid" : "",
-          "volume" : "UFO",
+          "volume" : "",
           "model" : ""
         },
       "vm" :
@@ -213,7 +213,7 @@ OVERLAYFILE  = make_path(DATA_DIR, OVERLAYFILE)
 BOOTDISK = make_path(DATA_DIR, BOOTDISK)
 
 try:
-    gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE]).install()
+    gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE]).install(unicode=True)
 except:
     print "Could find a translation for " + LANGUAGE
     print "Available translations", gettext.find("vlaunch", localedir=path.join(DATA_DIR, "locale"), all=1), "in", path.join(DATA_DIR, "locale")
@@ -346,5 +346,7 @@ def get_auto_value(type_instance):
     elif type(type_instance) == str:
         return AUTO_STRING
 
-def get_default_value(section, id):
-    return config[section][id]
+def get_default_value(id):
+    for k, v in config.items():
+        if id in v:
+            return v[id]

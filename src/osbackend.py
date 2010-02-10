@@ -389,7 +389,7 @@ class OSBackend(object):
                 conf.DEV = self.find_device_by_uuid(conf.ROOTUUID)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
-            if conf.VOLUME:
+            if conf.VOLUME != conf.get_default_value("volume"):
                 conf.DEV = self.find_device_by_volume(conf.VOLUME)
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
@@ -398,6 +398,10 @@ class OSBackend(object):
                 if conf.DEV != "":
                     return conf.STATUS_NORMAL
             if not conf.LIVECD:
+                conf.DEV = self.find_device_by_path(conf.SCRIPT_PATH)
+                if conf.DEV != "":
+                    return conf.STATUS_NORMAL
+                
                 input = gui.dialog_question(title=_("Warning"),
                                          msg=_("Could not find an UFO key, try again ?"),
                                          button1=_("Yes"),
