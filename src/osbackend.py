@@ -152,6 +152,9 @@ class OSBackend(object):
                                  "remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen," +
                                  "showRuntimeError.warning.HostAudioNotResponding")
 
+        if not conf.MENUBAR:
+            self.vbox.set_extra_data("GUI/Customizations", "noMenuBar")
+            
         self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
         # self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")

@@ -127,7 +127,8 @@ config = \
           "pae" : True,
           "vt" : True,
           "nestedpaging" : True,
-          "accel3d" : True
+          "accel3d" : True,
+          "menubar" : False
         },
       "guest" :
         {
@@ -272,6 +273,11 @@ settings = \
               'short'  : _("Language"),
               'label'  : _("Choose your language."),
               'values' : languageValues
+            },
+            { 'confid' : "menubar",
+              'sectid' : "vm",
+              'short'  : _("Menu bar"),
+              'label'  : _("Display/hide the window menu bar."),
             },
             { 'grpid'  : "ballooncolors",
               'group'  : [ 
