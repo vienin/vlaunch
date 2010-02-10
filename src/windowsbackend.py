@@ -229,18 +229,14 @@ class WindowsBackend(OSBackend):
             return disks[0].Name
         return ""
 
-    def find_device_by_path(self, path):
-        logical_disks = self.WMI.Win32_LogicalDisk (DriveType = 2)
-        for logical_disk in logical_disks:
-            if path.startswith(logical_disk.Caption):
-                partitions = logical_disk.associators(wmi_association_class="Win32_LogicalDiskToPartition")
-                if not partitions:
-                    return ""
-        
-                disks = partitions[0].associators(wmi_result_class="Win32_DiskDrive")
-                if len(disks) > 0:
-                    return disks[0].Name
-        return ""
+    def get_disk_from_partition(self, part):
+        partitions = part.associators(wmi_association_class="Win32_LogicalDiskToPartition")
+        if not partitions:
+            return ""
+
+        disks = partitions[0].associators(wmi_result_class="Win32_DiskDrive")
+        if len(disks) > 0:
+            return disks[0].Name
 
     def prepare_device(self, dev):
         pass
@@ -324,7 +320,8 @@ class WindowsBackend(OSBackend):
     def get_usb_devices(self):
         logical_disks = self.WMI.Win32_LogicalDisk (DriveType = 2)
         return [[logical_disk.Caption + '\\',
-                  str(logical_disk.Caption) + str("_") + str(logical_disk.VolumeName)] for logical_disk in logical_disks ]
+                  str(logical_disk.Caption) + str("_") + str(logical_disk.VolumeName),
+                  self.get_disk_from_partition(logical_disk) ] for logical_disk in logical_disks ]
 
     def get_usb_sticks(self):
         disks = self.WMI.Win32_DiskDrive()

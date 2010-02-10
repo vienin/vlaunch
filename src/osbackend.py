@@ -644,6 +644,13 @@ class OSBackend(object):
 
         gui.app.process_gui_events()
 
+    def find_device_by_path(self, path):
+        usbs = self.get_usb_devices()
+        for usb in usbs:
+            if path.startswith(usb[0]):
+                return usb[2]
+        return ""
+
     def check_usb_devices(self):
         # manage removable media shared folders
         usb_devices = self.get_usb_devices()
