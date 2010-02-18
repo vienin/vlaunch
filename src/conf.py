@@ -128,7 +128,8 @@ config = \
           "vt" : True,
           "nestedpaging" : True,
           "accel3d" : True,
-          "menubar" : False
+          "menubar" : False,
+          "rootvdi" : ""
         },
       "guest" :
         {
@@ -212,6 +213,7 @@ BOOTISO = make_path(DATA_DIR, BOOTISO)
 SWAPFILE  = make_path(DATA_DIR, SWAPFILE)
 OVERLAYFILE  = make_path(DATA_DIR, OVERLAYFILE)
 BOOTDISK = make_path(DATA_DIR, BOOTDISK)
+ROOTVDI = make_path(DATA_DIR, ROOTVDI)
 
 try:
     gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE]).install(unicode=True)

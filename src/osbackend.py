@@ -175,7 +175,10 @@ class OSBackend(object):
             return
 
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
-        if conf.VMDK and create_vmdk:
+        if conf.ROOTVDI:
+            self.vbox.current_machine.attach_harddisk(conf.ROOTVDI, conf.DRIVERANK)
+        
+        elif conf.VMDK and create_vmdk:
             rank = conf.DRIVERANK
             if conf.LIVECD:
                 rank += 1
