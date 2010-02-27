@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-02-01 18:22+CET\n"
+"POT-Creation-Date: 2010-02-24 16:23+CET\n"
 "PO-Revision-Date: 2010-01-18 09:20+CET\n"
 "Last-Translator: Sylvain Baubeau <sylvain.baubeau@agorabox.org>\n"
 "Language-Team: Agorabox <translations@agorabox.org>\n"
@@ -14,15 +14,15 @@ msgstr ""
 "Content-Transfer-Encoding: UTF-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: src/conf.py:240
+#: src/conf.py:244
 msgid "Behavior"
 msgstr "Comportement"
 
-#: src/conf.py:246
+#: src/conf.py:250
 msgid "Window resolution"
 msgstr "Résolution de la fenêtre"
 
-#: src/conf.py:247
+#: src/conf.py:251
 msgid ""
 "Choose the starting resolution of the window.\n"
 "Note that if the chosen resolution is higher or equal\n"
@@ -34,11 +34,11 @@ msgstr ""
 "égale à celle de l'ordinateur, la fenêtre sera affichée\n"
 "en mode plein écran."
 
-#: src/conf.py:255
+#: src/conf.py:259
 msgid "Fullscreen automatic"
 msgstr "Plein écran automatique"
 
-#: src/conf.py:256
+#: src/conf.py:260
 msgid ""
 "Enable this option if you want the window switch to \n"
 "fullscreen mode at login."
@@ -46,11 +46,11 @@ msgstr ""
 "Activez cette option si vous voulez que la fenêtre soit\n"
 "affichée en mode plein écran à l'arrivée au bureau."
 
-#: src/conf.py:261
+#: src/conf.py:265
 msgid "Minimize automatic"
 msgstr "Réduction automatique"
 
-#: src/conf.py:262
+#: src/conf.py:266
 msgid ""
 "Enable this option if you want the window switch to \n"
 "minimized mode at startup and shutdown."
@@ -58,31 +58,39 @@ msgstr ""
 "Activez cette option si vous voulez que la fenêtre soit\n"
 "réduite durant les étapes de démarage et de fermeture."
 
-#: src/conf.py:267
+#: src/conf.py:271
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/conf.py:273
+#: src/conf.py:277
 msgid "Language"
 msgstr "Langue"
 
-#: src/conf.py:274
+#: src/conf.py:278
 msgid "Choose your language."
 msgstr "Choississez la langue"
 
-#: src/conf.py:281
+#: src/conf.py:283
+msgid "Menu bar"
+msgstr "Barre de menu"
+
+#: src/conf.py:284
+msgid "Display/hide the window menu bar."
+msgstr "Afficher/cacher la barre de menu"
+
+#: src/conf.py:290
 msgid "Balloon top color"
 msgstr "Couleur du haut"
 
-#: src/conf.py:285
+#: src/conf.py:294
 msgid "Balloon bottom color"
 msgstr "Couleur du bas"
 
-#: src/conf.py:289
+#: src/conf.py:298
 msgid "Balloon text color"
 msgstr "Couleur du texte"
 
-#: src/conf.py:292
+#: src/conf.py:301
 msgid ""
 "Customize colors of the balloon message window. \n"
 "Use different collors for top and bottom to get a \n"
@@ -92,35 +100,35 @@ msgstr ""
 "Utilisez des couleurs différentes pour le haut et\n"
 "le bas pour obtenir un dégradé de couleur"
 
-#: src/conf.py:298
+#: src/conf.py:307
 msgid "Advanced"
 msgstr "Avancé"
 
-#: src/conf.py:304
+#: src/conf.py:313
 msgid "Memory"
 msgstr "Memoire vive"
 
-#: src/conf.py:305
+#: src/conf.py:314
 msgid "Set the size of the virtual machine memory."
 msgstr ""
 "Spécifiez la taille de la mémoire vive de\n"
 "la machine virtuelle"
 
-#: src/conf.py:311
+#: src/conf.py:320
 msgid "CPU number"
 msgstr "Nombre de processeurs"
 
-#: src/conf.py:312
+#: src/conf.py:321
 msgid "Set the number of cpus connected to the virtual machine."
 msgstr ""
 "Spécifiez le nombre de processeurs de la machine\n"
 "virtuelle"
 
-#: src/conf.py:318
+#: src/conf.py:327
 msgid "3D acceleration"
 msgstr "Accélération 3D"
 
-#: src/conf.py:319
+#: src/conf.py:328
 msgid ""
 "Set the 3D acceleration capability. Even if 3D is enabled,\n"
 "availability of this feature depends of the host computer\n"
@@ -130,15 +138,15 @@ msgstr ""
 "la disponibilité de cette fonctionalité dépend du matériel\n"
 "de l'ordinateur"
 
-#: src/conf.py:327
+#: src/conf.py:336
 msgid "VT-x/AMD-V"
 msgstr "VT-x/AMD-V"
 
-#: src/conf.py:331
+#: src/conf.py:340
 msgid "Nested paging"
 msgstr "Pagination enchevêtrée"
 
-#: src/conf.py:334
+#: src/conf.py:343
 msgid ""
 "Set the virtualization extentions. Even if virtualizatuion\n"
 "extentions are enabled, availability of this feature depends\n"
@@ -188,7 +196,7 @@ msgid "Download"
 msgstr "Télécharger"
 
 #: src/gui_pyqt.py:543 src/gui_pyqt.py:596 src/launcher.py:119
-#: src/macbackend.py:260 src/updater.py:160
+#: src/macbackend.py:261 src/updater.py:160
 msgid "Error"
 msgstr "Erreur"
 
@@ -256,13 +264,13 @@ msgid "Auto"
 msgstr "Auto"
 
 #: src/gui_pyqt.py:1218 src/gui_pyqt.py:1244 src/gui_pyqt.py:1259
-#: src/gui_pyqt.py:1374 src/osbackend.py:403 src/updater.py:56
+#: src/gui_pyqt.py:1374 src/osbackend.py:414 src/updater.py:56
 #: src/updater.py:58
 msgid "Yes"
 msgstr "Oui"
 
 #: src/gui_pyqt.py:1219 src/gui_pyqt.py:1245 src/gui_pyqt.py:1260
-#: src/gui_pyqt.py:1374 src/osbackend.py:404 src/osbackend.py:405
+#: src/gui_pyqt.py:1374 src/osbackend.py:415 src/osbackend.py:416
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
@@ -296,7 +304,7 @@ msgid "Message contents"
 msgstr "Contenu du message"
 
 #: src/gui_pyqt.py:1333 src/gui_pyqt.py:1346 src/gui_zenity.py:164
-#: src/linuxbackend.py:254
+#: src/linuxbackend.py:266
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
@@ -354,46 +362,46 @@ msgstr ""
 msgid "Send a report"
 msgstr "Envoyer le rapport d'erreur"
 
-#: src/linuxbackend.py:255
+#: src/linuxbackend.py:267
 #, fuzzy
 msgid "Installing %s for Python (required by UFO)"
 msgstr "Installation de %s (composant réquis par UFO)"
 
-#: src/linuxbackend.py:256
+#: src/linuxbackend.py:268
 msgid "%s was successfully installed"
 msgstr "%s a été installé avec succès"
 
-#: src/linuxbackend.py:257
+#: src/linuxbackend.py:269
 msgid "An error occurred while installing %s"
 msgstr "Une erreur est survenue lors de l'installation de %s"
 
-#: src/linuxbackend.py:294
+#: src/linuxbackend.py:306
 msgid "Setting Yum Agorabox repository"
 msgstr "Configuration des dépôts Agorabox pour Yum"
 
-#: src/linuxbackend.py:302
+#: src/linuxbackend.py:314
 msgid "Installing VirtualBox Open Source edition. This can take a few minutes"
 msgstr ""
 "Installation de VirtualBox Open Source Edition. Ceci peut prendre plusieurs "
 "minutes"
 
-#: src/linuxbackend.py:315
+#: src/linuxbackend.py:327
 msgid "Compiling VirtualBox drivers"
 msgstr "Compilation des pilotes VirtualBox"
 
-#: src/macbackend.py:232
+#: src/macbackend.py:233
 msgid "Unable to unmount the volume "
 msgstr "Impossible de démonter le volume "
 
-#: src/macbackend.py:261
+#: src/macbackend.py:262
 msgid "Sorry, couldn't authenticate. Please check your password."
 msgstr "Impossible de s'authentifier. Veuillez vérifier votre mot de passe."
 
-#: src/osbackend.py:214 src/osbackend.py:401
+#: src/osbackend.py:221 src/osbackend.py:412
 msgid "Warning"
 msgstr "Attention"
 
-#: src/osbackend.py:215
+#: src/osbackend.py:222
 msgid ""
 "The available memory on this computer is low.\n"
 "This can deeply impact the speed of the UFO virtual machine.\n"
@@ -406,27 +414,27 @@ msgstr ""
 "Fermer des applications ou redémarrer l'ordinateur peut améliorer les "
 "performances."
 
-#: src/osbackend.py:402
+#: src/osbackend.py:413
 msgid "Could not find an UFO key, try again ?"
 msgstr "Aucune clé UFO n'a été trouvée, réessayer ?"
 
-#: src/osbackend.py:411
+#: src/osbackend.py:422
 msgid "Select the USB device you want to install UFO on"
 msgstr "Selectionnez le périphérique USB sur lequel vous voulez installer UFO"
 
-#: src/osbackend.py:412
+#: src/osbackend.py:423
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/osbackend.py:412
+#: src/osbackend.py:423
 msgid "No USB device found"
 msgstr "Aucune clée trouvée"
 
-#: src/osbackend.py:428
+#: src/osbackend.py:439
 msgid "UFO can not be launched"
 msgstr "UFO n'a pas pu être démarré"
 
-#: src/osbackend.py:429
+#: src/osbackend.py:440
 msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
@@ -434,40 +442,40 @@ msgstr ""
 "Une instance de %s est en déjà cours d'éxécution.\n"
 "Veuillez fermer toutes les fenêtres de %s et recomencez."
 
-#: src/osbackend.py:431
+#: src/osbackend.py:442
 msgid "Force to close"
 msgstr "Forcer à quitter"
 
-#: src/osbackend.py:438
+#: src/osbackend.py:449
 msgid "The VirtualBox binaries could not be found"
 msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 
-#: src/osbackend.py:439
+#: src/osbackend.py:450
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:469
+#: src/osbackend.py:480
 msgid "Opening session..."
 msgstr "Ouverture de la session en cours..."
 
-#: src/osbackend.py:476
+#: src/osbackend.py:487
 msgid "UFO: authenticating"
 msgstr "UFO: en cours d'authentification"
 
-#: src/osbackend.py:492
+#: src/osbackend.py:503
 msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
-#: src/osbackend.py:510
+#: src/osbackend.py:521
 #, fuzzy
 msgid "UFO: running"
 msgstr "UFO: en cours d'exécution"
 
-#: src/osbackend.py:515
+#: src/osbackend.py:526
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:516
+#: src/osbackend.py:527
 msgid ""
 "Please wait while UFO is recording the system modifications (%s Mo)\n"
 "you absolutely must not unplug the key !"
@@ -476,53 +484,57 @@ msgstr ""
 "octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:518
+#: src/osbackend.py:529
 msgid "UFO: recording changes"
 msgstr "UFO: en cours de sauvegarde"
 
-#: src/osbackend.py:529
+#: src/osbackend.py:540
 msgid "Restart UFO"
 msgstr "Redémarrage de UFO"
 
-#: src/osbackend.py:530
+#: src/osbackend.py:541
 msgid "UFO is rebooting"
 msgstr "UFO est en cours de redémarrage"
 
-#: src/osbackend.py:555
+#: src/osbackend.py:566
 msgid "UFO is starting"
 msgstr "Démarrage de UFO"
 
-#: src/osbackend.py:557
+#: src/osbackend.py:568
 msgid "1<SUP>st</SUP> launch of UFO"
 msgstr "1<SUP>er</SUP> démarrage de UFO"
 
-#: src/osbackend.py:559
+#: src/osbackend.py:570
 msgid "UFO is starting."
 msgstr "UFO est en cours de démarrage"
 
-#: src/osbackend.py:563
+#: src/osbackend.py:574
 msgid "UFO: starting"
 msgstr "UFO: en cours de démarrage"
 
-#: src/osbackend.py:575
+#: src/osbackend.py:586
 msgid "UFO: terminated"
 msgstr "UFO: terminé"
 
-#: src/osbackend.py:576
+#: src/osbackend.py:587
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:577
+#: src/osbackend.py:588
 msgid "You can now safely eject your UFO key."
 msgstr "Vous pouvez éjecter votre clé UFO en toute securité."
 
-#: src/osbackend.py:653
+#: src/osbackend.py:677
 msgid "New USB device"
 msgstr "Nouveau périphérique USB"
 
-#: src/osbackend.py:654
+#: src/osbackend.py:678
 msgid "you can link this device to your U.F.O desktop."
 msgstr "vous pouvez relier ce nouveau périphérique à votre bureau UFO."
+
+#: src/security.py:286
+msgid "Please enter your PIN"
+msgstr "Veuillez entrer votre code PIN"
 
 #: src/updater.py:53
 msgid "Update available"
@@ -550,19 +562,19 @@ msgid ""
 "minutes<br><br>\n"
 "<b>The USB key absolutely must not be unplugged during this process.</b>"
 msgstr ""
-"Votre clé va maintenant être mise à jour.<br>Cette opération peut prendre"
-"plusieurs minutes<br><br>\n"
+"Votre clé va maintenant être mise à jour.<br>Cette opération peut "
+"prendre plusieurs minutes<br><br>\n"
 "<b>La clé ne doit être debranchée en aucun cas.</b>"
 
 #: src/updater.py:161
 msgid "An error occurred. You key could not be updated."
 msgstr "Une erreur est intervenue. Votre clé n'a pas pu être mise à jour."
 
-#: src/windowsbackend.py:310
+#: src/windowsbackend.py:331
 msgid "You don't have enough permissions to run UFO."
 msgstr "Vous ne disposez des autorisations nécessaires pour lancer UFO."
 
-#: src/windowsbackend.py:313
+#: src/windowsbackend.py:334
 msgid ""
 "Run UFO as Administrator by right clicking on UFO and select : 'Run as "
 "administrator'"
@@ -570,14 +582,14 @@ msgstr ""
 "Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et "
 "en choisissant 'Lancer en tant qu'administrateur'"
 
-#: src/windowsbackend.py:315
+#: src/windowsbackend.py:336
 msgid ""
 "Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'"
 msgstr ""
 "Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et "
 "en choisissant 'Lancer en tant que...'"
 
-#: src/windowsbackend.py:316
+#: src/windowsbackend.py:337
 msgid "Not enough permissions"
 msgstr "Permissions insuffisantes"
 

@@ -116,8 +116,8 @@ generate-pot:
 	xgettext --from-code UTF-8 -o vlaunch-guest.pot -d vlaunch-guest -L Shell guest/vbox-client-symlink
 
 update-po: generate-pot
-	msgmerge -U locale/fr_FR/vlaunch.po vlaunch.pot
-	msgmerge -U locale/fr_FR/vlaunch-guest.po vlaunch-guest.pot
+	msgmerge -U locale/fr/vlaunch.po vlaunch.pot
+	msgmerge -U locale/fr/vlaunch-guest.po vlaunch-guest.pot
 
 generate-mo:
 	for lang in `ls locale`; \
