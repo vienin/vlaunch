@@ -60,7 +60,7 @@ class VBoxHypervisor():
         
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
         
-        if self.vbox_version() >= "3.0.0":
+        if self.vbox_version() >= "3.0.0" and vbox_callback_class:
             self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', vbox_callback_class, vbox_callback_arg)
             self.vbox.registerCallback(self.cb)
             self.callbacks_aware = True

@@ -23,11 +23,13 @@ from PyQt4 import QtGui, QtCore
 import threading, sys, os
 from urllib import urlretrieve
 from ConfigParser import ConfigParser
+from ufovboxapi import *
 import time, utils
 import conf
 import logging
 import glob
 import math
+
 
 class QtUFOGui(QtGui.QApplication):
         
@@ -50,11 +52,16 @@ class QtUFOGui(QtGui.QApplication):
         action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
                                         QtCore.QString(_("Settings...")), self);
         action_settings.setStatusTip(_("Configure the UFO launcher"))
+        action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
+                                        QtCore.QString(_("Quit")), self);
+        action_quit.setStatusTip(_("Quit"))
         
-        self.menu.addAction(action_about)
         self.menu.addAction(action_settings)
+        self.menu.addAction(action_about)
+        self.menu.addAction(action_quit)
         self.connect(action_about, QtCore.SIGNAL("triggered()"), self.about)
         self.connect(action_settings, QtCore.SIGNAL("triggered()"), self.settings)
+        self.connect(action_quit, QtCore.SIGNAL("triggered()"), self.quit)
         
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
     
@@ -286,6 +293,19 @@ class QtUFOGui(QtGui.QApplication):
         self.settings.show()
         self.settings.exec_()
         del self.settings
+    
+    def quit(self):
+        try:
+            state = self.vbox.current_machine.machine.state
+            if state != self.vbox.constants.MachineState_Aborted and \
+               state != self.vbox.constants.MachineState_PoweredOff and \
+               state != self.vbox.constants.MachineState_Null:
+                dialog_info(title=_("Warning"),
+                            msg=_("UFO virtual machine is currently running.\nPlease shutdown from the virtual machine desktop."))
+                return
+        except:
+            pass
+        sys.exit(0)
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
