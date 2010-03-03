@@ -240,7 +240,15 @@ class LinuxBackend(OSBackend):
         raise Exception("Implemented in subclasses")
 
     def look_for_virtualbox(self):
-        raise Exception("Implemented in subclasses")
+        if platform.architecture()[0] == '64bit' and path.isdir('/usr/lib64/virtualbox'): 
+            conf.BIN = '/usr/lib64/virtualbox'
+        elif platform.architecture()[0] == '32bit' and path.isdir('/usr/lib/virtualbox'): 
+            conf.BIN = '/usr/lib/virtualbox'
+        else: 
+            conf.BIN = path.dirname(self.call(["which", "VirtualBox"], output=True)[1].strip())
+            
+        OSBackend.update_env(self)
+        OSBackend.look_for_virtualbox(self)
 
     def create_run_as_root(self):
         if os.path.exists("/usr/bin/gksudo"):
@@ -264,7 +272,7 @@ class LinuxBackend(OSBackend):
         
     def get_generic_installation_messages(self, component):
         return { "title" : _("Please wait"),
-                 "msg" : _('Installing %s for Python (required by UFO)') % (component,),
+                 "msg" : _('Installing %s (required by UFO)') % (component,),
                  "success_msg" : _("%s was successfully installed") % (component,),
                  "error_msg" : _("An error occurred while installing %s") % (component,) }
 
@@ -329,11 +337,7 @@ class FedoraLinuxBackend(LinuxBackend):
             logging.debug("Loading vboxdrv module")
             self.call(["/etc/sysconfig/modules/VirtualBox-OSE.modules"])
             
-        if platform.architecture()[0]=='64bit' and path.isdir('/usr/lib64/virtualbox') : conf.BIN = '/usr/lib64/virtualbox'
-        elif platform.architecture()[0]=='32bit' and path.isdir('/usr/lib/virtualbox') : conf.BIN = '/usr/lib/virtualbox'
-        else: conf.BIN = path.dirname(self.call(["which", "VirtualBox"], output=True)[1].strip())
-        OSBackend.update_env(self)
-        OSBackend.look_for_virtualbox(self)
+        LinuxBackend.look_for_virtualbox(self)
         
 
 class UbuntuLinuxBackend(LinuxBackend):
@@ -358,18 +362,18 @@ class UbuntuLinuxBackend(LinuxBackend):
             gui.wait_command(["apt-get", "update"],
                               msg="Votre système est en train d'être mis à jour")
             gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.0"],
-                             **self.get_generic_installation_messages())
+                             **self.get_generic_installation_messages("VirtualBox 3"))
             gui.wait_command(["/etc/init.d/vboxdrv", "setup"],
                              msg="Configuration en cours de \"VirtualBox 3\".")
          
-        OSBackend.look_for_virtualbox(self)
+        LinuxBackend.look_for_virtualbox(self)
 
 
 class GenericLinuxBackend(LinuxBackend):
     def __init__(self, dist, version, codename):
         LinuxBackend.__init__(self, dist, version, codename)
 
-    def install_virtualbox(self):
+    def checking_pyqt(self):
         pass
 
 
