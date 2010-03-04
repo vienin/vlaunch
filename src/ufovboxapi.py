@@ -33,6 +33,7 @@ try:
 except:
     COMError = Exception
 
+
 class VBoxInterfaceWrapper:
     def __init__(self, machine):
         self.__dict__["machine"] = machine
@@ -43,20 +44,57 @@ class VBoxInterfaceWrapper:
     def __setattr__(self, name, value):
         return setattr(self.__dict__["machine"], name[0].upper() + name[1:])
 
+
+class VBoxConstantsWrapper:
+    
+    """
+    Here is a special wrapper method to link machine state 
+    constants to proper ones when old version of virtualbox is used.
+    (It should be useful on linux host only, as we provide 
+    proper virtualbox version on Mac-intel and Windows hosts)
+    """
+    
+    old_constants = {'MachineState_Null':0,
+                     'MachineState_PoweredOff':1,
+                     'MachineState_Saved':2,
+                     'MachineState_Aborted':3,
+                     'MachineState_Running':4,
+                     'MachineState_Paused':5,
+                     'MachineState_Stuck':6,
+                     'MachineState_Starting':7,
+                     'MachineState_Stopping':8 }
+
+    def __init__(self, version):
+        from vboxapi import VirtualBoxReflectionInfo
+        self.constants = VirtualBoxReflectionInfo(False)
+        self.version   = version
+        
+    def __getattr__(self, attr):
+        
+        """
+        The following code need to be updated when a new version of the
+        VirtualBox_constants file is used.
+        Current version: 3.1.*
+        """
+        
+        if self.version < "3.1.0" and attr in self.old_constants:
+            return self.old_constants[attr]
+        
+        return self.constants.__getattr__(attr)
+
 class VBoxHypervisor():
                         
     def __init__(self, vbox_callback_class = None, vbox_callback_arg = None):
         from vboxapi import VirtualBoxManager
-        from vboxapi import VirtualBoxReflectionInfo
 
         self.current_machine = None
-        self.session = None
-        self.cleaned = False
+        self.session         = None
+        self.cleaned         = False
         
         self.vm_manager = VirtualBoxManager(None, None)
-        self.constants = VirtualBoxReflectionInfo(False)
-        self.mgr  = self.vm_manager.mgr
-        self.vbox = self.vm_manager.vbox
+        self.mgr        = self.vm_manager.mgr
+        self.vbox       = self.vm_manager.vbox
+        self.constants  = VBoxConstantsWrapper(self.vbox_version())
         
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
         

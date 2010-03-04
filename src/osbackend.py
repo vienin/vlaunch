@@ -590,7 +590,7 @@ class OSBackend(object):
             gui.app.show_balloon_message(_("Goodbye"), 
                                          _("You can now safely eject your UFO key."))
 
-            # Let's show ballon message 3s
+            # Let's show balloon message 3s
             time.sleep(3)
             gui.app.hide_balloon()
             
@@ -630,7 +630,7 @@ class OSBackend(object):
         if not self.vbox.callbacks_aware:
             gui.app.start_callbacks_timer(1, self.vbox.minimal_callbacks_maker_loop)
 
-        # Special case when Qt backend unavailale and virtualbox < 3.0.0,
+        # Special case when Qt backend unavailable and virtualbox < 3.0.0,
         # in this case we are not able to catch termination
         if gui.backend != "PyQt":
             sys.exit(1)
@@ -728,7 +728,7 @@ class OSBackend(object):
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
 
-        # prepare environement
+        # prepare environment
         logging.debug("Preparing environment")
         self.prepare()
         self.create_splash_screen()
@@ -767,7 +767,7 @@ class OSBackend(object):
         self.run_virtual_machine(self.env)
         self.wait_for_termination()
 
-        # clean environement
+        # clean environment
         logging.debug("Clean up")
         self.global_cleanup()
 
