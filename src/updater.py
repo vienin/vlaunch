@@ -39,11 +39,11 @@ def get_latest_version():
     string_version = ".".join(map(str, latest_version))
     latest_size = int(urllib.urlopen(conf.UPDATEURL + "/launcher-" + string_version + ".tar.bz2").headers.get("content-length"))
     
-    logging.debug("Using launcher version : " + str(conf.VERSION))
     logging.debug("Available version on the Net : " + str(string_version) + " (" + str(latest_size / 1000) + " k)")
     return latest_version, latest_size
  
 def check_update(backend):
+    logging.debug("Using launcher version : " + str(conf.VERSION))
     try:
         logging.debug("Checking updates")
         local_version = map(int, conf.VERSION.split('.'))
