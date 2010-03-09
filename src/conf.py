@@ -60,6 +60,13 @@ NET_LOCAL = 0
 NET_HOST  = 1
 NET_NAT   = 2
 
+resolutionValues    = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600', '640x480'],
+                        '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
+reintegrationValues = [ 'overlay=ext4=UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5', 
+                        'overlay=tmpfs', 
+                        'overlay=' ]
+languageValues      = [ 'fr', 'en' ]
+
 config = \
     {
       "virtualbox" :
@@ -91,7 +98,7 @@ config = \
           "hostkey" : 0,
           "autofullscreen" : False,
           "autominimize" : True,
-          "language" : "en",
+          "language" : languageValues[1],
           "ballooncolor" : "#FFFFE7",
           "ballooncolorgradient" : "#FFFFE7",
           "ballooncolortext" : "#000000"
@@ -123,13 +130,16 @@ config = \
           "bootfloppy" : ".VirtualBox/Images/UFO-VirtualBox-boot.img",
           "bootiso" : "",
           "cpus" : 1,
-          "resolution" : "800x600",
+          "resolution" : resolutionValues['4:3'][3],
           "pae" : True,
           "vt" : True,
           "nestedpaging" : True,
           "accel3d" : True,
           "menubar" : False,
-          "rootvdi" : ""
+          "rootvdi" : "",
+          "cmdline" : "",
+          "reintegration" : reintegrationValues[0],
+          "guestdebug" : False
         },
       "guest" :
         {
@@ -229,13 +239,10 @@ Here is a dictionary based model to represent settings dialog window.
 Available settings are organized in many main tabs (categories),
 each one contains a list of settings or group of settings (one setting
 for one configuration variable)
-
 """
 
-resolutionValues = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600', '640x480'],
-                     '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
-
-languageValues = [ 'fr', 'en']
+reintegrationStrings = [ _('Host disk'), _('Memory'), _('Direct') ]
+languageStrings      = [ _('French'), _('English') ]
 
 settings = \
     [ 
@@ -247,22 +254,21 @@ settings = \
               'sectid' : "vm",
               'short'  : _("Window resolution"),
               'label'  : _("Choose the starting resolution of the window.\n"
-                           "Note that if the chosen resolution is higher or equal\n"
-                           "than the computer one, the window will be displayed in\n"
-                           "fullscreen mode."),
+                           "Note that if the chosen resolution is higher or equal than the\n"
+                           "computer one, the window will be displayed in fullscreen mode."),
               'values' : resolutionValues 
             },
             { 'confid' : "autofullscreen",
               'sectid' : "launcher",
               'short'  : _("Fullscreen automatic"),
-              'label'  : _("Enable this option if you want the window switch to \n"
-                           "fullscreen mode at login.")
+              'label'  : _("Enable this option if you want the window switch to fullscreen\n"
+                           "mode at login.")
             },
             { 'confid' : "autominimize",
               'sectid' : "launcher",
               'short'  : _("Minimize automatic"),
-              'label'  : _("Enable this option if you want the window switch to \n"
-                           "minimized mode at startup and shutdown.")
+              'label'  : _("Enable this option if you want the window switch to minimized\n"
+                           "mode at startup and shutdown.")
             }
           ]
       },
@@ -274,7 +280,8 @@ settings = \
               'sectid' : "launcher",
               'short'  : _("Language"),
               'label'  : _("Choose your language."),
-              'values' : languageValues
+              'values' : languageValues,
+              'strgs'  : languageStrings
             },
             { 'confid' : "menubar",
               'sectid' : "vm",
@@ -296,9 +303,8 @@ settings = \
                              'short'  : _("Balloon text color")
                            }
                          ],
-              'label'  : _("Customize colors of the balloon message window. \n"
-                           "Use different collors for top and bottom to get a \n"
-                           "color gradient")
+              'label'  : _("Customize colors of the balloon message window. Use different\n"
+                           "collors for top and bottom to get a color gradient.")
             }
           ]
       },
@@ -324,8 +330,8 @@ settings = \
               'sectid' : "vm",
               'short'  : _("3D acceleration"),
               'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n"
-                           "availability of this feature depends of the host computer\n"
-                           "3D device"),
+                           "availability of this feature depends of the host computer 3D\n"
+                           "device."),
             },
             { 'grpid'  : "virtext",
               'group'  : [ 
@@ -341,6 +347,33 @@ settings = \
               'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n"
                            "extentions are enabled, availability of this feature depends\n"
                            "of the host computer cpu properties.")
+            },
+          ]
+      },
+      { 'tabname'  : _("System"),
+        'iconfile' : "system.png",
+        'settings' : 
+          [ 
+            { 'confid' : "guestdebug",
+              'sectid' : "vm",
+              'short'  : _("Debug mode"),
+              'label'  : _("Set debug mode to get more complete log files.")
+            },
+            { 'confid' : "reintegration",
+              'sectid' : "vm",
+              'short'  : _("Reintegration policy"),
+              'label'  : _("DANGEROUS. Select the reintegration policy.\n"
+                           "The reintegration policy defines how system modifications are\n"
+                           "written on the removable device."),
+              'values' : reintegrationValues,
+              'strgs'  : reintegrationStrings
+            },
+            { 'confid' : "cmdline",
+              'sectid' : "vm",
+              'short'  : _("Custom command line"),
+              'label'  : _("DANGEROUS. Set custom command line parameters.\n"
+                           "If the following parameters already exist on the kernel command\n"
+                           "line, they will be overwritten.")
             }
           ]
       }

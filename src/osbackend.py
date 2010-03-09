@@ -365,6 +365,11 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
 
+        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
+        logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
+        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
+                                                     conf.REINTEGRATION + " " + conf.CMDLINE)
+
         if keyring:
             if conf.USER:
                 password = self.get_password()
@@ -526,9 +531,17 @@ class OSBackend(object):
             elif newValue == "CLOSING_SESSION":
                 if conf.AUTOMINIMIZE:
                     gui.app.minimize_window()
-                gui.app.show_balloon_message(title=_("Recording changes"), 
-                                             msg=_("Please wait while UFO is recording the system modifications (%s Mo)\n"
-                                                   "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),))
+
+                if self.vbox.current_machine.overlay_data_size > 0:
+                    title = _("Recording changes")
+                    msg = _("Please wait while UFO is recording the system modifications (%s Mo),\n"
+                            "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),)
+                else:
+                    title = _("Shutting down")
+                    msg = _("Please wait while UFO is shutting down,\n"
+                            "you absolutely must not unplug the key !")
+
+                gui.app.show_balloon_message(title=title, msg=msg)
                 gui.app.set_tooltip(_("UFO: recording changes"))
             
             elif newValue == "HALTING":
