@@ -32,16 +32,16 @@ import updater
 
 format = "%(asctime)s %(levelname)s %(message)s"
 if conf.options.update:
-    log_file_name = path.join(tempfile.gettempdir(), "ufo-updater.log")
+    conf.LOGFILE = path.join(tempfile.gettempdir(), "ufo-updater.log")
 else:
     log_dir = os.path.dirname(conf.LOG)
     if not os.path.exists(log_dir):
         try: os.makedirs(log_dir)
         except: pass
-    log_file_name = path.join(log_dir, str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
+    conf.LOGFILE = path.join(log_dir, str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
 try:
-    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, log_file_name))
-    log_path = path.join(conf.SCRIPT_DIR, log_file_name)
+    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, conf.LOGFILE))
+    log_path = path.join(conf.SCRIPT_DIR, conf.LOGFILE)
     print "Logging to " + log_path
 except:
     try:
