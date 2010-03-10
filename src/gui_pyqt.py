@@ -1351,8 +1351,8 @@ class Settings(QtGui.QDialog):
         for sel in self.registred_selections.keys():
             if self.registred_selections[sel]['value'] != self.get_conf(self.registred_selections[sel]['confid']):
                 msg += "    - " + self.registred_selections[sel]['short'] + \
-                       " :\t"    + str(self.user_readable(self.get_conf(sel))) + \
-                       " -> "   + str(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
+                       " :\t"   + unicode(self.user_readable(self.get_conf(sel))) + \
+                       " -> "   + unicode(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
         return msg
 
     def register_custom_handler(self, confid, layout, function):
