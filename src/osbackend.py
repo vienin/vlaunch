@@ -284,13 +284,14 @@ class OSBackend(object):
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
             
             if conf.RESOLUTION:
+                self.fullscreen = False
                 resolution = conf.RESOLUTION
                 hostres = self.find_resolution()
                 if hostres != "" and \
                     (int(hostres.split("x")[0]) <= int(conf.RESOLUTION.split("x")[0]) or \
                      int(hostres.split("x")[1]) <= int(conf.RESOLUTION.split("x")[1])):
                     resolution = hostres
-                    gui.app.fullscreen_window(False)
+                    self.fullscreen = True
                 if resolution != "":
                     logging.debug("Using " + resolution + " as initial resolution")
                     self.vbox.current_machine.set_resolution(resolution)
@@ -363,6 +364,11 @@ class OSBackend(object):
                 #     virtual_box.machine.set_guest_property("overlay_quota", ...)
             except:
                 logging.debug("Exception while creating overlay")
+
+        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
+        logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
+        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
+                                                     conf.REINTEGRATION + " " + conf.CMDLINE)
 
         if keyring:
             if conf.USER:
@@ -482,7 +488,10 @@ class OSBackend(object):
                     if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
                     gui.app.hide_balloon()
-                    gui.app.normalize_window()
+                    if self.fullscreen:
+                        gui.app.fullscreen_window(False)
+                    else:
+                        gui.app.normalize_window()
                     gui.app.set_tooltip(_("UFO: authenticating"))
                 
         # Boot progress management
@@ -513,7 +522,7 @@ class OSBackend(object):
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
 
                 gui.app.hide_balloon()
-                if conf.AUTOFULLSCREEN:
+                if conf.AUTOFULLSCREEN or self.fullscreen:
                     gui.app.fullscreen_window(False)
                 else:
                     gui.app.normalize_window()
@@ -522,9 +531,17 @@ class OSBackend(object):
             elif newValue == "CLOSING_SESSION":
                 if conf.AUTOMINIMIZE:
                     gui.app.minimize_window()
-                gui.app.show_balloon_message(title=_("Recording changes"), 
-                                             msg=_("Please wait while UFO is recording the system modifications (%s Mo)\n"
-                                                   "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),))
+
+                if self.vbox.current_machine.overlay_data_size > 0:
+                    title = _("Recording changes")
+                    msg = _("Please wait while UFO is recording the system modifications (%s Mo),\n"
+                            "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),)
+                else:
+                    title = _("Shutting down")
+                    msg = _("Please wait while UFO is shutting down,\n"
+                            "you absolutely must not unplug the key !")
+
+                gui.app.show_balloon_message(title=title, msg=msg)
                 gui.app.set_tooltip(_("UFO: recording changes"))
             
             elif newValue == "HALTING":
@@ -586,7 +603,7 @@ class OSBackend(object):
             gui.app.show_balloon_message(_("Goodbye"), 
                                          _("You can now safely eject your UFO key."))
 
-            # Let's show ballon message 3s
+            # Let's show balloon message 3s
             time.sleep(3)
             gui.app.hide_balloon()
             
@@ -626,7 +643,7 @@ class OSBackend(object):
         if not self.vbox.callbacks_aware:
             gui.app.start_callbacks_timer(1, self.vbox.minimal_callbacks_maker_loop)
 
-        # Special case when Qt backend unavailale and virtualbox < 3.0.0,
+        # Special case when Qt backend unavailable and virtualbox < 3.0.0,
         # in this case we are not able to catch termination
         if gui.backend != "PyQt":
             sys.exit(1)
@@ -724,7 +741,7 @@ class OSBackend(object):
         logging.debug("BIN path: " + conf.BIN)
         logging.debug("HOME path: " + conf.HOME)
 
-        # prepare environement
+        # prepare environment
         logging.debug("Preparing environment")
         self.prepare()
         self.create_splash_screen()
@@ -763,7 +780,7 @@ class OSBackend(object):
         self.run_virtual_machine(self.env)
         self.wait_for_termination()
 
-        # clean environement
+        # clean environment
         logging.debug("Clean up")
         self.global_cleanup()
 

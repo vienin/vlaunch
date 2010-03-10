@@ -23,11 +23,13 @@ from PyQt4 import QtGui, QtCore
 import threading, sys, os
 from urllib import urlretrieve
 from ConfigParser import ConfigParser
+from ufovboxapi import *
 import time, utils
 import conf
 import logging
 import glob
 import math
+
 
 class QtUFOGui(QtGui.QApplication):
         
@@ -50,11 +52,16 @@ class QtUFOGui(QtGui.QApplication):
         action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
                                         QtCore.QString(_("Settings...")), self);
         action_settings.setStatusTip(_("Configure the UFO launcher"))
+        action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
+                                        QtCore.QString(_("Quit")), self);
+        action_quit.setStatusTip(_("Quit"))
         
-        self.menu.addAction(action_about)
         self.menu.addAction(action_settings)
+        self.menu.addAction(action_about)
+        self.menu.addAction(action_quit)
         self.connect(action_about, QtCore.SIGNAL("triggered()"), self.about)
         self.connect(action_settings, QtCore.SIGNAL("triggered()"), self.settings)
+        self.connect(action_quit, QtCore.SIGNAL("triggered()"), self.quit)
         
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
     
@@ -286,6 +293,19 @@ class QtUFOGui(QtGui.QApplication):
         self.settings.show()
         self.settings.exec_()
         del self.settings
+    
+    def quit(self):
+        try:
+            state = self.vbox.current_machine.machine.state
+            if state != self.vbox.constants.MachineState_Aborted and \
+               state != self.vbox.constants.MachineState_PoweredOff and \
+               state != self.vbox.constants.MachineState_Null:
+                dialog_info(title=_("Warning"),
+                            msg=_("UFO virtual machine is currently running.\nPlease shutdown from the virtual machine desktop."))
+                return
+        except:
+            pass
+        sys.exit(0)
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -593,11 +613,11 @@ class DownloadWindow(QtGui.QDialog):
         self.outFile.close()
         if error:
             self.outFile.remove()
-            QtGui.QMessageBox.information(self, _("Error"),
+            QtGui.QMessageBox.information(self, 
+                                          _("Error"),
                                           _("Download has failed. Please check your Internet connection"))
         else:
             self.finished = True
-            # On cache les boutons
             self.downloadButton.hide()
             self.actionButton.setText(_("Continue"))
             self.statusLabel.setText(self.success_msg)
@@ -913,6 +933,7 @@ class Settings(QtGui.QDialog):
         super(Settings, self).__init__(parent)
 
         self.registred_selections = {}
+        self.corresponding_values = {}
         self.custom_handlers      = {}
         self.groups               = {}
         
@@ -977,7 +998,9 @@ class Settings(QtGui.QDialog):
                     
                     group      = QtGui.QButtonGroup()
                     val_layout = QtGui.QHBoxLayout()
-                    col_tab    = {}
+                    val_layout.addSpacing(30)
+                    
+                    col_tab = {}
                     for col in item['values'].keys():
                         col_layout = QtGui.QVBoxLayout()
                         radio      = QtGui.QRadioButton(self.tr(col))
@@ -1003,6 +1026,7 @@ class Settings(QtGui.QDialog):
                         
                         col_layout.addWidget(values)
                         val_layout.addLayout(col_layout)
+                        val_layout.addSpacing(30)
                         
                     set_layout.addLayout(val_layout)
                     group.setExclusive(True)
@@ -1022,8 +1046,22 @@ class Settings(QtGui.QDialog):
                     
                     "Here build a combo box list with list values"
                     
+                    if item.has_key('strgs'):
+                        assert len(item['values']) == len(item['strgs'])
+                        
+                        corr_vals = {}
+                        for string in item['strgs']:
+                            corr_vals.update({ string : item['values'][item['strgs'].index(string)] })
+                        self.corresponding_values.update({ item['confid'] : corr_vals })
+                        value_key = 'strgs'
+                    else:
+                        value_key = 'values'
+                        
+                    val_layout = QtGui.QHBoxLayout()
+                    val_layout.addSpacing(30)
+                    
                     values = QtGui.QComboBox()
-                    for val in item['values']:
+                    for val in item[value_key]:
                         values.addItem(val)
                     
                     "Connect items to action slot"
@@ -1041,13 +1079,17 @@ class Settings(QtGui.QDialog):
                     
                     values.setCurrentIndex(item['values'].index(self.get_conf(item['confid'])))
                     
-                    set_layout.addWidget(values)
+                    val_layout.addWidget(values)
+                    val_layout.addSpacing(30)
+                    set_layout.addLayout(val_layout)
                     
                 elif type(item.get('range')) == list:
                     
                     "Here build integer value edit with specific range"
                     
                     val_layout = QtGui.QHBoxLayout()
+                    val_layout.addSpacing(30)
+                    
                     spin = QtGui.QSpinBox()
                     spin.setMinimumWidth(75)
                     min, max = item['range'][0], item['range'][1]
@@ -1101,6 +1143,7 @@ class Settings(QtGui.QDialog):
                     
                     val_layout.addWidget(spin)
                     val_layout.addWidget(slider)
+                    val_layout.addSpacing(30)
                     set_layout.addLayout(val_layout)
                     
                 else:
@@ -1110,6 +1153,7 @@ class Settings(QtGui.QDialog):
                     current_value = self.get_conf(item['confid'])
                     
                     val_layout = QtGui.QHBoxLayout()
+                    val_layout.addSpacing(30)
                     if type(current_value) == bool:
                         edit   = QtGui.QCheckBox(self.tr(item['short']))
                         signal = edit.toggled
@@ -1121,7 +1165,7 @@ class Settings(QtGui.QDialog):
                             edit.setChecked(QtCore.Qt.Checked)
                             
                     elif type(current_value) == str:
-                        if current_value[0] == '#':
+                        if len(current_value) > 0 and current_value[0] == '#':
                             
                             "Set current value"
                             
@@ -1175,6 +1219,7 @@ class Settings(QtGui.QDialog):
                         signal.connect(custom['function'])
                     
                     val_layout.addWidget(edit)
+                    val_layout.addSpacing(30)
                     set_layout.addLayout(val_layout)
                     
             tab_layout.addSpacing(15)
@@ -1195,6 +1240,9 @@ class Settings(QtGui.QDialog):
         if hasattr(control, 'text') and control.text() == _("Auto"):
             value = conf.get_auto_value(self.get_conf(control.conf_infos['confid']))
         
+        if self.corresponding_values.has_key(control.conf_infos['confid']):
+            value = self.corresponding_values[control.conf_infos['confid']][str(value)]
+            
         control.conf_infos.update({ 'value' : value })
         self.registred_selections.update({ control.conf_infos['confid'] : control.conf_infos })
     
@@ -1303,8 +1351,8 @@ class Settings(QtGui.QDialog):
         for sel in self.registred_selections.keys():
             if self.registred_selections[sel]['value'] != self.get_conf(self.registred_selections[sel]['confid']):
                 msg += "    - " + self.registred_selections[sel]['short'] + \
-                       " :\t"    + str(self.user_readable(self.get_conf(sel))) + \
-                       " -> "   + str(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
+                       " :\t"   + unicode(self.user_readable(self.get_conf(sel))) + \
+                       " -> "   + unicode(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
         return msg
 
     def register_custom_handler(self, confid, layout, function):
@@ -1317,13 +1365,18 @@ class Settings(QtGui.QDialog):
     
     def create_ballon_custom_layout(self):
         custom_layout = QtGui.QVBoxLayout()
+        val_layout = QtGui.QHBoxLayout()
+        val_layout.addSpacing(30)
+        
         self.balloon_preview = BalloonMessage(self, 
                                               fake  = True, 
                                               icon  = os.path.join(conf.IMGDIR, "UFO.png"),
                                               title =_("Message title"), 
                                               msg   = _("Message contents"))
+        val_layout.addWidget(self.balloon_preview)
+        val_layout.addSpacing(30)
         custom_layout.addSpacing(15)
-        custom_layout.addWidget(self.balloon_preview)
+        custom_layout.addLayout(val_layout)
         
         return custom_layout
         
