@@ -363,17 +363,17 @@ settings = \
               'sectid' : "vm",
               'short'  : _("Reintegration policy"),
               'label'  : _("DANGEROUS. Select the reintegration policy.\n"
-                           "The reintegration policy defines how system modifications are\n"
-                           "written on the removable device."),
+                           "The reintegration policy defines how system modifications\n"
+                           "are written on the removable device."),
               'values' : reintegrationValues,
               'strgs'  : reintegrationStrings
             },
             { 'confid' : "cmdline",
               'sectid' : "vm",
-              'short'  : _("Custom command line"),
-              'label'  : _("DANGEROUS. Set custom command line parameters.\n"
-                           "If the following parameters already exist on the kernel command\n"
-                           "line, they will be overwritten.")
+              'short'  : _("Kernel command line"),
+              'label'  : _("DANGEROUS. Set the kernel command line parameters.\n"
+                           "If the following parameters already exist on the kernel\n"
+                           "command line, they will be overwritten.")
             }
           ]
       }
