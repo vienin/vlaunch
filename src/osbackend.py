@@ -386,7 +386,7 @@ class OSBackend(object):
         if conf.GUESTDEBUG:
             self.vbox.current_machine.set_guest_property("/UFO/Debug", "1")
             gui.dialog_info(msg=_("UFO is running in debug mode.\n"
-                                  "Be aware to disable debug mode at end of the debug session"),
+                                  "Be aware to disable debug mode at end of the debug session."),
                             title=_("Debug mode"))
 
         self.vbox.close_session()
