@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-03-10 12:47+CET\n"
-"PO-Revision-Date: 2010-03-10 12:59+0100\n"
+"POT-Creation-Date: 2010-03-11 18:07+CET\n"
+"PO-Revision-Date: 2010-03-11 18:12+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: Agorabox <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
@@ -171,6 +171,8 @@ msgid "System"
 msgstr "Système"
 
 #: src/conf.py:359
+#: src/launcher.py:118
+#: src/osbackend.py:390
 msgid "Debug mode"
 msgstr "Mode débogage"
 
@@ -241,7 +243,7 @@ msgstr "Pour plus d'informations, visitez "
 
 #: src/gui_pyqt.py:303
 #: src/osbackend.py:220
-#: src/osbackend.py:417
+#: src/osbackend.py:423
 msgid "Warning"
 msgstr "Attention"
 
@@ -267,7 +269,7 @@ msgstr "Télécharger"
 
 #: src/gui_pyqt.py:563
 #: src/gui_pyqt.py:617
-#: src/launcher.py:119
+#: src/launcher.py:137
 #: src/macbackend.py:261
 #: src/updater.py:160
 msgid "Error"
@@ -316,7 +318,7 @@ msgid "UFO password:"
 msgstr "Mot de passe UFO:"
 
 #: src/gui_pyqt.py:840
-#: src/gui_pyqt.py:1463
+#: src/gui_pyqt.py:1468
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
@@ -342,7 +344,7 @@ msgstr "Auto"
 #: src/gui_pyqt.py:1292
 #: src/gui_pyqt.py:1307
 #: src/gui_pyqt.py:1427
-#: src/osbackend.py:419
+#: src/osbackend.py:425
 #: src/updater.py:56
 #: src/updater.py:58
 msgid "Yes"
@@ -352,8 +354,8 @@ msgstr "Oui"
 #: src/gui_pyqt.py:1293
 #: src/gui_pyqt.py:1308
 #: src/gui_pyqt.py:1427
-#: src/osbackend.py:420
-#: src/osbackend.py:421
+#: src/osbackend.py:426
+#: src/osbackend.py:427
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
@@ -407,11 +409,11 @@ msgstr "Opération en cours"
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:1456
+#: src/gui_pyqt.py:1461
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:1460
+#: src/gui_pyqt.py:1465
 #: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
@@ -420,29 +422,41 @@ msgstr "Mot de passe requis"
 msgid "Please enter your password:"
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/launcher.py:71
+#: src/launcher.py:72
 msgid "A U.F.O Live CD is required to continue."
 msgstr "Un live U.F.O est nécessaire pour continuer."
 
-#: src/launcher.py:72
+#: src/launcher.py:73
 msgid "Press 'Download' to start downloading the U.F.O Live image."
 msgstr "Cliquez sur 'Télécharger' pour commencer le téléchargement."
 
-#: src/launcher.py:73
+#: src/launcher.py:74
 msgid "This operation can take up to a few hours, depending on your connection speed."
 msgstr ""
 "Cette opération peut prendre de quelques minutes à plusieurs heures\n"
 "suivant la vitesse de votre connexion."
 
-#: src/launcher.py:120
+#: src/launcher.py:119
+msgid ""
+"UFO was run in debug mode.\n"
+"You can help fixing your problem by submitting the debug reports"
+msgstr ""
+"UFO a été exécuté en mode déboguage. Vous pouvez aider à la correction de votre problème en soumettant\n"
+"les rapports de déboguage."
+
+#: src/launcher.py:121
+msgid "Send debug reports"
+msgstr "Envoyer les rapports de déboguage"
+
+#: src/launcher.py:138
 msgid "UFO a encountered a fatal error and will now be closed."
 msgstr "UFO a rencontré une erreur fatale et doit fermer."
 
-#: src/launcher.py:121
+#: src/launcher.py:139
 msgid "You can help fixing this problem by submitting an error report"
 msgstr "Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur."
 
-#: src/launcher.py:122
+#: src/launcher.py:140
 msgid "Send a report"
 msgstr "Envoyer le rapport d'erreur"
 
@@ -490,27 +504,35 @@ msgstr ""
 "\n"
 "Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances."
 
-#: src/osbackend.py:418
+#: src/osbackend.py:388
+msgid ""
+"UFO is running in debug mode.\n"
+"Be aware to disable debug mode at end of the debug session."
+msgstr ""
+"UFO est exécuté en mode déboguage.\n"
+"Prennez garde à désactiver le mode débogaguage à la fin de la session."
+
+#: src/osbackend.py:424
 msgid "Could not find an UFO key, try again ?"
 msgstr "Aucune clé UFO n'a été trouvée, réessayer ?"
 
-#: src/osbackend.py:427
+#: src/osbackend.py:433
 msgid "Select the USB device you want to install UFO on"
 msgstr "Selectionnez le périphérique USB sur lequel vous voulez installer UFO"
 
-#: src/osbackend.py:428
+#: src/osbackend.py:434
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/osbackend.py:428
+#: src/osbackend.py:434
 msgid "No USB device found"
 msgstr "Aucune clée trouvée"
 
-#: src/osbackend.py:444
+#: src/osbackend.py:450
 msgid "UFO can not be launched"
 msgstr "UFO n'a pas pu être démarré"
 
-#: src/osbackend.py:445
+#: src/osbackend.py:451
 msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
@@ -518,39 +540,39 @@ msgstr ""
 "Une instance de %s est en déjà cours d'éxécution.\n"
 "Veuillez fermer toutes les fenêtres de %s et recomencez."
 
-#: src/osbackend.py:447
+#: src/osbackend.py:453
 msgid "Force to close"
 msgstr "Forcer à quitter"
 
-#: src/osbackend.py:454
+#: src/osbackend.py:460
 msgid "The VirtualBox binaries could not be found"
 msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 
-#: src/osbackend.py:455
+#: src/osbackend.py:461
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:485
+#: src/osbackend.py:491
 msgid "Opening session..."
 msgstr "Ouverture de la session en cours..."
 
-#: src/osbackend.py:495
+#: src/osbackend.py:501
 msgid "UFO: authenticating"
 msgstr "UFO: en cours d'authentification"
 
-#: src/osbackend.py:511
+#: src/osbackend.py:517
 msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
-#: src/osbackend.py:529
+#: src/osbackend.py:535
 msgid "UFO: running"
 msgstr "UFO: en cours d'exécution"
 
-#: src/osbackend.py:536
+#: src/osbackend.py:542
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:537
+#: src/osbackend.py:543
 msgid ""
 "Please wait while UFO is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
@@ -558,11 +580,11 @@ msgstr ""
 "UFO est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:540
+#: src/osbackend.py:546
 msgid "Shutting down"
 msgstr "Arrêt en cours"
 
-#: src/osbackend.py:541
+#: src/osbackend.py:547
 msgid ""
 "Please wait while UFO is shutting down,\n"
 "you absolutely must not unplug the key !"
@@ -570,51 +592,51 @@ msgstr ""
 "UFO est en cours de fermeture,\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:545
+#: src/osbackend.py:551
 msgid "UFO: recording changes"
 msgstr "UFO: en cours de sauvegarde"
 
-#: src/osbackend.py:556
+#: src/osbackend.py:562
 msgid "Restart UFO"
 msgstr "Redémarrage de UFO"
 
-#: src/osbackend.py:557
+#: src/osbackend.py:563
 msgid "UFO is rebooting"
 msgstr "UFO est en cours de redémarrage"
 
-#: src/osbackend.py:582
+#: src/osbackend.py:593
 msgid "UFO is starting"
 msgstr "Démarrage de UFO"
 
-#: src/osbackend.py:584
+#: src/osbackend.py:595
 msgid "1<SUP>st</SUP> launch of UFO"
 msgstr "1<SUP>er</SUP> démarrage de UFO"
 
-#: src/osbackend.py:586
+#: src/osbackend.py:597
 msgid "UFO is starting."
 msgstr "UFO est en cours de démarrage"
 
-#: src/osbackend.py:590
+#: src/osbackend.py:601
 msgid "UFO: starting"
 msgstr "UFO: en cours de démarrage"
 
-#: src/osbackend.py:602
+#: src/osbackend.py:613
 msgid "UFO: terminated"
 msgstr "UFO: terminé"
 
-#: src/osbackend.py:603
+#: src/osbackend.py:614
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:604
+#: src/osbackend.py:615
 msgid "You can now safely eject your UFO key."
 msgstr "Vous pouvez éjecter votre clé UFO en toute securité."
 
-#: src/osbackend.py:687
+#: src/osbackend.py:698
 msgid "New USB device"
 msgstr "Nouveau périphérique USB"
 
-#: src/osbackend.py:688
+#: src/osbackend.py:699
 msgid "you can link this device to your U.F.O desktop."
 msgstr "vous pouvez relier ce nouveau périphérique à votre bureau UFO."
 
