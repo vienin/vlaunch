@@ -28,6 +28,7 @@ import tempfile
 import urllib
 import traceback
 import gui
+import glob
 import updater
 
 format = "%(asctime)s %(levelname)s %(message)s"
@@ -113,13 +114,31 @@ if __name__ == "__main__":
             sys.exit(1)
             
         backend.run()
+        if conf.GUESTDEBUG:
+            if gui.dialog_error_report(_("Debug mode"),
+                                       _("UFO was run in debug mode.\n"
+                                       "You can help fixing your problem by submitting the debug reports"),
+                                       _("Send debug reports"),
+                                       error=False):
+                report_files = glob.glob(conf.LOGFILE + "*")
+                reports = ""
+                for file in report_files:
+                    reports += "\n" + ("_" * len(file)) + "\n" + file + "\n\n"
+                    reports += open(file, 'r').read()
+                params = urllib.urlencode({'report': reports})
+                try:
+                    urllib.urlopen(conf.REPORTURL, params)
+                except:
+                    pass
+            
     except Exception, e:
         trace = traceback.format_exc()
         logging.debug(trace)
         if gui.dialog_error_report(_("Error"),
                                    _("UFO a encountered a fatal error and will now be closed.") + "\n" + \
                                    _("You can help fixing this problem by submitting an error report"),
-                                   _("Send a report"), trace):
+                                   _("Send a report"), 
+                                   trace):
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
         try:
             urllib.urlopen(conf.REPORTURL, params)

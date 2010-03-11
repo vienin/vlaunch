@@ -1431,13 +1431,18 @@ def dialog_question(title, msg, button1=_("Yes"), button2=_("No")):
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2
 
-def dialog_error_report(title, msg, action=None, details=None):
+def dialog_error_report(title, msg, action=None, details=None, error=True):
     msgbox = OurMessageBox(main)
     msgbox.setIcon(QtGui.QMessageBox.Question)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
-    msgbox.addButton(QtGui.QMessageBox.Ok)
-    msgbox.setIcon(QtGui.QMessageBox.Critical)
+    if error:
+        msgbox.setIcon(QtGui.QMessageBox.Critical)
+        msgbox.addButton(QtGui.QMessageBox.Ok)
+    else:
+        msgbox.setIcon(QtGui.QMessageBox.Question)
+        msgbox.addButton(QtGui.QMessageBox.Cancel)
+        
     if action:
         sendButton = msgbox.addButton(action, QtGui.QMessageBox.AcceptRole)
 
