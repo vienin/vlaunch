@@ -364,7 +364,7 @@ class OSBackend(object):
                 #     virtual_box.machine.set_guest_property("overlay_quota", ...)
             except:
                 logging.debug("Exception while creating overlay")
-
+             
         logging.debug("conf.CMDLINE: " + conf.CMDLINE)
         logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
         self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
@@ -382,6 +382,12 @@ class OSBackend(object):
             self.keyring_valid = None
 
         self.credentials = self.set_credentials
+        
+        if conf.GUESTDEBUG:
+            self.vbox.current_machine.set_guest_property("/UFO/Debug", "1")
+            gui.dialog_info(msg=_("UFO is running in debug mode.\n"
+                                  "Be aware to disable debug mode at end of the debug session"),
+                            title=_("Debug mode"))
 
         self.vbox.close_session()
 
@@ -565,6 +571,11 @@ class OSBackend(object):
                 gui.app.fullscreen_window(True)
             else:
                 gui.app.fullscreen_window(False)
+                
+        # Fullscreen management
+        elif "/UFO/Debug/" in name:
+            open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
+            
 
     def onMachineStateChange(self, state):
 
