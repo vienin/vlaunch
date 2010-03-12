@@ -228,7 +228,8 @@ class OSBackend(object):
             
             # Set number of processors
             if self.vbox.vbox_version() >= "3.0.0" and self.vbox.host.is_virt_ex_available():
-                logging.debug("Settings CPU capabilities: VT=%s PAE=%s nested_paging=%s" % (conf.PAE, conf.VT, conf.NESTEDPAGING))
+                logging.debug("Settings CPU capabilities: VT=%s PAE=%s nested_paging=%s" % \
+                              (conf.PAE, conf.VT, conf.NESTEDPAGING))
                 self.vbox.current_machine.set_cpu_capabilities(PAE=conf.PAE, VT=conf.VT,
                                                                nested_paging=conf.NESTEDPAGING)
                 if conf.CPUS == conf.AUTO_INTEGER:
@@ -572,14 +573,15 @@ class OSBackend(object):
             else:
                 gui.app.fullscreen_window(False)
                 
-        # Fullscreen management
+        # Debug management
         elif "/UFO/Debug/" in name:
             open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
             
 
     def onMachineStateChange(self, state):
-
         last_state = self.vbox.current_machine.last_state
+        
+        # The virtual machine is starting
         if state == self.vbox.constants.MachineState_Running and \
            last_state == self.vbox.constants.MachineState_Starting:
             
@@ -599,10 +601,11 @@ class OSBackend(object):
                                           credentials=self.keyring_valid)
             
             gui.app.set_tooltip(_("UFO: starting"))
-            
-        elif state == self.vbox.constants.MachineState_PoweredOff and \
-             (last_state == self.vbox.constants.MachineState_Stopping or \
-              last_state == self.vbox.constants.MachineState_Aborted):
+        
+        # The virtual machine is stopping
+        elif (state == self.vbox.constants.MachineState_PoweredOff and \
+              last_state == self.vbox.constants.MachineState_Stopping) or \
+              state == self.vbox.constants.MachineState_Aborted:
             
             if gui.app.usb_check_timer:
                 gui.app.stop_usb_check_timer()
@@ -620,7 +623,7 @@ class OSBackend(object):
             
             # main loop end condition
             self.vbox.current_machine.is_finished = True
-            
+        
         self.vbox.current_machine.last_state = state
 
     def set_credentials(self, password, remember=False):
