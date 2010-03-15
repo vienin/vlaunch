@@ -622,6 +622,7 @@ class VBoxMachine():
         try:
             if attach_type == "NAT":
                 self.machine.getNetworkAdapter(0).attachToNAT()
+                self.machine.getNetworkAdapter(0).cableConnected = True
             elif attach_type =="Bridged":
                 assert host_adapter != ''
                 if mac_address:
@@ -633,6 +634,7 @@ class VBoxMachine():
                     self.machine.getNetworkAdapter(0).attachToBridgedInterface()
             elif attach_type =="None":
                 self.machine.getNetworkAdapter(0).detach()
+                self.machine.getNetworkAdapter(0).cableConnected = False
         except Exception, e:
             logging.debug(e)
             result_code = 3
@@ -697,6 +699,12 @@ class VBoxHost():
 
     def get_DVD_drives(self):
         return self.host.DVDDrives
+    
+    def is_network_active(self):
+        for interface in self.host.findHostNetworkInterfacesOfType(self.constants.HostNetworkInterfaceType_Bridged):
+            if interface.status == 1:
+                return True
+        return False
 
 
 class VBoxMonitor:

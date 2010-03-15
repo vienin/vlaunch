@@ -41,6 +41,7 @@ class QtUFOGui(QtGui.QApplication):
         self.tray            = None
         self.splash          = None
         self.usb_check_timer = None
+        self.net_adapt_timer = None
         self.callbacks_timer = None
         self.console_window  = None
         self.console_winid   = 0
@@ -181,6 +182,16 @@ class QtUFOGui(QtGui.QApplication):
         
     def stop_usb_check_timer(self):
         self.postEvent(self, TimerEvent(self.usb_check_timer,
+                                        time=None, 
+                                        function=None, 
+                                        stop=True))
+    def start_net_adapt_timer(self, time, function):
+        self.postEvent(self, TimerEvent(self.net_adapt_timer,
+                                        time, 
+                                        function))
+        
+    def stop_net_adapt_timer(self):
+        self.postEvent(self, TimerEvent(self.net_adapt_timer,
                                         time=None, 
                                         function=None, 
                                         stop=True))

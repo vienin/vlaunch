@@ -76,6 +76,7 @@ class OSBackend(object):
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
+        self.network        = False
         
         self.env = self.update_env()
 
@@ -252,8 +253,8 @@ class OSBackend(object):
             conf.NETTYPE, net_name = self.find_network_device()
             if conf.NETTYPE == conf.NET_NAT:
                 logging.debug(conf.SCRIPT_NAME + ": using nat networking")
-                self.vbox.current_machine.set_network_adapter(attach_type = 'NAT')
-
+                self.vbox.current_machine.set_network_adapter(attach_type = 'None')
+                
             elif conf.NETTYPE == conf.NET_HOST:
                 # setting network interface to host
                 logging.debug("Using net bridge on " + net_name)
@@ -511,7 +512,7 @@ class OSBackend(object):
         elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
             # We NEVER receive last percent event,
             # so we use /VirtualBox/GuestAdd/Vbgl/Video/SavedMode event
-            # raised at slim startup to catch end of oot progress
+            # raised at slim startup to catch end of boot progress
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
                 gui.app.update_progress(gui.app.tray.progress, str("1.000"))
@@ -572,7 +573,7 @@ class OSBackend(object):
                 gui.app.fullscreen_window(True)
             else:
                 gui.app.fullscreen_window(False)
-                
+            
         # Debug management
         elif "/UFO/Debug/" in name:
             open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
@@ -609,6 +610,8 @@ class OSBackend(object):
             
             if gui.app.usb_check_timer:
                 gui.app.stop_usb_check_timer()
+            if gui.app.net_adapt_timer:
+                gui.app.stop_net_adapt_timer()
             if gui.app.callbacks_timer:
                 gui.app.stop_callbacks_timer()
 
@@ -655,13 +658,16 @@ class OSBackend(object):
         # callbacks, we pool on virtual machine's properties
         # and call corresponding callback method
         if not self.vbox.callbacks_aware:
+            
+            # Special case when Qt backend unavailable and virtualbox < 3.0.0,
+            # in this case we are not able to catch termination
+            if gui.backend != "PyQt":
+                sys.exit(1)
+                
             gui.app.start_callbacks_timer(1, self.vbox.minimal_callbacks_maker_loop)
 
-        # Special case when Qt backend unavailable and virtualbox < 3.0.0,
-        # in this case we are not able to catch termination
-        if gui.backend != "PyQt":
-            sys.exit(1)
-
+        gui.app.start_net_adapt_timer(5, self.check_network_adapters)
+        
         # As we use waitForEvents(interval) from vboxapi,
         # we are not able to use another type of loop, as 
         # Qt one, because we d'ont receive any vbox callbacks
@@ -671,7 +677,7 @@ class OSBackend(object):
         # following interval value (default: 50ms)
         while not self.vbox.current_machine.is_finished:
             self.wait_for_events(0.05)
-
+        
     def wait_for_events(self, interval):
         # This function is overloaded only on Windows
         if self.vbox.callbacks_aware:
@@ -688,6 +694,19 @@ class OSBackend(object):
                 return usb[2]
         return ""
 
+    def check_network_adapters(self):
+        # manage availability of host network adapters
+        if conf.NETTYPE == conf.NET_HOST:
+            return
+        
+        one_least_active = self.vbox.host.is_network_active()
+        if self.network != one_least_active:
+            self.network = one_least_active
+            if self.network:
+                self.vbox.current_machine.set_network_adapter(attach_type = 'NAT')
+            else:
+                self.vbox.current_machine.set_network_adapter(attach_type = 'None')
+                
     def check_usb_devices(self):
         # manage removable media shared folders
         usb_devices = self.get_usb_devices()
@@ -716,7 +735,7 @@ class OSBackend(object):
             self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb[1]),
                                                          str(usb[0]))
         self.usb_devices = usb_devices
-
+        
     def run_virtual_machine(self, env):
         if conf.STARTVM:
             self.vbox.current_machine.start()
