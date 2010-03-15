@@ -641,6 +641,9 @@ class VBoxMachine():
         if save:
             self.machine.saveSettings()
         return result_code
+    
+    def get_mac_addr(self):
+        return self.machine.getNetworkAdapter(0).MACAddress
 
     def set_procs(self, nbprocs, save = False):
         self.machine.CPUCount = nbprocs

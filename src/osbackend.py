@@ -248,12 +248,13 @@ class OSBackend(object):
 
             # Set 3D acceleration
             self.vbox.current_machine.enable_3D(conf.ACCEL3D and self.vbox.supports_3D())
-                
+            
             # check host network adapter
             conf.NETTYPE, net_name = self.find_network_device()
             if conf.NETTYPE == conf.NET_NAT:
                 logging.debug(conf.SCRIPT_NAME + ": using nat networking")
-                self.vbox.current_machine.set_network_adapter(attach_type = 'None')
+                self.vbox.current_machine.set_network_adapter(attach_type = 'None',
+                                                              mac_address = conf.MACADDR)
                 
             elif conf.NETTYPE == conf.NET_HOST:
                 # setting network interface to host
@@ -261,6 +262,10 @@ class OSBackend(object):
                 self.vbox.current_machine.set_network_adapter(attach_type = 'Bridged', 
                                                               host_adapter = conf.HOSTNET, 
                                                               mac_address = conf.MACADDR)
+            
+            if conf.MACADDR == "":
+                conf.write_value_to_file("vm", "macaddr", self.vbox.current_machine.get_mac_addr())
+            
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
@@ -477,12 +482,7 @@ class OSBackend(object):
         
         # UFO settings management
         elif os.path.dirname(name) == "/UFO/Settings":
-            cp = ConfigParser()
-            cp.read(conf.conf_file)
-            if not cp.has_section("guest"):
-                cp.add_section("guest")
-            cp.set("guest", os.path.basename(name), newValue)
-            cp.write(open(conf.conf_file, "w"))
+            conf.write_value_to_file("guest", os.path.basename(name), newValue)
         
         # Credentials management
         elif os.path.dirname(name) == "/UFO/Credentials":
@@ -750,10 +750,7 @@ class OSBackend(object):
 
     def global_cleanup(self):
         if self.vbox.license_agreed():
-            cp = ConfigParser()
-            cp.read(conf.conf_file)
-            cp.set("launcher", "LICENSE", "1")
-            cp.write(open(conf.conf_file, "w"))
+            conf.write_value_to_file("launcher", "LICENSE", "1")
         if self.dnddir:
             shutil.rmtree(self.dnddir)
         if self.tmp_swapdir:
