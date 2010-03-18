@@ -3,7 +3,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -68,6 +68,7 @@ class VBoxConstantsWrapper:
         from vboxapi import VirtualBoxReflectionInfo
         self.constants = VirtualBoxReflectionInfo(False)
         self.version   = version
+        self._Values   = self.constants._Values
         
     def __getattr__(self, attr):
         
@@ -84,12 +85,13 @@ class VBoxConstantsWrapper:
 
 class VBoxHypervisor():
                         
-    def __init__(self, vbox_callback_class = None, vbox_callback_arg = None):
+    def __init__(self, vbox_callback_class=None, vbox_callback_arg=None):
         from vboxapi import VirtualBoxManager
 
         self.current_machine = None
         self.session         = None
         self.cleaned         = False
+        self.network         = False
         
         self.vm_manager = VirtualBoxManager(None, None)
         self.mgr        = self.vm_manager.mgr
@@ -99,7 +101,9 @@ class VBoxHypervisor():
         self.host = VBoxHost(self.vm_manager.vbox.host, self.constants)
         
         if self.vbox_version() >= "3.0.0" and vbox_callback_class:
-            self.cb = self.vm_manager.createCallback('IVirtualBoxCallback', vbox_callback_class, vbox_callback_arg)
+            self.cb = self.vm_manager.createCallback('IVirtualBoxCallback',
+                                                     vbox_callback_class,
+                                                     vbox_callback_arg)
             self.vbox.registerCallback(self.cb)
             self.callbacks_aware = True
         else:
@@ -137,7 +141,7 @@ class VBoxHypervisor():
             self.vbox.unregisterCallback(self.cb)
         self.cleaned = True
 
-    def create_machine(self, machine_name, os_type, base_dir = ''):
+    def create_machine(self, machine_name, os_type, base_dir=''):
         if self.vbox_version() < "2.1.0" and os_type == "Fedora":
             os_type = "fedoracore"
         try:
@@ -270,7 +274,7 @@ class VBoxHypervisor():
             return None
         return floppy
 
-    def set_extra_data(self, key, value, save = False):
+    def set_extra_data(self, key, value, save=False):
         self.vbox.setExtraData(key, value)
         if save and hasattr(self.vbox, "saveSettings"):
             self.vbox.saveSettings()
@@ -328,6 +332,17 @@ class VBoxHypervisor():
             self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Stopping)
             self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_PoweredOff)
 
+    def check_network_adapters(self):
+        one_least_active = self.host.is_network_active()
+        if self.network != one_least_active:
+            self.network = one_least_active
+            if self.network and \
+               self.current_machine.get_network_adapter_type() == self.constants.NetworkAttachmentType_Null:
+                self.current_machine.set_network_adapter(attach_type = self.constants.NetworkAttachmentType_NAT)
+            else:
+                self.current_machine.set_network_adapter(attach_type = self.constants.NetworkAttachmentType_Null)
+
+
 class VBoxMachine():
 
     def __init__(self, hypervisor, machine):
@@ -347,6 +362,8 @@ class VBoxMachine():
         
         self.current_disk_rank = 0
         self.machine.saveSettings()
+
+        self.usb_attachmnts = {}
         
     def __del__(self):
         del self.machine
@@ -381,7 +398,7 @@ class VBoxMachine():
         else:
             return 1
 
-    def set_variable(self, variable_expr, variable_value, save = False):
+    def set_variable(self, variable_expr, variable_value, save=False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value
         try:
             exec expr
@@ -392,7 +409,7 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def attach_harddisk(self, location, disk_rank = -1, save = False):
+    def attach_harddisk(self, location, disk_rank=-1, save=False):
         if disk_rank == -1:
             disk_rank = self.current_disk_rank
             self.current_disk_rank += 1
@@ -429,7 +446,7 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def attach_dvd(self, location = '', host_drive = False, save = False):
+    def attach_dvd(self, location='', host_drive=False, save=False):
         if host_drive:
             dvd = self.machine.DVDDrive.captureHostDrive(self.machine.DVDDrive.getHostDrive())
         else:
@@ -461,7 +478,7 @@ class VBoxMachine():
             controller = self.machine.addStorageController(kind + " Controller", buses[kind])
         return controller
 
-    def attach_floppy(self, location = '', host_drive = False, save = False):
+    def attach_floppy(self, location='', host_drive=False, save=False):
         if host_drive:
             floppy = self.machine.floppyDrive.captureHostDrive(self.machine.floppyDrive.getHostDrive())
         else:
@@ -485,7 +502,22 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def add_shared_folder(self, name, host_path, writable, save = False):
+    def attach_usb(self, usb, attach=True, locked=False):
+        if attach:
+            logging.debug("Attaching usb device: " + str(usb['path']) + ", " + str(usb['name']))
+            self.add_shared_folder(usb['name'], usb['path'], writable = True)
+            self.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + str(usb['name']), 
+                                    str(usb['name']))
+        else:
+            logging.debug("Detaching usb device: " + str(usb['path']) + ", " + str(usb['name']))
+            self.remove_shared_folder(str(usb['name']))
+            self.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb['name']), 
+                                    str(usb['path']))
+
+        usb['locked'] = locked
+        usb['attach'] = attach
+
+    def add_shared_folder(self, name, host_path, writable, save=False):
         try:
             self.machine.createSharedFolder(name, host_path, writable)
         except Exception, e:
@@ -495,7 +527,7 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
     
-    def remove_shared_folder(self, name, save = False):
+    def remove_shared_folder(self, name, save=False):
         try:
             self.machine.removeSharedFolder(name)
         except Exception, e:
@@ -505,14 +537,14 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def set_boot_device(self, device_type, save = False):
+    def set_boot_device(self, device_type, save=False):
         assert device_type == "HardDisk" or device_type == "DVD" or device_type == "Floppy"
         self.machine.setBootOrder(1, getattr(self.hypervisor.constants, "DeviceType_" + device_type))
         if save:
             self.machine.saveSettings()
         return 0
 
-    def set_boot_logo(self, image_path, fade_in = True, fade_out = True, display_time = 0, save = False):
+    def set_boot_logo(self, image_path, fade_in=True, fade_out=True, display_time=0, save=False):
         self.machine.BIOSSettings.logoImagePath   = image_path
         self.machine.BIOSSettings.logoFadeIn      = fade_in
         self.machine.BIOSSettings.logoFadeOut     = fade_out
@@ -521,18 +553,18 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def set_bios_params(self, acpi_enabled, ioapic_enabled, save = False):
+    def set_bios_params(self, acpi_enabled, ioapic_enabled, save=False):
         self.machine.BIOSSettings.ACPIEnabled   = acpi_enabled
         self.machine.BIOSSettings.IOAPICEnabled = ioapic_enabled
         if save:
             self.machine.saveSettings()
         return 0
 
-    def disable_boot_menu(self, save = False):
+    def disable_boot_menu(self, save=False):
         self.machine.BIOSSettings.bootMenuMode = \
             self.hypervisor.constants.BIOSBootMenuMode_Disabled
 
-    def set_ram_size(self, ram_size, save = False):
+    def set_ram_size(self, ram_size, save=False):
         try:
             self.machine.memorySize = ram_size
         except Exception, e:
@@ -542,7 +574,7 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def set_vram_size(self, vram_size, save = False):
+    def set_vram_size(self, vram_size, save=False):
         try:
             self.machine.VRAMSize = vram_size
         except Exception, e:
@@ -552,31 +584,28 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def set_audio_adapter(self, audio_driver, audio_controller = "AC97", save = False):
-        assert audio_controller == "AC97" or audio_controller == "SB16"
-        assert audio_driver == "Null" or audio_driver == "WinMM" or \
-               audio_driver == "OSS" or audio_driver == "ALSA" or \
-               audio_driver == "DirectSound" or audio_driver == "CoreAudio" or \
-               audio_driver == "MMPM" or audio_driver == "Pulse" or \
-               audio_driver == "SolAudio"
+    def set_audio_adapter(self, audio_driver, audio_controller=None, save=False):
+        if not audio_controller:
+            audio_controller = self.hypervisor.constants.AudioControllerType_AC97
+
+        assert audio_controller in self.hypervisor.constants._Values['AudioControllerType'].values()
+        assert audio_driver in self.hypervisor.constants._Values['AudioDriverType'].values()
 
         self.machine.audioAdapter.enabled = True
-        self.machine.audioAdapter.audioController = \
-            getattr(self.hypervisor.constants, "AudioControllerType_" + audio_controller)
-        self.machine.audioAdapter.audioDriver = \
-            getattr(self.hypervisor.constants, "AudioDriverType_" + audio_driver)
+        self.machine.audioAdapter.audioController = audio_controller
+        self.machine.audioAdapter.audioDriver = audio_driver
         if save:
             self.machine.saveSettings()
         return 0
 
-    def set_resolution(self, resolution, save = False):
+    def set_resolution(self, resolution, save=False):
         self.machine.setGuestProperty('/VirtualBox/GuestAdd/Vbgl/Video/SavedMode', 
                                      resolution + 'x32', '')
         if save:
             self.machine.saveSettings()
         return 0
 
-    def set_guest_property(self, key, value, save = False):
+    def set_guest_property(self, key, value, save=False):
         self.machine.setGuestProperty(key, value, '')
         if save:
             self.machine.saveSettings()
@@ -585,31 +614,28 @@ class VBoxMachine():
     def get_guest_property(self, key):
         return self.machine.getGuestPropertyValue(key)
 
-    def set_extra_data(self, key, value, save = False):
+    def set_extra_data(self, key, value, save=False):
         self.machine.setExtraData(key, value)
         if save:
             self.machine.saveSettings()
         return 0
 
-    def set_fullscreen(self, save = False):
+    def set_fullscreen(self, save=False):
         self.machine.setExtraData('GUI/Fullscreen', 'on')
         if save:
             self.machine.saveSettings()
         return 0
 
-    def set_network_adapter(self, attach_type = '', adapter_type = '', mac_address = '', host_adapter = '', save = False):
-        assert adapter_type == "Null" or adapter_type == "Am79C970A" or \
-            adapter_type == "I82540EM" or adapter_type == "I82543GC" or \
-            adapter_type == "I82545EM" or adapter_type == "Am79C973" or \
-            adapter_type == ""
-        assert attach_type == "NAT" or attach_type == "Bridged" or \
-            attach_type =="None" or attach_type == ""
+    def set_network_adapter(self, attach_type=None, adapter_type=None, mac_address='', host_adapter='', save=False):
+        assert adapter_type in self.hypervisor.constants.constants._Values['NetworkAdapterType'].values() or \
+               adapter_type == None
+        assert attach_type in self.hypervisor.constants._Values['NetworkAttachmentType'].values() or \
+               attach_type == None
         
         result_code = 0
         try:
-            if adapter_type != '':
-                self.machine.getNetworkAdapter(0).adapterType = \
-                    getattr(self.hypervisor.constants, "NetworkAdapterType_" + adapter_type)
+            if adapter_type != None:
+                self.machine.getNetworkAdapter(0).adapterType = adapter_type
         except Exception, e:
             logging.debug(e)
             result_code = 1
@@ -619,11 +645,13 @@ class VBoxMachine():
         except Exception, e:
             logging.debug(e)
             result_code = 2
+
         try:
-            if attach_type == "NAT":
+            if attach_type == self.hypervisor.constants.NetworkAttachmentType_NAT:
                 self.machine.getNetworkAdapter(0).attachToNAT()
                 self.machine.getNetworkAdapter(0).cableConnected = True
-            elif attach_type =="Bridged":
+
+            elif attach_type == self.hypervisor.constants.NetworkAttachmentType_Bridged:
                 assert host_adapter != ''
                 if mac_address:
                     self.machine.getNetworkAdapter(0).MACAddress = mac_address
@@ -632,9 +660,11 @@ class VBoxMachine():
                     self.machine.getNetworkAdapter(0).attachToHostInterface()
                 else:
                     self.machine.getNetworkAdapter(0).attachToBridgedInterface()
-            elif attach_type =="None":
+
+            elif attach_type == self.hypervisor.constants.NetworkAttachmentType_Null:
                 self.machine.getNetworkAdapter(0).detach()
                 self.machine.getNetworkAdapter(0).cableConnected = False
+
         except Exception, e:
             logging.debug(e)
             result_code = 3
@@ -642,10 +672,13 @@ class VBoxMachine():
             self.machine.saveSettings()
         return result_code
     
+    def get_network_adapter_type(self):
+        return self.machine.getNetworkAdapter(0).attachmentType
+
     def get_mac_addr(self):
         return self.machine.getNetworkAdapter(0).MACAddress
 
-    def set_procs(self, nbprocs, save = False):
+    def set_procs(self, nbprocs, save=False):
         self.machine.CPUCount = nbprocs
         if save:
             self.machine.saveSettings()
@@ -747,121 +780,4 @@ class VBoxMonitor:
     def onGuestPropertyChange(self, id, name, newValue, flags):
         pass
 
-        
-def test_cases():
-    vm = VBoxHypervisor()
-    print "-- Let's test ufovboxapi !"
-
-    # create_machine
-    created = vm.create_machine('test', 'Fedora')
-    for m in vm.get_machines():
-        print m.name + " : " + m.id
-    if created != 0 or not 'test' in [ m.name for m in vm.get_machines() ]:
-        print "-- create_machine: failed!"
-    else:
-        print "-- create_machine: success!"
-
-    # open_machine
-    if vm.open_machine('test') != 0 or vm.current_machine == None:
-        print "-- open_machine: failed!"
-    else:
-        print "created : " + vm.current_machine.machine.name
-        print "-- open_machine: success!"
-
-    # set_machine_var
-    if vm.current_machine.set_variable('BIOSSettings.IOAPICEnabled', 'True', save = 'False') != 0 or \
-        vm.current_machine.set_variable('WRONGSettings.WRONG', 'True') == 0:
-        print "-- set_machine_variable: failed!"
-    else:
-        print "-- set_machine_variable: success!"
-
-    # add_dvd
-    if vm.current_machine.attach_harddisk('/home/vienin/hdd.vdi', 0, save = 'False') != 0:
-        print "-- attach_harddisk: failed!"
-    else:
-        print "-- attach_harddisk: success!"
-
-    if vm.current_machine.attach_dvd('/home/vienin/Fedora-11-Alpha-i386-DVD.iso', save = 'False') != 0:
-        print "-- attach_dvd: failed!"
-    else:
-        print "-- attach_dvd: success!"
-    if True or vm.current_machine.attach_dvd('', True, save = 'False') != 0:
-        print "-- attach_dvd, host drive: failed!"
-    else:
-        print "-- attach_dvd, host drive: success!"
-
-    if vm.current_machine.attach_floppy('/home/vienin/bootfloppy.img', save = 'False') != 0:
-        print "-- attach_floppy: failed!"
-    else:
-        print "-- attach_floppy: success!"
-    if True or vm.current_machine.attach_floppy('', True, save = 'False') != 0:
-        print "-- attach_floppy, host drive: failed!"
-    else:
-        print "-- attach_floppy, host drive: success!"
-
-    # set_boot_device
-    if vm.current_machine.set_boot_device('DVD', save = 'False') != 0:
-        print "-- set_boot_device: failed!"
-    else:
-        print "-- set_boot_device: success!"
-
-    if  vm.current_machine.set_ram_size("400", save = 'False') !=0:
-        print "-- set_ram_size: failed!"
-    else:
-        print "-- set_ram_size: success!"
-
-    if  vm.current_machine.set_vram_size("64", save = 'False') !=0:
-        print "-- set_vram_size: failed!"
-    else:
-        print "-- set_vram_size: success!"
-
-    if  vm.current_machine.set_resolution("17x17", save = 'False') !=0:
-        print "-- set_resolution: failed!"
-    else:
-        print "-- set_resolution: success!"
-
-    if  vm.current_machine.set_fullscreen(save = 'False') !=0:
-        print "-- set_fullscreen: failed!"
-    else:
-        print "-- set_fullscreen: success!"
-
-    if  vm.current_machine.set_boot_logo ('/rg/rg', save = 'False') !=0:
-        print "-- set_boot_logo: failed!"
-    else:
-        print "-- set_boot_logo: success!"
-
-    if  vm.current_machine.set_network_adapter('NAT', 'I82540EM', '002215952933', save = 'False') !=0:
-        print "-- set_network_adapter: failed!"
-    else:
-        print "-- set_network_adapter: success!"
-
-    if  vm.current_machine.add_shared_folder("host_home", "/home", True, save = 'False') !=0:
-        print "-- add_shared_folder: failed!"
-    else:
-        print "-- add_shared_folder: success!"
-
-    if  vm.current_machine.set_audio_adapter("ALSA", "AC97", save = 'False') !=0 or \
-        vm.current_machine.set_audio_adapter("OSS", "AC97", save = 'False') != 0:
-        print "-- set_audio_adapter: failed!"
-    else:
-        print "-- set_audio_adapter: success!"
-
-    # start_machine
-    vm.close_session()
-    if vm.current_machine.start() != 0:
-        print "-- start: failed!"
-    else:
-        print "-- start: success!"
-
-    # close_machine
-    if vm.close_machine() != 0:
-        print "-- close_machine: failed!"
-    else:
-        print "-- close_machine: success!"
-
-    print "and some infos about host machine: ram " + str(vm.host.get_total_ram()) + ", free ram " + str(vm.host.get_free_ram())
-    del vm
-
-if __name__ == '__main__':
-    test_cases()
 

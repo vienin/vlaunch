@@ -2,7 +2,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -37,22 +37,23 @@ from osbackend import OSBackend
 from shutil import copyfile
 
 class WindowsBackend(OSBackend):
+
     VBOXMANAGE_EXECUTABLE = "VBoxManage.exe"
     VIRTUALBOX_EXECUTABLE = "VirtualBox.exe"
-
-    HOST_AUDIO_DRIVER = "DirectSound"
-
-    RELATIVE_VMDK_POLICY = False
+    RELATIVE_VMDK_POLICY  = False
 
     def __init__(self):
         OSBackend.__init__(self)
         self.WMI = wmi.WMI()
 
+    def get_default_audio_driver(self):
+        return self.vbox.constants.AudioDriverType_DirectSound
+
     def check_process(self):
         logging.debug("Checking UFO process")
         # TODO: Get pid for possible kill
         processes = self.WMI.Win32_Process(Name="ufo.exe")
-        logging.debug("ufo process : "+str(processes))
+        logging.debug("ufo process : " + str(processes))
         if len(processes) > 1:
             logging.debug(str([ x.Name for x in processes if x.ProcessId != os.getpid() ]))
             self.error_already_running("\n".join([ x.Name for x in processes if x.ProcessId != os.getpid() ]).strip())

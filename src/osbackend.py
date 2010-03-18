@@ -2,7 +2,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -66,7 +66,6 @@ class UFOVboxMonitor(VBoxMonitor):
 
 class OSBackend(object):
     def __init__(self):
-        self.usb_devices    = []
         self.tmp_swapdir    = ""
         self.tmp_overlaydir = ""
         self.vbox           = None
@@ -76,7 +75,6 @@ class OSBackend(object):
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
-        self.network        = False
         
         self.env = self.update_env()
 
@@ -101,11 +99,6 @@ class OSBackend(object):
 
     def call(self, *args, **keywords):
         return utils.call(*args, **keywords)
-
-    def find_network_device(self):
-        if not conf.HOSTNET:
-            return conf.NET_NAT
-        return conf.NET_HOST
 
     def create_splash_screen(self):
         try:
@@ -134,9 +127,9 @@ class OSBackend(object):
 
         self.vbox.current_machine.set_bios_params(acpi_enabled = 1, ioapic_enabled = 1)
         self.vbox.current_machine.set_vram_size(32)
-        self.vbox.current_machine.set_network_adapter(adapter_type = "I82540EM")
+        self.vbox.current_machine.set_network_adapter(adapter_type = self.vbox.constants.NetworkAdapterType_I82540EM)
         self.vbox.current_machine.disable_boot_menu()
-        self.vbox.current_machine.set_audio_adapter(self.HOST_AUDIO_DRIVER)
+        self.vbox.current_machine.set_audio_adapter(self.get_default_audio_driver())
 
         if conf.LICENSE == 1:
             self.vbox.set_extra_data("GUI/LicenseAgreed", "7")
@@ -157,7 +150,6 @@ class OSBackend(object):
             self.vbox.set_extra_data("GUI/Customizations", "noMenuBar")
             
         self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
-        # self.vbox.current_machine.set_extra_data("GUI/Fullscreen", "on")
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
         self.vbox.current_machine.set_extra_data("GUI/LastCloseAction", "shutdown")
         self.vbox.current_machine.set_extra_data("GUI/AutoresizeGuest", "on")
@@ -250,19 +242,21 @@ class OSBackend(object):
             self.vbox.current_machine.enable_3D(conf.ACCEL3D and self.vbox.supports_3D())
             
             # check host network adapter
-            conf.NETTYPE, net_name = self.find_network_device()
+            conf.NETTYPE, adpt_name = self.find_network_device()
             if conf.NETTYPE == conf.NET_NAT:
+                attach_type = self.vbox.constants.NetworkAttachmentType_Null
+                host_adapter = ''
                 logging.debug(conf.SCRIPT_NAME + ": using nat networking")
-                self.vbox.current_machine.set_network_adapter(attach_type = 'None',
-                                                              mac_address = conf.MACADDR)
-                
+
             elif conf.NETTYPE == conf.NET_HOST:
-                # setting network interface to host
-                logging.debug("Using net bridge on " + net_name)
-                self.vbox.current_machine.set_network_adapter(attach_type = 'Bridged', 
-                                                              host_adapter = conf.HOSTNET, 
-                                                              mac_address = conf.MACADDR)
-            
+                attach_type = self.vbox.constants.NetworkAttachmentType_Bridged
+                host_adapter = adpt_name
+                logging.debug("Using net bridge on " + adpt_name)
+
+            self.vbox.current_machine.set_network_adapter(attach_type  = attach_type,
+                                                          host_adapter = host_adapter,
+                                                          mac_address  = conf.MACADDR)
+
             if conf.MACADDR == "":
                 conf.write_value_to_file("vm", "macaddr", self.vbox.current_machine.get_mac_addr())
             
@@ -316,16 +310,6 @@ class OSBackend(object):
                 self.dnddir = tempfile.mkdtemp(suffix="ufodnd")
                 self.vbox.current_machine.add_shared_folder("DnD", self.dnddir, writable = True)
                 logging.debug("Setting shared folder : " + self.dnddir + ", DnD")
-        
-            # set removable media shared folders
-            usb_devices = self.get_usb_devices()
-            for usb in usb_devices:
-                if usb[1] == None:
-                    continue
-                self.vbox.current_machine.add_shared_folder(usb[1], usb[0], writable = True)
-                self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + str(usb[1]), usb[1])
-                logging.debug("Setting shared folder : " + str(usb[0]) + ", " + str(usb[1]))
-            self.usb_devices = usb_devices
 
         logging.debug("conf.SWAPFILE: " + conf.SWAPFILE)
         if conf.SWAPFILE:
@@ -377,6 +361,7 @@ class OSBackend(object):
         self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
                                                      conf.REINTEGRATION + " " + conf.CMDLINE)
 
+        # manage password keyring
         if keyring:
             if conf.USER:
                 password = self.get_password()
@@ -390,6 +375,12 @@ class OSBackend(object):
 
         self.credentials = self.set_credentials
         
+        # build removable devices attachements
+        self.check_usb_devices(no_refresh=True)
+        if self.vbox.current_machine.usb_attachmnts.has_key("UFO"):
+            self.vbox.current_machine.attach_usb(self.vbox.current_machine.usb_attachmnts["UFO"], locked=True)
+
+        # set debug mode
         if conf.GUESTDEBUG:
             self.vbox.current_machine.set_guest_property("/UFO/Debug", "1")
             gui.dialog_info(msg=_("UFO is running in debug mode.\n"
@@ -397,6 +388,29 @@ class OSBackend(object):
                             title=_("Debug mode"))
 
         self.vbox.close_session()
+
+    def check_usb_devices(self, no_refresh=False):
+        need_refresh   = False
+        old_attachmnts = self.vbox.current_machine.usb_attachmnts.copy()
+
+        # adding new devices, and tracking removed ones...
+        for usb in self.get_usb_devices():
+            if usb[1] != None:
+                if self.vbox.current_machine.usb_attachmnts.has_key(usb[1]):
+                    del old_attachmnts[usb[1]]
+                else:
+                    need_refresh = True
+                    self.vbox.current_machine.usb_attachmnts.update({ usb[1] : { 'name'   : usb[1],
+                                                                                 'path'   : usb[0],
+                                                                                 'attach' : False,
+                                                                                 'locked' : False }})
+        # ...and so remove them
+        for removed in old_attachmnts.keys():
+            need_refresh = True
+            del self.vbox.current_machine.usb_attachmnts[removed]
+
+        if need_refresh and not no_refresh:
+            gui.app.refresh_usb()
 
     def find_device(self):
         try_times = 10
@@ -428,9 +442,9 @@ class OSBackend(object):
                     return conf.STATUS_NORMAL
                 
                 input = gui.dialog_question(title=_("Warning"),
-                                         msg=_("Could not find an UFO key, try again ?"),
-                                         button1=_("Yes"),
-                                         button2=_("No"))
+                                            msg=_("Could not find an UFO key, try again ?"),
+                                            button1=_("Yes"),
+                                            button2=_("No"))
                 if input == _("No"):
                     if conf.NEEDDEV: return conf.STATUS_EXIT
                     return conf.STATUS_EXIT
@@ -504,9 +518,7 @@ class OSBackend(object):
                 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
-            if not self.vbox.current_machine.is_booting:
-                self.vbox.current_machine.is_booting = True
-            gui.app.update_progress(gui.app.tray.progress, newValue)
+            gui.app.update_progress(newValue)
         
         # Resolution changes management
         elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
@@ -515,7 +527,7 @@ class OSBackend(object):
             # raised at slim startup to catch end of boot progress
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
-                gui.app.update_progress(gui.app.tray.progress, str("1.000"))
+                gui.app.update_progress(str("1.000"))
                 gui.app.authentication(_("Authenticating..."))
                 self.vbox.current_machine.is_booted = True
                 
@@ -577,7 +589,6 @@ class OSBackend(object):
         # Debug management
         elif "/UFO/Debug/" in name:
             open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
-            
 
     def onMachineStateChange(self, state):
         last_state = self.vbox.current_machine.last_state
@@ -585,7 +596,7 @@ class OSBackend(object):
         # The virtual machine is starting
         if state == self.vbox.constants.MachineState_Running and \
            last_state == self.vbox.constants.MachineState_Starting:
-            
+
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting
             if conf.AUTOMINIMIZE:
@@ -600,8 +611,9 @@ class OSBackend(object):
                                           msg=_("UFO is starting."),
                                           credentials_cb=self.credentials,
                                           credentials=self.keyring_valid)
-            
             gui.app.set_tooltip(_("UFO: starting"))
+
+            self.vbox.current_machine.is_booting = True
         
         # The virtual machine is stopping
         elif (state == self.vbox.constants.MachineState_PoweredOff and \
@@ -666,7 +678,7 @@ class OSBackend(object):
                 
             gui.app.start_callbacks_timer(1, self.vbox.minimal_callbacks_maker_loop)
 
-        gui.app.start_net_adapt_timer(5, self.check_network_adapters)
+        gui.app.start_net_adapt_timer(5, self.vbox.check_network_adapters)
         
         # As we use waitForEvents(interval) from vboxapi,
         # we are not able to use another type of loop, as 
@@ -694,48 +706,6 @@ class OSBackend(object):
                 return usb[2]
         return ""
 
-    def check_network_adapters(self):
-        # manage availability of host network adapters
-        if conf.NETTYPE == conf.NET_HOST:
-            return
-        
-        one_least_active = self.vbox.host.is_network_active()
-        if self.network != one_least_active:
-            self.network = one_least_active
-            if self.network:
-                self.vbox.current_machine.set_network_adapter(attach_type = 'NAT')
-            else:
-                self.vbox.current_machine.set_network_adapter(attach_type = 'None')
-                
-    def check_usb_devices(self):
-        # manage removable media shared folders
-        usb_devices = self.get_usb_devices()
-        for usb in usb_devices:
-            if usb[1] == None:
-                continue
-            if usb in self.usb_devices:
-                continue
-            if self.vbox.callbacks_aware:
-                guest_prop_type = "/UFO/Com/HostToGuest/Shares/AskToUser/"
-                gui.app.show_balloon_message(_("New USB device"), 
-                                             u'"' + str(usb[1]) + '", ' + _("you can link this device to your U.F.O desktop."),
-                                             5000)
-            else:
-                guest_prop_type = "/UFO/Com/HostToGuest/Shares/ReadyToMount/"
-                self.vbox.current_machine.add_shared_folder(str(usb[1]), str(usb[0]), writable = True)
-                
-            self.vbox.current_machine.set_guest_property(guest_prop_type + str(usb[1]),
-                                                         str(usb[1]) + ";" + str(usb[0]))
-        for usb in self.usb_devices:
-            if usb in usb_devices:
-                continue
-            if self.vbox.callbacks_aware:
-                self.vbox.current_machine.remove_shared_folder(str(usb[1]))
-            
-            self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb[1]),
-                                                         str(usb[0]))
-        self.usb_devices = usb_devices
-        
     def run_virtual_machine(self, env):
         if conf.STARTVM:
             self.vbox.current_machine.start()

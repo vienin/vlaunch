@@ -27,7 +27,7 @@ try:
     backend = "PyQt"
     print "Using PyQt backend"
     gui = "PyQt4"
-    
+
 except:
     try:
         from gui_zenity import *

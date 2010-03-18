@@ -2,7 +2,7 @@
 
 # UFO-launcher - A multi-platform virtual machine launcher for the UFO OS
 #
-# Copyright (c) 2008-2009 Agorabox, Inc.
+# Copyright (c) 2008-2010 Agorabox, Inc.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -34,12 +34,10 @@ from osbackend import OSBackend
 from shutil import copytree
 
 class LinuxBackend(OSBackend):
+
     VBOXMANAGE_EXECUTABLE = "VBoxManage"
     VIRTUALBOX_EXECUTABLE = "VirtualBox"
-
-    HOST_AUDIO_DRIVER = "Pulse"
-
-    RELATIVE_VMDK_POLICY = True
+    RELATIVE_VMDK_POLICY  = True
 
     def __init__(self, dist, version, codename):
         OSBackend.__init__(self)
@@ -47,6 +45,9 @@ class LinuxBackend(OSBackend):
         self.version  = version
         self.codename = codename
         self.run_as_root = self.create_run_as_root()
+
+    def get_default_audio_driver(self):
+        return self.vbox.constants.AudioDriverType_Pulse
 
     def check_process(self):
         logging.debug("Checking UFO process")

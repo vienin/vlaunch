@@ -27,7 +27,7 @@ import gettext
 
 AUTO_INTEGER = -1
 AUTO_STRING  = "auto"
-    
+
 path.supports_unicode_filenames = True
 
 if sys.platform == "darwin" and getattr(sys, "frozen", None):
