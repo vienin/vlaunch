@@ -139,8 +139,10 @@ class MacBackend(OSBackend):
     def get_dvd_device(self):
         pass
 
-    def get_host_home(self):
-        return path.expanduser('~'), "Mes documents Mac"
+    def get_host_shares(self):
+        return [{ 'sharename' : "machosthome",
+                  'sharepath' : path.expanduser('~'),
+                  'displayed' : _("My Mac documents") }]
     
     def get_usb_devices(self):
         disks = []

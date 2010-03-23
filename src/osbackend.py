@@ -301,11 +301,15 @@ class OSBackend(object):
 
             # set host home shared folder
             if not conf.USESERVICE:
-                share_name = "hosthome"
-                home_path, displayed_name = self.get_host_home()
-                self.vbox.current_machine.add_shared_folder(share_name, home_path, writable = True)
-                self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_name, displayed_name)
-                logging.debug("Setting shared folder : " + home_path + ", " + displayed_name)
+                for host_share in self.get_host_shares():
+                    self.vbox.current_machine.add_shared_folder(host_share['sharename'],
+                                                                host_share['sharepath'],
+                                                                writable = True)
+                    self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" +
+                                                                 host_share['sharename'],
+                                                                 host_share['displayed'])
+                    logging.debug("Setting shared folder : %s, %s" %
+                                  (host_share['sharepath'], host_share['displayed']))
                 
                 self.dnddir = tempfile.mkdtemp(suffix="ufodnd")
                 self.vbox.current_machine.add_shared_folder("DnD", self.dnddir, writable = True)

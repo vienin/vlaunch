@@ -193,7 +193,7 @@ class LinuxBackend(OSBackend):
             uid = os.getuid()
         return int(uid)
 
-    def get_host_home(self):
+    def get_host_shares(self):
         if os.environ.has_key("SUDO_USER"):
             user = os.getenv("SUDO_USER", "")
         elif os.environ.has_key("USERHELPER_UID"):
@@ -201,7 +201,9 @@ class LinuxBackend(OSBackend):
                                ["cut", "-f", "1", "-d", ":"]], output=True)[1].strip()
         else:
             user = os.getenv("USER")
-        return path.expanduser("~" + user), "Mes documents Linux"
+        return [{ 'sharename' : "linuxhosthome",
+                  'sharepath' : path.expanduser("~" + user),
+                  'displayed' : _("My Linux documents") }]
 
     def get_usb_devices(self):
         if os.path.exists('/dev/disk/by-id'):

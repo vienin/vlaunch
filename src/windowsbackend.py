@@ -315,8 +315,31 @@ class WindowsBackend(OSBackend):
                 return max(int(ram[0].TotalPhysicalMemory) / 1024 / 1024 / 2, 384)
         return 0
 
-    def get_host_home(self):
-        return path.expanduser('~'), "Mes documents Windows"
+    def get_host_shares(self):
+        import _winreg
+        shares = []
+        wanted = { 'Desktop'  : _("My Windows desktop"),
+                   'Personal' : _("My Windows documents") }
+
+        key_string = "Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders"
+        try:
+            hive = _winreg.ConnectRegistry(None, _winreg.HKEY_CURRENT_USER)
+            key  = _winreg.OpenKey(hive, key_string)
+            for i in range(0, _winreg.QueryInfoKey(key)[1]):
+                name, value, type = _winreg.EnumValue(key, i)
+                if name in wanted:
+                    shares.append({ 'sharename' : "windows" + name.lower() + "hosthome",
+                                    'sharepath' : value,
+                                    'displayed' : wanted[name] })
+            _winreg.CloseKey(key)
+            _winreg.CloseKey(hive)
+
+        except WindowsError:
+            shares.append({ 'sharename' : "windowshosthome",
+                            'sharepath' : path.expanduser('~'),
+                            'displayed' : "Mes documents Windows" })
+
+        return shares
     
     def get_usb_devices(self):
         logical_disks = self.WMI.Win32_LogicalDisk (DriveType = 2)
