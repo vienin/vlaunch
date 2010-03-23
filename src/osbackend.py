@@ -381,8 +381,10 @@ class OSBackend(object):
         
         # build removable devices attachements
         self.check_usb_devices(no_refresh=True)
-        if self.vbox.current_machine.usb_attachmnts.has_key("UFO"):
-            self.vbox.current_machine.attach_usb(self.vbox.current_machine.usb_attachmnts["UFO"], locked=True)
+        for usb in self.vbox.current_machine.usb_attachmnts:
+            usb = self.vbox.current_machine.usb_attachmnts[usb]
+            if conf.SCRIPT_PATH.startswith(usb['path']):
+                self.vbox.current_machine.attach_usb(usb, locked=True)
 
         # set debug mode
         if conf.GUESTDEBUG:
