@@ -5,13 +5,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-03-18 20:32+CET\n"
-"PO-Revision-Date: 2010-03-18 20:34+0100\n"
+"POT-Creation-Date: 2010-03-23 14:16+CET\n"
+"PO-Revision-Date: 2010-03-23 14:18+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: Agorabox <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: src/conf.py:243
@@ -172,7 +172,7 @@ msgstr "Système"
 
 #: src/conf.py:358
 #: src/launcher.py:118
-#: src/osbackend.py:388
+#: src/osbackend.py:392
 msgid "Debug mode"
 msgstr "Mode débogage"
 
@@ -243,7 +243,7 @@ msgstr "Pour plus d'informations, visitez "
 
 #: src/gui_pyqt.py:318
 #: src/osbackend.py:213
-#: src/osbackend.py:444
+#: src/osbackend.py:448
 msgid "Warning"
 msgstr "Attention"
 
@@ -270,7 +270,7 @@ msgstr "Télécharger"
 #: src/gui_pyqt.py:589
 #: src/gui_pyqt.py:644
 #: src/launcher.py:137
-#: src/macbackend.py:262
+#: src/macbackend.py:264
 #: src/updater.py:160
 msgid "Error"
 msgstr "Erreur"
@@ -362,7 +362,7 @@ msgstr "Auto"
 #: src/gui_pyqt.py:1455
 #: src/gui_pyqt.py:1470
 #: src/gui_pyqt.py:1589
-#: src/osbackend.py:446
+#: src/osbackend.py:450
 #: src/updater.py:56
 #: src/updater.py:58
 msgid "Yes"
@@ -372,8 +372,8 @@ msgstr "Oui"
 #: src/gui_pyqt.py:1456
 #: src/gui_pyqt.py:1471
 #: src/gui_pyqt.py:1589
-#: src/osbackend.py:447
-#: src/osbackend.py:448
+#: src/osbackend.py:451
+#: src/osbackend.py:452
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
@@ -409,7 +409,7 @@ msgstr "Contenu du message"
 #: src/gui_pyqt.py:1548
 #: src/gui_pyqt.py:1561
 #: src/gui_zenity.py:164
-#: src/linuxbackend.py:275
+#: src/linuxbackend.py:277
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
@@ -478,35 +478,43 @@ msgstr "Vous pouvez aider à la correction du problème en soumettant le rapport
 msgid "Send a report"
 msgstr "Envoyer le rapport d'erreur"
 
-#: src/linuxbackend.py:276
+#: src/linuxbackend.py:206
+msgid "My Linux documents"
+msgstr "Mes documents Linux"
+
+#: src/linuxbackend.py:278
 msgid "Installing %s (required by UFO)"
 msgstr "Installation de %s (composant réquis par UFO)"
 
-#: src/linuxbackend.py:277
+#: src/linuxbackend.py:279
 msgid "%s was successfully installed"
 msgstr "%s a été installé avec succès"
 
-#: src/linuxbackend.py:278
+#: src/linuxbackend.py:280
 msgid "An error occurred while installing %s"
 msgstr "Une erreur est survenue lors de l'installation de %s"
 
-#: src/linuxbackend.py:315
+#: src/linuxbackend.py:317
 msgid "Setting Yum Agorabox repository"
 msgstr "Configuration des dépôts Agorabox pour Yum"
 
-#: src/linuxbackend.py:323
+#: src/linuxbackend.py:325
 msgid "Installing VirtualBox Open Source edition. This can take a few minutes"
 msgstr "Installation de VirtualBox Open Source Edition. Ceci peut prendre plusieurs minutes"
 
-#: src/linuxbackend.py:336
+#: src/linuxbackend.py:338
 msgid "Compiling VirtualBox drivers"
 msgstr "Compilation des pilotes VirtualBox"
 
-#: src/macbackend.py:234
+#: src/macbackend.py:145
+msgid "My Mac documents"
+msgstr "Mes documents Mac"
+
+#: src/macbackend.py:236
 msgid "Unable to unmount the volume "
 msgstr "Impossible de démonter le volume "
 
-#: src/macbackend.py:263
+#: src/macbackend.py:265
 msgid "Sorry, couldn't authenticate. Please check your password."
 msgstr "Impossible de s'authentifier. Veuillez vérifier votre mot de passe."
 
@@ -522,7 +530,7 @@ msgstr ""
 "\n"
 "Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances."
 
-#: src/osbackend.py:386
+#: src/osbackend.py:390
 msgid ""
 "UFO is running in debug mode.\n"
 "Be aware to disable debug mode at end of the debug session."
@@ -530,27 +538,27 @@ msgstr ""
 "UFO est exécuté en mode déboguage.\n"
 "Prennez garde à désactiver le mode débogaguage à la fin de la session."
 
-#: src/osbackend.py:445
+#: src/osbackend.py:449
 msgid "Could not find an UFO key, try again ?"
 msgstr "Aucune clé UFO n'a été trouvée, réessayer ?"
 
-#: src/osbackend.py:454
+#: src/osbackend.py:458
 msgid "Select the USB device you want to install UFO on"
 msgstr "Selectionnez le périphérique USB sur lequel vous voulez installer UFO"
 
-#: src/osbackend.py:455
+#: src/osbackend.py:459
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/osbackend.py:455
+#: src/osbackend.py:459
 msgid "No USB device found"
 msgstr "Aucune clée trouvée"
 
-#: src/osbackend.py:471
+#: src/osbackend.py:475
 msgid "UFO can not be launched"
 msgstr "UFO n'a pas pu être démarré"
 
-#: src/osbackend.py:472
+#: src/osbackend.py:476
 msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
@@ -558,39 +566,39 @@ msgstr ""
 "Une instance de %s est en déjà cours d'éxécution.\n"
 "Veuillez fermer toutes les fenêtres de %s et recomencez."
 
-#: src/osbackend.py:474
+#: src/osbackend.py:478
 msgid "Force to close"
 msgstr "Forcer à quitter"
 
-#: src/osbackend.py:481
+#: src/osbackend.py:485
 msgid "The VirtualBox binaries could not be found"
 msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 
-#: src/osbackend.py:482
+#: src/osbackend.py:486
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:507
+#: src/osbackend.py:511
 msgid "Opening session..."
 msgstr "Ouverture de la session en cours..."
 
-#: src/osbackend.py:517
+#: src/osbackend.py:521
 msgid "UFO: authenticating"
 msgstr "UFO: en cours d'authentification"
 
-#: src/osbackend.py:531
+#: src/osbackend.py:535
 msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
-#: src/osbackend.py:549
+#: src/osbackend.py:553
 msgid "UFO: running"
 msgstr "UFO: en cours d'exécution"
 
-#: src/osbackend.py:556
+#: src/osbackend.py:560
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:557
+#: src/osbackend.py:561
 msgid ""
 "Please wait while UFO is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
@@ -598,11 +606,11 @@ msgstr ""
 "UFO est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:560
+#: src/osbackend.py:564
 msgid "Shutting down"
 msgstr "Arrêt en cours"
 
-#: src/osbackend.py:561
+#: src/osbackend.py:565
 msgid ""
 "Please wait while UFO is shutting down,\n"
 "you absolutely must not unplug the key !"
@@ -610,43 +618,43 @@ msgstr ""
 "UFO est en cours de fermeture,\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:565
+#: src/osbackend.py:569
 msgid "UFO: recording changes"
 msgstr "UFO: en cours de sauvegarde"
 
-#: src/osbackend.py:576
+#: src/osbackend.py:580
 msgid "Restart UFO"
 msgstr "Redémarrage de UFO"
 
-#: src/osbackend.py:577
+#: src/osbackend.py:581
 msgid "UFO is rebooting"
 msgstr "UFO est en cours de redémarrage"
 
-#: src/osbackend.py:607
+#: src/osbackend.py:611
 msgid "UFO is starting"
 msgstr "Démarrage de UFO"
 
-#: src/osbackend.py:609
+#: src/osbackend.py:613
 msgid "1<SUP>st</SUP> launch of UFO"
 msgstr "1<SUP>er</SUP> démarrage de UFO"
 
-#: src/osbackend.py:611
+#: src/osbackend.py:615
 msgid "UFO is starting."
 msgstr "UFO est en cours de démarrage"
 
-#: src/osbackend.py:614
+#: src/osbackend.py:618
 msgid "UFO: starting"
 msgstr "UFO: en cours de démarrage"
 
-#: src/osbackend.py:631
+#: src/osbackend.py:635
 msgid "UFO: terminated"
 msgstr "UFO: terminé"
 
-#: src/osbackend.py:632
+#: src/osbackend.py:636
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:633
+#: src/osbackend.py:637
 msgid "You can now safely eject your UFO key."
 msgstr "Vous pouvez éjecter votre clé UFO en toute securité."
 
@@ -678,19 +686,27 @@ msgstr ""
 msgid "An error occurred. You key could not be updated."
 msgstr "Une erreur est intervenue. Votre clé n'a pas pu être mise à jour."
 
-#: src/windowsbackend.py:332
+#: src/windowsbackend.py:321
+msgid "My Windows desktop"
+msgstr "Mon bureau Windows"
+
+#: src/windowsbackend.py:322
+msgid "My Windows documents"
+msgstr "Mes documents Windows"
+
+#: src/windowsbackend.py:355
 msgid "You don't have enough permissions to run UFO."
 msgstr "Vous ne disposez des autorisations nécessaires pour lancer UFO."
 
-#: src/windowsbackend.py:335
+#: src/windowsbackend.py:358
 msgid "Run UFO as Administrator by right clicking on UFO and select : 'Run as administrator'"
 msgstr "Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et en choisissant 'Lancer en tant qu'administrateur'"
 
-#: src/windowsbackend.py:337
+#: src/windowsbackend.py:360
 msgid "Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'"
 msgstr "Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et en choisissant 'Lancer en tant que...'"
 
-#: src/windowsbackend.py:338
+#: src/windowsbackend.py:361
 msgid "Not enough permissions"
 msgstr "Permissions insuffisantes"
 
