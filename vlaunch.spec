@@ -64,10 +64,10 @@ operating systems : Linux, Windows and MacOSX.
 %prep
 %setup -n vlaunch-%{version}
 # wget all binaries
-wget http://kickstart.agorabox.org/private/virtualization/mac-intel.tgz
-wget http://kickstart.agorabox.org/private/virtualization/windows.tgz
+wget http://kickstart/private/virtualization/mac-intel.tgz
+wget http://kickstart/private/virtualization/windows.tgz
 wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
-wget -O "ufo_overlay.vdi" http://kickstart.agorabox.org/private/virtualization/ufo_overlay-%{OVERLAY_DEV_TYPE}-UUID=%{OVERLAY_DEV_UUID}.vdi
+wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-%{OVERLAY_DEV_TYPE}-UUID=%{OVERLAY_DEV_UUID}.vdi
 
 rm -rf iso
 mkdir iso
