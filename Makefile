@@ -7,12 +7,15 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png graphics/settings.png graphics/about.png \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png\
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
-        locale
+        locale windows.tgz mac-intel.tgz ufo_overlay.vdi "Manuel d'utilisation.pdf"
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
 SPECFILE=$(NAME).spec
 URL=http://www.glumol.com/chicoutimi/vlaunch
+
+OVERLAY_DEV_UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5
+OVERLAY_DEV_TYPE=ext4-no_journal-no_huge_files
 
 
 ifneq ($(findstring ../Makefile.mk,$(wildcard ../Makefile.mk)), )
@@ -134,3 +137,12 @@ updater:
 	
 live:
 	pyinstaller-1.3/Build.py live.spec
+
+download-binaries:
+	# wget all binaries
+	wget -O mac-intel.tgz http://kickstart/private/virtualization/mac-intel.tgz
+	wget -O windows.tgz http://kickstart/private/virtualization/windows.tgz
+	wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
+	wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-${OVERLAY_DEV_TYPE}-UUID=${OVERLAY_DEV_UUID}.vdi
+
+rpm: download-binaries build-rpm

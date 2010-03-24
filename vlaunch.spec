@@ -1,3 +1,7 @@
+%define TARGET_PATH /media/UFO
+%define OVERLAY_DEV_UUID b07ac827-ce0c-4741-ae81-1f234377b4b5
+%define OVERLAY_DEV_TYPE ext4-no_journal-no_huge_files
+
 Name:           vlaunch
 Version:        0.9
 Release:        1%{?dist}
@@ -7,15 +11,16 @@ BuildArch:      i386
 Group:          Applications/System
 License:        GPLv2
 URL:            http://www.glumol.com
-Source0:        http://www.glumol.com/chicoutimi/vlaunch-%{version}.tar.gz
+Source0:        vlaunch-%{version}.tar.gz
+Source1:        Manuel d'utilisation.pdf
+Source2:        mac-intel.tgz
+Source3:        windows.tgz
+Source4:	ufo_overlay.vdi
+Source5:	bootfloppy.img
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
 Requires:       kernel-vbox python-augeas
-
-%define TARGET_PATH /media/UFO
-%define OVERLAY_DEV_UUID b07ac827-ce0c-4741-ae81-1f234377b4b5
-%define OVERLAY_DEV_TYPE ext4-no_journal-no_huge_files
 
 %package guest
 Summary: Install guest part files
@@ -63,18 +68,12 @@ operating systems : Linux, Windows and MacOSX.
 
 %prep
 %setup -n vlaunch-%{version}
-# wget all binaries
-wget http://kickstart/private/virtualization/mac-intel.tgz
-wget http://kickstart/private/virtualization/windows.tgz
-wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
-wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-%{OVERLAY_DEV_TYPE}-UUID=%{OVERLAY_DEV_UUID}.vdi
-
 rm -rf iso
 mkdir iso
-cp bootfloppy.img UFO-VirtualBox-boot.img
-mount -o loop -t vfat UFO-VirtualBox-boot.img iso
+mount -o loop -t vfat bootfloppy.img iso
 cp boot/grub.conf iso/boot/grub/grub.conf
 umount iso
+mv bootfloppy.img UFO-VirtualBox-boot.img
 
 # mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o UFO-VirtualBox-boot.iso iso
 
