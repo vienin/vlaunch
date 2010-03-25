@@ -72,6 +72,7 @@ class OSBackend(object):
         self.puel           = False
         self.splash         = None
         self.do_not_update  = False
+        self.send_debug_rep = False
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
@@ -392,6 +393,7 @@ class OSBackend(object):
             gui.dialog_info(msg=_("UFO is running in debug mode.\n"
                                   "Be aware to disable debug mode at end of the debug session."),
                             title=_("Debug mode"))
+            self.send_debug_rep = True
 
         self.vbox.close_session()
 

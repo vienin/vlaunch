@@ -114,7 +114,7 @@ if __name__ == "__main__":
             sys.exit(1)
             
         backend.run()
-        if conf.GUESTDEBUG:
+        if conf.GUESTDEBUG and backend.send_debug_rep:
             if gui.dialog_error_report(_("Debug mode"),
                                        _("UFO was run in debug mode.\n"
                                        "You can help fixing your problem by submitting the debug reports"),
