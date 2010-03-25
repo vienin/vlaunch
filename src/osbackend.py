@@ -788,3 +788,6 @@ class OSBackend(object):
         logging.debug("Clean up")
         self.global_cleanup()
 
+        # quit application
+        gui.app.quit()
+
