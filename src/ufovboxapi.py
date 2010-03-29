@@ -335,13 +335,16 @@ class VBoxHypervisor():
     def check_network_adapters(self):
         one_least_active = self.host.is_network_active()
         if self.network != one_least_active:
-            self.network = one_least_active
-            if self.network and \
+            if one_least_active and \
                self.current_machine.get_network_adapter_type() == self.constants.NetworkAttachmentType_Null:
-                self.current_machine.set_network_adapter(attach_type = self.constants.NetworkAttachmentType_NAT)
+                success = self.current_machine.set_network_adapter(attach_type = self.constants.NetworkAttachmentType_NAT)
             else:
-                self.current_machine.set_network_adapter(attach_type = self.constants.NetworkAttachmentType_Null)
-
+                success = self.current_machine.set_network_adapter(attach_type = self.constants.NetworkAttachmentType_Null)
+            if not success:
+                logging.debug("Failed setting networking to NAT")
+                self.network = one_least_active
+            else:
+                logging.debug("Successfully set networking to NAT")
 
 class VBoxMachine():
 
