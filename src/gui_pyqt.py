@@ -33,7 +33,7 @@ import math
 
 class QtUFOGui(QtGui.QApplication):
         
-    def __init__(self):
+    def __init__(self, backend):
         QtGui.QApplication.__init__(self, sys.argv)
 
         self.vbox            = None
@@ -45,6 +45,7 @@ class QtUFOGui(QtGui.QApplication):
         self.callbacks_timer = None
         self.console_window  = None
         self.console_winid   = 0
+        self.backend         = None
         
         self.menu = QtGui.QMenu()
         action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
@@ -65,7 +66,7 @@ class QtUFOGui(QtGui.QApplication):
         self.connect(action_quit, QtCore.SIGNAL("triggered()"), self.quit)
         
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
-    
+
     def event(self, event):
         if isinstance(event, SetTrayIconEvent):
             self.tray = TrayIcon()
@@ -154,8 +155,9 @@ class QtUFOGui(QtGui.QApplication):
 
         return True
     
-    def initialize(self, vbox):
+    def initialize(self, vbox, backend=None):
         self.vbox = vbox
+        self.backend = backend
         self.postEvent(self, SetTrayIconEvent())
         
     def _create_splash_screen(self):
@@ -715,9 +717,13 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.balloon = UsbAttachementMessage(self, title="UFO")
 
     def show_message(self, title, msg, timeout=0):
+        if self.backend.voice:
+            self.backend.voice.say(title + "." + msg)
         self.balloon = BalloonMessage(self, title=title, msg=msg, timeout=timeout)
 
     def show_progress(self, title, msg, timeout=0, creds_callback=None, credentials=False):
+        if self.backend.voice:
+            self.backend.voice.say(title + "." + msg)
         self.balloon = BootProgressMessage(self, title=title, msg=msg, timeout=timeout, 
                                            creds_callback=creds_callback, credentials=credentials)
 

@@ -100,7 +100,10 @@ config = \
           "language" : languageValues[1],
           "ballooncolor" : "#FFFFE7",
           "ballooncolorgradient" : "#FFFFE7",
-          "ballooncolortext" : "#000000"
+          "ballooncolortext" : "#000000",
+          "smartkey" : False,
+          "lockatexit" : False,
+          "talk" : False,
         },
       "rawdisk" :
         {

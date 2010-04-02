@@ -76,8 +76,12 @@ class OSBackend(object):
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
-        
-        self.env = self.update_env()
+        self.env            = self.update_env()
+        if conf.TALK:
+            import voice
+            self.voice      = voice.create_voice_synthetizer()
+        else:
+            self.voice      = None
 
     def update_env(self):
         if not path.isabs(conf.HOME):
@@ -759,7 +763,7 @@ class OSBackend(object):
 
         logging.debug("Initializing vbox and graphics")
         self.init_vbox_hypervisor()
-        gui.app.initialize(self.vbox)
+        gui.app.initialize(self.vbox, self.voice)
         
         # generate raw vmdk for usb key
         create_vmdk = False
