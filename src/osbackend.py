@@ -167,6 +167,8 @@ class OSBackend(object):
         logging.debug("VM successfully initialized")
 
     def configure_virtual_machine(self, create_vmdk = True):
+        cmdline = conf.CMDLINE.split(" ")
+
         if not conf.VMDK and not conf.CONFIGUREVM:
             logging.debug("Skipping configuration of the VM")
             self.vbox.close_session()
@@ -175,7 +177,7 @@ class OSBackend(object):
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.ROOTVDI:
             self.vbox.current_machine.attach_harddisk(conf.ROOTVDI, conf.DRIVERANK)
-        
+
         elif conf.VMDK and create_vmdk:
             rank = conf.DRIVERANK
             if conf.LIVECD:
@@ -365,11 +367,6 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
              
-        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
-        logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
-        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
-                                                     conf.REINTEGRATION + " " + conf.CMDLINE)
-
         # manage password keyring
         if keyring:
             if conf.USER:
@@ -398,7 +395,18 @@ class OSBackend(object):
                                   "Be aware to disable debug mode at end of the debug session."),
                             title=_("Debug mode"))
             self.send_debug_rep = True
+        else:
+            cmdline += [ "rhgb", "quiet" ]
 
+        logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
+        cmdline.append(conf.REINTEGRATION)
+        cmdline.append(self.get_i18n_cmdline())
+        if conf.COMPRESS:
+            cmdline.append("rootflags=compress")
+
+        conf.CMDLINE = " ".join(cmdline)
+        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
+        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", conf.CMDLINE)
         self.vbox.close_session()
 
     def check_usb_devices(self, no_refresh=False):
@@ -474,6 +482,14 @@ class OSBackend(object):
             try_times -= 1
 
         return conf.STATUS_EXIT
+
+    def get_i18n_cmdline(self):
+        return "LANG=%s_%s.UTF-8 " \
+               "SYSFONT=latarcyrheb-sun16 KEYBOARDTYPE=pc " \
+               "KEYTABLE=%s" % (conf.LANGUAGE, conf.LANGUAGE.upper(), self.get_keyboard_layout())
+
+    def get_keyboard_layout(self):
+        return conf.LANGUAGE
 
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
@@ -763,7 +779,7 @@ class OSBackend(object):
 
         logging.debug("Initializing vbox and graphics")
         self.init_vbox_hypervisor()
-        gui.app.initialize(self.vbox, self.voice)
+        gui.app.initialize(self.vbox, self)
         
         # generate raw vmdk for usb key
         create_vmdk = False

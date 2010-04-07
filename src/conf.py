@@ -111,7 +111,8 @@ config = \
           "parts" : "all",
           "rootuuid" : "",
           "volume" : "",
-          "model" : ""
+          "model" : "",
+          "compress" : False
         },
       "vm" :
         {
@@ -139,7 +140,7 @@ config = \
           "accel3d" : True,
           "menubar" : False,
           "rootvdi" : "",
-          "cmdline" : "",
+          "cmdline" : "ro 4",
           "reintegration" : reintegrationValues[0],
           "guestdebug" : False
         },
