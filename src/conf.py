@@ -103,7 +103,7 @@ config = \
           "ballooncolortext" : "#000000",
           "smartkey" : False,
           "lockatexit" : False,
-          "talk" : False,
+          "voice" : False,
         },
       "rawdisk" :
         {
@@ -260,6 +260,11 @@ settings = \
                            "Note that if the chosen resolution is higher or equal than the\n"
                            "computer one, the window will be displayed in fullscreen mode."),
               'values' : resolutionValues 
+            },
+            { 'confid' : "voice",
+              'sectid' : "launcher",
+              'short'  : _("Activate voice"),
+              'label'  : _("Enable this option if you want to turn on voice synthesis.")
             },
             { 'confid' : "autofullscreen",
               'sectid' : "launcher",

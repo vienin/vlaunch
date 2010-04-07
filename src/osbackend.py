@@ -77,7 +77,7 @@ class OSBackend(object):
         self.keyring_valid  = False
         self.remember_pass  = None
         self.env            = self.update_env()
-        if conf.TALK:
+        if conf.VOICE:
             import voice
             self.voice      = voice.create_voice_synthetizer()
         else:
