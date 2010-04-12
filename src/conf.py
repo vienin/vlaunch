@@ -289,7 +289,9 @@ settings = \
               'short'  : _("Language"),
               'label'  : _("Choose your language."),
               'values' : languageValues,
-              'strgs'  : languageStrings
+              'strgs'  : languageStrings,
+              'reboot' : True
+
             },
             { 'confid' : "menubar",
               'sectid' : "vm",
@@ -325,14 +327,16 @@ settings = \
               'short'  : _("Memory"),
               'label'  : _("Set the size of the virtual machine memory."),
               'range'  : [MINRAM, 4096],
-              'autocb' : True
+              'autocb' : True,
+              'reboot' : True
             },
             { 'confid' : "cpus",
               'sectid' : "vm",
               'short'  : _("CPU number"),
               'label'  : _("Set the number of cpus connected to the virtual machine."),
               'range'  : [1, 16],
-              'autocb' : True
+              'autocb' : True,
+              'reboot' : True
             },
             { 'confid' : "accel3d",
               'sectid' : "vm",
@@ -340,6 +344,7 @@ settings = \
               'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n"
                            "availability of this feature depends of the host computer 3D\n"
                            "device."),
+              'reboot' : True
             },
             { 'grpid'  : "virtext",
               'group'  : [ 
@@ -354,7 +359,8 @@ settings = \
                          ],
               'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n"
                            "extentions are enabled, availability of this feature depends\n"
-                           "of the host computer cpu properties.")
+                           "of the host computer cpu properties."),
+              'reboot' : True
             },
           ]
       },
@@ -374,7 +380,8 @@ settings = \
                            "The reintegration policy defines how system modifications\n"
                            "are written on the removable device."),
               'values' : reintegrationValues,
-              'strgs'  : reintegrationStrings
+              'strgs'  : reintegrationStrings,
+              'reboot' : True
             },
             { 'confid' : "cmdline",
               'sectid' : "vm",

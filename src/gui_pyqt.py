@@ -1442,10 +1442,15 @@ class Settings(QtGui.QDialog):
             if True: #if input == yes:
                 cp = ConfigParser()
                 cp.read(conf.conf_file)
+                need_reboot = False
                 for setting in self.registred_selections.keys():
+                    need_reboot |= self.registred_selections[setting].get("reboot", False)
                     cp.set(self.registred_selections[setting]['sectid'], 
                            self.registred_selections[setting]['confid'].upper(),
                            self.file_writable(self.registred_selections[setting]['value']))
+                if need_reboot:
+                    dialog_info(title=_("Restart required"),
+                                msg=_("You need to restart U.F.O for this changes to be applied"))
                 cp.write(open(conf.conf_file, "w"))
                 reload(conf)
                 self.setVisible(False)
