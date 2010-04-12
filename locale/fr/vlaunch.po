@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-03-23 14:16+CET\n"
-"PO-Revision-Date: 2010-03-23 14:18+0100\n"
+"POT-Creation-Date: 2010-04-12 11:59+CEST\n"
+"PO-Revision-Date: 2010-04-12 12:05+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: Agorabox <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
@@ -172,7 +172,7 @@ msgstr "Système"
 
 #: src/conf.py:358
 #: src/launcher.py:118
-#: src/osbackend.py:392
+#: src/osbackend.py:396
 msgid "Debug mode"
 msgstr "Mode débogage"
 
@@ -226,69 +226,90 @@ msgstr "Configurez le lanceur UFO"
 
 #: src/gui_pyqt.py:57
 #: src/gui_pyqt.py:58
+#: src/gui_pyqt.py:335
 msgid "Quit"
 msgstr "Quitter"
 
-#: src/gui_pyqt.py:300
+#: src/gui_pyqt.py:60
+#: src/gui_pyqt.py:61
+msgid "Force to quit"
+msgstr "Forcer à quitter"
+
+#: src/gui_pyqt.py:305
 msgid "About the UFO launcher"
 msgstr "A propos du lanceur UFO"
 
-#: src/gui_pyqt.py:301
+#: src/gui_pyqt.py:306
 msgid "Version "
 msgstr "Version "
 
-#: src/gui_pyqt.py:303
+#: src/gui_pyqt.py:308
 msgid "For more information, please visit"
 msgstr "Pour plus d'informations, visitez "
 
-#: src/gui_pyqt.py:318
-#: src/osbackend.py:213
-#: src/osbackend.py:448
+#: src/gui_pyqt.py:321
+#: src/osbackend.py:215
+#: src/osbackend.py:453
 msgid "Warning"
 msgstr "Attention"
 
-#: src/gui_pyqt.py:319
+#: src/gui_pyqt.py:322
 msgid ""
-"UFO virtual machine is currently running.\n"
-"Please shutdown from the virtual machine desktop."
+"UFO virtual machine is currently starting.\n"
+"You can not shutdown the machine during startup."
 msgstr ""
 "La machine virtuelle UFO est en cours d'exécution.\n"
-"Veuillez éteindre UFO depuis le bureau de la machine virtuelle."
+"Vous ne pouvez pas etiendre la machine pendant le demarage."
 
-#: src/gui_pyqt.py:473
-#: src/gui_pyqt.py:532
-#: src/gui_pyqt.py:561
-#: src/gui_pyqt.py:598
-#: src/gui_pyqt.py:1124
+#: src/gui_pyqt.py:330
+#: src/gui_pyqt.py:1450
+#: src/gui_pyqt.py:1476
+#: src/gui_pyqt.py:1491
+#: src/gui_pyqt.py:1609
+#: src/osbackend.py:456
+#: src/osbackend.py:457
+#: src/updater.py:56
+msgid "No"
+msgstr "Non"
+
+#: src/gui_pyqt.py:331
+msgid "Dangerous"
+msgstr "Dangereux"
+
+#: src/gui_pyqt.py:493
+#: src/gui_pyqt.py:552
+#: src/gui_pyqt.py:581
+#: src/gui_pyqt.py:618
+#: src/gui_pyqt.py:1144
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/gui_pyqt.py:530
+#: src/gui_pyqt.py:550
 msgid "Download"
 msgstr "Télécharger"
 
-#: src/gui_pyqt.py:589
-#: src/gui_pyqt.py:644
+#: src/gui_pyqt.py:609
+#: src/gui_pyqt.py:664
 #: src/launcher.py:137
 #: src/macbackend.py:264
 #: src/updater.py:160
 msgid "Error"
 msgstr "Erreur"
 
-#: src/gui_pyqt.py:590
+#: src/gui_pyqt.py:610
 msgid "Could not write to file %s: %s."
 msgstr "Impossible d'écrire dans le fichier %s: %s."
 
-#: src/gui_pyqt.py:605
-#: src/gui_pyqt.py:1547
+#: src/gui_pyqt.py:625
+#: src/gui_pyqt.py:1567
 msgid "Downloading"
 msgstr "En cours de téléchargement"
 
-#: src/gui_pyqt.py:606
+#: src/gui_pyqt.py:626
 msgid "Downloading to %s"
 msgstr "Téléchargement de %s"
 
-#: src/gui_pyqt.py:616
+#: src/gui_pyqt.py:636
 msgid ""
 "Download canceled.\n"
 "Press 'Download' to retry"
@@ -296,142 +317,132 @@ msgstr ""
 "Téléchargement annulé.\n"
 "Cliquez sur 'Télécharger' pour recommencer"
 
-#: src/gui_pyqt.py:645
+#: src/gui_pyqt.py:665
 msgid "Download has failed. Please check your Internet connection"
 msgstr "Le téléchargement a echoué. Veuillez vérifier votre connexion à Internet"
 
-#: src/gui_pyqt.py:649
+#: src/gui_pyqt.py:669
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/gui_pyqt.py:950
+#: src/gui_pyqt.py:970
 msgid "You already are authenticated"
 msgstr "Vous êtes déjà authentifié"
 
-#: src/gui_pyqt.py:952
-#: src/gui_pyqt.py:984
+#: src/gui_pyqt.py:972
+#: src/gui_pyqt.py:1004
 msgid "Authenticate"
 msgstr "S'authentifier"
 
-#: src/gui_pyqt.py:961
+#: src/gui_pyqt.py:981
 msgid "UFO password:"
 msgstr "Mot de passe UFO:"
 
-#: src/gui_pyqt.py:967
-#: src/gui_pyqt.py:1630
+#: src/gui_pyqt.py:987
+#: src/gui_pyqt.py:1654
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
-#: src/gui_pyqt.py:993
+#: src/gui_pyqt.py:1013
 msgid "Removable devices management"
 msgstr "Gestion des périphériques amovibles"
 
-#: src/gui_pyqt.py:1007
+#: src/gui_pyqt.py:1027
 msgid "No removable devices found"
 msgstr "Aucun périphérique amovible trouvé"
 
-#: src/gui_pyqt.py:1057
-#: src/gui_pyqt.py:1082
+#: src/gui_pyqt.py:1077
+#: src/gui_pyqt.py:1102
 msgid "Detach"
 msgstr "Détacher"
 
-#: src/gui_pyqt.py:1060
-#: src/gui_pyqt.py:1079
+#: src/gui_pyqt.py:1080
+#: src/gui_pyqt.py:1099
 msgid "Attach"
 msgstr "Attacher"
 
-#: src/gui_pyqt.py:1123
+#: src/gui_pyqt.py:1143
 msgid "Ok"
 msgstr "Ok"
 
-#: src/gui_pyqt.py:1125
+#: src/gui_pyqt.py:1145
 msgid "Defaults"
 msgstr "Réglages par defaut"
 
-#: src/gui_pyqt.py:1137
+#: src/gui_pyqt.py:1157
 msgid "UFO settings"
 msgstr "Paramètres de UFO"
 
-#: src/gui_pyqt.py:1288
-#: src/gui_pyqt.py:1365
-#: src/gui_pyqt.py:1403
+#: src/gui_pyqt.py:1308
+#: src/gui_pyqt.py:1385
+#: src/gui_pyqt.py:1423
 msgid "Auto"
 msgstr "Auto"
 
-#: src/gui_pyqt.py:1429
-#: src/gui_pyqt.py:1455
-#: src/gui_pyqt.py:1470
-#: src/gui_pyqt.py:1589
-#: src/osbackend.py:450
+#: src/gui_pyqt.py:1449
+#: src/gui_pyqt.py:1475
+#: src/gui_pyqt.py:1490
+#: src/gui_pyqt.py:1609
+#: src/osbackend.py:455
 #: src/updater.py:56
 #: src/updater.py:58
 msgid "Yes"
 msgstr "Oui"
 
-#: src/gui_pyqt.py:1430
-#: src/gui_pyqt.py:1456
-#: src/gui_pyqt.py:1471
-#: src/gui_pyqt.py:1589
-#: src/osbackend.py:451
-#: src/osbackend.py:452
-#: src/updater.py:56
-msgid "No"
-msgstr "Non"
-
-#: src/gui_pyqt.py:1431
+#: src/gui_pyqt.py:1451
 msgid "Would you validate the following changes ?"
 msgstr "Voulez vous valider les changements suivants ?"
 
-#: src/gui_pyqt.py:1457
+#: src/gui_pyqt.py:1477
 msgid "Would you cancel the following changes ?"
 msgstr "Voulez vous annuler les changements suivants ?"
 
-#: src/gui_pyqt.py:1472
+#: src/gui_pyqt.py:1492
 msgid "Would you reset all settings to default ?"
 msgstr "Voulez vous réinitialiser les réglages par defaut ?"
 
-#: src/gui_pyqt.py:1498
+#: src/gui_pyqt.py:1518
 msgid "Activated"
 msgstr "Activé"
 
-#: src/gui_pyqt.py:1500
+#: src/gui_pyqt.py:1520
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: src/gui_pyqt.py:1536
+#: src/gui_pyqt.py:1556
 msgid "Message title"
 msgstr "Titre du message"
 
-#: src/gui_pyqt.py:1537
+#: src/gui_pyqt.py:1557
 msgid "Message contents"
 msgstr "Contenu du message"
 
-#: src/gui_pyqt.py:1548
-#: src/gui_pyqt.py:1561
+#: src/gui_pyqt.py:1568
+#: src/gui_pyqt.py:1581
 #: src/gui_zenity.py:164
 #: src/linuxbackend.py:277
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
-#: src/gui_pyqt.py:1549
+#: src/gui_pyqt.py:1569
 msgid "Download completed"
 msgstr "Téléchargement terminé"
 
-#: src/gui_pyqt.py:1561
+#: src/gui_pyqt.py:1581
 #: src/gui_zenity.py:164
 msgid "Operation in progress"
 msgstr "Opération en cours"
 
-#: src/gui_pyqt.py:1562
+#: src/gui_pyqt.py:1582
 #: src/gui_zenity.py:165
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:1623
+#: src/gui_pyqt.py:1647
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:1627
+#: src/gui_pyqt.py:1651
 #: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
@@ -518,7 +529,7 @@ msgstr "Impossible de démonter le volume "
 msgid "Sorry, couldn't authenticate. Please check your password."
 msgstr "Impossible de s'authentifier. Veuillez vérifier votre mot de passe."
 
-#: src/osbackend.py:214
+#: src/osbackend.py:216
 msgid ""
 "The available memory on this computer is low.\n"
 "This can deeply impact the speed of the UFO virtual machine.\n"
@@ -530,7 +541,7 @@ msgstr ""
 "\n"
 "Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances."
 
-#: src/osbackend.py:390
+#: src/osbackend.py:394
 msgid ""
 "UFO is running in debug mode.\n"
 "Be aware to disable debug mode at end of the debug session."
@@ -538,27 +549,27 @@ msgstr ""
 "UFO est exécuté en mode déboguage.\n"
 "Prennez garde à désactiver le mode débogaguage à la fin de la session."
 
-#: src/osbackend.py:449
+#: src/osbackend.py:454
 msgid "Could not find an UFO key, try again ?"
 msgstr "Aucune clé UFO n'a été trouvée, réessayer ?"
 
-#: src/osbackend.py:458
+#: src/osbackend.py:463
 msgid "Select the USB device you want to install UFO on"
 msgstr "Selectionnez le périphérique USB sur lequel vous voulez installer UFO"
 
-#: src/osbackend.py:459
+#: src/osbackend.py:464
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/osbackend.py:459
+#: src/osbackend.py:464
 msgid "No USB device found"
 msgstr "Aucune clée trouvée"
 
-#: src/osbackend.py:475
+#: src/osbackend.py:480
 msgid "UFO can not be launched"
 msgstr "UFO n'a pas pu être démarré"
 
-#: src/osbackend.py:476
+#: src/osbackend.py:481
 msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
@@ -566,39 +577,39 @@ msgstr ""
 "Une instance de %s est en déjà cours d'éxécution.\n"
 "Veuillez fermer toutes les fenêtres de %s et recomencez."
 
-#: src/osbackend.py:478
+#: src/osbackend.py:483
 msgid "Force to close"
 msgstr "Forcer à quitter"
 
-#: src/osbackend.py:485
+#: src/osbackend.py:490
 msgid "The VirtualBox binaries could not be found"
 msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 
-#: src/osbackend.py:486
+#: src/osbackend.py:491
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:511
+#: src/osbackend.py:516
 msgid "Opening session..."
 msgstr "Ouverture de la session en cours..."
 
-#: src/osbackend.py:521
+#: src/osbackend.py:526
 msgid "UFO: authenticating"
 msgstr "UFO: en cours d'authentification"
 
-#: src/osbackend.py:535
+#: src/osbackend.py:540
 msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
-#: src/osbackend.py:553
+#: src/osbackend.py:558
 msgid "UFO: running"
 msgstr "UFO: en cours d'exécution"
 
-#: src/osbackend.py:560
+#: src/osbackend.py:565
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:561
+#: src/osbackend.py:566
 msgid ""
 "Please wait while UFO is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
@@ -606,11 +617,11 @@ msgstr ""
 "UFO est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:564
+#: src/osbackend.py:569
 msgid "Shutting down"
 msgstr "Arrêt en cours"
 
-#: src/osbackend.py:565
+#: src/osbackend.py:570
 msgid ""
 "Please wait while UFO is shutting down,\n"
 "you absolutely must not unplug the key !"
@@ -618,43 +629,43 @@ msgstr ""
 "UFO est en cours de fermeture,\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:569
+#: src/osbackend.py:574
 msgid "UFO: recording changes"
 msgstr "UFO: en cours de sauvegarde"
 
-#: src/osbackend.py:580
+#: src/osbackend.py:585
 msgid "Restart UFO"
 msgstr "Redémarrage de UFO"
 
-#: src/osbackend.py:581
+#: src/osbackend.py:586
 msgid "UFO is rebooting"
 msgstr "UFO est en cours de redémarrage"
 
-#: src/osbackend.py:611
+#: src/osbackend.py:616
 msgid "UFO is starting"
 msgstr "Démarrage de UFO"
 
-#: src/osbackend.py:613
+#: src/osbackend.py:618
 msgid "1<SUP>st</SUP> launch of UFO"
 msgstr "1<SUP>er</SUP> démarrage de UFO"
 
-#: src/osbackend.py:615
+#: src/osbackend.py:620
 msgid "UFO is starting."
 msgstr "UFO est en cours de démarrage"
 
-#: src/osbackend.py:618
+#: src/osbackend.py:623
 msgid "UFO: starting"
 msgstr "UFO: en cours de démarrage"
 
-#: src/osbackend.py:635
+#: src/osbackend.py:640
 msgid "UFO: terminated"
 msgstr "UFO: terminé"
 
-#: src/osbackend.py:636
+#: src/osbackend.py:641
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:637
+#: src/osbackend.py:642
 msgid "You can now safely eject your UFO key."
 msgstr "Vous pouvez éjecter votre clé UFO en toute securité."
 
