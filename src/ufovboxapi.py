@@ -396,10 +396,38 @@ class VBoxMachine():
         rc = int(progress.resultCode)
         if rc == 0:
             self.machine = self.hypervisor.session.machine
-            "session.close()"
             return 0
+
         else:
             return 1
+
+    def power_down(self, force=False):
+        try:
+            console = self.hypervisor.session.console
+            if force:
+                console.powerDown()
+
+            else:
+                if not console.getGuestEnteredACPIMode():
+                    return 1
+
+                console.powerButton()
+                return 0
+
+        except:
+           return 2
+
+    def is_running(self):
+       try:
+            state = self.machine.state
+            if state != self.hypervisor.constants.MachineState_Aborted and \
+               state != self.hypervisor.constants.MachineState_PoweredOff and \
+               state != self.hypervisor.constants.MachineState_Null:
+                return True
+       except:
+            pass
+
+       return False
 
     def set_variable(self, variable_expr, variable_value, save=False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value

@@ -57,13 +57,18 @@ class QtUFOGui(QtGui.QApplication):
         action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
                                         QtCore.QString(_("Quit")), self);
         action_quit.setStatusTip(_("Quit"))
+        action_force_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "force.png")),
+                                        QtCore.QString(_("Force to quit")), self);
+        action_force_quit.setStatusTip(_("Force to quit"))
         
         self.menu.addAction(action_settings)
         self.menu.addAction(action_about)
+        self.menu.addAction(action_force_quit)
         self.menu.addAction(action_quit)
         self.connect(action_about, QtCore.SIGNAL("triggered()"), self.about)
         self.connect(action_settings, QtCore.SIGNAL("triggered()"), self.settings)
         self.connect(action_quit, QtCore.SIGNAL("triggered()"), self.quit)
+        self.connect(action_force_quit, QtCore.SIGNAL("triggered()"), self.force_to_quit)
         
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
 
@@ -312,18 +317,33 @@ class QtUFOGui(QtGui.QApplication):
         del self.settings
     
     def quit(self):
-        try:
-            state = self.vbox.current_machine.machine.state
-            if state != self.vbox.constants.MachineState_Aborted and \
-               state != self.vbox.constants.MachineState_PoweredOff and \
-               state != self.vbox.constants.MachineState_Null:
+        if self.vbox.current_machine.is_running():
+            if not self.vbox.current_machine.is_booted or \
+               self.vbox.current_machine.power_down() == 1:
                 dialog_info(title=_("Warning"),
-                            msg=_("UFO virtual machine is currently running.\n"
-                                  "Please shutdown from the virtual machine desktop."))
+                            msg=_("UFO virtual machine is currently starting.\n"
+                                  "You can not shutdown the machine during startup."))
+
+        else:
+            sys.exit(0)
+
+    def force_to_quit(self):
+        if self.vbox.current_machine.is_running():
+            no  = _("No")
+            if dialog_question(title=_("Dangerous"),
+                               msg=_("UFO virtual machine is currently running.\n"
+                                     "Forcing machine to shutdown is very DANGEROUS, "
+                                     "the modification made during this session will "
+                                     "be lost. You should use the \"" + _("Quit") +
+                                     "\" menu action to shutdown UFO properly.\n\n"
+                                     "Do you really want to kill the UFO virtual machine ?"),
+                               dangerous=True) == no:
                 return
-        except:
-            pass
-        sys.exit(0)
+
+            self.vbox.current_machine.power_down(force=True)
+
+        else:
+            sys.exit(0)
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -1597,9 +1617,13 @@ def dialog_info(title, msg, error=False):
         msgbox.setIcon(QtGui.QMessageBox.Information)
     msgbox.exec_()
 
-def dialog_question(title, msg, button1=_("Yes"), button2=_("No")):
+def dialog_question(title, msg, button1=_("Yes"), button2=_("No"), dangerous=False):
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
-    msgbox.setIcon(QtGui.QMessageBox.Question)
+    if dangerous:
+        icon = QtGui.QMessageBox.Warning
+    else:
+        icon = QtGui.QMessageBox.Question
+    msgbox.setIcon(icon)
     reply = msgbox.exec_()
     if reply == QtGui.QMessageBox.Yes: return button1
     else: return button2

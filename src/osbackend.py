@@ -153,6 +153,7 @@ class OSBackend(object):
 
         if not conf.MENUBAR:
             self.vbox.set_extra_data("GUI/Customizations", "noMenuBar")
+            self.vbox.set_extra_data("GUI/ShowMiniToolBar", "no")
             
         self.vbox.current_machine.set_extra_data("GUI/SaveMountedAtRuntime", "false")
         self.vbox.current_machine.set_extra_data("GUI/Seamless", "off")
@@ -764,6 +765,7 @@ class OSBackend(object):
             del self.vbox
         except: 
             pass
+
         self.kill_resilient_vbox()
         self.cleanup()
 
