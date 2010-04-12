@@ -64,7 +64,7 @@ resolutionValues    = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600
 reintegrationValues = [ 'overlay=ext4=UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5', 
                         'overlay=tmpfs', 
                         'overlay=' ]
-languageValues      = [ 'fr', 'en' ]
+languageValues      = [ 'fr_FR', 'en_US' ]
 
 config = \
     {

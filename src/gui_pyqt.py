@@ -33,7 +33,7 @@ import math
 
 class QtUFOGui(QtGui.QApplication):
         
-    def __init__(self, backend):
+    def __init__(self):
         QtGui.QApplication.__init__(self, sys.argv)
 
         self.vbox            = None
@@ -717,13 +717,13 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.balloon = UsbAttachementMessage(self, title="UFO")
 
     def show_message(self, title, msg, timeout=0):
-        if self.backend.voice:
-            self.backend.voice.say(title + "." + msg)
+        if app.backend.voice:
+            app.backend.voice.say(title + "." + msg)
         self.balloon = BalloonMessage(self, title=title, msg=msg, timeout=timeout)
 
     def show_progress(self, title, msg, timeout=0, creds_callback=None, credentials=False):
-        if self.backend.voice:
-            self.backend.voice.say(title + "." + msg)
+        if app.backend.voice:
+            app.backend.voice.say(title + "." + msg)
         self.balloon = BootProgressMessage(self, title=title, msg=msg, timeout=timeout, 
                                            creds_callback=creds_callback, credentials=credentials)
 

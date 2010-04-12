@@ -484,9 +484,9 @@ class OSBackend(object):
         return conf.STATUS_EXIT
 
     def get_i18n_cmdline(self):
-        return "LANG=%s_%s.UTF-8 " \
+        return "LANG=%s.UTF-8 " \
                "SYSFONT=latarcyrheb-sun16 KEYBOARDTYPE=pc " \
-               "KEYTABLE=%s" % (conf.LANGUAGE, conf.LANGUAGE.upper(), self.get_keyboard_layout())
+               "KEYTABLE=%s" % (conf.LANGUAGE, self.get_keyboard_layout())
 
     def get_keyboard_layout(self):
         return conf.LANGUAGE
