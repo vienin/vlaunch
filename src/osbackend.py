@@ -471,8 +471,10 @@ class OSBackend(object):
             else:
                 usb = self.get_usb_sticks()
                 names = [ x[1] for x in usb ]
+                if not names:
+                    names = [ _("No USB device found") ]
                 ret = gui.dialog_choices(msg=_("Select the USB device you want to install UFO on"),
-                                         title="UFO", column=_("Device"), choices= [ _("No USB device found") ] + names)
+                                         title="UFO", column=_("Device"), choices=names)
                 if not ret:
                     return conf.STATUS_IGNORE
                     
