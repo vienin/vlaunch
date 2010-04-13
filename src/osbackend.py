@@ -492,7 +492,7 @@ class OSBackend(object):
                "KEYTABLE=%s" % (conf.LANGUAGE, self.get_keyboard_layout())
 
     def get_keyboard_layout(self):
-        return conf.LANGUAGE
+        return conf.LANGUAGE.split('_')[1].lower()
 
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
