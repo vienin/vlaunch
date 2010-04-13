@@ -97,7 +97,7 @@ config = \
           "hostkey" : 0,
           "autofullscreen" : False,
           "autominimize" : True,
-          "language" : languageValues[1],
+          "language" : AUTO_STRING,
           "ballooncolor" : "#FFFFE7",
           "ballooncolorgradient" : "#FFFFE7",
           "ballooncolortext" : "#000000",

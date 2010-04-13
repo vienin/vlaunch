@@ -1118,13 +1118,15 @@ class UsbAttachementMessage(BalloonMessage):
 
 
 class Settings(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, tabs=None, fields=None,
+                 show_default_button=True, no_reboot=False):
         super(Settings, self).__init__(parent)
 
         self.registred_selections = {}
         self.corresponding_values = {}
         self.custom_handlers      = {}
         self.groups               = {}
+        self.no_reboot            = no_reboot
         
         "Registering custom handlers and layouts"
         
@@ -1136,9 +1138,11 @@ class Settings(QtGui.QDialog):
         
         tabWidget = QtGui.QTabWidget()
         for tab in conf.settings:
-            tabWidget.addTab(self.createOneTab(tab), 
-                             QtGui.QIcon(os.path.join(conf.IMGDIR, tab['iconfile'])), 
-                             self.tr(tab['tabname']))
+            tab_name = unicode(self.tr(tab['tabname']))
+            if (not tabs) or (tab_name in tabs):
+                tabWidget.addTab(self.createOneTab(tab, fields=fields),
+                                 QtGui.QIcon(os.path.join(conf.IMGDIR, tab['iconfile'])),
+                                 tab_name)
 
         main_layout = QtGui.QVBoxLayout()
         main_layout.addWidget(tabWidget)
@@ -1146,27 +1150,32 @@ class Settings(QtGui.QDialog):
         "Build controls buttons"
         
         valid_layout   = QtGui.QHBoxLayout()
+
         ok_button      = QtGui.QPushButton(self.tr(_("Ok")))
-        cancel_button  = QtGui.QPushButton(self.tr(_("Cancel")))
-        default_button = QtGui.QPushButton(self.tr(_("Defaults")))
-        
         ok_button.clicked.connect(self.on_validation)
-        cancel_button.clicked.connect(self.on_cancel)
-        default_button.clicked.connect(self.on_default)
-        
-        valid_layout.addWidget(default_button)
         valid_layout.addWidget(ok_button)
+
+        cancel_button  = QtGui.QPushButton(self.tr(_("Cancel")))
+        cancel_button.clicked.connect(self.on_cancel)
         valid_layout.addWidget(cancel_button)
+
+        if show_default_button:
+            default_button = QtGui.QPushButton(self.tr(_("Defaults")))
+            default_button.clicked.connect(self.on_default)
+            valid_layout.addWidget(default_button)
+
         main_layout.addLayout(valid_layout)
         self.setLayout(main_layout)
 
         self.setWindowTitle(self.tr(_("UFO settings")))
         
-    def createOneTab(self, tab):
+    def createOneTab(self, tab, fields=[]):
         widget     = QtGui.QWidget()
         tab_layout = QtGui.QVBoxLayout()
         
         for setting in tab['settings']:
+            if fields and setting.get('confid') not in fields:
+                continue
             set_layout = QtGui.QVBoxLayout()
             set_layout.addWidget(QtGui.QLabel(self.tr(setting['label'])))
             
@@ -1240,7 +1249,12 @@ class Settings(QtGui.QDialog):
                         
                         corr_vals = {}
                         for string in item['strgs']:
-                            corr_vals.update({ string : item['values'][item['strgs'].index(string)] })
+                            try:
+                                index = item['strgs'].index(string)
+                            except ValueError:
+                                index = 0
+                            corr_vals.update({ string : item['values'][index] })
+
                         self.corresponding_values.update({ item['confid'] : corr_vals })
                         value_key = 'strgs'
                     else:
@@ -1265,8 +1279,11 @@ class Settings(QtGui.QDialog):
                                        custom['function'])
                         
                     "Set current value"
-                    
-                    values.setCurrentIndex(item['values'].index(self.get_conf(item['confid'])))
+                    try:
+                        current_index = item['values'].index(self.get_conf(item['confid']))
+                    except ValueError:
+                        current_index = 0
+                    values.setCurrentIndex(current_index)
                     
                     val_layout.addWidget(values)
                     val_layout.addSpacing(30)
@@ -1430,7 +1447,7 @@ class Settings(QtGui.QDialog):
             value = conf.get_auto_value(self.get_conf(control.conf_infos['confid']))
         
         if self.corresponding_values.has_key(control.conf_infos['confid']):
-            value = self.corresponding_values[control.conf_infos['confid']][str(value)]
+            value = self.corresponding_values[control.conf_infos['confid']][unicode(value)]
             
         control.conf_infos.update({ 'value' : value })
         self.registred_selections.update({ control.conf_infos['confid'] : control.conf_infos })
@@ -1468,18 +1485,15 @@ class Settings(QtGui.QDialog):
                     cp.set(self.registred_selections[setting]['sectid'], 
                            self.registred_selections[setting]['confid'].upper(),
                            self.file_writable(self.registred_selections[setting]['value']))
-                if need_reboot:
+                if (not self.no_reboot) and need_reboot:
                     dialog_info(title=_("Restart required"),
                                 msg=_("You need to restart U.F.O for this changes to be applied"))
                 cp.write(open(conf.conf_file, "w"))
                 reload(conf)
-                self.setVisible(False)
-                self.close()
-                self.accept()
 
         self.setVisible(False)
         self.close()
-        self.reject()
+        self.accept()
         
     def on_cancel(self):
         if len(self.registred_selections) > 0:

@@ -110,8 +110,15 @@ if __name__ == "__main__":
         if '--settings' in sys.argv:
             settings = gui.Settings()
             settings.show()
-            print settings.exec_()
+            settings.exec_()
             sys.exit(1)
+
+        elif conf.LANGUAGE == conf.AUTO_STRING:
+            settings = gui.Settings(tabs=_("Appearance"), fields=["language"],
+                                    show_default_button=False, no_reboot=True)
+            settings.show()
+            if not settings.exec_():
+                sys.exit(0)
             
         backend.run()
         if conf.GUESTDEBUG and backend.send_debug_rep:
