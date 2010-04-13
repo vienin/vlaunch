@@ -164,7 +164,7 @@ try:
     conf_file = settings[0]
 except:
     print "Could not read settings.conf"
-    raise
+    conf_file = ""
 
 print "Using configuration file:", conf_file
 
