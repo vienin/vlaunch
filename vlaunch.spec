@@ -132,6 +132,12 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/close.png
 %{TARGET_PATH}/.data/images/settings.png
 %{TARGET_PATH}/.data/images/about.png
+%{TARGET_PATH}/.data/images/attach.png
+%{TARGET_PATH}/.data/images/eject.png
+%{TARGET_PATH}/.data/images/exit.png
+%{TARGET_PATH}/.data/images/force.png
+%{TARGET_PATH}/.data/images/system.png
+
 %{TARGET_PATH}/.data/launcher.filelist
 %{TARGET_PATH}/.data/locale/fr/LC_MESSAGES/vlaunch.mo
 %dir %{TARGET_PATH}/.data/logs

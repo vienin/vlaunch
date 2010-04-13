@@ -5,7 +5,8 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/toggle-fullscreen* guest/notify-logged-in* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png graphics/VolumeIcon-OS-trick \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png graphics/settings.png graphics/about.png \
-        graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png\
+        graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png \
+        graphics/force.png graphics/exit.png graphics/system.png graphics/eject.png graphics/attach.png \
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
         locale windows.tgz mac-intel.tgz ufo_overlay.vdi "Manuel d'utilisation.pdf"
 
