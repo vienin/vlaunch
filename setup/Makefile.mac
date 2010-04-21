@@ -109,7 +109,7 @@ tar-mac-launcher:
 	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
 
 upload-mac-launcher: mac-launcher tar-mac-launcher
-	scp dist/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel.tgz
+	scp dist/mac-intel.tgz bob@kickstart:/var/www/html/private/virtualization/mac-intel.tgz
 
 livecd-testing: mac-launcher
 	mkdir -p dist/UFO.app/Contents/Resources/.data/images
@@ -137,5 +137,5 @@ testing: mac-launcher
 	rm dist/mac-intel.tgz
 	mv dist testing/Mac-Intel
 	cd testing && tar cvzf mac-intel.tgz *
-	scp testing/mac-intel.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/mac-intel-runnable.tgz
+	scp testing/mac-intel.tgz bob@kickstart:/var/www/html/private/virtualization/mac-intel-runnable.tgz
 
