@@ -23,6 +23,7 @@ from PyQt4 import QtGui, QtCore
 import threading, sys, os
 from urllib import urlretrieve
 from ConfigParser import ConfigParser
+from utils import SmartDict
 from ufovboxapi import *
 import time, utils
 import conf
@@ -36,17 +37,17 @@ class QtUFOGui(QtGui.QApplication):
     def __init__(self):
         QtGui.QApplication.__init__(self, sys.argv)
 
-        self.vbox            = None
-        self.animation       = None
-        self.tray            = None
-        self.splash          = None
+        self.vbox      = None
+        self.animation = None
+        self.tray      = None
+        self.splash    = None
         self.usb_check_timer = None
         self.net_adapt_timer = None
         self.callbacks_timer = None
         self.console_window  = None
         self.console_winid   = 0
         self.backend         = None
-        
+
         self.menu = QtGui.QMenu()
         action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
                                      QtCore.QString(_("About")), self);
@@ -75,6 +76,7 @@ class QtUFOGui(QtGui.QApplication):
     def event(self, event):
         if isinstance(event, SetTrayIconEvent):
             self.tray = TrayIcon()
+
             if sys.platform != "darwin":
                 self.tray.setContextMenu(self.menu)
 
@@ -93,29 +95,42 @@ class QtUFOGui(QtGui.QApplication):
         elif isinstance(event, UpdateEvent):
             event.callback()
 
-        elif isinstance(event, RefreshUsbEvent):
-            self.tray.refresh_usb()
+        elif isinstance(event, TemporaryBalloonEvent):
+            if event.destroy:
+                self.tray.destroy_temporary_balloon()
 
-        elif isinstance(event, ProgressEvent):
-            event.value = int(event.value * 100)
-            try:
+            elif not event.title:
                 if event.msg:
-                    self.tray.authentication(event.msg)
-                if isinstance(self.tray.balloon, BootProgressMessage):
-                    self.tray.balloon.progress_bar.setValue(int(event.value))
-            except: 
-                # Underlying C++ object has been deleted error...
-                pass
-            
-        elif isinstance(event, BalloonMessageEvent):
-            if not event.show:
-                self.tray.hide_balloon()
-            elif event.progress:
-                self.tray.show_progress(event.title, event.msg, event.timeout, 
-                                        creds_callback=event.credentials_cb, credentials=event.credentials)
+                    self.tray.update_temporary_balloon_message(event.msg)
+                if event.progress:
+                    self.tray.update_temporary_balloon_progress(int(event.progress * 100))
+
             else:
-                self.tray.show_message(event.title, event.msg, event.timeout)
-                
+                self.tray.create_temporary_balloon(event.title,
+                                                   event.msg,
+                                                   event.progress,
+                                                   event.timeout,
+                                                   event.vlayout)
+
+        elif isinstance(event, PersistentBalloonEvent):
+            if event.destroy:
+                self.tray.destroy_persistent_balloon_section(event.key)
+
+            elif event.update:
+                if event.msg:
+                    self.tray.update_persistent_balloon_message(event.key, event.msg)
+                if event.progress:
+                    self.tray.update_persistent_balloon_progress(event.key,
+                                                                 int(event.progress * 100))
+
+            else:
+                self.tray.add_persistent_balloon_section(event.key,
+                                                         event.msg,
+                                                         event.default,
+                                                         event.smartdict,
+                                                         event.hlayout,
+                                                         event.progress)
+
         elif isinstance(event, ToolTipEvent):
             self.tray.setToolTip(QtCore.QString(event.tip))
 
@@ -196,6 +211,7 @@ class QtUFOGui(QtGui.QApplication):
                                         time=None, 
                                         function=None, 
                                         stop=True))
+
     def start_net_adapt_timer(self, time, function):
         self.postEvent(self, TimerEvent(self.net_adapt_timer,
                                         time, 
@@ -218,41 +234,38 @@ class QtUFOGui(QtGui.QApplication):
                                         function=None, 
                                         stop=True))
 
-    def update_progress(self, value):
-        self.postEvent(self, ProgressEvent(float(value), 
-                                           100))
-            
-    def authentication(self, msg):
-        self.postEvent(self, ProgressEvent(100, 
-                                           100,
-                                           msg))
+    def create_temporary_balloon(self, title, msg, progress=False, timeout=0, vlayout=None):
+        self.postEvent(self, TemporaryBalloonEvent(title=title,
+                                                   msg=msg,
+                                                   progress=progress,
+                                                   timeout=timeout,
+                                                   vlayout=vlayout))
 
-    def refresh_usb(self):
-        self.postEvent(self, RefreshUsbEvent())
+    def update_temporary_balloon(self, msg=None, progress=None):
+        assert msg != None or progress != None
+        self.postEvent(self, TemporaryBalloonEvent(msg=msg, progress=progress))
 
-    def show_balloon_message(self, title, msg, timeout=0):
-        self.postEvent(self, 
-                       BalloonMessageEvent(title, 
-                                           msg, 
-                                           timeout))
-        
-    def show_balloon_progress(self, title, msg, credentials_cb=None, credentials=False):
-        self.postEvent(self, 
-                       BalloonMessageEvent(title, 
-                                           msg, 
-                                           timeout=0, 
-                                           progress=True,
-                                           credentials_cb=credentials_cb,
-                                           credentials=credentials))
-        
-    def hide_balloon(self):
-        self.postEvent(self, 
-                       BalloonMessageEvent(title=None, 
-                                           msg=None, 
-                                           timeout=0, 
-                                           progress=None, 
-                                           show=False))
-        
+    def add_persistent_balloon_section(self, key, msg=None, default=None, progress=False, smartdict=None, hlayout=None):
+        self.postEvent(self, PersistentBalloonEvent(key=key,
+                                                    msg=msg,
+                                                    default=default,
+                                                    progress=progress,
+                                                    smartdict=smartdict,
+                                                    hlayout=hlayout))
+
+    def update_persistent_balloon_section(self, key, msg=None, progress=None):
+        assert msg != None or progress != None
+        self.postEvent(self, PersistentBalloonEvent(key=key,
+                                                    msg=msg,
+                                                    progress=progress,
+                                                    update=True))
+
+    def destroy_temporary_balloon(self):
+        self.postEvent(self, TemporaryBalloonEvent(destroy=True))
+
+    def destroy_persistent_balloon_section(self, key):
+        self.postEvent(self, PersistentBalloonEvent(key=key, destroy=True))
+
     def set_tooltip(self, tip):
         self.postEvent(self, ToolTipEvent(tip))
 
@@ -345,6 +358,7 @@ class QtUFOGui(QtGui.QApplication):
         else:
             sys.exit(0)
 
+
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
         super(NoneEvent, self).__init__(QtCore.QEvent.None)
@@ -363,28 +377,27 @@ class DestroySplashEvent(QtCore.QEvent):
     def __init__(self):
         super(DestroySplashEvent, self).__init__(QtCore.QEvent.None)
 
-class ProgressEvent(QtCore.QEvent):
-    def __init__(self, value, total, msg=None):
-        super(ProgressEvent, self).__init__(QtCore.QEvent.None)
-        self.value    = value
-        self.total    = total
-        self.msg      = msg
-
-class BalloonMessageEvent(QtCore.QEvent):
-    def __init__(self, title, msg, timeout, progress=False, 
-                 show=True, credentials_cb=None, credentials=False):
-        super(BalloonMessageEvent, self).__init__(QtCore.QEvent.None)
-        self.show     = show
+class TemporaryBalloonEvent(QtCore.QEvent):
+    def __init__(self, title=None, msg=None, progress=None, timeout=None, vlayout=None, destroy=None):
+        super(TemporaryBalloonEvent, self).__init__(QtCore.QEvent.None)
         self.title    = title
         self.msg      = msg
         self.timeout  = timeout
         self.progress = progress
-        self.credentials_cb = credentials_cb
-        self.credentials  = credentials
+        self.vlayout  = vlayout
+        self.destroy  = destroy
 
-class RefreshUsbEvent(QtCore.QEvent):
-    def __init__(self):
-        super(RefreshUsbEvent, self).__init__(QtCore.QEvent.None)
+class PersistentBalloonEvent(QtCore.QEvent):
+    def __init__(self, key=None, msg=None, default=None, progress=None, smartdict=None, hlayout=None, destroy=None, update=None):
+        super(PersistentBalloonEvent, self).__init__(QtCore.QEvent.None)
+        self.key       = key
+        self.msg       = msg
+        self.default   = default
+        self.progress  = progress
+        self.update    = update
+        self.hlayout   = hlayout
+        self.smartdict = smartdict
+        self.destroy   = destroy
 
 class TimerEvent(QtCore.QEvent):
     def __init__(self, timer, time, function, stop=False):
@@ -426,6 +439,492 @@ class UpdateEvent(QtCore.QEvent):
     def __init__(self, callback):
         super(UpdateEvent, self).__init__(QtCore.QEvent.None)
         self.callback = callback
+
+
+class TrayIcon(QtGui.QSystemTrayIcon):
+
+    def __init__(self):
+        QtGui.QSystemTrayIcon.__init__(self)
+
+        self.setIcon(QtGui.QApplication.windowIcon())
+        self.setVisible(True)
+
+        self.temporary_balloon  = None
+        self.persistent_balloon = MultiSmartDictBalloonMessage(self, title=_("UFO informations balloon"))
+        self.minimized = False
+
+        self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"),
+                                         self.activate)
+        self.show()
+
+    def create_temporary_balloon(self, title, msg, progress, timeout, vlayout):
+        if self.temporary_balloon:
+            self.destroy_temporary_balloon()
+
+        if timeout:
+            self.destroytimer = QtCore.QTimer(self)
+            self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy_temporary_balloon)
+            self.destroytimer.start(timeout)
+
+        self.temporary_balloon = BalloonMessage(self, title, msg, progress, vlayout)
+        self.temporary_balloon.show()
+
+    def update_temporary_balloon_message(self, msg):
+        if self.temporary_balloon:
+            self.temporary_balloon.set_message(msg)
+            self.temporary_balloon.show()
+
+    def update_temporary_balloon_progress(self, progress):
+        if self.temporary_balloon and self.temporary_balloon.progress_bar:
+            self.temporary_balloon.set_progress(progress)
+            self.temporary_balloon.show()
+
+    def destroy_temporary_balloon(self):
+        if self.temporary_balloon:
+            self.temporary_balloon.hide()
+            self.temporary_balloon.close()
+            del self.temporary_balloon
+            self.temporary_balloon = None
+
+    def add_persistent_balloon_section(self, key, msg, default, smartdict, hlayout, progress):
+        self.persistent_balloon.add_section(key, msg, default, smartdict, hlayout, progress)
+
+    def destroy_persistent_balloon_section(self, key):
+        self.persistent_balloon.remove_section(key)
+
+    def update_persistent_balloon_message(self, key, msg):
+        assert self.persistent_balloon.sections.has_key(key)
+        self.persistent_balloon.sections[key].set_message(msg)
+        self.persistent_balloon.show()
+
+    def update_persistent_balloon_progress(self, key, progress):
+        assert self.persistent_balloon.sections.has_key(key)
+        self.persistent_balloon.sections[key].set_progress(progress)
+
+    def activate(self, reason):
+        if reason == QtGui.QSystemTrayIcon.DoubleClick:
+            if self.minimized:
+                app.normalize_window()
+                self.minimized = False
+
+            else:
+                app.minimize_window()
+                self.minimized = True
+
+        elif reason != QtGui.QSystemTrayIcon.Context:
+            if self.temporary_balloon:
+                self.temporary_balloon.show()
+
+            elif len(self.persistent_balloon.sections):
+                self.persistent_balloon.show()
+
+
+class BalloonMessage(QtGui.QWidget):
+
+    """
+    Build a basic balloon message, customizable with
+    a progress bar and a personnal widget.
+    """
+
+    DEFAULT_HEIGHT = 80
+    DEFAULT_WIDTH  = 350
+
+    def __init__(self, parent, title, msg=None, progress=False, vlayout=None, fake=False):
+        if sys.platform == "win32":
+            flags = QtCore.Qt.WindowStaysOnTopHint | \
+                    QtCore.Qt.ToolTip
+        elif sys.platform == "linux2":
+            flags = QtCore.Qt.WindowStaysOnTopHint | \
+                    QtCore.Qt.X11BypassWindowManagerHint | \
+                    QtCore.Qt.Popup
+        else:
+            flags = QtCore.Qt.WindowStaysOnTopHint | \
+                    QtCore.Qt.Popup
+
+        QtGui.QWidget.__init__(self, None, flags)
+
+        self.deskRect = QtCore.QRect(desktop.availableGeometry())
+
+        self.parent   = parent
+        self.title    = title
+        self.msg      = msg
+        self.progress = progress
+        self.fake     = fake
+        self.icon     = os.path.join(conf.IMGDIR, "UFO.png")
+        self.colors   = { 'ballooncolor'         : conf.BALLOONCOLOR,
+                          'ballooncolorgradient' : conf.BALLOONCOLORGRADIENT,
+                          'ballooncolortext'     : conf.BALLOONCOLORTEXT }
+
+        # Build basic balloon features: icon, title, msg
+        self.baloon_layout   = QtGui.QHBoxLayout(self)
+        self.contents_layout = QtGui.QVBoxLayout()
+
+        image = QtGui.QLabel(self)
+        image.setScaledContents(False)
+        image.setPixmap(QtGui.QIcon(self.icon).pixmap(64, 64))
+        self.baloon_layout.addWidget(image, 0, QtCore.Qt.AlignTop)
+
+        self.title_layout = QtGui.QHBoxLayout()
+
+        close_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "close.png"))
+        self.close_button = QtGui.QPushButton(close_icon, "", self)
+        self.close_button.setFlat(True)
+
+        if self.fake:
+            self.close_button.setDisabled(True)
+        else:
+            self.connect(self.close_button, QtCore.SIGNAL("clicked()"), self.hide)
+
+        self.title_label = QtGui.QLabel("<b><font color=%s>%s</font></b>" % \
+                                        (self.colors['ballooncolortext'], self.title))
+        self.title_label.setPalette(QtGui.QToolTip.palette())
+        self.title_label.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        self.title_layout.addWidget(self.title_label)
+
+        if self.fake:
+            self.title_layout.addSpacing(100)
+        else:
+            self.title_label.setMinimumWidth(250)
+
+        self.title_layout.addWidget(self.close_button, 0, QtCore.Qt.AlignRight)
+        self.contents_layout.addLayout(self.title_layout)
+
+        if self.msg:
+            self.text_label = QtGui.QLabel("<font color=%s>%s</font>" % \
+                                           (self.colors['ballooncolortext'], msg))
+            self.text_label.setPalette(QtGui.QToolTip.palette())
+            self.text_label.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+            self.contents_layout.addWidget(self.text_label)
+        else:
+            self.text_label = None
+
+        self.baloon_layout.addLayout(self.contents_layout)
+
+        self.setAutoFillBackground(True)
+        self.currentAlpha = 0
+        self.setWindowOpacity(0.0)
+
+        # Possibly add a progress bar
+        if self.progress:
+            self.progress_bar = QtGui.QProgressBar()
+            self.contents_layout.addWidget(self.progress_bar)
+        else:
+            self.progress_bar = None
+
+        # Possibly add a custom widget (inherit QVBoxLayout)
+        if vlayout:
+            self.vlayout = vlayout['type'](*vlayout['args'])
+            self.vlayout.set_parent(self)
+            self.contents_layout.addLayout(self.vlayout)
+
+    def set_message(self, msg):
+        self.msg = "<font color=%s>%s</font>" % (self.colors['ballooncolortext'], msg)
+        self.text_label.setText(self.msg)
+
+    def set_progress(self, progress):
+        if self.progress_bar:
+            self.progress_bar.setValue(int(progress))
+
+    def opacity_timer(self):
+        if self.currentAlpha <= 255:
+            self.currentAlpha += 15
+            self.timer.start(1)
+        self.setWindowOpacity(1. / 255. * self.currentAlpha)
+
+    def resizeEvent(self, evt):
+        if self.fake:
+            return
+
+        self.setMask(self.draw())
+
+    def paintEvent(self, evt):
+        self.draw(event=True)
+
+    def showEvent(self, event):
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+
+        if self.geometry().y() < self.deskRect.height() / 2:
+            y = self.parent.geometry().bottom() + 10
+        else:
+            y = self.parent.geometry().top() - self.height() - 10
+
+        self.move(self.deskRect.width() - self.width() - 10, y)
+
+        self.timer = QtCore.QTimer(self)
+        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.opacity_timer)
+        self.timer.start(1)
+
+    def draw(self, event=False):
+        self.title_label.setText("<b><font color=%s>%s</font></b>" % \
+                                 (self.colors['ballooncolortext'], self.title))
+        if self.text_label:
+            self.text_label.setText("<font color=%s>%s</font>" % \
+                                    (self.colors['ballooncolortext'], self.msg))
+
+        path = QtGui.QPainterPath()
+        if hasattr(path, "addRoundedRect"):
+            path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
+        else:
+            path.addRect(QtCore.QRectF(0, 0, self.width(), self.height()))
+
+        if event:
+            painter = QtGui.QPainter(self)
+        else:
+            pixmap = QtGui.QPixmap(self.size())
+            painter = QtGui.QPainter()
+            painter.begin(pixmap)
+
+        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
+        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 2, QtCore.Qt.SolidLine))
+        painter.setClipPath(path)
+        gradient = QtGui.QLinearGradient(0, 0, 0, 100);
+        gradient.setColorAt(0.0, QtGui.QColor(self.colors['ballooncolor']));
+        gradient.setColorAt(1.0, QtGui.QColor(self.colors['ballooncolorgradient']));
+        painter.setBrush(gradient);
+        painter.drawPath(path)
+        mask = painter.clipRegion()
+        if not event:
+            painter.end()
+        return mask
+
+
+class MultiSmartDictBalloonMessage(BalloonMessage):
+    def __init__(self, parent, title):
+        BalloonMessage.__init__(self, parent, title)
+
+        self.sections = {}
+
+    def add_section(self, key, msg, default, smartdict, hlayout, progress=False):
+        assert not self.sections.has_key(key)
+        assert isinstance(smartdict, SmartDict)
+
+        self.sections[key] = SmartDictLayout(self, msg, default, smartdict, hlayout, progress)
+        self.contents_layout.addLayout(self.sections[key])
+        self.sections[key].refresh()
+
+    def remove_section(self, key):
+        assert self.sections.has_key(key)
+        self.sections[key].hide()
+        del self.sections[key]
+
+
+class SmartDictLayout(QtGui.QVBoxLayout):
+    def __init__(self, parent, msg, default, smartdict, hlayout, progress):
+        QtGui.QVBoxLayout.__init__(self)
+
+        self.parent    = parent
+        self.smartdict = smartdict
+        self.hlayout   = hlayout
+
+        # Restering callback to handle updates on the dict
+        self.smartdict.register_on_set_item_callback(self.refresh)
+        self.smartdict.register_on_del_item_callback(self.refresh)
+
+        self.hline = QtGui.QFrame()
+        self.hline.setFrameShape(QtGui.QFrame.HLine)
+        self.hline.setFrameShadow(QtGui.QFrame.Sunken)
+
+        self.text_label = QtGui.QLabel("<font color=%s>%s</font>" % \
+                                                     (self.parent.colors['ballooncolortext'], msg))
+        self.text_label.setPalette(QtGui.QToolTip.palette())
+        self.text_label.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+
+        self.addWidget(self.hline)
+        self.addWidget(self.text_label)
+
+        if progress:
+            self.progress_bar = QtGui.QProgressBar()
+            self.addWidget(self.progress_bar)
+        else:
+            self.progress_bar = None
+
+        self.default = QtGui.QLabel("<i>" + default + "</i>")
+        self.addWidget(self.default)
+
+        self.diplayed_hlayouts = {}
+
+    def set_message(self, msg):
+        self.text_label.setText(QtCore.QString("<font color=%s>%s</font>" % \
+                                              (self.parent.colors['ballooncolortext'], msg)))
+
+    def set_progress(self, progress):
+        if self.progress_bar:
+            self.progress_bar.setValue(int(progress))
+
+    def refresh(self, key=None, value=None):
+        self.old_displayed_hlayouts = self.diplayed_hlayouts.copy()
+
+        # Handle new elements
+        for item in self.smartdict:
+            if not self.diplayed_hlayouts.has_key(item):
+                self.diplayed_hlayouts[item] = \
+                    self.hlayout['type'](*((self.smartdict[item],) + self.hlayout['args']))
+                self.addLayout(self.diplayed_hlayouts[item])
+                self.parent.show()
+
+            else:
+                del self.old_displayed_hlayouts[item]
+
+        # And then remove deprecated ones
+        for item in self.old_displayed_hlayouts:
+            self.diplayed_hlayouts[item].hide()
+            del self.diplayed_hlayouts[item]
+
+        if len(self.diplayed_hlayouts):
+            self.default.hide()
+            self.removeWidget(self.default)
+
+        else:
+            self.addWidget(self.default)
+            self.default.show()
+
+    def hide(self):
+        if len(self.diplayed_hlayouts):
+            for item in self.diplayed_hlayouts:
+                self.diplayed_hlayouts[item].hide()
+            del self.diplayed_hlayouts[item]
+
+        else:
+            self.default.hide()
+            self.removeWidget(self.default)
+
+        self.hline.hide()
+        self.text_label.hide()
+        self.removeWidget(self.hline)
+        self.removeWidget(self.text_label)
+
+        if self.progress_bar:
+            self.progress_bar.hide()
+            self.removeWidget(self.progress_bar)
+            del self.progress_bar
+
+        del self.hline
+        del self.text_label
+
+
+class UsbAttachementLayout(QtGui.QHBoxLayout):
+    def __init__(self, usb, callback):
+        QtGui.QHBoxLayout.__init__(self)
+
+        self.usb      = usb
+        self.callback = callback
+
+        self.usb_label = QtGui.QLabel(self.usb['name'] + " (" + self.usb['path'] + ")")
+        if self.usb['attach']:
+            button_msg  = _("Detach")
+            button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "eject.png"))
+        else:
+            button_msg = _("Attach")
+            button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "attach.png"))
+        self.attach_button = QtGui.QPushButton(button_icon, button_msg)
+        self.attach_button.setFlat(True)
+        self.attach_button.setMaximumSize(100, 22)
+
+        self.addWidget(self.usb_label)
+        self.addWidget(self.attach_button)
+        self.connect(self.attach_button, QtCore.SIGNAL("clicked()"), self.attach)
+
+    def attach(self):
+        if self.usb['attach']:
+            self.attach_button.setText(_("Attach"))
+            self.attach_button.setIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "attach.png")))
+        else:
+            self.attach_button.setText(_("Detach"))
+            self.attach_button.setIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "eject.png")))
+
+        self.callback(self.usb, attach=not self.usb['attach'])
+
+    def hide(self):
+        self.attach_button.hide()
+        self.usb_label.hide()
+        self.removeWidget(self.attach_button)
+        self.removeWidget(self.usb_label)
+        del self.attach_button
+        del self.usb_label
+
+
+class CredentialsLayout(QtGui.QVBoxLayout):
+    def __init__(self, callback, keyring):
+        QtGui.QVBoxLayout.__init__(self)
+
+        self.callback = callback
+        self.keyring  = keyring
+
+        if self.callback and conf.USER != "":
+            button_msg = "(" + conf.USER + ") - "
+            if self.keyring:
+                button_msg += _("You already are authenticated")
+            else:
+                button_msg += _("Authenticate")
+
+            button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "credentials.png"))
+            self.expand_button = QtGui.QPushButton(button_icon, button_msg)
+            self.expand_button.setFlat(True)
+            self.expand_button.setDefault(True)
+            self.connect(self.expand_button, QtCore.SIGNAL("clicked()"), self.expand)
+            self.addWidget(self.expand_button, 0, QtCore.Qt.AlignLeft)
+            self.expanded = False
+
+    def set_parent(self, parent_widget):
+        self.parent = parent_widget
+
+    def valid_credentials(self):
+        if self.password.text():
+            if self.callback:
+                self.callback(self.password.text(), self.remember.isChecked())
+            if len(self.expand_button.text()) - len(conf.USER) - 10 > len(_("Authenticate")):
+                offset = 42
+            else:
+                offset = 23
+            self.expand_button.setText(QtCore.QString("(" + conf.USER + ")" + (offset * " ")))
+        self.collapse()
+
+    def expand(self):
+        assert hasattr(self, "parent")
+
+        if self.expanded:
+            self.collapse()
+            return
+
+        self.expand_widgets = []
+        self.hline = QtGui.QFrame()
+        self.hline.setFrameShape(QtGui.QFrame.HLine)
+        self.hline.setFrameShadow(QtGui.QFrame.Sunken)
+
+        self.pass_label = QtGui.QLabel(_("UFO password:"))
+        self.password = QtGui.QLineEdit()
+        self.password.setEchoMode(QtGui.QLineEdit.Password)
+
+        self.ok_button = QtGui.QPushButton("Ok")
+        self.ok_button.setMaximumSize(32, 28)
+        self.remember = QtGui.QCheckBox(_("Remember my password"))
+
+        self.connect(self.password, QtCore.SIGNAL("returnPressed()"), self.valid_credentials)
+        self.connect(self.ok_button, QtCore.SIGNAL("clicked()"), self.valid_credentials)
+
+        self.password_field = QtGui.QHBoxLayout()
+        self.add_expdand_contents(self, self.hline)
+        self.add_expdand_contents(self.password_field, self.pass_label)
+        self.add_expdand_contents(self.password_field, self.password, 100)
+        self.add_expdand_contents(self.password_field, self.ok_button)
+        self.addLayout(self.password_field)
+        self.add_expdand_contents(self, self.remember)
+        self.expanded = True
+
+    def collapse(self):
+        self.expanded = False
+        for widget in self.expand_widgets:
+            widget.hide()
+        self.layout().activate()
+        self.parent.resize(350, 20)
+        self.parent.show()
+
+    def add_expdand_contents(self, layout, item, offset=None):
+        if offset:
+            layout.addWidget(item, offset)
+        else:
+            layout.addWidget(item)
+        self.expand_widgets.append(item)
 
 
 # Gere le téléchargement dans un thread a part.
@@ -714,407 +1213,6 @@ class ListDialog(QtGui.QDialog):
         layout.addWidget(buttonbox)
         self.setLayout(layout)
         self.setWindowTitle(title)
-
-
-class TrayIcon(QtGui.QSystemTrayIcon):
-    def __init__(self):
-        QtGui.QSystemTrayIcon.__init__(self)
-        
-        self.setIcon(QtGui.QApplication.windowIcon())
-        self.setVisible(True)
-        
-        self.balloon   = None
-        self.minimized = False
-
-        self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"),
-                                         self.activate)
-        self.show()
-
-    def refresh_usb(self):
-        if isinstance(self.balloon, UsbAttachementMessage):
-            self.balloon.refresh()
-        elif not self.balloon and app.vbox.current_machine.is_booted:
-            self.balloon = UsbAttachementMessage(self, title="UFO")
-
-    def show_message(self, title, msg, timeout=0):
-        if app.backend.voice:
-            app.backend.voice.say(title + "." + msg)
-        self.balloon = BalloonMessage(self, title=title, msg=msg, timeout=timeout)
-
-    def show_progress(self, title, msg, timeout=0, creds_callback=None, credentials=False):
-        if app.backend.voice:
-            app.backend.voice.say(title + "." + msg)
-        self.balloon = BootProgressMessage(self, title=title, msg=msg, timeout=timeout, 
-                                           creds_callback=creds_callback, credentials=credentials)
-
-    def hide_balloon(self):
-        if self.balloon:
-            self.balloon.close()
-            del self.balloon
-            self.balloon = None
-
-    def authentication(self, msg):
-        if self.balloon:
-            self.balloon.set_message(msg)
-        
-    def activate(self, reason):
-        if reason == QtGui.QSystemTrayIcon.DoubleClick:
-            if self.minimized:
-                app.normalize_window()
-                self.minimized = False
-            else:
-                app.minimize_window()
-                self.minimized = True
-        elif reason != QtGui.QSystemTrayIcon.Context:
-            if self.balloon:
-                self.balloon.show()
-            elif app.vbox.current_machine.is_booted:
-                """
-                When no speficfic message are shown, 
-                set the ballon to usb management message.
-                """
-                self.balloon = UsbAttachementMessage(self, title="UFO")
-
-
-class BalloonMessage(QtGui.QWidget):
-    def __init__(self, parent, title, msg, timeout=0, fake=False):
-
-        if sys.platform == "win32":
-            flags = QtCore.Qt.WindowStaysOnTopHint | \
-                    QtCore.Qt.ToolTip
-        elif sys.platform == "linux2":
-            flags = QtCore.Qt.WindowStaysOnTopHint | \
-                    QtCore.Qt.X11BypassWindowManagerHint | \
-                    QtCore.Qt.Popup
-        else:
-            flags = QtCore.Qt.WindowStaysOnTopHint | \
-                    QtCore.Qt.Popup
-        
-        QtGui.QWidget.__init__(self, None, flags)
-
-        self.parent   = parent
-        self.title    = title
-        self.msg      = msg
-        self.fake     = fake
-        self.expanded = False
-        self.icon     = os.path.join(conf.IMGDIR, "UFO.png")
-        self.colors   = { 'ballooncolor'         : conf.BALLOONCOLOR, 
-                          'ballooncolorgradient' : conf.BALLOONCOLORGRADIENT, 
-                          'ballooncolortext'     : conf.BALLOONCOLORTEXT }
-        
-        self.baloon_layout   = QtGui.QHBoxLayout(self)
-        self.contents_layout = QtGui.QVBoxLayout()
-        self.title_layout    = QtGui.QHBoxLayout()
-
-        close_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "close.png"))
-        self.close_button = QtGui.QPushButton(close_icon, "", self)
-        self.close_button.setFlat(True)
-
-        if fake:
-            self.close_button.setDisabled(True)
-        else:
-            self.connect(self.close_button, QtCore.SIGNAL("clicked()"), self.hide)
-        
-        self.title_label = QtGui.QLabel("<b><font color=%s>%s</font></b>" % \
-                                        (self.colors['ballooncolortext'], self.title))
-        self.title_label.setPalette(QtGui.QToolTip.palette())
-        self.title_label.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-        self.title_layout.addWidget(self.title_label)
-
-        if fake:
-            self.title_layout.addSpacing(100)
-        else:
-            self.title_label.setMinimumWidth(250)
-
-        self.title_layout.addWidget(self.close_button, 0, QtCore.Qt.AlignRight)
-        
-        self.text_label = QtGui.QLabel("<font color=%s>%s</font>" % \
-                                       (self.colors['ballooncolortext'], msg))
-        self.text_label.setPalette(QtGui.QToolTip.palette())
-        self.text_label.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
-
-        image = QtGui.QLabel(self)
-        image.setScaledContents(False)
-        image.setPixmap(QtGui.QIcon(self.icon).pixmap(64, 64))
-        self.baloon_layout.addWidget(image, 0, QtCore.Qt.AlignTop)
-
-        self.contents_layout.addLayout(self.title_layout)
-        self.contents_layout.addWidget(self.text_label)
-        
-        self.baloon_layout.addLayout(self.contents_layout)
-
-        self.setAutoFillBackground(True)
-        self.currentAlpha = 0
-        self.setWindowOpacity(0.0)
-        self.resize(350, 80)
-    
-        self.timer = QtCore.QTimer(self)
-        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.timeout)
-        self.timer.start(1)
-
-        if timeout and not fake:
-            self.destroytimer = QtCore.QTimer(self)
-            self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy)
-            self.destroytimer.start(timeout)
-
-        self.show()
-
-    def set_message(self, msg):
-        self.msg = "<font color=%s>%s</font>" % (self.colors['ballooncolortext'], msg)
-        self.text_label.setText(self.msg)
-        self.show()
-
-    def set_expandable(self, msg, png):
-        self.expand_layout = QtGui.QVBoxLayout()
-
-        button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, png))
-        self.expand_button = QtGui.QPushButton(button_icon, msg, self)
-        self.expand_button.setFlat(True)
-        self.expand_button.setDefault(True)
-        self.connect(self.expand_button, QtCore.SIGNAL("clicked()"), self.expand)
-        self.expand_layout.addWidget(self.expand_button, 0, QtCore.Qt.AlignLeft)
-        self.contents_layout.addLayout(self.expand_layout)
-
-    def expand(self):
-        if self.expanded:
-            self.collapse()
-            return
-
-        self.expand_widgets = []
-        self.expand_dispatch()
-        self.expanded = True
-
-    def expand_dispatch(self):
-        raise Exception("Implemented in subclasses")
-
-    def add_expdand_contents(self, layout, item, offset=None):
-        if offset:
-            layout.addWidget(item, offset)
-        else:
-            layout.addWidget(item)
-        self.expand_widgets.append(item)
-
-    def collapse(self):
-        self.expanded = False
-        for widget in self.expand_widgets:
-            widget.hide()
-        self.close_button.clearFocus()
-        self.layout().activate()
-        self.resize(350, 20)
-        self.show()
-
-    def timeout(self):
-        if self.currentAlpha <= 255:
-            self.currentAlpha += 15
-            self.timer.start(1)
-        self.setWindowOpacity(1. / 255. * self.currentAlpha)
-
-    def resizeEvent(self, evt):
-        if self.fake:
-            return
-
-        self.setMask(self.draw())
-
-        deskRect = QtCore.QRect(desktop.availableGeometry())
-        if app.tray.geometry().y() < deskRect.height() / 2:
-            y = app.tray.geometry().bottom() + 10
-        else:
-            y = app.tray.geometry().top() - self.height() - 10
-        self.move(deskRect.width() - self.width() - 10, y)
-
-    def paintEvent(self, evt):
-        self.draw(event=True)
-
-    def draw(self, event=False):
-        self.title_label.setText("<b><font color=%s>%s</font></b>" % \
-                                (self.colors['ballooncolortext'], self.title))
-        self.text_label.setText("<font color=%s>%s</font>" % \
-                                (self.colors['ballooncolortext'], self.msg))
-        
-        path = QtGui.QPainterPath()
-        if hasattr(path, "addRoundedRect"):
-            path.addRoundedRect(QtCore.QRectF(0, 0, self.width(), self.height()), 7, 7)
-        else:
-            path.addRect(QtCore.QRectF(0, 0, self.width(), self.height()))
-
-        if event:
-            painter = QtGui.QPainter(self)
-        else:
-            pixmap = QtGui.QPixmap(self.size())
-            painter = QtGui.QPainter()
-            painter.begin(pixmap)
-        
-        painter.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
-        painter.setPen(QtGui.QPen(QtGui.QColor(0, 0, 0), 2, QtCore.Qt.SolidLine))
-        painter.setClipPath(path)
-        gradient = QtGui.QLinearGradient(0, 0, 0, 100);
-        gradient.setColorAt(0.0, QtGui.QColor(self.colors['ballooncolor']));
-        gradient.setColorAt(1.0, QtGui.QColor(self.colors['ballooncolorgradient']));
-        painter.setBrush(gradient);
-        painter.drawPath(path)
-        mask = painter.clipRegion()
-        if not event:
-            painter.end()
-        return mask
-
-    def destroy(self):
-        self.hide()
-        self.close()
-
-
-class BootProgressMessage(BalloonMessage):
-    def __init__(self, parent, title, msg, creds_callback=None, credentials=False, timeout=0):
-        BalloonMessage.__init__(self, parent, title, msg, timeout, False)
-
-        self.progress_bar = QtGui.QProgressBar()
-        self.contents_layout.addWidget(self.progress_bar)
-        self.callback = creds_callback
-
-        if self.callback and conf.USER != "":
-            button_msg = "(" + conf.USER + ") - "
-            if credentials:
-                button_msg += _("You already are authenticated")
-            else:
-                button_msg += _("Authenticate")
-
-            self.set_expandable(button_msg, "credentials.png")
-
-    def expand_dispatch(self):
-        self.hline = QtGui.QFrame(self)
-        self.hline.setFrameShape(QtGui.QFrame.HLine)
-        self.hline.setFrameShadow(QtGui.QFrame.Sunken)
-
-        self.pass_label = QtGui.QLabel(_("UFO password:"))
-        self.password = QtGui.QLineEdit(self)
-        self.password.setEchoMode(QtGui.QLineEdit.Password)
-        
-        self.ok_button = QtGui.QPushButton("Ok", self)
-        self.ok_button.setMaximumSize(32, 28)
-        self.remember = QtGui.QCheckBox(_("Remember my password"))
-
-        self.connect(self.password, QtCore.SIGNAL("returnPressed()"), self.valid_credentials)
-        self.connect(self.ok_button, QtCore.SIGNAL("clicked()"), self.valid_credentials)
-
-        self.password_field = QtGui.QHBoxLayout()
-        self.add_expdand_contents(self.expand_layout, self.hline)
-        self.add_expdand_contents(self.password_field, self.pass_label)
-        self.add_expdand_contents(self.password_field, self.password, 100)
-        self.add_expdand_contents(self.password_field, self.ok_button)
-        self.expand_layout.addLayout(self.password_field)
-        self.add_expdand_contents(self.expand_layout, self.remember)
-
-    def valid_credentials(self):
-        if self.password.text():
-            if self.callback:
-                self.callback(self.password.text(), self.remember.isChecked())
-            if len(self.expand_button.text()) - len(conf.USER) - 10 > len(_("Authenticate")):
-                offset = 42
-            else:
-                offset = 23
-            self.expand_button.setText(QtCore.QString("(" + conf.USER + ")" + (offset * " ")))
-        self.collapse()
-
-
-class UsbAttachementMessage(BalloonMessage):
-    def __init__(self, parent, title, msg=_("Removable devices management"), timeout=0):
-        BalloonMessage.__init__(self, parent, title, msg, timeout, False)
-
-        self.usb_list_layout = QtGui.QVBoxLayout()
-        self.usb_layouts     = {}
-
-        usb_attachmnts = app.vbox.current_machine.usb_attachmnts
-        self.old_attachmnts = usb_attachmnts.copy()
-
-        hline = QtGui.QFrame(self)
-        hline.setFrameShape(QtGui.QFrame.HLine)
-        hline.setFrameShadow(QtGui.QFrame.Sunken)
-        self.usb_list_layout.addSpacing(10)
-        self.usb_list_layout.addWidget(hline)
-        self.no_usb_label = QtGui.QLabel("<i>" + _("No removable devices found") + "</i>")
-
-        if self.have_usb_to_show(usb_attachmnts): 
-            for usb in usb_attachmnts:
-                self.insert_usb_layout(usb)
-
-        else:
-            self.usb_list_layout.addWidget(self.no_usb_label)
-
-        self.contents_layout.addLayout(self.usb_list_layout)
-
-    def refresh(self):
-        if not self.have_usb_to_show(self.old_attachmnts):
-            self.no_usb_label.hide()
-            self.usb_list_layout.removeWidget(self.no_usb_label)
-
-        for usb in app.vbox.current_machine.usb_attachmnts:
-            if usb not in self.old_attachmnts.keys():
-                self.insert_usb_layout(usb)
-            else:
-                del self.old_attachmnts[usb]
-
-        for usb in self.old_attachmnts:
-            for widget in self.usb_layouts[usb]['widgets']:
-                widget.hide()
-                del widget
-            if self.old_attachmnts[usb]['attach']:
-                app.vbox.current_machine.attach_usb(self.old_attachmnts[usb], attach=False)
-
-            self.usb_list_layout.removeItem(self.usb_layouts[usb]['layout'])
-            del self.usb_layouts[usb]['layout']
-
-        self.old_attachmnts = app.vbox.current_machine.usb_attachmnts.copy()
-        if not self.have_usb_to_show(self.old_attachmnts):
-            self.usb_list_layout.addWidget(self.no_usb_label)
-            self.no_usb_label.show()
-
-        self.layout().activate()
-        self.resize(350, 20)
-        self.show()
-
-    def insert_usb_layout(self, usb):
-        usb = app.vbox.current_machine.usb_attachmnts[usb]
-
-        if usb['locked']:
-            return
-
-        usb_hbox  = QtGui.QHBoxLayout()
-        usb_label = QtGui.QLabel(usb['name'] + " (" + usb['path'] + ")")
-        if usb['attach']:
-           button_msg  = _("Detach")
-           button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "eject.png"))
-        else:
-           button_msg = _("Attach")
-           button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "attach.png"))
-        attach_button = QtGui.QPushButton(button_icon, button_msg, self)
-        attach_button.setFlat(True)
-        attach_button.setMaximumSize(100, 22)
-        usb['button'] = attach_button
-
-        usb_hbox.addWidget(usb_label)
-        usb_hbox.addWidget(attach_button)
-        self.usb_list_layout.addLayout(usb_hbox)
-        self.usb_layouts[usb['name']] = { 'layout'  : usb_hbox, 
-                                          'widgets' : [ usb_label, attach_button ] }
-        attach_button.usb = usb
-        self.connect(attach_button, QtCore.SIGNAL("clicked()"), self.attach)
-
-    def attach(self):
-        control = self.sender()
-        usb = control.usb
-        if usb['attach']:
-            usb['button'].setText(_("Attach"))
-            usb['button'].setIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "attach.png")))
-        else:
-            usb['button'].setText(_("Detach"))
-            usb['button'].setIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "eject.png")))
-
-        app.vbox.current_machine.attach_usb(usb, attach=not usb['attach'])
-
-    def have_usb_to_show(self, usb_list):
-        for usb in usb_list:
-            if not usb_list[usb]['locked']:
-                return True
-        return False
 
 
 class Settings(QtGui.QDialog):

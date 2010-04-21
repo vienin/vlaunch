@@ -25,6 +25,32 @@ if sys.platform == "win32": import subprocess
 else: import ufo_subprocess as subprocess
 import os, os.path
 
+
+class SmartDict(dict):
+    def __init__(self):
+        super(SmartDict, self).__init__(self)
+        self.on_del_item_callbacks = []
+        self.on_set_item_callbacks = []
+
+    def register_on_del_item_callback(self, callback):
+        if callback not in self.on_del_item_callbacks:
+            self.on_del_item_callbacks.append(callback)
+
+    def register_on_set_item_callback(self, callback):
+        if callback not in self.on_set_item_callbacks:
+            self.on_set_item_callbacks.append(callback)
+
+    def __setitem__(self, key, value):
+        super(SmartDict, self).__setitem__(key, value)
+        for callback in  self.on_set_item_callbacks:
+            callback(key, value)
+
+    def __delitem__(self, key):
+        super(SmartDict, self).__delitem__(key)
+        for callback in  self.on_del_item_callbacks:
+            callback(key)
+
+
 def grep(input, pattern, inverse=False):
     for line in input.split("\n"):
         if inverse:

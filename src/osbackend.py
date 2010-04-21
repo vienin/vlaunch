@@ -77,11 +77,12 @@ class OSBackend(object):
         self.keyring_valid  = False
         self.remember_pass  = None
         self.env            = self.update_env()
+
         if conf.VOICE:
             import voice
-            self.voice      = voice.create_voice_synthetizer()
+            self.voice = voice.create_voice_synthetizer()
         else:
-            self.voice      = None
+            self.voice = None
 
     def update_env(self):
         if not path.isabs(conf.HOME):
@@ -367,7 +368,12 @@ class OSBackend(object):
                 #     virtual_box.machine.set_guest_property("overlay_quota", ...)
             except:
                 logging.debug("Exception while creating overlay")
-             
+
+        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
+        logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
+        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
+                                                     conf.REINTEGRATION + " " + conf.CMDLINE)
+
         # manage password keyring
         if keyring:
             if conf.USER:
@@ -383,11 +389,7 @@ class OSBackend(object):
         self.credentials = self.set_credentials
         
         # build removable devices attachements
-        self.check_usb_devices(no_refresh=True)
-        for usb in self.vbox.current_machine.usb_attachmnts:
-            usb = self.vbox.current_machine.usb_attachmnts[usb]
-            if conf.SCRIPT_PATH.startswith(usb['path']):
-                self.vbox.current_machine.attach_usb(usb, locked=True)
+        self.check_usb_devices()
 
         # set debug mode
         if conf.GUESTDEBUG:
@@ -410,28 +412,29 @@ class OSBackend(object):
         self.vbox.current_machine.set_guest_property("/UFO/CommandLine", conf.CMDLINE)
         self.vbox.close_session()
 
-    def check_usb_devices(self, no_refresh=False):
-        need_refresh   = False
+    def check_usb_devices(self):
         old_attachmnts = self.vbox.current_machine.usb_attachmnts.copy()
 
         # adding new devices, and tracking removed ones...
         for usb in self.get_usb_devices():
-            if usb[1] != None:
-                if self.vbox.current_machine.usb_attachmnts.has_key(usb[1]):
+            if str(usb[1]) != "None":
+                if conf.SCRIPT_PATH.startswith(usb[0]):
+
+                    # handle our fat partition
+                    if not self.vbox.current_machine.usb_master:
+                        self.vbox.current_machine.usb_master = { 'name'   : usb[1], 'path'   : usb[0] }
+                        self.vbox.current_machine.attach_usb(self.vbox.current_machine.usb_master)
+
+                elif self.vbox.current_machine.usb_attachmnts.has_key(usb[1]):
                     del old_attachmnts[usb[1]]
+
                 else:
-                    need_refresh = True
-                    self.vbox.current_machine.usb_attachmnts.update({ usb[1] : { 'name'   : usb[1],
-                                                                                 'path'   : usb[0],
-                                                                                 'attach' : False,
-                                                                                 'locked' : False }})
+                    self.vbox.current_machine.usb_attachmnts[usb[1]] = { 'name'   : usb[1],
+                                                                         'path'   : usb[0],
+                                                                         'attach' : False }
         # ...and so remove them
         for removed in old_attachmnts.keys():
-            need_refresh = True
             del self.vbox.current_machine.usb_attachmnts[removed]
-
-        if need_refresh and not no_refresh:
-            gui.app.refresh_usb()
 
     def find_device(self):
         try_times = 10
@@ -521,36 +524,37 @@ class OSBackend(object):
             self.vbox.current_machine.add_shared_folder(share_label, share_mntpt, writable = True)
             self.vbox.current_machine.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + share_label, 
                                                          share_name)
-            
+
         elif os.path.dirname(name) == "/UFO/Com/HostToGuest/Shares/Remove":
             self.vbox.current_machine.remove_shared_folder(os.path.basename(name))
-        
+
         # UFO settings management
         elif os.path.dirname(name) == "/UFO/Settings":
             conf.write_value_to_file("guest", os.path.basename(name), newValue)
-        
+
         # Credentials management
         elif os.path.dirname(name) == "/UFO/Credentials":
             if os.path.basename(name) == "Status":
                 if newValue == "OK":
                     if self.remember_pass:
                         self.set_password(self.remember_pass)
-                    gui.app.authentication(_("Opening session..."))
+                    gui.app.update_temporary_balloon(msg=_("Opening session..."))
                     
                 elif newValue == "FAILED" or newValue == "NO_PASSWORD":
                     if newValue == "FAILED" and self.keyring_valid:
                         self.set_password("")
-                    gui.app.hide_balloon()
+                    gui.app.destroy_temporary_balloon()
+
                     if self.fullscreen:
                         gui.app.fullscreen_window(False)
                     else:
                         gui.app.normalize_window()
                     gui.app.set_tooltip(_("UFO: authenticating"))
-                
+
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
-            gui.app.update_progress(newValue)
-        
+            gui.app.update_temporary_balloon(progress=newValue)
+
         # Resolution changes management
         elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
             # We NEVER receive last percent event,
@@ -558,21 +562,29 @@ class OSBackend(object):
             # raised at slim startup to catch end of boot progress
             if self.vbox.current_machine.is_booting and \
                not self.vbox.current_machine.is_booted:
-                gui.app.update_progress(str("1.000"))
-                gui.app.authentication(_("Authenticating..."))
+
+                gui.app.update_temporary_balloon(progress=1.00, msg=_("Authenticating..."))
                 self.vbox.current_machine.is_booted = True
-                
+
         # Overlay data reintegration infos
         elif name == "/UFO/Overlay/Size":
             self.vbox.current_machine.overlay_data_size = int(newValue)
-            
+
         # Custom machine state management
         elif name == "/UFO/State":
             if newValue == "LOGGED_IN":
                 # Start usb check loop
+                gui.app.destroy_temporary_balloon()
+                gui.app.add_persistent_balloon_section(key='usb',
+                                                       msg=_("Removable devices management"),
+                                                       default=_("No removable devices found"),
+                                                       progress=False,
+                                                       smartdict=self.vbox.current_machine.usb_attachmnts,
+                                                       hlayout={ 'type' : gui.UsbAttachementLayout,
+                                                                 'args' : (self.vbox.current_machine.attach_usb,)})
+
                 gui.app.start_usb_check_timer(5, self.check_usb_devices)
 
-                gui.app.hide_balloon()
                 if conf.AUTOFULLSCREEN or self.fullscreen:
                     gui.app.fullscreen_window(False)
                 else:
@@ -592,7 +604,7 @@ class OSBackend(object):
                     msg = _("Please wait while UFO is shutting down,\n"
                             "you absolutely must not unplug the key !")
 
-                gui.app.show_balloon_message(title=title, msg=msg)
+                gui.app.create_temporary_balloon(title=title, msg=msg)
                 gui.app.set_tooltip(_("UFO: recording changes"))
             
             elif newValue == "HALTING":
@@ -603,20 +615,20 @@ class OSBackend(object):
                 self.vbox.current_machine.is_booted  = False
                 self.vbox.current_machine.is_booting = True
                 
-                gui.app.hide_balloon()
-                gui.app.show_balloon_progress(title=_("Restart UFO"),
-                                              msg=_("UFO is rebooting"))
+                gui.app.create_temporary_balloon(title=_("Restart UFO"),
+                                                 msg=_("UFO is rebooting"),
+                                                 progress=True)
         
             elif newValue == "FIRSTBOOT":
                 gui.app.fullscreen_window(False)
-                
+
         # Fullscreen management
         elif name == "/UFO/GUI/Fullscreen":
             if newValue == "1":
                 gui.app.fullscreen_window(True)
             else:
                 gui.app.fullscreen_window(False)
-            
+
         # Debug management
         elif "/UFO/Debug/" in name:
             open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
@@ -638,10 +650,12 @@ class OSBackend(object):
                 title = _(u"UFO is starting")
             else:
                 title = _("1<SUP>st</SUP> launch of UFO")
-            gui.app.show_balloon_progress(title=title,
-                                          msg=_("UFO is starting."),
-                                          credentials_cb=self.credentials,
-                                          credentials=self.keyring_valid)
+
+            gui.app.create_temporary_balloon(title=title,
+                                             msg=_("UFO is starting."),
+                                             progress=True,
+                                             vlayout={ 'type' : gui.CredentialsLayout,
+                                                       'args' : (self.credentials, self.keyring_valid)})
             gui.app.set_tooltip(_("UFO: starting"))
 
             self.vbox.current_machine.is_booting = True
@@ -658,14 +672,13 @@ class OSBackend(object):
             if gui.app.callbacks_timer:
                 gui.app.stop_callbacks_timer()
 
-            gui.app.hide_balloon()
             gui.app.set_tooltip(_("UFO: terminated"))
-            gui.app.show_balloon_message(_("Goodbye"), 
-                                         _("You can now safely eject your UFO key."))
+            gui.app.create_temporary_balloon(_("Goodbye"),
+                                             _("You can now safely eject your UFO key."))
 
             # Let's show balloon message 3s
             time.sleep(3)
-            gui.app.hide_balloon()
+            gui.app.destroy_temporary_balloon()
             
             # main loop end condition
             self.vbox.current_machine.is_finished = True
@@ -740,6 +753,7 @@ class OSBackend(object):
     def run_virtual_machine(self, env):
         if conf.STARTVM:
             self.vbox.current_machine.start()
+
         else:
             self.run_vbox(path.join(conf.BIN, "VirtualBox"), env)
 
@@ -763,7 +777,7 @@ class OSBackend(object):
         try:
             self.vbox.cleanup()
             del self.vbox
-        except: 
+        except:
             pass
 
         self.kill_resilient_vbox()

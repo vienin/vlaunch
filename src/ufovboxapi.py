@@ -27,6 +27,8 @@ import logging
 import time
 import sys
 
+from utils import SmartDict
+
 try:
     import pywintypes
     COMError = pywintypes.com_error
@@ -366,7 +368,8 @@ class VBoxMachine():
         self.current_disk_rank = 0
         self.machine.saveSettings()
 
-        self.usb_attachmnts = {}
+        self.usb_attachmnts = SmartDict()
+        self.usb_master     = None
         
     def __del__(self):
         del self.machine
@@ -533,7 +536,7 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def attach_usb(self, usb, attach=True, locked=False):
+    def attach_usb(self, usb, attach=True):
         if attach:
             logging.debug("Attaching usb device: " + str(usb['path']) + ", " + str(usb['name']))
             self.add_shared_folder(usb['name'], usb['path'], writable = True)
@@ -544,8 +547,6 @@ class VBoxMachine():
             self.remove_shared_folder(str(usb['name']))
             self.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb['name']), 
                                     str(usb['path']))
-
-        usb['locked'] = locked
         usb['attach'] = attach
 
     def add_shared_folder(self, name, host_path, writable, save=False):
