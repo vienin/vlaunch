@@ -153,8 +153,8 @@ class MacBackend(OSBackend):
                    len(utils.grep(infos, "Volume Name:").split()) > 2 and \
                    len(utils.grep(infos, "Mount Point:").split()) > 2:
                     disks.append((utils.grep(infos, "Mount Point:").split()[2],
-                                  " ".join(utils.grep(infos, "Volume Name:").split(" ")[2:]),
-                                  utils.grep(infos, "Device Node:").split()[2]))
+                                  ":".join(utils.grep(infos, "Volume Name:").split(":")[1:]).lstrip(),
+                                  utils.grep(infos, "Device Node:").split()[2][:-2]))
         except: return []
         return disks
 
