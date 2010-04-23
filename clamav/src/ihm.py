@@ -12,10 +12,45 @@ VIRUS_DELETE = 1
 VIRUS_IGNORE = 2
 VIRUS_PASS = 3
 
+MIME_TYPES=dict()
+MIME_TYPES[u"Multimedia"]=(
+                      "image/gif","image/jpeg","image/png","image/tiff","image/vnd.microsoft.icon",
+                      "audio/mpeg","audio/x-ms-wma","audio/vnd.rn-realaudio","audio/x-wav",
+                      "video/mpeg","video/mp4","video/quicktime","video/x-ms-wmv","video/x-msvideo","video/x-flv"
+                      )
+MIME_TYPES[u"Document"]=("application/pdf","application/vnd.ms-excel","application/vnd.ms-outlook","application/vnd.ms-powerpoint","application/vnd.ms-works","application/msword")
+MIME_TYPES[u"Text"]=("text/plain",)
+MIME_TYPES[u"Other"]=True
+        
+
 
 class Antivirus(QtGui.QDialog):
     def __init__(self, print_widget_dest, parent=None):
         super(Antivirus, self).__init__(parent)
+        main_layout = QtGui.QVBoxLayout()
+        
+        self.launch_button = QtGui.QPushButton("Launch")
+        self.launch_button.setEnabled(False)
+        self.connect(self.launch_button, QtCore.SIGNAL('clicked()'), self.click_scan)
+        self.launch_button.installEventFilter(self)
+        
+        checks =[]
+        self.check_group = QtGui.QButtonGroup()
+        self.check_group.setExclusive(False)
+        self.other_button = False 
+        
+        for one in MIME_TYPES:
+            tmp_checkbox = QtGui.QCheckBox(one)
+            self.check_group.addButton(tmp_checkbox)
+            checks.append(tmp_checkbox)
+            tmp_checkbox.setChecked(True)
+            tmp_checkbox.setEnabled(False)
+            if one =="Other":
+                self.other_button = tmp_checkbox
+                self.connect(self.other_button,QtCore.SIGNAL("stateChanged(int)"),self.__click_other)
+        
+        self.thread_scan = T_scan()
+        self.connect(self.thread_scan, QtCore.SIGNAL("database_ready"), self.__database_ready)
         
         self.user_home_path = os.path.expanduser("~")
         self.shell_key = ('Desktop', 'My Music', 'My Pictures')
@@ -27,7 +62,6 @@ class Antivirus(QtGui.QDialog):
         self.mutex_running = QtCore.QMutex()
         self.mutex_running.lock()
 
-        self.thread_scan = T_scan()
         self.connect(self.thread_scan, QtCore.SIGNAL("scan_end_signal"), self.after_scan)      
         self.connect(self.thread_scan, QtCore.SIGNAL("scan_end_signal"), self.after_scan)      
         self.connect(self, QtCore.SIGNAL("scan_stop_signal"), self.thread_scan.stop_scan)
@@ -44,16 +78,12 @@ class Antivirus(QtGui.QDialog):
         self.remove_selection_button = QtGui.QPushButton("-")
         self.connect(self.remove_selection_button, QtCore.SIGNAL('clicked()'), self.click_remove_selection)
         
-        self.launch_button = QtGui.QPushButton("Launch")
-        self.connect(self.launch_button, QtCore.SIGNAL('clicked()'), self.click_scan)
-        self.launch_button.installEventFilter(self)
-        
         self.del_button = dict()
         self.ignore_button = dict()
         self.pass_button = dict()
         
         self.dir_model = QtGui.QFileSystemModel()
-        index = self.dir_model.setRootPath("/")
+        self.dir_model.setRootPath("/")
         self.dir_model.insertRow(5)      
         self.root_tree_view = QtGui.QTreeView()
         self.root_tree_view.setModel(self.dir_model)
@@ -92,11 +122,15 @@ class Antivirus(QtGui.QDialog):
         command_layout.addWidget(self.launch_button)
         command_widget.setLayout(command_layout)
         
-        main_layout = QtGui.QVBoxLayout()
+
         main_layout.addWidget(self.shell_list)
         main_layout.addWidget(self.root_tree_view)
         main_layout.addWidget(selection_widget)
         main_layout.addWidget(self.list_scan)
+                
+        for one in checks:
+            main_layout.addWidget(one)
+ 
         main_layout.addWidget(command_widget)
         main_layout.addWidget(print_widget)
         
@@ -114,6 +148,11 @@ class Antivirus(QtGui.QDialog):
         self.virus_pass = dict()
         self.virus_found = dict()
         
+    def __database_ready(self):
+        self.launch_button.setEnabled(True)
+        for one in self.check_group.buttons():
+            one.setEnabled(True)
+    
     def init_shell_folder(self):
         """
         Get Shell Folders path from registry 
@@ -132,12 +171,21 @@ class Antivirus(QtGui.QDialog):
         Disable any selection on root_tree_view
         """
         self.root_tree_view.clearSelection()
-        
+    
     def __disable_shell_list(self, index):
         """
         Disable any selection on shell_list
         """
         self.shell_list.clearSelection()
+        
+    def __click_other(self,state):
+        """
+        Activate or Desactivate other file scanning
+        """
+        if state == QtCore.Qt.Unchecked:
+            self.thread_scan.ignore_other_file()
+        else:
+            self.thread_scan.scan_other_file()
         
     def click_add_selection(self):
         """
@@ -188,11 +236,21 @@ class Antivirus(QtGui.QDialog):
         if self.running == True:
             scan_list = self.list_scan.findItems(".*", QtCore.Qt.MatchFlag(QtCore.Qt.MatchRegExp))
             scan_list_clean = []
+            
+            for one in self.check_group.buttons():
+                if self.m_stop:
+                    return
+                if one.isChecked():
+                    if one == self.other_button :
+                        self.thread_scan.scan_other_file()
+                    else:
+                        self.thread_scan.add_filters(MIME_TYPES[str(one.text())])
+            
             for one in scan_list:
-                if self.running == False:
+                if self.m_stop:
                     return
                 scan_list_clean.append(str(one.text(1)))
-            
+            self.print_info("Launching Scan")
             self.thread_scan.launch_scan(scan_list_clean, self.print_scan, self.print_scan_virus)
     
     def __selection_son_of_element(self, path):
@@ -237,6 +295,7 @@ class Antivirus(QtGui.QDialog):
         self.add_selection_button.setEnabled(False)
         self.remove_selection_button.setEnabled(False)
         self.launch_button.setText("Stopper")
+        self.m_stop=False
         
     def after_scan(self):
         """
@@ -248,7 +307,9 @@ class Antivirus(QtGui.QDialog):
         self.launch_button.setText("Lancer")
         self.launch_button.setEnabled(True)
         self.print_label.setText("")
-    
+        self.m_stop=False
+        self.thread_scan.reset_filter()
+        
     def eventFilter(self, sender_object, received_event):
         """
         Event Filter for 
@@ -257,7 +318,7 @@ class Antivirus(QtGui.QDialog):
         if sender_object in [self.launch_button] :
             if (received_event.type() == QtCore.QEvent.MouseButtonPress): 
                 if self.running == True:
-                    self.running = False
+                    self.m_stop=True
                     self.emit(QtCore.SIGNAL("scan_stop_signal"))
                 else:
                     self.before_scan()
@@ -425,8 +486,8 @@ class T_scan(QtCore.QThread):
     def run(self):
         while(True):
             if not self.clamav_instance:
-                
                 self.clamav_instance = myclam.Py_Clamav(self.inform)
+                self.emit(QtCore.SIGNAL("database_ready"))
             {
              - 1:lambda :time.sleep(5),
              'scan':self.__scan
@@ -492,7 +553,31 @@ class T_scan(QtCore.QThread):
         CallBack for showing information
         """
         self.emit(QtCore.SIGNAL("inform(QString)"), message)
-
+        
+    def add_filters(self,filter_list):
+        """
+        Add list of filters to clamav instance filters
+        """
+        for one in filter_list:
+            self.clamav_instance.add_filter(one)
+            
+    def reset_filter(self):
+        """
+        Remove all filters
+        """
+        self.clamav_instance.reset_filter()
+    
+    def scan_other_file(self):
+        """
+        Inverse filter behavior
+        """
+        self.clamav_instance.other_file = True
+    
+    def ignore_other_file(self):
+        """
+        Restore filter behavior
+        """
+        self.clamav_instance.other_file = False
 
 class TestForm(QtGui.QMainWindow):
     def __init__(self, parent=None):

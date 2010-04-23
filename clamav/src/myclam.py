@@ -36,14 +36,14 @@ dir_temp_path = ""
 main_type = 1
 daily_type = 2
 
-
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format='[%(thread)d] %(levelname)-2s %(filename)s:%(lineno)d %(message)s')
 
 class Py_Clamav(object):
     "Clamav Py Class"
     url_update = "http://database.clamav.net/"
     filters = []
-    
+    other_file = True
+       
     def __init__(self, inform):
         global database_path
         self.inform = inform
@@ -52,6 +52,7 @@ class Py_Clamav(object):
         self.update_if_necessary()
         self.initialize()
         self.database_loaded = True
+      
 
         
     def initialize(self):
@@ -135,7 +136,7 @@ class Py_Clamav(object):
         try:
             f = open(file_name)
         except IOError:
-            f_func('File Open Error'+file_name)
+            f_func('File Open Error' + file_name)
             return
         
         virus_name = [""]
@@ -153,9 +154,12 @@ class Py_Clamav(object):
         return res
     
     def scan(self, path, f_func=__default_print, v_func=__default_print_virus):
-        
         if self.running :
             return CL_Py_Scan_Already_Running
+        
+        if len(self.filters) == 0 and not self.other_file:
+            self.inform("Empty Filter")
+            return CL_Py_Return_Ok
         self.running = True
         
         if not os.path.exists(path):
@@ -178,57 +182,37 @@ class Py_Clamav(object):
         if self.running:
             self.running = False
         
-    def __get_file_list_from_dir(self, dir_path="/home"):
-        """
-        Looks for files in dir dir_path
-        Check filters if not empty
-        """
-        names = os.listdir(dir_path)
-        
-        yield dir_path, names
-        for name in names:
-            try:
-                st = os.lstat(os.path.join(dir_path, name))
-            except os.error:
-                continue
-            if stat.S_ISDIR(st.st_mode):
-                for (newdir_path, children) in self.__get_file_list_from_dir(os.path.join(dir_path, name)):
-                    yield newdir_path, children
-            
-    def __list_files(self, dir_path):
+    def __file_treatment(self, file_name, f_func=__default_print, v_func=__default_print_virus, check_exist=1):
         """
         Return file list form dir_path
         """
-        file_list = []
-        for (basepath, children) in self.__get_file_list_from_dir(dir_path):
+        try:
+            st = os.lstat(file_name)
+        except os.error:
+            f_func('File Open Error' + file_name)
+            return
+         
+        if stat.S_ISDIR(st.st_mode):
+            self.scan_dir(file_name, f_func, v_func, check_exist)
+            return
+
+        ok = False
+        
+        mime, desc = mimetypes.guess_type(file_name)
+        if not mime:
+            return     
+        mime = mime.lower()
+        try:
+            self.filters.index(mime)
+            ok = True
+        except ValueError:
+            if self.other_file:
+                ok = True
             
-            if not self.running :
-                
-                return
-            
-            if len(children) == 0:
-                continue;
-            for child in children:
-                
-                if not self.running :
-                    
-                    return
-                                
-                file_name = os.path.join(basepath, child)
-                try:
-                    st = os.lstat(file_name)
-                except os.error:
-                    continue
-                if stat.S_ISDIR(st.st_mode):
-                    continue
-                if len(self.filters) > 0:
-                    mime, desc = mimetypes.guess_type(file_name)
-                    if mime in self.filters:
-                        file_list.append(file_name)
-                else:
-                    file_list.append(file_name)   
-                
-        return file_list
+        if ok : 
+            self.scan_file(file_name, f_func, v_func, check_exist)
+        
+        return
             
     def scan_dir(self, dir_path=None, f_func=__default_print, v_func=__default_print_virus, check_exist=1):
         """
@@ -236,35 +220,26 @@ class Py_Clamav(object):
         """
         if dir_path == None:
             return 1
-       
             
         if os.path.exists(dir_path) == -1 and check_exist:
             return 1
         
         if not dir_path.endswith("/"): 
             dir_path = dir_path + "/"
-            
-        self.inform("Listing files from " + str(dir_path))
-        file_list = self.__list_files(dir_path)
         
+        file_list = os.listdir(dir_path)
         
         if not self.running :
-            
             return CL_Py_Scan_Cancelled
-        
-        
         
         if len(file_list) == 0:
             return CL_Py_No_File_To_Scan
         
-        
         for file_name in file_list:
-            
             if not self.running :
-                
                 break
-            self.scan_file(file_name, f_func, v_func, -1)
-
+            self.__file_treatment(os.path.join(dir_path+"/"+file_name), f_func, v_func, check_exist)
+            
     def progression(nb_block_transfered, block_size, total_size):
         return
     
