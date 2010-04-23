@@ -97,6 +97,7 @@ config = \
           "hostkey" : 0,
           "autofullscreen" : False,
           "autominimize" : True,
+          "defaultlanguage" : "en_US",
           "language" : AUTO_STRING,
           "ballooncolor" : "#FFFFE7",
           "ballooncolorgradient" : "#FFFFE7",
@@ -406,7 +407,7 @@ def get_default_value(id):
     for k, v in config.items():
         if id in v:
             return v[id]
-        
+
 def write_value_to_file(section, id, value):
     cp = ConfigParser()
     cp.read(conf_file)
@@ -414,3 +415,4 @@ def write_value_to_file(section, id, value):
         cp.add_section(section)
     cp.set(section, id, value)
     cp.write(open(conf_file, "w"))
+

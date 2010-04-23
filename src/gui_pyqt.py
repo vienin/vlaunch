@@ -1272,8 +1272,13 @@ class Settings(QtGui.QDialog):
         tab_layout = QtGui.QVBoxLayout()
         
         for setting in tab['settings']:
-            if fields and setting.get('confid') not in fields:
-                continue
+            if fields:
+                if setting.get('confid') not in fields:
+                    continue
+                else:
+                    setting['value'] = self.get_conf(setting.get('confid'))
+                    self.registred_selections.update({ setting.get('confid') : setting })
+
             set_layout = QtGui.QVBoxLayout()
             set_layout.addWidget(QtGui.QLabel(self.tr(setting['label'])))
             
@@ -1567,10 +1572,10 @@ class Settings(QtGui.QDialog):
         
     def on_validation(self):
         if len(self.registred_selections) > 0:
-            yes = _("Yes")
-            no  = _("No")
-            msg = _("Would you validate the following changes ?") + "\n\n"
-            msg += self.get_changes_string()
+            # yes = _("Yes")
+            # no  = _("No")
+            # msg = _("Would you validate the following changes ?") + "\n\n"
+            # msg += self.get_changes_string()
             # TODO: Spawn confiramagtion dialog, the following code is bugged on MacOs,
             #       the settings dialog is re-shown at shutdown when ballon is shown...
             # input = dialog_question(_("Settings validation"), msg, button1=yes, button2=no)

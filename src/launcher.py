@@ -114,6 +114,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
         elif conf.LANGUAGE == conf.AUTO_STRING:
+            conf.LANGUAGE = conf.DEFAULTLANGUAGE
             settings = gui.Settings(tabs=_("Appearance"), fields=["language"],
                                     show_default_button=False, no_reboot=True)
             settings.show()
