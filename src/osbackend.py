@@ -560,7 +560,7 @@ class OSBackend(object):
 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
-            gui.app.update_temporary_balloon(progress=newValue)
+            gui.app.update_temporary_balloon(progress=float(newValue))
 
         # Resolution changes management
         elif name == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode":
