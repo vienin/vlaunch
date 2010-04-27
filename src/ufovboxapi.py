@@ -28,6 +28,7 @@ import time
 import sys
 
 from utils import SmartDict
+from PyQt4 import QtNetwork
 
 try:
     import pywintypes
@@ -769,11 +770,11 @@ class VBoxHost():
         return self.host.DVDDrives
     
     def is_network_active(self):
-        for interface in self.host.findHostNetworkInterfacesOfType(self.constants.HostNetworkInterfaceType_Bridged):
-            if interface.status == 1:
+        for interface in QtNetwork.QNetworkInterface.allInterfaces():
+            flags = interface.flags()
+            if int(flags & QtNetwork.QNetworkInterface.IsRunning) and not int(flags & QtNetwork.QNetworkInterface.IsLoopBack):
                 return True
         return False
-
 
 class VBoxMonitor:
     def __init__(self):
