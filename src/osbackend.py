@@ -76,6 +76,7 @@ class OSBackend(object):
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
+        self.eject_at_exit  = conf.EJECTATEXIT
         self.env            = self.update_env()
 
         if conf.VOICE:
@@ -643,6 +644,9 @@ class OSBackend(object):
         # Debug management
         elif "/UFO/Debug/" in name:
             open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
+
+        elif name == "/UFO/EjectAtExit":
+            self.eject_at_exit = int(newValue)
 
     def onMachineStateChange(self, state):
         last_state = self.vbox.current_machine.last_state

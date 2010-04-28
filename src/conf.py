@@ -105,6 +105,7 @@ config = \
           "smartkey" : False,
           "lockatexit" : False,
           "voice" : False,
+          "ejectatexit" : False
         },
       "rawdisk" :
         {
@@ -278,7 +279,12 @@ settings = \
               'short'  : _("Minimize automatic"),
               'label'  : _("Enable this option if you want the window switch to minimized\n"
                            "mode at startup and shutdown.")
-            }
+            },
+            { 'confid' : "ejectatexit",
+              'sectid' : "launcher",
+              'short'  : _("Eject key at shutdown"),
+              'label'  : _("Enable this option if you want to eject the key at shutdown.")
+            },
           ]
       },
       { 'tabname'  : _("Appearance"),

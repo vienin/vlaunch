@@ -364,6 +364,11 @@ class WindowsBackend(OSBackend):
 
     def cleanup(self):
         self.stop_services()
+        if self.eject_at_exit:
+            self.eject_key()
+
+    def eject_key(self):
+        self.call([ path.join(conf.BIN, "USB_Disk_Eject.exe"), "/REMOVETHIS" ], shell=True)
 
     def run_vbox(self, command, env):
         self.call(command, env = env, shell=True)
