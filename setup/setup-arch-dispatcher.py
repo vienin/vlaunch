@@ -23,6 +23,19 @@ from py2exe.build_exe import py2exe as BuildExe
 import os, sys
 import glob
 
+#manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+#<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0"> 
+#   <assemblyIdentity version="1.0.0.0" processorArchitecture="X86" name="ufo" type="win32"/>
+#      <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+#      <security>
+#         <requestedPrivileges>
+#            <requestedExecutionLevel level="requireAdministrator"/> 
+#         </requestedPrivileges>
+#      </security>
+#   </trustInfo>
+#</assembly>
+#"""
+
 manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
@@ -43,19 +56,18 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 sys.path.append("..")
 sys.path.append("../src")
 
-setup(#zipfile = "bin\\library.zip",
-      options = {'py2exe': {  'dist_dir': "dist/bin",
-                              'bundle_files': 3,
-                              'includes': ['sip', 'win32com.server.util', 'pythoncom'],
-                              'excludes' : [ "Tkconstants", "Tkinter", "tcl" ],
+setup(zipfile = "bin\\library.zip",
+      options = {'py2exe': { 'bundle_files': 3,
+                              #'includes': ['sip', 'win32com.server.util', 'pythoncom'],
+                              #'excludes' : [ "Tkconstants", "Tkinter", "tcl" ],
                               #               "PyQt4.QtCore", "PyQt4.QtGui", "PyQt4.QtNetwork", "PyQt4" ],
                               # 'dll_excludes': [ "PyQt4\\QtCore.pyd", "PyQt4\\QtGui.pyd",
                               #                   "PyQt4\\QtNetwork.pyd",
                               #                   "QtCore4.dll", "QtGui4.dll", "QtNetwork4.dll" ],
-                              "typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 3)],
+                              #"typelibs": [('{46137EEC-703B-4FE5-AFD4-7C9BBBBA0259}', 0, 1, 3)],
                 }},
 
-      windows = [{'script': "../src/launcher.py",
+      windows = [{'script': "../src/launcher-windows.py",
                    "icon_resources" : [(1, "../graphics/UFO.ico")],
                    "other_resources": [(24, 1, manifest)],
                   }],
