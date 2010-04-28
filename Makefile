@@ -8,7 +8,7 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png \
         graphics/force.png graphics/exit.png graphics/system.png graphics/eject.png graphics/attach.png \
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
-        locale windows.tgz mac-intel.tgz ufo_overlay.vdi "Manuel d'utilisation.pdf"
+        locale windows.tgz mac-intel.tgz ufo_overlay.vdi Manuel\ d\'utilisation.pdf USB_Disk_Eject.exe
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -58,6 +58,7 @@ install: generate-mo
 	tar xvzf windows.tgz -C $(DESTDIR)$(TARGET_PATH)/Windows/
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
+	cp USB_Disk_Eject.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
@@ -145,5 +146,7 @@ download-binaries:
 	wget -O windows.tgz http://kickstart/private/virtualization/windows.tgz
 	wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
 	wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-${OVERLAY_DEV_TYPE}-UUID=${OVERLAY_DEV_UUID}.vdi
+	wget -O USBDiskEjector1.1.2.zip http://quick.mixnmojo.com/files/USBDiskEjector1.1.2.zip
+	unzip USBDiskEjector1.1.2.zip
 
 rpm: download-binaries build-rpm
