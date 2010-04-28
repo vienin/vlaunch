@@ -169,8 +169,6 @@ class OSBackend(object):
         logging.debug("VM successfully initialized")
 
     def configure_virtual_machine(self, create_vmdk = True):
-        cmdline = conf.CMDLINE.split(" ")
-
         if not conf.VMDK and not conf.CONFIGUREVM:
             logging.debug("Skipping configuration of the VM")
             self.vbox.close_session()
@@ -398,19 +396,24 @@ class OSBackend(object):
                                   "Be aware to disable debug mode at end of the debug session."),
                             title=_("Debug mode"))
             self.send_debug_rep = True
-        else:
-            cmdline += [ "rhgb", "quiet" ]
 
+        self.vbox.close_session()
+
+    def build_command_line(self):
+        cmdline = conf.CMDLINE.split(" ")
+        if not conf.GUESTDEBUG:
+            cmdline += [ "rhgb", "quiet" ]
         logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
         cmdline.append(conf.REINTEGRATION)
         cmdline.append(self.get_i18n_cmdline())
         if conf.COMPRESS:
             cmdline.append("rootflags=compress")
+        return " ".join(cmdline)
 
-        conf.CMDLINE = " ".join(cmdline)
-        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
-        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", conf.CMDLINE)
-        self.vbox.close_session()
+    def set_command_line(self):
+        cmdline = self.build_command_line()
+        logging.debug("conf.CMDLINE: " + cmdline)
+        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", cmdline)
 
     def check_usb_devices(self):
         old_attachmnts = self.vbox.current_machine.usb_attachmnts.copy()
@@ -599,6 +602,8 @@ class OSBackend(object):
                 gui.app.set_tooltip(_("UFO: running"))
                 
             elif newValue == "CLOSING_SESSION":
+                gui.app.destroy_persistent_balloon_section('usb')
+
                 if conf.AUTOMINIMIZE:
                     gui.app.minimize_window()
 
@@ -618,10 +623,9 @@ class OSBackend(object):
                 pass
                 
             elif newValue == "REBOOTING":
-                
+                self.set_command_line()
                 self.vbox.current_machine.is_booted  = False
                 self.vbox.current_machine.is_booting = True
-                
                 gui.app.create_temporary_balloon(title=_("Restart UFO"),
                                                  msg=_("UFO is rebooting"),
                                                  progress=True)
@@ -646,6 +650,8 @@ class OSBackend(object):
         # The virtual machine is starting
         if state == self.vbox.constants.MachineState_Running and \
            last_state == self.vbox.constants.MachineState_Starting:
+
+            self.set_command_line()
 
             # Let's show virtual machine's splash screen 2s,
             # minimize window while booting

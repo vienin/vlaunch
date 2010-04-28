@@ -706,6 +706,8 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
         assert self.sections.has_key(key)
         self.sections[key].hide()
         del self.sections[key]
+        if not len(self.sections):
+            self.hide()
 
 
 class SmartDictLayout(QtGui.QVBoxLayout):

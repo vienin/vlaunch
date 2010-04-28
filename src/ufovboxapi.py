@@ -109,9 +109,10 @@ class VBoxHypervisor():
                                                      vbox_callback_arg)
             self.vbox.registerCallback(self.cb)
             self.callbacks_aware = True
+
         else:
             self.guest_props = {}
-            self.vbox_callback_obj = vbox_callback_arg
+            self.vbox_callback_obj = vbox_callback_class(vbox_callback_arg)
             self.callbacks_aware = False
             
         if hasattr(self.vbox, "saveSettings"):
@@ -307,15 +308,16 @@ class VBoxHypervisor():
             guest_props = {}
             while id < len(names):
                 guest_props[names[id]] = values[id]
-                    
-                if not self.guest_props.has_key(names[id]) or \
-                   self.guest_props[names[id]] != values[id]:
-                    self.vbox_callback_obj.onGuestPropertyChange(names[id], 
-                                                                 guest_props[names[id]], 
-                                                                 "")
-                    if names[id] == "/UFO/Boot/Progress" and guest_props[names[id]] >= "0.95":
-                        self.vbox_callback_obj.onGuestPropertyChange("/VirtualBox/GuestAdd/Vbgl/Video/SavedMode", 
-                                                                     self.guest_props["/VirtualBox/GuestAdd/Vbgl/Video/SavedMode"], 
+
+                if not self.guest_props.has_key(names[id]) or self.guest_props[names[id]] != values[id]:
+                    if names[id] == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode" and not self.guest_props.has_key("/UFO/Boot/Progress"):
+                        guest_props[names[id]] = "0x0x0"
+                        self.current_machine.set_guest_property(names[id], guest_props[names[id]])
+
+                    else:
+                        self.vbox_callback_obj.onGuestPropertyChange(self.current_machine.uuid,
+                                                                     names[id],
+                                                                     guest_props[names[id]],
                                                                      "")
                 id += 1
             
@@ -326,14 +328,14 @@ class VBoxHypervisor():
             if self.current_machine.last_state != state:
                 if state == self.constants.MachineState_Running and \
                    last_state == self.constants.MachineState_PoweredOff:
-                    self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Starting)
+                    self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Starting)
                 if state == self.constants.MachineState_PoweredOff:
-                    self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Stopping)
+                    self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Stopping)
                     
-                self.vbox_callback_obj.onMachineStateChange(state)
+                self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, state)
         except:
-            self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_Stopping)
-            self.vbox_callback_obj.onMachineStateChange(self.constants.MachineState_PoweredOff)
+            self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Stopping)
+            self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_PoweredOff)
 
     def check_network_adapters(self):
         one_least_active = self.host.is_network_active()
