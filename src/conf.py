@@ -142,7 +142,7 @@ config = \
           "menubar" : False,
           "rootvdi" : "",
           "cmdline" : "ro 4",
-          "reintegration" : reintegrationValues[0],
+          "reintegration" : reintegrationValues[2],
           "guestdebug" : False
         },
       "guest" :
