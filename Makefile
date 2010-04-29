@@ -8,7 +8,7 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png \
         graphics/force.png graphics/exit.png graphics/system.png graphics/eject.png graphics/attach.png \
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
-        locale windows.tgz mac-intel.tgz ufo_overlay.vdi Manuel\ d\'utilisation.pdf USB_Disk_Eject.exe
+        locale windows.AMD64.tgz windows.x86.tgz mac-intel.tgz ufo_overlay.vdi Manuel\ d\'utilisation.pdf USB_Disk_Eject.exe
 
 DIR=$(NAME)-$(VERSION)
 ARCHIVE=$(DIR).tar.gz
@@ -54,8 +54,10 @@ install: generate-mo
 	cp ufo_swap.vdi ufo_overlay.vdi $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/HardDisks/
 
 	# build windows tree
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows
-	tar xvzf windows.tgz -C $(DESTDIR)$(TARGET_PATH)/Windows/
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/Windows/bin64
+	tar xvzf windows.x86.tgz -C $(DESTDIR)$(TARGET_PATH)/Windows/
+	tar xvzf windows.AMD64.tgz -C $(DESTDIR)$(TARGET_PATH)/Windows/bin64
+	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/w9xpopen.exe
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
 	cp USB_Disk_Eject.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin
@@ -143,7 +145,8 @@ live:
 download-binaries:
 	# wget all binaries
 	wget -O mac-intel.tgz http://kickstart/private/virtualization/mac-intel.tgz
-	wget -O windows.tgz http://kickstart/private/virtualization/windows.tgz
+	wget -O windows.AMD64.tgz http://kickstart/private/virtualization/windows.AMD64.tgz
+	wget -O windows.x86.tgz http://kickstart/private/virtualization/windows.x86.tgz
 	wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
 	wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-${OVERLAY_DEV_TYPE}-UUID=${OVERLAY_DEV_UUID}.vdi
 	wget -O USBDiskEjector1.1.2.zip http://quick.mixnmojo.com/files/USBDiskEjector1.1.2.zip

@@ -15,8 +15,8 @@ Source0:        vlaunch-%{version}.tar.gz
 Source1:        Manuel d'utilisation.pdf
 Source2:        mac-intel.tgz
 Source3:        windows.tgz
-Source4:	ufo_overlay.vdi
-Source5:	bootfloppy.img
+Source4:        ufo_overlay.vdi
+Source5:        bootfloppy.img
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
@@ -142,11 +142,12 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/locale/fr/LC_MESSAGES/vlaunch.mo
 %dir %{TARGET_PATH}/.data/logs
 
-%{TARGET_PATH}/Windows/msvcr71.dll
-%{TARGET_PATH}/Windows/msvcp71.dll
-%{TARGET_PATH}/Windows/python25.dll
+#%{TARGET_PATH}/Windows/msvcr71.dll
+#%{TARGET_PATH}/Windows/msvcp71.dll
+%{TARGET_PATH}/Windows/python26.dll
 %{TARGET_PATH}/Windows/ufo.exe
 %{TARGET_PATH}/Windows/bin
+%{TARGET_PATH}/Windows/bin64
 
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
