@@ -146,6 +146,7 @@ rm -rf $RPM_BUILD_ROOT
 #%{TARGET_PATH}/Windows/msvcp71.dll
 %{TARGET_PATH}/Windows/python26.dll
 %{TARGET_PATH}/Windows/ufo.exe
+%{TARGET_PATH}/Windows/Microsoft.VC90.CRT
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/bin64
 
@@ -171,21 +172,25 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/pam.d/vbox-client-dnd
 %{_sysconfdir}/pam.d/vbox-client-symlink
 %{_sysconfdir}/pam.d/vbox-get-property
+%{_sysconfdir}/pam.d/vbox-set-property
 %{_sysconfdir}/pam.d/toggle-fullscreen
 %{_sysconfdir}/pam.d/notify-logged-in
 %{_sysconfdir}/security/console.apps/vbox-client-dnd
 %{_sysconfdir}/security/console.apps/vbox-client-symlink
 %{_sysconfdir}/security/console.apps/vbox-get-property
+%{_sysconfdir}/security/console.apps/vbox-set-property
 %{_sysconfdir}/security/console.apps/toggle-fullscreen
 %{_sysconfdir}/security/console.apps/notify-logged-in
 %{_bindir}/vbox-client-symlink
 %{_bindir}/vbox-client-dnd
 %{_bindir}/vbox-get-property
+%{_bindir}/vbox-set-property
 %{_bindir}/toggle-fullscreen
 %{_bindir}/notify-logged-in
 %{_sbindir}/vbox-client-symlink
 %{_sbindir}/vbox-client-dnd
 %{_sbindir}/vbox-get-property
+%{_sbindir}/vbox-set-property
 %{_sbindir}/toggle-fullscreen
 %{_sbindir}/notify-logged-in
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop

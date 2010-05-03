@@ -1,7 +1,7 @@
 NAME=vlaunch
 VERSION=1.0
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
-        guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
+        guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* guest/vbox-set-property* \
         guest/toggle-fullscreen* guest/notify-logged-in* \
         graphics/ufo-*.bmp graphics/updater-*.png graphics/ufo-*.png graphics/close.png graphics/VolumeIcon-OS-trick \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png graphics/settings.png graphics/about.png \
@@ -100,7 +100,7 @@ install: generate-mo
 
 	# shared folders automount and links
 	mkdir -p $(DESTDIR)/usr/bin
-	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property toggle-fullscreen notify-logged-in; \
+	for prog in vbox-client-symlink vbox-client-dnd vbox-get-property vbox-set-property toggle-fullscreen notify-logged-in; \
 	do \
 	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
 	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+value=`VBoxControl -nologo guestproperty set $1 $2`
+exit $?
+
