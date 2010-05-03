@@ -3,7 +3,7 @@
 %define OVERLAY_DEV_TYPE ext4-no_journal-no_huge_files
 
 Name:           vlaunch
-Version:        0.9
+Version:        1.0
 Release:        1%{?dist}
 Summary:        Install files for virtualization on the UFO vfat partition
 

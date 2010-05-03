@@ -1,5 +1,5 @@
 NAME=vlaunch
-VERSION=0.9
+VERSION=1.0
 SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         guest/vbox-client-dnd* guest/vbox-client-symlink* guest/vbox-get-property* \
         guest/toggle-fullscreen* guest/notify-logged-in* \
