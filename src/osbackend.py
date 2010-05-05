@@ -501,12 +501,11 @@ class OSBackend(object):
     def get_keyboard_layout(self):
         lang = str(gui.app.keyboardInputLocale().name())
         if lang == 'C':
-            try:
-                return conf.LANGUAGE.split('_')[1].lower()
-            except IndexError:
-                return "en_US"
-        else:
-            return lang
+            lang = conf.LANGUAGE
+        try:
+            return lang.split('_')[1].lower()
+        except IndexError:
+            return "us"
 
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
