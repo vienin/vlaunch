@@ -4,11 +4,16 @@ TEXTDOMAIN=vlaunch-guest
 
 # Create symlink as hostos
 cmdline=`cat /proc/cmdline`
-host="${cmdline#*hostos=}"
-host="${host%% *}"
+for arg in $cmdline
+do
+	if [ "${arg##hostos=}" != "${arg}" ]; then
+		hostos=${arg##hostos=}
+	fi
+done
 desktop=`xdg-user-dir DESKTOP`
 target=/media
 share_id="/UFO/Shares/"
+user=`basename $HOME`
 
 mount_share_and_link() {
 
@@ -17,16 +22,29 @@ mount_share_and_link() {
 
 	[ -d "$target/$share_label" ] || mkdir "$target/$share_label"
 
-	mountpoint "$target/$share_label"
+	mountpoint "$target/$share_label" 2> /dev/null
 	if [ $? -ne 0 ]; then
-		echo "mount.vboxsf \"$share_label\" \"${target}/${share_label}\" -o \"uid=$USER_UID,rw\""
 		mount.vboxsf "$share_label" "${target}/${share_label}" -o "uid=$USER_UID,rw,dmode=755,fmode=755"
 	fi
 	
 	if [ $? -eq 0 ]; then
-		echo "ln -s -f \"${target}/${share_label}\" \"${desktop}/$share_name\""
-		ln -s -f "${target}/${share_label}" "${desktop}/$share_name"
+		ln -s -f "${target}/${share_label}" "$HOME/$share_name"
 		echo "${share_name};${share_label}" >> $HOME/.sharelinks
+
+		echo "#!/usr/bin/env xdg-open
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Link
+URL=$HOME/$share_name
+Name=$share_name" > ${desktop}/$share_name.desktop
+
+		if [ "${share_label%hosthome}" != "${share_label}" ]; then
+			echo "Icon=sf_${hostos}.png" >> ${desktop}/$share_name.desktop
+                else
+			echo "Icon=sf_usb.png" >> ${desktop}/$share_name.desktop
+		fi
+		chown $user:$user ${desktop}/$share_name.desktop
 	fi
 }
 
@@ -40,12 +58,12 @@ IFS=`echo -en ",\n\b"`
 echo "" > $HOME/.sharelinks.new
 for ligne in `cat $HOME/.sharelinks`
 do
-	mountpoint "${target}/${ligne#*;}"
+	mountpoint "${target}/${ligne#*;}" 2> /dev/null
 	if [ $? -eq 0 ]; then
 		echo $ligne >> $HOME/.sharelinks.new
 	else
-		echo "unlink \"${desktop}/${ligne%;*}\""
-		unlink "${desktop}/${ligne%;*}"
+		unlink "$HOME/${ligne%;*}"
+		rm "${desktop}/${ligne%;*}.desktop"
 		rmdir "${target}/${ligne#*;}"
 	fi
 done
