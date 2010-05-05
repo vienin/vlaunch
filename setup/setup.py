@@ -34,7 +34,7 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   </trustInfo>
   <dependency>
     <dependentAssembly>
-      <assemblyIdentity type="win32" name="Microsoft.VC90.CRT" version="9.0.21022.8" processorArchitecture="amd64" publicKeyToken="1fc8b3b9a1e18e3b"></assemblyIdentity>
+      <assemblyIdentity type="win32" name="Microsoft.VC90.CRT" version="9.0.21022.8" processorArchitecture="x86" publicKeyToken="1fc8b3b9a1e18e3b"></assemblyIdentity>
     </dependentAssembly>
   </dependency>
 </assembly>
@@ -42,6 +42,9 @@ manifest = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 
 sys.path.append("..")
 sys.path.append("../src")
+sys.path.append("../clamav/src")
+sys.path.append("../clamav/src/DNS")
+sys.path.append("../clamav/src/custom_clamav")
 
 setup(#zipfile = "bin\\library.zip",
       options = {'py2exe': {  'dist_dir': "dist/bin",

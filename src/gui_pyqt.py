@@ -61,8 +61,16 @@ class QtUFOGui(QtGui.QApplication):
         action_force_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "force.png")),
                                         QtCore.QString(_("Force to quit")), self);
         action_force_quit.setStatusTip(_("Force to quit"))
-        
+        action_antivirus = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "antivirus.png")),
+                                         QtCore.QString(_("Antivirus...")), self);
+        action_antivirus.setStatusTip(_("Antivirus"))
+		
         self.menu.addAction(action_settings)
+
+        if sys.platform == "win32":
+            self.menu.addAction(action_antivirus)
+            self.connect(action_antivirus, QtCore.SIGNAL("triggered()"), self.antivirus)
+			
         self.menu.addAction(action_about)
         self.menu.addAction(action_force_quit)
         self.menu.addAction(action_quit)
@@ -266,6 +274,9 @@ class QtUFOGui(QtGui.QApplication):
     def destroy_persistent_balloon_section(self, key):
         self.postEvent(self, PersistentBalloonEvent(key=key, destroy=True))
 
+    def destroy_persistent_balloon_sections(self):
+        self.postEvent(self, PersistentBalloonEvent(key=None, destroy=True))
+
     def set_tooltip(self, tip):
         self.postEvent(self, ToolTipEvent(tip))
 
@@ -324,10 +335,10 @@ class QtUFOGui(QtGui.QApplication):
                                                " http://ufo.agorabox.org"))
     
     def settings(self):
-        self.settings = Settings()
-        self.settings.show()
-        self.settings.exec_()
-        del self.settings
+        self.settings_window = Settings()
+        self.settings_window.show()
+        self.settings_window.exec_()
+        del self.settings_window
     
     def quit(self):
         if self.vbox.current_machine.is_running():
@@ -358,6 +369,25 @@ class QtUFOGui(QtGui.QApplication):
         else:
             sys.exit(0)
 
+    def antivirus(self):
+        from clamavgui import Antivirus
+        self.antivirus_window = Antivirus(info_callback=self.update_antivirus_message, 
+                                          progress_callback=self.update_antivirus_progress)
+        self.add_persistent_balloon_section(key='antivirus',
+                                            msg=_("Antivirus"),
+                                            default=_("No virus found"),
+                                            smartdict=self.antivirus_window.virus_found,
+                                            hlayout={ 'type' : VirusFoundLayout,
+                                                      'args' : (self.antivirus_window.virus_attitude,)})
+        self.antivirus_window.show()
+        self.antivirus_window.exec_()
+        del self.antivirus_window
+		
+    def update_antivirus_message(self, msg):
+        self.update_persistent_balloon_section(key='antivirus', msg="Antivirus: " + msg)
+
+    def update_antivirus_progress(self, msg):
+        self.update_persistent_balloon_section(key='antivirus', msg="Antivirus: " + msg)
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -451,6 +481,8 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
         self.temporary_balloon  = None
         self.persistent_balloon = MultiSmartDictBalloonMessage(self, title=_("UFO informations balloon"))
+        self.fit_balloon(self.persistent_balloon)
+
         self.minimized = False
 
         self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"),
@@ -466,7 +498,14 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy_temporary_balloon)
             self.destroytimer.start(timeout)
 
-        self.temporary_balloon = BalloonMessage(self, title, msg, progress, vlayout)
+        self.temporary_balloon = BalloonMessage(parent=self,
+                                                title=title,
+                                                msg=msg,
+                                                progress=progress,
+                                                vlayout=vlayout,
+                                                resize_callback=self.move_persistent_balloon)
+
+        self.fit_balloon(self.temporary_balloon)
         self.temporary_balloon.show()
 
     def update_temporary_balloon_message(self, msg):
@@ -490,7 +529,12 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.persistent_balloon.add_section(key, msg, default, smartdict, hlayout, progress)
 
     def destroy_persistent_balloon_section(self, key):
-        self.persistent_balloon.remove_section(key)
+        if not key:
+            sections = self.persistent_balloon.sections.keys()
+            for section in sections:
+                self.persistent_balloon.remove_section(section)
+        else:
+            self.persistent_balloon.remove_section(key)
 
     def update_persistent_balloon_message(self, key, msg):
         assert self.persistent_balloon.sections.has_key(key)
@@ -500,6 +544,20 @@ class TrayIcon(QtGui.QSystemTrayIcon):
     def update_persistent_balloon_progress(self, key, progress):
         assert self.persistent_balloon.sections.has_key(key)
         self.persistent_balloon.sections[key].set_progress(progress)
+
+    def move_persistent_balloon(self, overhead):
+        if self.persistent_balloon:
+           self.fit_balloon(self.persistent_balloon, overhead)
+    
+    def fit_balloon(self, balloon, overhead=0):
+        if overhead:
+            overhead = overhead + 10
+        if self.geometry().y() < screenRect.height() / 2:
+            y = self.geometry().bottom() + 10 + overhead
+        else:
+            y = self.geometry().top() - balloon.height() - 10 - overhead
+
+        balloon.move(balloon.x(), y)
 
     def activate(self, reason):
         if reason == QtGui.QSystemTrayIcon.DoubleClick:
@@ -514,8 +572,8 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         elif reason != QtGui.QSystemTrayIcon.Context:
             if self.temporary_balloon:
                 self.temporary_balloon.show()
-
-            elif len(self.persistent_balloon.sections):
+                
+            if len(self.persistent_balloon.sections):
                 self.persistent_balloon.show()
 
 
@@ -529,7 +587,7 @@ class BalloonMessage(QtGui.QWidget):
     DEFAULT_HEIGHT = 80
     DEFAULT_WIDTH  = 350
 
-    def __init__(self, parent, title, msg=None, progress=False, vlayout=None, fake=False):
+    def __init__(self, parent, title, msg=None, progress=False, vlayout=None, fake=False, resize_callback=None):
         if sys.platform == "win32":
             flags = QtCore.Qt.WindowStaysOnTopHint | \
                     QtCore.Qt.ToolTip
@@ -542,8 +600,6 @@ class BalloonMessage(QtGui.QWidget):
                     QtCore.Qt.Popup
 
         QtGui.QWidget.__init__(self, None, flags)
-
-        self.deskRect = QtCore.QRect(desktop.availableGeometry())
 
         self.parent   = parent
         self.title    = title
@@ -616,6 +672,8 @@ class BalloonMessage(QtGui.QWidget):
             self.vlayout = vlayout['type'](*vlayout['args'])
             self.vlayout.set_parent(self)
             self.contents_layout.addLayout(self.vlayout)
+            
+        self.resize_callback = resize_callback
 
     def set_message(self, msg):
         self.msg = "<font color=%s>%s</font>" % (self.colors['ballooncolortext'], msg)
@@ -630,29 +688,35 @@ class BalloonMessage(QtGui.QWidget):
             self.currentAlpha += 15
             self.timer.start(1)
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
-
+    
     def resizeEvent(self, evt):
         if self.fake:
             return
 
         self.setMask(self.draw())
+        self.move(screenRect.width() - self.width() - 10, self.y())
+        
+        if self.resize_callback:
+            self.resize_callback(self.height())
 
+    def hideEvent(self, evt):
+        if self.resize_callback:
+            self.resize_callback(0)
+            
+    def closeEvent(self, evt):
+        if self.resize_callback:
+            self.resize_callback(0)
+            
     def paintEvent(self, evt):
         self.draw(event=True)
 
     def showEvent(self, event):
-        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
-
-        if self.geometry().y() < self.deskRect.height() / 2:
-            y = self.parent.geometry().bottom() + 10
-        else:
-            y = self.parent.geometry().top() - self.height() - 10
-
-        self.move(self.deskRect.width() - self.width() - 10, y)
-
         self.timer = QtCore.QTimer(self)
         self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.opacity_timer)
         self.timer.start(1)
+        
+        if self.resize_callback:
+            self.resize_callback(self.height())
 
     def draw(self, event=False):
         self.title_label.setText("<b><font color=%s>%s</font></b>" % \
@@ -701,13 +765,17 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
         self.sections[key] = SmartDictLayout(self, msg, default, smartdict, hlayout, progress)
         self.contents_layout.addLayout(self.sections[key])
         self.sections[key].refresh()
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
 
     def remove_section(self, key):
-        assert self.sections.has_key(key)
-        self.sections[key].hide()
-        del self.sections[key]
-        if not len(self.sections):
-            self.hide()
+        if not self.sections.has_key(key):
+		    logging.debug("Failed to remove balloon section '%s'" % (key,))
+        else:
+            self.sections[key].hide()
+            del self.sections[key]
+            self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+            if not len(self.sections):
+                self.hide()
 
 
 class SmartDictLayout(QtGui.QVBoxLayout):
@@ -771,7 +839,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         for item in self.old_displayed_hlayouts:
             self.diplayed_hlayouts[item].hide()
             del self.diplayed_hlayouts[item]
-
+        
         if len(self.diplayed_hlayouts):
             self.default.hide()
             self.removeWidget(self.default)
@@ -843,6 +911,59 @@ class UsbAttachementLayout(QtGui.QHBoxLayout):
         self.removeWidget(self.usb_label)
         del self.attach_button
         del self.usb_label
+
+
+class VirusFoundLayout(QtGui.QHBoxLayout):
+    def __init__(self, virus, callback):
+        QtGui.QHBoxLayout.__init__(self)
+
+        self.virus    = virus
+        self.callback = callback
+
+        self.virus_infos_layout = QtGui.QVBoxLayout()
+        self.virus_name = QtGui.QLabel(self.virus['name'])
+        self.virus_path = QtGui.QLabel("<i><font size=2>" + self.virus['pretty'] + "</font></i>")
+        self.virus_infos_layout.addWidget(self.virus_name)
+        self.virus_infos_layout.addWidget(self.virus_path)
+        del_button_msg   = _("Delete")
+        del_button_icon  = QtGui.QIcon(os.path.join(conf.IMGDIR, "delete_virus.png"))
+        pass_button_msg  = _("Ignore")
+        pass_button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "ignore_virus.png"))
+        self.del_button = QtGui.QPushButton(del_button_icon, del_button_msg)
+        self.del_button.setFlat(True)
+        self.del_button.setMaximumSize(80, 22)
+        self.pass_button = QtGui.QPushButton(pass_button_icon, pass_button_msg)
+        self.pass_button.setFlat(True)
+        self.pass_button.setMaximumSize(80, 22)
+
+        self.addLayout(self.virus_infos_layout)
+        self.addWidget(self.del_button)
+        self.addWidget(self.pass_button)
+        self.connect(self.del_button, QtCore.SIGNAL("clicked()"), self.action)
+        self.connect(self.pass_button, QtCore.SIGNAL("clicked()"), self.action)
+
+    def action(self):
+        import clamavgui
+        control = self.sender()
+        if control == self.del_button:
+            self.callback(self.virus['path'], clamavgui.VIRUS_DELETE)
+        elif control == self.pass_button:
+            self.callback(self.virus['path'], clamavgui.VIRUS_IGNORE)
+        
+    def hide(self):
+        self.del_button.hide()
+        self.pass_button.hide()
+        self.virus_name.hide()
+        self.virus_path.hide()
+        self.virus_infos_layout.removeWidget(self.virus_name)
+        self.virus_infos_layout.removeWidget(self.virus_path)
+        self.removeWidget(self.del_button)
+        self.removeWidget(self.pass_button)
+        del self.del_button
+        del self.pass_button
+        del self.virus_name
+        del self.virus_path
+        del self.virus_infos_layout
 
 
 class CredentialsLayout(QtGui.QVBoxLayout):
@@ -1228,13 +1349,13 @@ class Settings(QtGui.QDialog):
         self.groups               = {}
         self.no_reboot            = no_reboot
         
-        "Registering custom handlers and layouts"
+        # Registering custom handlers and layouts
         
         self.register_custom_handler('ballooncolors',
                                      self.create_ballon_custom_layout(),
                                      self.on_balloon_color_selection)
         
-        "Fill main dialog with configuration tabs"
+        # Fill main dialog with configuration tabs
         
         tabWidget = QtGui.QTabWidget()
         for tab in conf.settings:
@@ -1247,7 +1368,7 @@ class Settings(QtGui.QDialog):
         main_layout = QtGui.QVBoxLayout()
         main_layout.addWidget(tabWidget)
         
-        "Build controls buttons"
+        # Build controls buttons
         
         valid_layout   = QtGui.QHBoxLayout()
 
@@ -1296,8 +1417,8 @@ class Settings(QtGui.QDialog):
             for item in item_tab:
                 if type(item.get('values')) == dict:
                     
-                    "Here build an exclusive radio button group, and associate"
-                    "one combo box list for each radio button of the group"
+                    # Here build an exclusive radio button group, and associate
+                    # one combo box list for each radio button of the group
                     
                     group      = QtGui.QButtonGroup()
                     val_layout = QtGui.QHBoxLayout()
@@ -1316,7 +1437,7 @@ class Settings(QtGui.QDialog):
                             
                         col_tab.update({ radio : values })
                         
-                        "Connect items to action slot"
+                        # Connect items to action slot
                         
                         values.conf_infos = item
                         values.connect(values, 
@@ -1338,7 +1459,7 @@ class Settings(QtGui.QDialog):
                             if col_tab[radio] != combo:
                                 radio.toggled.connect(combo.setDisabled)
                         
-                        "Set current value"
+                        # Set current value
                         
                         if self.get_conf(item['confid']) in item['values'][str(radio.text())]:
                             radio.setChecked(QtCore.Qt.Checked)
@@ -1347,7 +1468,7 @@ class Settings(QtGui.QDialog):
                         
                 elif type(item.get('values')) == list:
                     
-                    "Here build a combo box list with list values"
+                    # Here build a combo box list with list values
                     
                     if item.has_key('strgs'):
                         assert len(item['values']) == len(item['strgs'])
@@ -1372,7 +1493,7 @@ class Settings(QtGui.QDialog):
                     for val in item[value_key]:
                         values.addItem(val)
                     
-                    "Connect items to action slot"
+                    # Connect items to action slot
                     
                     values.conf_infos = item
                     values.connect(values, 
@@ -1383,7 +1504,7 @@ class Settings(QtGui.QDialog):
                                        QtCore.SIGNAL("activated(const QString &)"), 
                                        custom['function'])
                         
-                    "Set current value"
+                    # Set current value
                     try:
                         current_index = item['values'].index(self.get_conf(item['confid']))
                     except ValueError:
@@ -1396,7 +1517,7 @@ class Settings(QtGui.QDialog):
                     
                 elif type(item.get('range')) == list:
                     
-                    "Here build integer value edit with specific range"
+                    # Here build integer value edit with specific range
                     
                     val_layout = QtGui.QHBoxLayout()
                     val_layout.addSpacing(30)
@@ -1418,13 +1539,13 @@ class Settings(QtGui.QDialog):
                     slider.valueChanged.connect(spin.setValue)
                     spin.valueChanged.connect(slider.setValue)
                     
-                    "Set current value"
+                    # Set current value
                     
                     current_value = self.get_conf(item['confid'])
                     if current_value != conf.AUTO_INTEGER:
                         spin.setValue(current_value)
                         
-                    "Connect items to action slot"
+                    # Connect items to action slot
                     
                     spin.conf_infos = item
                     slider.conf_infos = item
@@ -1439,12 +1560,12 @@ class Settings(QtGui.QDialog):
                         checkbox.toggled.connect(slider.setDisabled)
                         checkbox.toggled.connect(spin.setDisabled)
                         
-                        "Set current value"
+                        # Set current value
                         
                         if current_value == conf.AUTO_INTEGER:
                             checkbox.setChecked(QtCore.Qt.Checked)
                             
-                        "Connect items to action slot"
+                        # Connect items to action slot
                         
                         checkbox.toggled.connect(self.on_selection)
                         if custom and custom['function']:
@@ -1459,7 +1580,7 @@ class Settings(QtGui.QDialog):
                     
                 else:
                     
-                    "Here build value edit item corresponding to variable type"
+                    # Here build value edit item corresponding to variable type
                     
                     current_value = self.get_conf(item['confid'])
                     
@@ -1470,7 +1591,7 @@ class Settings(QtGui.QDialog):
                         signal = edit.toggled
                         funct  = self.on_selection
 
-                        "Set current value"
+                        # Set current value
                         
                         if current_value:
                             edit.setChecked(QtCore.Qt.Checked)
@@ -1478,7 +1599,7 @@ class Settings(QtGui.QDialog):
                     elif type(current_value) == str:
                         if len(current_value) > 0 and current_value[0] == '#':
                             
-                            "Set current value"
+                            # Set current value
                             
                             edit = QtGui.QPushButton()
                             edit.buttonforcolor = True
@@ -1489,8 +1610,8 @@ class Settings(QtGui.QDialog):
                             signal = edit.clicked
                             funct  = self.on_color_selection
                             
-                            "We will call possible custom function in"
-                            "the color_selection handler"
+                            # We will call possible custom function in
+                            # the color_selection handler
                             
                             if custom and custom['function']:
                                 custom = custom.copy()
@@ -1500,7 +1621,7 @@ class Settings(QtGui.QDialog):
                         
                         else:
                             
-                            "Set current value"
+                            # Set current value
                             
                             edit   = QtGui.QLineEdit(current_value)
                             signal = edit.textChanged
@@ -1512,7 +1633,7 @@ class Settings(QtGui.QDialog):
                     if item.get('autocb') == True:
                         checkbox = QtGui.QCheckBox(self.tr(_("Auto")))
                         
-                        "Connect items to action slot"
+                        # Connect items to action slot
                         
                         checkbox.conf_infos = item
                         checkbox.toggled.connect(self.on_selection)
@@ -1522,7 +1643,7 @@ class Settings(QtGui.QDialog):
                             
                         val_layout.addWidget(checkbox)
                         
-                    "Connect items to action slot"
+                    # Connect items to action slot
                         
                     edit.conf_infos = item
                     signal.connect(funct)

@@ -31,4 +31,4 @@ else:
     arch = "x86"
 
 exe = os.path.join(os.path.realpath(os.path.dirname(sys.argv[0])), bindir, "ufo." + arch + ".exe")
-utils.call([exe] + sys.argv[1:])
+utils.call([exe] + sys.argv[1:], cwd=os.path.dirname(exe))

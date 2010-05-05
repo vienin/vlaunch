@@ -1,12 +1,13 @@
 import sys
 import os
 from PyQt4 import QtGui, QtCore
-import myclam
+import clamavcore
 import time
 import threading
 import logging 
 import _winreg
 import shutil
+from utils import SmartDict
 
 VIRUS_DELETE = 1
 VIRUS_IGNORE = 2
@@ -21,14 +22,14 @@ MIME_TYPES[u"Multimedia"]=(
 MIME_TYPES[u"Document"]=("application/pdf","application/vnd.ms-excel","application/vnd.ms-outlook","application/vnd.ms-powerpoint","application/vnd.ms-works","application/msword")
 MIME_TYPES[u"Text"]=("text/plain",)
 MIME_TYPES[u"Other"]=True
-        
 
 
 class Antivirus(QtGui.QDialog):
-    def __init__(self, print_widget_dest, parent=None):
+    def __init__(self, parent=None, info_callback=None, progress_callback=None):
         super(Antivirus, self).__init__(parent)
         main_layout = QtGui.QVBoxLayout()
-        
+
+        self.info_callback = info_callback
         self.launch_button = QtGui.QPushButton("Launch")
         self.launch_button.setEnabled(False)
         self.connect(self.launch_button, QtCore.SIGNAL('clicked()'), self.click_scan)
@@ -55,15 +56,12 @@ class Antivirus(QtGui.QDialog):
         self.user_home_path = os.path.expanduser("~")
         self.shell_key = ('Desktop', 'My Music', 'My Pictures')
         self.running = False
-        self.print_widget_dest = print_widget_dest
-        self.connect(self, QtCore.SIGNAL("virus_list_updated"), self.refresh_virus_list)
         self.virus_tab_exist = False
         
         self.mutex_running = QtCore.QMutex()
         self.mutex_running.lock()
 
-        self.connect(self.thread_scan, QtCore.SIGNAL("scan_end_signal"), self.after_scan)      
-        self.connect(self.thread_scan, QtCore.SIGNAL("scan_end_signal"), self.after_scan)      
+        self.connect(self.thread_scan, QtCore.SIGNAL("scan_end_signal"), self.after_scan)
         self.connect(self, QtCore.SIGNAL("scan_stop_signal"), self.thread_scan.stop_scan)
         
         self.connect(self.thread_scan, QtCore.SIGNAL("virus_detected(QString,QString)"), self.print_scan_virus)
@@ -77,10 +75,6 @@ class Antivirus(QtGui.QDialog):
         
         self.remove_selection_button = QtGui.QPushButton("-")
         self.connect(self.remove_selection_button, QtCore.SIGNAL('clicked()'), self.click_remove_selection)
-        
-        self.del_button = dict()
-        self.ignore_button = dict()
-        self.pass_button = dict()
         
         self.dir_model = QtGui.QFileSystemModel()
         self.dir_model.setRootPath("/")
@@ -122,7 +116,6 @@ class Antivirus(QtGui.QDialog):
         command_layout.addWidget(self.launch_button)
         command_widget.setLayout(command_layout)
         
-
         main_layout.addWidget(self.shell_list)
         main_layout.addWidget(self.root_tree_view)
         main_layout.addWidget(selection_widget)
@@ -146,7 +139,10 @@ class Antivirus(QtGui.QDialog):
         self.setLayout(general_layout)
         
         self.virus_pass = dict()
-        self.virus_found = dict()
+        self.virus_found = SmartDict()
+        
+        self.virus_found.register_on_set_item_callback(self.refresh_virus_list)
+        self.virus_found.register_on_del_item_callback(self.refresh_virus_list)
         
     def __database_ready(self):
         self.launch_button.setEnabled(True)
@@ -250,8 +246,9 @@ class Antivirus(QtGui.QDialog):
                 if self.m_stop:
                     return
                 scan_list_clean.append(str(one.text(1)))
-            self.print_info("Launching Scan")
+            self.print_info("launching scan")
             self.thread_scan.launch_scan(scan_list_clean, self.print_scan, self.print_scan_virus)
+            self.showMinimized()
     
     def __selection_son_of_element(self, path):
         """
@@ -327,30 +324,34 @@ class Antivirus(QtGui.QDialog):
 
     def print_scan(self, message):
         self.print_label.setText(message)
+        self.info_callback(message)
         
     def print_info(self, message):
+        
         self.print_label.setText(message)
+        self.info_callback(message)
         
     def print_scan_virus(self, file_name, virus_name):
         logging.debug("Virus Found in" + file_name + " :" + virus_name)
 
     def manage_virus_found(self, file_name, virus_name):
         if not (file_name in self.virus_found) and not (file_name in self.virus_pass):
-            self.virus_found[file_name] = virus_name
-            self.emit(QtCore.SIGNAL("virus_list_updated"))
+            self.virus_found[file_name] = { 'name'   : virus_name, 
+                                            'path'   : file_name, 
+                                            'pretty' : self.thread_scan.clamav_instance.pretty_path(file_name) }
 
     def del_virus_attitude(self, file_path):
         """
         Remove path where virus was found
         """
         if file_path in self.virus_found:
-            if not os.path.exists(file_path):
-                return 1
-            if os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-            if os.path.isfile(file_path):
-                self.unlink(file_path)
-                
+            if os.path.exists(str(file_path)):
+                if os.path.isdir(str(file_path)):
+                    shutil.rmtree(str(file_path))
+                elif os.path.isfile(str(file_path)):
+                    os.unlink(str(file_path))
+            del self.virus_found[file_path]
+            
     def pass_virus_attitude(self, file_path):
         """
         Add file_name to virus_pass list
@@ -360,20 +361,16 @@ class Antivirus(QtGui.QDialog):
         
         if not (file_path in self.virus_pass):
             self.virus_pass[file_path] = self.virus_found[file_path]
-            self.virus_found.pop(file_path)
-            self.emit(QtCore.SIGNAL("virus_list_updated"))
-            
-        
+            del self.virus_found[file_path]
         
     def ignore_virus_attitude(self, file_path):
         """
         Remove file_name from virus_found list
         """
         if file_path in self.virus_found:
-            self.virus_found.pop(file_path) 
-            self.emit(QtCore.SIGNAL("virus_list_updated"))
+            del self.virus_found[file_path]
 
-    def virus_attitude(self, file_name, virus_name, action=VIRUS_DELETE):
+    def virus_attitude(self, file_name, action=VIRUS_DELETE):
         """
         CallBack for virus treatment
         """
@@ -419,7 +416,7 @@ class Antivirus(QtGui.QDialog):
             self.tab_widget.removeTab(self.virus_tab_exist)
             self.virus_tab_exist = False
         
-    def refresh_virus_list(self):
+    def refresh_virus_list(self, key=None, value=None):
         """
         Refresh virus list on virus tab
         """
@@ -432,10 +429,10 @@ class Antivirus(QtGui.QDialog):
             return 
         
         for name in self.virus_found:
-            self.virus_list.addTopLevelItem(QtGui.QTreeWidgetItem((self.virus_found[name], name)))
+            self.virus_list.addTopLevelItem(QtGui.QTreeWidgetItem((self.virus_found[name]['name'], name)))
             
         for name in self.virus_pass:
-            self.virus_list.addTopLevelItem(QtGui.QTreeWidgetItem((self.virus_pass[name], name)))
+            self.virus_list.addTopLevelItem(QtGui.QTreeWidgetItem((self.virus_pass[name]['name'], name)))
             
     def click_virus_del(self):
         """
@@ -443,13 +440,13 @@ class Antivirus(QtGui.QDialog):
         """
         if not self.virus_tab_exist:
             return
-        if self.virus_list.selectedIndexes() :
+        if self.virus_list.selectedIndexes():
             list_selected = self.virus_list.selectedIndexes()
-            index_selected = list_selected[0] 
+            index_selected = list_selected[0]
             item_selected = self.virus_list.itemFromIndex(index_selected)
-            virus_name = item_selected.text(0)
             file_name = item_selected.text(1)
-        
+            self.del_virus_attitude(file_name)
+            
     def click_virus_ignore(self):
         """
         CallBack for button ignore virus on virus tab
@@ -460,7 +457,6 @@ class Antivirus(QtGui.QDialog):
             list_selected = self.virus_list.selectedIndexes()
             index_selected = list_selected[0] 
             item_selected = self.virus_list.itemFromIndex(index_selected)
-            virus_name = item_selected.text(0)
             file_name = item_selected.text(1)
             self.ignore_virus_attitude(file_name)
     
@@ -486,7 +482,7 @@ class T_scan(QtCore.QThread):
     def run(self):
         while(True):
             if not self.clamav_instance:
-                self.clamav_instance = myclam.Py_Clamav(self.inform)
+                self.clamav_instance = clamavcore.Py_Clamav(self.inform)
                 self.emit(QtCore.SIGNAL("database_ready"))
             {
              - 1:lambda :time.sleep(5),
@@ -544,7 +540,7 @@ class T_scan(QtCore.QThread):
             self.clamav_instance.stop_scan()
             self.running = False
             
-            self.inform("Stop Scanning asked")
+            self.inform("scan stopped")
             
         self.mutex_running.release()
     
@@ -578,6 +574,7 @@ class T_scan(QtCore.QThread):
         Restore filter behavior
         """
         self.clamav_instance.other_file = False
+    
 
 class TestForm(QtGui.QMainWindow):
     def __init__(self, parent=None):

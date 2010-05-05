@@ -15,8 +15,6 @@ import re
 import shutil
 import _winreg
 import logging 
-from clam_exception import *
-
 
 from string import atoi
 from custom_clamav.clamav import *
@@ -38,25 +36,67 @@ daily_type = 2
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format='[%(thread)d] %(levelname)-2s %(filename)s:%(lineno)d %(message)s')
 
+CL_Py_Return_Ok = 100
+CL_Py_Engine_Error = 101
+CL_Py_Bad_Argument = 102
+CL_Py_File_Not_Found = 103
+CL_Py_Scan_Already_Running = 104
+CL_Py_Scan_Cancelled = 105
+CL_Py_No_File_To_Scan = 106
+CL_Py_DNS_Error = 107
+CL_Py_Download_Error = 108
+CL_Py_TempFile_Error = 109
+
+errors = { CL_Py_Return_Ok : "Execution Successful",
+           CL_Py_Engine_Error : "Engine Initialization Error",
+           CL_Py_Bad_Argument : "Bad Argument",
+           CL_Py_File_Not_Found : "File Not Found",
+           CL_Py_Scan_Already_Running : "Scan Already Running",
+           CL_Py_Scan_Cancelled : "Scan Cancelled",
+           CL_Py_No_File_To_Scan : "No File To Scan",
+           CL_Py_DNS_Error : "DNS error",
+           CL_Py_Download_Error : "File Too Short",
+           CL_Py_TempFile_Error : "Temp File Error" }
+
+class Py_Clamav_Exception(Exception):
+    """
+    Py_Clamav Exception Class
+    0 => 30 Clamav Exception
+    100 =>  Py Clamav Exception
+    """
+    def __init__(self, errno):
+        Exception.__init__(self)
+        self.errno = errno
+        
+    def __str__(self):
+        if self.errno < 30 :
+            return cl_strerror(self.errno)
+        elif self.errno in errors:
+            return errors[self.errno]
+        return "Unknown error"
+
+
 class Py_Clamav(object):
     "Clamav Py Class"
     url_update = "http://database.clamav.net/"
     filters = []
     other_file = True
        
-    def __init__(self, inform):
+    def __init__(self, inform, progress_callback=None):
         global database_path
         self.inform = inform
         self.running = False
         self.database_loaded = False
-        self.update_if_necessary()
-        self.initialize()
+        self.update_if_necessary(progress_callback)
+        try:
+            self.initialize()
+        except:
+            self.use_emergency_database()
+            self.initialize()
         self.database_loaded = True
-      
-
         
     def initialize(self):
-        self.inform("DataBase initialization")
+        self.inform("initializing database")
         res = cl_init(CL_INIT_DEFAULT)
         if res != CL_SUCCESS and res != CL_EARG :
             raise Py_Clamav_Exception(res)
@@ -76,7 +116,7 @@ class Py_Clamav(object):
         if ret != CL_SUCCESS:
             raise Py_Clamav_Exception(ret)
         
-        self.inform("Database Ready")
+        self.inform("virus database ready")
         return CL_Py_Return_Ok
 
     def add_filter(self, ext):
@@ -123,7 +163,7 @@ class Py_Clamav(object):
         """
         if file_name == None:
             raise Py_Clamav_Exception(CL_Py_Bad_Argument)
-        
+
         if os.path.exists(file_name) == -1 and check_exist:
             raise Py_Clamav_Exception(CL_Py_File_Not_Found)
 
@@ -132,7 +172,7 @@ class Py_Clamav(object):
             while not self.database_loaded:
                 time.sleep(0.2)
             
-        f_func('Scanning ' + file_name)
+        f_func('scanning ' + self.pretty_path(file_name))
         try:
             f = open(file_name)
         except IOError:
@@ -158,7 +198,7 @@ class Py_Clamav(object):
             return CL_Py_Scan_Already_Running
         
         if len(self.filters) == 0 and not self.other_file:
-            self.inform("Empty Filter")
+            self.inform("empty filter")
             return CL_Py_Return_Ok
         self.running = True
         
@@ -170,7 +210,7 @@ class Py_Clamav(object):
         if os.path.isfile(path):
             self.scan_file(path, f_func, v_func, 1)
         
-        f_func("End SCAN")
+        f_func("scan finished")
         self.running = False
         
         return CL_Py_Return_Ok
@@ -304,26 +344,15 @@ class Py_Clamav(object):
     def __get_last_file(self, remote_file, target_file, call_function=progression):
         """
         Download remote_file to target_file
-        Return 1 if success, else False
         """
-        global dir_temp_path
+        #global dir_temp_path
         
-        if not(dir_temp_path) :
-            self.__init_temp_dir()
+        #if not(dir_temp_path) :
+        #    self.__init_temp_dir()
         
-        target_file = dir_temp_path + target_file
+        #target_file = dir_temp_path + target_file
         self.__del_file(target_file)
-        
-        try: 
-            urllib.urlretrieve(remote_file, target_file, call_function)
-        except urllib.ContentTooShortError:
-            self.__del_file(target_file)
-            return CL_Py_Download_Error
-        except IOError:
-            self.__del_file(target_file)
-            return CL_Py_Download_Error 
-        
-        return target_file
+        urllib.urlretrieve(remote_file, target_file, call_function)
         
     def __del_file(self, file_name):
         """
@@ -361,37 +390,42 @@ class Py_Clamav(object):
             
         return True
     
-    def __clean_database_dir(self):
-        """
-        Delete all temp folders created by the program
-        """
-        global database_path
-        regex_test = re.compile("^cl_db_")
-    #    database path_cleaning
-        for file_name in os.listdir(database_path):
-            if regex_test.search(file_name):
-                try:
-                    st = os.lstat(os.path.join(database_path + file_name))
-                    if stat.S_ISDIR(st.st_mode):
-                        shutil.rmtree(os.path.join(database_path + file_name))
-                except os.error:
-                    continue
+    # def __clean_database_dir(self):
+        # """
+        # Delete all temp folders created by the program
+        # """
+        # global database_path
+        # regex_test = re.compile("^cl_db_")
+        #database path_cleaning
+        # for file_name in os.listdir(database_path):
+            # if regex_test.search(file_name):
+                # try:
+                    # st = os.lstat(os.path.join(database_path + file_name))
+                    # if stat.S_ISDIR(st.st_mode):
+                        # shutil.rmtree(os.path.join(database_path + file_name))
+                # except os.error:
+                    # continue
                 
-    def __init_temp_dir(self):
-        """
-        Create temp folder for downloading database
-        """
-        global database_path
-        global dir_temp_path
+    # def __init_temp_dir(self):
+        # """
+        # Create temp folder for downloading database
+        # """
+        # global database_path
+        # global dir_temp_path
     
-        self.__clean_database_dir()
-    #    dir temp generation
-        dir_temp_path = tempfile.mkdtemp("", "cl_db_", database_path)
-        if not(dir_temp_path):
-            raise Py_Clamav_Exception(CL_Py_TempFile_Error)
-        dir_temp_path = dir_temp_path + "/" 
+        # self.__clean_database_dir()
+        #dir temp generation
+        # dir_temp_path = tempfile.mkdtemp("", "cl_db_", database_path)
+        # if not(dir_temp_path):
+            # raise Py_Clamav_Exception(CL_Py_TempFile_Error)
+        # dir_temp_path = dir_temp_path + "/"
         
-        return dir_temp_path
+        # return dir_temp_path
+    
+    def use_emergency_database(self):
+        logging.debug("Antivirus: using emergency database")
+        shutil.copy2(os.path.join(cd_database_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
+        shutil.copy2(os.path.join(cd_database_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
     
     def update_if_necessary(self, call_function_progress=None):
         """
@@ -402,89 +436,97 @@ class Py_Clamav(object):
         global main_path
         global daily_path
         global dir_temp_path
-        
-        self.inform("DataBase Updating")
-        if not(os.path.exists(main_path)) or not(os.path.exists(daily_path)):
-            if not self.force_update(call_function_progress):
-                shutil.copy2(os.path.join(cd_database_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
-                shutil.copy2(os.path.join(cd_database_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
-                return False
-        
-        r_current_version = self.__get_remote_current_version()
-        
-        if not r_current_version:
-            return False
-        
-        self.__init_temp_dir()
-        
-        main_v_local = self.__get_local_current_version(main_path)
-        main_need_update = False
-        
-        if not main_v_local:
-            main_need_update = 1
-        else:
-            if main_v_local < r_current_version["main"]:
-                main_need_update = 1
+
+        self.inform("checking database updates")
+ 
+        self.database_temp_dir = None
+        try:
+            # Test if updated database exists
+            if not(os.path.exists(main_path)) or not(os.path.exists(daily_path)):
+                # No updated database files found, download last ones
+                logging.debug("Antivirus: no updated database files, forcing update")
+                self.inform("dowloading database update (1/2)")
+                self.__get_last_file(main_url, main_path, call_function_progress)
+                self.inform("dowloading database update (2/2)")
+                self.__get_last_file(daily_url, daily_path, call_function_progress)
+                return
                 
-        if main_need_update:
-            if not(self.__get_last_file(main_url, "main.cvd", call_function_progress)):
-                shutil.copy2(os.path.join(database_path + "main.cvd"), os.path.join(dir_temp_path + "main.cvd"))
-        else:
-            shutil.copy2(os.path.join(database_path + "main.cvd"), os.path.join(dir_temp_path + "main.cvd"))
-
-        daily_v_local = self.__get_local_current_version(daily_path)
-        daily_need_update = False
+            # Here we have update database files in update directory
+            r_current_version = self.__get_remote_current_version()
+            logging.debug("Antivirus: current database version, " + str(r_current_version))
+            if not r_current_version:
+                return
         
-        if not daily_v_local:
-            daily_need_update = 1
-        else:
-            if daily_v_local < r_current_version["daily"]:
-                daily_need_update = 1
-        if daily_need_update:
-            if not(self.__get_last_file(daily_url, "daily.cvd", call_function_progress)):
-                shutil.copy2(os.path.join(database_path + "daily.cvd"), os.path.join(dir_temp_path + "daily.cvd"))
-        else:
-            shutil.copy2(os.path.join(database_path + "daily.cvd"), os.path.join(dir_temp_path + "daily.cvd"))
+            main_need_update  = False
+            daily_need_update = False
+            l_main_current_version  = self.__get_local_current_version(main_path)
+            l_daily_current_version = self.__get_local_current_version(daily_path)
             
-        if main_need_update or daily_need_update :
-            if self.__check_tmp_database(dir_temp_path):
-                shutil.copy2(os.path.join(dir_temp_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
-                shutil.copy2(os.path.join(dir_temp_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
-            else: 
-                shutil.copy2(os.path.join(cd_database_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
-                shutil.copy2(os.path.join(cd_database_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
-            
-        self.__clean_database_dir()
-        dir_temp_path = ""
+            # Test if updated database version is deprecated
+            if not l_main_current_version or l_main_current_version < r_current_version["main"]:
+                main_need_update = True
+            if not l_daily_current_version or l_daily_current_version < r_current_version["daily"]:
+                daily_need_update = True
+                
+            if main_need_update or daily_need_update:
+                self.database_temp_dir = tempfile.mkdtemp(suffix="ufoantivirus")
 
-    def force_update(self, call_function_progress=None):
-        global main_url
-        global daily_url
-        global main_path
-        global daily_path
-        global dir_temp_path
+                # Retreive remote database files
+                if main_need_update:
+                    self.inform("dowloading database update (1/2)")
+                    self.__get_last_file(main_url, os.path.join(self.database_temp_dir + "main.cvd"), call_function_progress)
+                if daily_need_update:
+                    self.inform("dowloading database update (2/2)")
+                    self.__get_last_file(daily_url, os.path.join(self.database_temp_dir + "daily.cvd"), call_function_progress)
+
+                self.inform("checking database integrity")
+                # Test remote database files
+                if self.__check_tmp_database(self.database_temp_dir):
+                    shutil.copy2(os.path.join(self.database_temp_dir + "main.cvd"), main_path)
+                    shutil.copy2(os.path.join(self.database_temp_dir + "main.cvd"), daily_path)
+                else:
+                    self.use_emergency_database()
+
+        except:
+            raise
+            self.use_emergency_database()
+
+        if self.database_temp_dir:
+            shutil.rmtree(self.database_temp_dir)
+
+    # def force_update(self, call_function_progress=None):
+        # global main_url
+        # global daily_url
+        # global main_path
+        # global daily_path
+        # global dir_temp_path
         
-        self.__init_temp_dir()
-        if not(self.__get_last_file(main_url, "main.cvd", call_function_progress)):
-                return False
-        if not(self.__get_last_file(daily_url, "daily.cvd", call_function_progress)):
-                return False
+        # self.__init_temp_dir()
+        # if not(self.__get_last_file(main_url, "main.cvd", call_function_progress)):
+                # return False
+        # if not(self.__get_last_file(daily_url, "daily.cvd", call_function_progress)):
+                # return False
             
-        if self.__check_tmp_database(dir_temp_path):
-            shutil.copyfile(os.path.join(dir_temp_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
-            shutil.copyfile(os.path.join(dir_temp_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
-            self.initialize()
-        else: 
-            logging.debug("Erreur")
-            return False
+        # if self.__check_tmp_database(dir_temp_path):
+            # shutil.copyfile(os.path.join(dir_temp_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
+            # shutil.copyfile(os.path.join(dir_temp_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
+            # self.initialize()
+        # else: 
+            # logging.debug("Erreur")
+            # return False
 
-        self.__clean_database_dir()
-        dir_temp_path = ""
-        return 1
+        # self.__clean_database_dir()
+        # dir_temp_path = ""
+        # return 1
     
+    def pretty_path(self, path):
+        if len(path) > 33:
+            return path[:10] + "..." + path[len(path)-20:]
+        return path
+        
     def __del__(self):
-        self.__clean_database_dir()
-        dir_temp_path = ""
+        # self.__clean_database_dir()
+        # dir_temp_path = ""
         ret = cl_engine_free(self.engine)
         if ret != CL_SUCCESS:
             raise Py_Clamav_Exception(ret)

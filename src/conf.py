@@ -211,8 +211,8 @@ else:
         DATA_DIR = os.environ["_MEIPASS2"]
         # no BIN as the livecd always provides a settings.conf
     else:
-        if not DATA_DIR: DATA_DIR = path.join(SCRIPT_DIR, "..", ".data")
-        BIN = path.join(SCRIPT_DIR, "bin")
+        if not DATA_DIR: DATA_DIR = path.join(SCRIPT_DIR, "..", "..", ".data")
+        BIN = path.join(SCRIPT_DIR)
 
 def make_path(base, value):
     if value:

@@ -588,7 +588,7 @@ class OSBackend(object):
                 # Start usb check loop
                 gui.app.destroy_temporary_balloon()
                 gui.app.add_persistent_balloon_section(key='usb',
-                                                       msg=_("Removable devices management"),
+                                                       msg=_("Removable devices management:"),
                                                        default=_("No removable devices found"),
                                                        progress=False,
                                                        smartdict=self.vbox.current_machine.usb_attachmnts,
@@ -682,7 +682,9 @@ class OSBackend(object):
         elif (state == self.vbox.constants.MachineState_PoweredOff and \
               last_state == self.vbox.constants.MachineState_Stopping) or \
               state == self.vbox.constants.MachineState_Aborted:
-            
+
+            gui.app.destroy_persistent_balloon_sections()
+
             if gui.app.usb_check_timer:
                 gui.app.stop_usb_check_timer()
             if gui.app.net_adapt_timer:

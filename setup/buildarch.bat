@@ -1,7 +1,7 @@
 @echo off
 @echo PROCESSOR_ARCHITECTURE: %PROCESSOR_ARCHITECTURE%
 
-set VBOX_PATH=C:\vbox
+set VBOX_PATH=X:\vbox
 
 del /F /Q /S dist build
 
@@ -11,10 +11,14 @@ if %PROCESSOR_ARCHITECTURE% == AMD64  goto amd64
 :x86
 set VBOX_BIN_PATH=%VBOX_PATH%\out\win.x86\release\bin
 set QT_BIN_PATH=%VBOX_PATH%\tools\win.x86\Qt\4.5.2-32bits\bin
+set MSVC_PATH="E:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT"
 set VBOX_BIN_DEST="bin\"
 set SETUP_SCRIPT="setup.py"
 
 c:\Python26\python.exe setup-arch-dispatcher.py py2exe
+
+mkdir "dist\Microsoft.VC90.CRT"
+xcopy /E /Y %MSVC_PATH% dist\Microsoft.VC90.CRT\
 
 goto begin
 
@@ -33,14 +37,24 @@ goto end
 :begin
 
 set OLDPATH=%PATH%
-set PATH=%PATH%;%VBOX_BIN_PATH%;%QT_BIN_PATH%;%VBOX_BIN_PATH%\Microsoft.VC80.CRT
+set PATH=%PATH%;%VBOX_BIN_PATH%;%QT_BIN_PATH%;%VBOX_BIN_PATH%\Microsoft.VC80.CRT;E:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT
 
 cmd /C comregister.cmd
 
 c:\Python26\python.exe "%SETUP_SCRIPT%" py2exe
 rem --custom-boot-script custom-boot-script.py
 
+
 cd dist
+
+mkdir %VBOX_BIN_DEST%\update
+mkdir %VBOX_BIN_DEST%\update_cd
+mkdir %VBOX_BIN_DEST%\custom_clamav\
+xcopy /E /Y ..\..\clamav\src\update_cd  %VBOX_BIN_DEST%\update_cd\
+xcopy /E /Y ..\..\clamav\src\custom_clamav\*.dll  %VBOX_BIN_DEST%\custom_clamav\
+xcopy /E /Y ..\..\clamav\src\custom_clamav\*.pyd  %VBOX_BIN_DEST%\custom_clamav\
+mkdir "%VBOX_BIN_DEST%\Microsoft.VC90.CRT"
+xcopy /E /Y %MSVC_PATH% %VBOX_BIN_DEST%\Microsoft.VC90.CRT\
 
 xcopy /E /Y "%VBOX_BIN_PATH%\*"  %VBOX_BIN_DEST%
 copy %QT_BIN_PATH%\QtNetwork4.dll  %VBOX_BIN_DEST%
