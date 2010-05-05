@@ -43,7 +43,7 @@ class WindowsBackend(OSBackend):
     RELATIVE_VMDK_POLICY  = False
 
     def __init__(self):
-        OSBackend.__init__(self)
+        OSBackend.__init__(self, "windows")
         self.WMI = wmi.WMI()
 
     def get_default_audio_driver(self):

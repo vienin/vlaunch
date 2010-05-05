@@ -65,7 +65,7 @@ class UFOVboxMonitor(VBoxMonitor):
 
 
 class OSBackend(object):
-    def __init__(self):
+    def __init__(self, os_name):
         self.tmp_swapdir    = ""
         self.tmp_overlaydir = ""
         self.vbox           = None
@@ -78,6 +78,7 @@ class OSBackend(object):
         self.remember_pass  = None
         self.eject_at_exit  = conf.EJECTATEXIT
         self.env            = self.update_env()
+        self.os_name        = os_name
 
         if conf.VOICE:
             import voice
@@ -409,6 +410,7 @@ class OSBackend(object):
         cmdline.append(self.get_i18n_cmdline())
         if conf.COMPRESS:
             cmdline.append("rootflags=compress")
+        cmdline.append("hostos=" + self.os_name)
         return " ".join(cmdline)
 
     def set_command_line(self):

@@ -49,7 +49,7 @@ class MacBackend(OSBackend):
     KEXTS                 = "kexts"
 
     def __init__(self):
-        OSBackend.__init__(self)
+        OSBackend.__init__(self, "macosx")
         self.OS_VERSION = os.uname()[2]
         if self.OS_VERSION < "9":
             self.KEXTS = path.join(self.KEXTS, "Tiger")

@@ -40,7 +40,7 @@ class LinuxBackend(OSBackend):
     RELATIVE_VMDK_POLICY  = True
 
     def __init__(self, dist, version, codename):
-        OSBackend.__init__(self)
+        OSBackend.__init__(self, "linux")
         self.dist     = dist
         self.version  = version
         self.codename = codename
