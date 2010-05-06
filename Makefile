@@ -62,6 +62,7 @@ install: generate-mo
 	rm -f $(DESTDIR)$(TARGET_PATH)/Windows/settings.conf
 	cp autorun.inf $(DESTDIR)$(TARGET_PATH)/
 	cp USB_Disk_Eject.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin
+	cp USB_Disk_Eject.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin64
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
