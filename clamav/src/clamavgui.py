@@ -28,9 +28,12 @@ class Antivirus(QtGui.QDialog):
     def __init__(self, parent=None, info_callback=None, progress_callback=None):
         super(Antivirus, self).__init__(parent)
         main_layout = QtGui.QVBoxLayout()
-
+        
+        self.setWindowTitle(_("ClamAV Antivirus"))
+        
         self.info_callback = info_callback
-        self.launch_button = QtGui.QPushButton("Launch")
+        self.progress_callback = progress_callback
+        self.launch_button = QtGui.QPushButton(_("Launch antivirus scan"))
         self.launch_button.setEnabled(False)
         self.connect(self.launch_button, QtCore.SIGNAL('clicked()'), self.click_scan)
         self.launch_button.installEventFilter(self)
@@ -67,6 +70,7 @@ class Antivirus(QtGui.QDialog):
         self.connect(self.thread_scan, QtCore.SIGNAL("virus_detected(QString,QString)"), self.print_scan_virus)
         self.connect(self.thread_scan, QtCore.SIGNAL("virus_detected(QString,QString)"), self.manage_virus_found)
         self.connect(self.thread_scan, QtCore.SIGNAL("inform(QString)"), self.print_info)
+        self.connect(self.thread_scan, QtCore.SIGNAL("progress(QString)"), self.print_progress)
         
         self.init_shell_folder()
         
@@ -246,7 +250,7 @@ class Antivirus(QtGui.QDialog):
                 if self.m_stop:
                     return
                 scan_list_clean.append(str(one.text(1)))
-            self.print_info("launching scan")
+            self.print_info(_("launching scan"))
             self.thread_scan.launch_scan(scan_list_clean, self.print_scan, self.print_scan_virus)
             self.showMinimized()
     
@@ -291,7 +295,7 @@ class Antivirus(QtGui.QDialog):
         self.running = True
         self.add_selection_button.setEnabled(False)
         self.remove_selection_button.setEnabled(False)
-        self.launch_button.setText("Stopper")
+        self.launch_button.setText(_("Stop"))
         self.m_stop=False
         
     def after_scan(self):
@@ -301,7 +305,7 @@ class Antivirus(QtGui.QDialog):
         self.running = False
         self.add_selection_button.setEnabled(True)
         self.remove_selection_button.setEnabled(True)
-        self.launch_button.setText("Lancer")
+        self.launch_button.setText(_("Start"))
         self.launch_button.setEnabled(True)
         self.print_label.setText("")
         self.m_stop=False
@@ -324,12 +328,17 @@ class Antivirus(QtGui.QDialog):
 
     def print_scan(self, message):
         self.print_label.setText(message)
-        self.info_callback(message)
-        
+        if self.info_callback:
+            self.info_callback(message)
+
     def print_info(self, message):
-        
         self.print_label.setText(message)
-        self.info_callback(message)
+        if self.info_callback:
+            self.info_callback(message)
+
+    def print_progress(self, progress):
+        if self.progress_callback:
+            self.progress_callback(progress)
         
     def print_scan_virus(self, file_name, virus_name):
         logging.debug("Virus Found in" + file_name + " :" + virus_name)
@@ -390,10 +399,10 @@ class Antivirus(QtGui.QDialog):
         self.virus_list.setColumnCount(2)
         self.virus_list.setHeaderLabels(("Name", "Path"))
         
-        ignore_button = QtGui.QPushButton("IGNORE")
+        ignore_button = QtGui.QPushButton(_("Ignore"))
         self.connect(ignore_button, QtCore.SIGNAL('clicked()'), self.click_virus_ignore)
         
-        delete_button = QtGui.QPushButton("DELETE")
+        delete_button = QtGui.QPushButton(_("Delete"))
         self.connect(delete_button, QtCore.SIGNAL('clicked()'), self.click_virus_del)
         
         virus_command = QtGui.QWidget()
@@ -406,7 +415,7 @@ class Antivirus(QtGui.QDialog):
         layout.addWidget(self.virus_list)
         layout.addWidget(virus_command)
         virus_tab.setLayout(layout)
-        self.virus_tab_exist = self.tab_widget.addTab(virus_tab, "Virus Found")
+        self.virus_tab_exist = self.tab_widget.addTab(virus_tab, _("Virus found"))
 
     def del_virus_tab(self):
         """
@@ -480,15 +489,22 @@ class T_scan(QtCore.QThread):
         self.start(QtCore.QThread.LowestPriority)
         
     def run(self):
-        while(True):
-            if not self.clamav_instance:
-                self.clamav_instance = clamavcore.Py_Clamav(self.inform)
-                self.emit(QtCore.SIGNAL("database_ready"))
-            {
-             - 1:lambda :time.sleep(5),
-             'scan':self.__scan
-             }[self.action]()
-            
+        try:
+            while(True):
+                if not self.clamav_instance:
+                    self.clamav_instance = clamavcore.Py_Clamav(self.inform, self.progress)
+                    self.emit(QtCore.SIGNAL("database_ready"))
+                {
+                 - 1:lambda :time.sleep(5),
+                 'scan':self.__scan
+                 }[self.action]()
+        except:
+            import traceback
+            info = sys.exc_info()
+            logging.debug("Unexpected error: " + str(info[1]))
+            logging.debug("".join(traceback.format_tb(info[2])))
+            logging.debug("Antivirus: an error as occured while scanning")
+            self.inform(_("an error as occured while scanning"))
         
     def __virus_detected(self, file_name, virus_name):
         """
@@ -505,7 +521,7 @@ class T_scan(QtCore.QThread):
         self.mutex_running.release()
         
         self.action = -1
-         
+
         for one in self.to_scan:
             self.mutex_running.acquire()
             if not self.running :         
@@ -540,7 +556,7 @@ class T_scan(QtCore.QThread):
             self.clamav_instance.stop_scan()
             self.running = False
             
-            self.inform("scan stopped")
+            self.inform(_("scan stopped"))
             
         self.mutex_running.release()
     
@@ -549,6 +565,14 @@ class T_scan(QtCore.QThread):
         CallBack for showing information
         """
         self.emit(QtCore.SIGNAL("inform(QString)"), message)
+
+    def progress(self, nb_block_transfered, block_size, total_size):
+        """
+        CallBack for showing information
+        """
+        current_size = nb_block_transfered * block_size
+        percent = float(current_size) / float(total_size)
+        self.emit(QtCore.SIGNAL("progress(QString)"), str(percent))
         
     def add_filters(self,filter_list):
         """

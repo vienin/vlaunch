@@ -41,12 +41,14 @@ class QtUFOGui(QtGui.QApplication):
         self.animation = None
         self.tray      = None
         self.splash    = None
-        self.usb_check_timer = None
-        self.net_adapt_timer = None
-        self.callbacks_timer = None
-        self.console_window  = None
-        self.console_winid   = 0
-        self.backend         = None
+        self.usb_check_timer  = None
+        self.net_adapt_timer  = None
+        self.callbacks_timer  = None
+        self.console_window   = None
+        self.settings_window  = None
+        self.antivirus_window = None
+        self.console_winid    = 0
+        self.backend          = None
 
         self.menu = QtGui.QMenu()
         action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
@@ -335,10 +337,15 @@ class QtUFOGui(QtGui.QApplication):
                                                " http://ufo.agorabox.org"))
     
     def settings(self):
+        if self.settings_window:
+            self.settings_window.showNormal()
+            return
+            
         self.settings_window = Settings()
         self.settings_window.show()
         self.settings_window.exec_()
         del self.settings_window
+        self.settings_window = None
     
     def quit(self):
         if self.vbox.current_machine.is_running():
@@ -370,24 +377,31 @@ class QtUFOGui(QtGui.QApplication):
             sys.exit(0)
 
     def antivirus(self):
+        if self.antivirus_window:
+            self.antivirus_window.showNormal()
+            return
+            
         from clamavgui import Antivirus
         self.antivirus_window = Antivirus(info_callback=self.update_antivirus_message, 
                                           progress_callback=self.update_antivirus_progress)
         self.add_persistent_balloon_section(key='antivirus',
                                             msg=_("Antivirus"),
                                             default=_("No virus found"),
+                                            progress=True,
                                             smartdict=self.antivirus_window.virus_found,
                                             hlayout={ 'type' : VirusFoundLayout,
                                                       'args' : (self.antivirus_window.virus_attitude,)})
         self.antivirus_window.show()
         self.antivirus_window.exec_()
         del self.antivirus_window
+        self.antivirus_window = None
+        self.destroy_persistent_balloon_section(key='antivirus')
 		
     def update_antivirus_message(self, msg):
         self.update_persistent_balloon_section(key='antivirus', msg="Antivirus: " + msg)
 
-    def update_antivirus_progress(self, msg):
-        self.update_persistent_balloon_section(key='antivirus', msg="Antivirus: " + msg)
+    def update_antivirus_progress(self, progress):
+        self.update_persistent_balloon_section(key='antivirus', progress=float(progress))
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -537,13 +551,13 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.persistent_balloon.remove_section(key)
 
     def update_persistent_balloon_message(self, key, msg):
-        assert self.persistent_balloon.sections.has_key(key)
-        self.persistent_balloon.sections[key].set_message(msg)
-        self.persistent_balloon.show()
+        if self.persistent_balloon.sections.has_key(key):
+            self.persistent_balloon.sections[key].set_message(msg)
+            self.persistent_balloon.show()
 
     def update_persistent_balloon_progress(self, key, progress):
-        assert self.persistent_balloon.sections.has_key(key)
-        self.persistent_balloon.sections[key].set_progress(progress)
+        if self.persistent_balloon.sections.has_key(key):
+            self.persistent_balloon.sections[key].set_progress(progress)
 
     def move_persistent_balloon(self, overhead):
         if self.persistent_balloon:
@@ -664,6 +678,7 @@ class BalloonMessage(QtGui.QWidget):
         if self.progress:
             self.progress_bar = QtGui.QProgressBar()
             self.contents_layout.addWidget(self.progress_bar)
+            self.progress_bar.hide()
         else:
             self.progress_bar = None
 
@@ -681,7 +696,23 @@ class BalloonMessage(QtGui.QWidget):
 
     def set_progress(self, progress):
         if self.progress_bar:
+            progress = int(progress)
+            if progress > 100:
+                progress = 100
+            if not self.progress_bar.isVisible() and int(progress) > 0:
+                self.progress_bar.show()
+            if progress == 100 and self.progress_bar.value() < 100:
+                self.progress_timer = QtCore.QTimer(self)
+                self.progress_timer.setSingleShot(True)
+                self.connect(self.progress_timer, QtCore.SIGNAL("timeout()"), self.destroy_progress)
+                self.progress_timer.start(3000)
+            
             self.progress_bar.setValue(int(progress))
+            
+    def destroy_progress(self):
+        if self.progress_bar and self.progress_bar.value() == 100:
+            self.progress_bar.hide()
+            self.resize_to_minimum()
 
     def opacity_timer(self):
         if self.currentAlpha <= 255:
@@ -718,6 +749,12 @@ class BalloonMessage(QtGui.QWidget):
         if self.resize_callback:
             self.resize_callback(self.height())
 
+    def resize_to_minimum(self):
+        self.contents_layout.layout().activate()
+        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+        if self.isVisible():
+            self.parent.show()
+        
     def draw(self, event=False):
         self.title_label.setText("<b><font color=%s>%s</font></b>" % \
                                  (self.colors['ballooncolortext'], self.title))
@@ -759,13 +796,13 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
         self.sections = {}
 
     def add_section(self, key, msg, default, smartdict, hlayout, progress=False):
-        assert not self.sections.has_key(key)
-        assert isinstance(smartdict, SmartDict)
+        if not self.sections.has_key(key):
+            assert isinstance(smartdict, SmartDict)
 
-        self.sections[key] = SmartDictLayout(self, msg, default, smartdict, hlayout, progress)
-        self.contents_layout.addLayout(self.sections[key])
-        self.sections[key].refresh()
-        self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+            self.sections[key] = SmartDictLayout(self, msg, default, smartdict, hlayout, progress)
+            self.contents_layout.addLayout(self.sections[key])
+            self.sections[key].refresh()
+            self.resize_to_minimum()
 
     def remove_section(self, key):
         if not self.sections.has_key(key):
@@ -773,7 +810,7 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
         else:
             self.sections[key].hide()
             del self.sections[key]
-            self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+            self.resize_to_minimum()
             if not len(self.sections):
                 self.hide()
 
@@ -805,6 +842,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         if progress:
             self.progress_bar = QtGui.QProgressBar()
             self.addWidget(self.progress_bar)
+            self.progress_bar.hide()
         else:
             self.progress_bar = None
 
@@ -819,8 +857,25 @@ class SmartDictLayout(QtGui.QVBoxLayout):
 
     def set_progress(self, progress):
         if self.progress_bar:
+            progress = int(progress)
+            if progress > 100:
+                progress = 100
+            if not self.progress_bar.isVisible() and int(progress) > 0:
+                self.progress_bar.show()
+            if progress == 100 and self.progress_bar.value() < 100:
+                self.progress_timer = QtCore.QTimer(self)
+                self.progress_timer.setSingleShot(True)
+                self.connect(self.progress_timer, QtCore.SIGNAL("timeout()"), self.destroy_progress)
+                self.progress_timer.start(3000)
+            
             self.progress_bar.setValue(int(progress))
-
+            
+    def destroy_progress(self):
+        if self.progress_bar and self.progress_bar.value() == 100:
+            self.progress_bar.hide()
+            self.layout().activate()
+            self.parent.resize_to_minimum()
+            
     def refresh(self, key=None, value=None):
         self.old_displayed_hlayouts = self.diplayed_hlayouts.copy()
 
@@ -1039,8 +1094,7 @@ class CredentialsLayout(QtGui.QVBoxLayout):
         for widget in self.expand_widgets:
             widget.hide()
         self.layout().activate()
-        self.parent.resize(350, 20)
-        self.parent.show()
+        self.parent.resize_to_minimum()
 
     def add_expdand_contents(self, layout, item, offset=None):
         if offset:
