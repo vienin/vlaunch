@@ -268,7 +268,11 @@ class OSBackend(object):
 
             if conf.MACADDR == "":
                 conf.write_value_to_file("vm", "macaddr", self.vbox.current_machine.get_mac_addr())
-            
+
+            proxy = self.get_proxy()
+            if proxy:
+                self.vbox.current_machine.set_guest_property("/UFO/ProxyHTTP", "%s,%d" % proxy)
+
             # attach boot iso
             if conf.BOOTFLOPPY:
                 logging.debug("Using boot floppy image " + conf.BOOTFLOPPY)
@@ -508,6 +512,15 @@ class OSBackend(object):
             return lang.split('_')[1].lower()
         except IndexError:
             return "us"
+
+    def get_proxy(self, url="http://www.agorabox.org"):
+        from PyQt4.QtNetwork import QNetworkProxyQuery, QNetworkProxyFactory
+        from PyQt4.QtCore import QUrl
+
+        query = QNetworkProxyQuery(QUrl(url))
+        proxies = QNetworkProxyFactory.systemProxyForQuery(query)
+        if proxies and proxies[0].hostName():
+            return str(proxies[0].hostName()), proxies[0].port()
 
     def checking_pyqt(self):
         logging.debug("Checking PyQt")
