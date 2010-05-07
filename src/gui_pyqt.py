@@ -66,13 +66,16 @@ class QtUFOGui(QtGui.QApplication):
         action_antivirus = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "antivirus.png")),
                                          QtCore.QString(_("Antivirus...")), self);
         action_antivirus.setStatusTip(_("Antivirus"))
-		
+
         self.menu.addAction(action_settings)
 
-        if sys.platform == "win32":
+        try:
+            import clamavgui
             self.menu.addAction(action_antivirus)
             self.connect(action_antivirus, QtCore.SIGNAL("triggered()"), self.antivirus)
-			
+        except:
+            logging.debug("Can't load clamav module")
+
         self.menu.addAction(action_about)
         self.menu.addAction(action_force_quit)
         self.menu.addAction(action_quit)
@@ -396,7 +399,7 @@ class QtUFOGui(QtGui.QApplication):
         del self.antivirus_window
         self.antivirus_window = None
         self.destroy_persistent_balloon_section(key='antivirus')
-		
+
     def update_antivirus_message(self, msg):
         self.update_persistent_balloon_section(key='antivirus', msg="Antivirus: " + msg)
 
