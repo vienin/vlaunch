@@ -826,7 +826,11 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         # Restering callback to handle updates on the dict
         self.smartdict.register_on_set_item_callback(self.refresh)
         self.smartdict.register_on_del_item_callback(self.refresh)
-
+        
+        # Registring callbck to resize balloon
+        self.smartdict.register_on_set_item_callback(self.resize_smartdisct_balloon)
+        self.smartdict.register_on_del_item_callback(self.resize_smartdisct_balloon)
+		
         self.hline = QtGui.QFrame()
         self.hline.setFrameShape(QtGui.QFrame.HLine)
         self.hline.setFrameShadow(QtGui.QFrame.Sunken)
@@ -850,6 +854,10 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         self.addWidget(self.default)
 
         self.diplayed_hlayouts = {}
+
+    def resize_smartdisct_balloon(self, key=None, value=None):
+        self.layout().activate()
+        self.parent.resize_to_minimum()
 
     def set_message(self, msg):
         self.text_label.setText(QtCore.QString("<font color=%s>%s</font>" % \
