@@ -102,9 +102,8 @@ for label in ${share_labels[@]}; do
 	i=$(( $i + 1 ))
 done
 
-awaited_share_time="0"
 while [ 1 ]; do
-	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "/UFO/Com/HostToGuest/Shares/*" -timestamp "$awaited_share_time"`; do
+	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "/UFO/Com/HostToGuest/Shares/*"`; do
 
 		case "${ligne%%:*}" in
 		"Value")
@@ -116,10 +115,6 @@ while [ 1 ]; do
 			awaited_share_tuple="${ligne#*: /UFO/Com/HostToGuest/Shares/}"
 			awaited_share_state="${awaited_share_tuple%/*}"
 			awaited_share_label="${awaited_share_tuple#*/}"
-			;;
-		"Timestamp")
-			a="${ligne#*: }"
-			awaited_share_time="${a% ns}"
 			;;
 		esac
 	done
