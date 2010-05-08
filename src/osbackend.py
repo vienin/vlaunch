@@ -676,7 +676,7 @@ class OSBackend(object):
                 time.sleep(2)
                 gui.app.minimize_window()
                 
-            if conf.USER != "":
+            if conf.USER != "" or conf.GUESTMODE:
                 title = _(u"UFO is starting")
             else:
                 title = _("1<SUP>st</SUP> launch of UFO")
