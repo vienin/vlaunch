@@ -685,7 +685,7 @@ class OSBackend(object):
                                              msg=_("UFO is starting."),
                                              progress=True,
                                              vlayout={ 'type' : gui.CredentialsLayout,
-                                                       'args' : (self.credentials, self.keyring_valid, self.vbox.current_machine)})
+                                                       'args' : (self.credentials, self.keyring_valid)})
             gui.app.set_tooltip(_("UFO: starting"))
 
             self.vbox.current_machine.is_booting = True
