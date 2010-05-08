@@ -271,7 +271,7 @@ class OSBackend(object):
 
             proxy = self.get_proxy()
             if proxy:
-                self.vbox.current_machine.set_guest_property("/UFO/ProxyHTTP", "%s,%d" % proxy)
+                self.vbox.current_machine.set_guest_property("/UFO/ProxyHTTP", "%s:%d" % proxy)
 
             # attach boot iso
             if conf.BOOTFLOPPY:
