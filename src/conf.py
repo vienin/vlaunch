@@ -144,7 +144,9 @@ config = \
           "rootvdi" : "",
           "cmdline" : "ro 4",
           "reintegration" : reintegrationValues[2],
-          "guestdebug" : False
+          "guestdebug" : False,
+          "guestmode" : False,
+          "guestuser" : "user"
         },
       "guest" :
         {

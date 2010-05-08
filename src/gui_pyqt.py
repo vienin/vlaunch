@@ -368,8 +368,8 @@ class QtUFOGui(QtGui.QApplication):
                                msg=_("UFO virtual machine is currently running.\n"
                                      "Forcing machine to shutdown is very DANGEROUS, "
                                      "the modification made during this session will "
-                                     "be lost. You should use the \"" + _("Quit") +
-                                     "\" menu action to shutdown UFO properly.\n\n"
+                                     "be lost. You should use the \"Quit\" menu "
+                                     "action to shutdown UFO properly.\n\n"
                                      "Do you really want to kill the UFO virtual machine ?"),
                                dangerous=True) == no:
                 return
@@ -533,7 +533,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
     def update_temporary_balloon_progress(self, progress):
         if self.temporary_balloon and self.temporary_balloon.progress_bar:
             self.temporary_balloon.set_progress(progress)
-            self.temporary_balloon.show()
 
     def destroy_temporary_balloon(self):
         if self.temporary_balloon:
@@ -564,7 +563,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
     def move_persistent_balloon(self, overhead):
         if self.persistent_balloon:
-           self.fit_balloon(self.persistent_balloon, overhead)
+            self.fit_balloon(self.persistent_balloon, overhead)
     
     def fit_balloon(self, balloon, overhead=0):
         if overhead:
@@ -1046,12 +1045,20 @@ class CredentialsLayout(QtGui.QVBoxLayout):
             else:
                 button_msg += _("Authenticate")
 
+            self.hbox = hbox = QtGui.QHBoxLayout()
             button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "credentials.png"))
             self.expand_button = QtGui.QPushButton(button_icon, button_msg)
             self.expand_button.setFlat(True)
             self.expand_button.setDefault(True)
             self.connect(self.expand_button, QtCore.SIGNAL("clicked()"), self.expand)
-            self.addWidget(self.expand_button, 0, QtCore.Qt.AlignLeft)
+            hbox.addWidget(self.expand_button, 0, QtCore.Qt.AlignLeft)
+
+            if conf.GUESTMODE:
+                self.guest_button = QtGui.QPushButton(_("Guest mode"))
+                self.connect(self.guest_button, QtCore.SIGNAL("clicked()"), self.on_guest_mode)
+                hbox.addWidget(self.guest_button, 0, QtCore.Qt.AlignLeft)
+
+            self.addLayout(hbox)
             self.expanded = False
 
     def set_parent(self, parent_widget):
@@ -1060,7 +1067,7 @@ class CredentialsLayout(QtGui.QVBoxLayout):
     def valid_credentials(self):
         if self.password.text():
             if self.callback:
-                self.callback(self.password.text(), self.remember.isChecked())
+                self.callback(conf.USER, self.password.text(), self.remember.isChecked())
             if len(self.expand_button.text()) - len(conf.USER) - 10 > len(_("Authenticate")):
                 offset = 42
             else:
@@ -1113,6 +1120,18 @@ class CredentialsLayout(QtGui.QVBoxLayout):
         else:
             layout.addWidget(item)
         self.expand_widgets.append(item)
+
+    def on_guest_mode(self):
+        conf.USER = conf.GUESTUSER
+        if self.callback:
+            self.callback(conf.USER, " ", False)
+        if len(self.expand_button.text()) - len(conf.USER) - 10 > len(_("Authenticate")):
+            offset = 42
+        else:
+            offset = 23
+        self.expand_button.setText(QtCore.QString("(" + _("Guest mode") + ") - " + _("Authenticate")))
+        self.guest_button.hide()
+        self.hbox.removeWidget(self.guest_button)
 
 
 # Gere le téléchargement dans un thread a part.

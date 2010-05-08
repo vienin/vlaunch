@@ -286,8 +286,7 @@ class OSBackend(object):
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
                 logging.debug("Using host dvd drive")
-                # TODO: find host DVD drive from IHost                
-                # self.vbox.current_machine.attach_dvd(host_drive = True)
+                self.vbox.current_machine.attach_dvd(host_drive = True)
 
             if conf.LIVECD or not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")
@@ -686,7 +685,7 @@ class OSBackend(object):
                                              msg=_("UFO is starting."),
                                              progress=True,
                                              vlayout={ 'type' : gui.CredentialsLayout,
-                                                       'args' : (self.credentials, self.keyring_valid)})
+                                                       'args' : (self.credentials, self.keyring_valid, self.vbox.current_machine)})
             gui.app.set_tooltip(_("UFO: starting"))
 
             self.vbox.current_machine.is_booting = True
@@ -718,8 +717,10 @@ class OSBackend(object):
         
         self.vbox.current_machine.last_state = state
 
-    def set_credentials(self, password, remember=False):
+    def set_credentials(self, username, password, remember=False):
         logging.debug("Settings guest credentials")
+        self.vbox.current_machine.set_guest_property("/UFO/Credentials/Username",
+                                                     username)
         self.vbox.current_machine.set_guest_property("/UFO/Credentials/AuthTok",
                                                      unicode(password))
         if remember:

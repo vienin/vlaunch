@@ -309,23 +309,48 @@ class FedoraLinuxBackend(LinuxBackend):
 
     def look_for_virtualbox(self):
         logging.debug("Checking VirtualBox binaries")
+
+        kernel = "kernel"
+        if os.uname()[2].endswith("PAE"):
+            kernel += "-PAE"
+
         if not path.exists(path.join(conf.BIN, self.VIRTUALBOX_EXECUTABLE)):
             logging.debug("Installing Agorabox repository for VirtualBox")
             gui.wait_command(["yum", "-y", "install", "yum-priorities"],
                              **self.get_generic_installation_messages("yum-priorities"))
             gui.wait_command(["rpm", "-ivf", self.AGORABOX_VBOX_REPO + "agorabox-virtualbox-yum-repository-1.0.noarch.rpm"],
                              msg=_("Setting Yum Agorabox repository"))
-            kernel = "kernel"
-            if os.uname()[2].endswith("PAE"):
-                kernel += "-PAE"
             logging.debug("Kernel is: " + kernel)
             
             logging.debug("Installing VirtualBox")
-            gui.wait_command(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel + "-devel", "gcc", "make", "lzma"],
+            gui.wait_command(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel, kernel + "-devel", "gcc", "make", "lzma"],
                              msg=_("Installing VirtualBox Open Source edition. This can take a few minutes"))
-            version = self.call(["rpm", "-q", "--queryformat", "%{VERSION}", "VirtualBox-OSE"], output=True)[1]
-            kmod_name = "VirtualBox-OSE-kmod-" + str(version)
-            
+
+        version = self.call(["rpm", "-q", "--queryformat", "%{VERSION}", "VirtualBox-OSE"], output=True)[1]
+        kmod_name = "VirtualBox-OSE-kmod-" + str(version)
+
+        lsmod = self.call([[ "lsmod" ], [ "grep", "vboxdrv" ]], output=True)[1]
+        if not lsmod:
+            need_reboot = False
+            import yum
+            yumbase = yum.YumBase()
+            yumbase.doConfigSetup()
+            pkglist = yumbase.doPackageLists('installed')
+            exactmatch, matched, unmatched = yum.packages.parsePackages(pkglist.installed, [ kernel ])
+            exactmatch.sort(key=lambda x: x.version)
+            yumbase.close()
+            yumbase.closeRpmDB()
+            if exactmatch:
+                latest = exactmatch[-1]
+                if not os.uname()[2].startswith("%s-%s" % (exactmatch[-1].version, exactmatch[-1].release)):
+                    need_reboot = True
+
+            if need_reboot:
+                gui.dialog_info(title=_("Warning"),
+                                msg=_("A reboot is required\n"),
+                                error=False)
+                sys.exit(0)
+
             logging.debug("Decompressing drivers source code from /usr/share/%s/%s.tar" % (kmod_name, kmod_name, ))
             tarfile = glob.glob("/usr/share/%s/%s.tar.*" % (kmod_name, kmod_name, ))[0]
             tarext  = os.path.splitext(tarfile)[1][1:]

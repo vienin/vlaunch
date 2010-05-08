@@ -483,19 +483,30 @@ class VBoxMachine():
         return 0
 
     def attach_dvd(self, location='', host_drive=False, save=False):
+        dvd = None
         if host_drive:
-            dvd = self.machine.DVDDrive.captureHostDrive(self.machine.DVDDrive.getHostDrive())
+            if self.hypervisor.vbox_version() >= "3.1.0":
+                drives = self.hypervisor.host.get_dvd_drives()
+                for drive in drives:
+                    if drive.hostDrive:
+                        dvd = drive
+            else:
+                dvd = self.machine.DVDDrive.captureHostDrive(self.machine.DVDDrive.getHostDrive())
         else:
             dvd = self.vbox.find_dvd(location)
             if dvd == None:
                 dvd = self.hypervisor.add_dvd(location)
-            if dvd == None:
-                return 1
 
+        if dvd == None:
+            return 1
+
+        self.current_disk_rank += 1
+        disk_rank = self.current_disk_rank
         if self.hypervisor.vbox_version() >= "3.1.0":
-            controller = self.get_controller("DVD")
-            self.machine.attachDevice(controller.name, 0, 0, self.hypervisor.constants.DeviceType_DVD, dvd.id)
-            self.machine.mountMedium(controller.name, 0, 0, dvd.id, False)
+            controller = self.get_controller("IDE")
+            self.machine.attachDevice(controller.name, disk_rank // 2, disk_rank % 2,
+                                      self.hypervisor.constants.DeviceType_DVD, dvd.id)
+            self.machine.mountMedium(controller.name, disk_rank // 2, disk_rank % 2, dvd.id, False)
         else:
             self.machine.DVDDrive.mountImage(dvd.id)
         if save:
@@ -767,8 +778,11 @@ class VBoxHost():
     def get_free_ram(self):
         return self.host.memoryAvailable
 
-    def get_DVD_drives(self):
-        return self.host.DVDDrives
+    def get_dvd_drives(self):
+        try:
+            return self.host.DVDDrives
+        except:
+            return self.host.getDVDDrives()
     
     def is_network_active(self):
         from PyQt4 import QtNetwork
