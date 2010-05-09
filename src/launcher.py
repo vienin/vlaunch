@@ -27,9 +27,7 @@ import os.path as path
 import tempfile
 import urllib
 import traceback
-import gui
 import glob
-import updater
 
 format = "%(asctime)s %(levelname)s %(message)s"
 if conf.options.update:
@@ -53,6 +51,9 @@ except:
         print "Logging to " + log_path
     except:
         print "Could not redirect log to file"
+
+import gui
+import updater
 
 if conf.LIVECD:
     download = True
