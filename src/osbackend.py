@@ -432,7 +432,7 @@ class OSBackend(object):
                     # handle our fat partition
                     if not self.vbox.current_machine.usb_master:
                         name = str(usb[1])
-                        if name.find(':_'):
+                        if name.find(':_') != -1:
                             name = name.split(':_')[1]
                         self.vbox.current_machine.usb_master = { 'name'   : name, 'path'   : usb[0] }
                         self.vbox.current_machine.attach_usb(self.vbox.current_machine.usb_master)
