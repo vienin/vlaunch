@@ -426,12 +426,15 @@ class OSBackend(object):
 
         # adding new devices, and tracking removed ones...
         for usb in self.get_usb_devices():
-            if str(usb[1]) != "None":
+            if not str(usb[1]).endswith("None"):
                 if conf.SCRIPT_PATH.startswith(usb[0]):
 
                     # handle our fat partition
                     if not self.vbox.current_machine.usb_master:
-                        self.vbox.current_machine.usb_master = { 'name'   : usb[1], 'path'   : usb[0] }
+                        name = str(usb[1])
+                        if name.find(':_'):
+                            name = name.split(':_')[1]
+                        self.vbox.current_machine.usb_master = { 'name'   : name, 'path'   : usb[0] }
                         self.vbox.current_machine.attach_usb(self.vbox.current_machine.usb_master)
 
                 elif self.vbox.current_machine.usb_attachmnts.has_key(usb[1]):
