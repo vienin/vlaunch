@@ -171,7 +171,16 @@ class QtUFOGui(QtGui.QApplication):
                         self.console_window.showMaximized()
                 else:
                     return False
-                    
+
+        elif isinstance(event, UpdateDiskSpaceEvent):
+            if event.disk == "root":
+                self.tray.persistent_balloon.update_progress_root(event.progress)
+            elif event.disk == "user":
+                self.tray.persistent_balloon.update_progress_user(event.progress)
+            elif event.disk == "public":
+                self.tray.persistent_balloon.update_progress_public(event.progress)
+
+
         elif isinstance(event, TimerEvent):
             if event.stop:
                 event.timer.stop()
@@ -405,6 +414,15 @@ class QtUFOGui(QtGui.QApplication):
 
     def update_antivirus_progress(self, progress):
         self.update_persistent_balloon_section(key='antivirus', progress=float(progress))
+
+    def update_disk_space_progress(self, disk, progress):
+        self.postEvent(self, UpdateDiskSpaceEvent(disk, progress))
+
+class UpdateDiskSpaceEvent(QtCore.QEvent):
+    def __init__(self, disk, progress):
+        super(UpdateDiskSpaceEvent, self).__init__(QtCore.QEvent.None)
+        self.disk = disk
+        self.progress = progress
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -795,6 +813,36 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
     def __init__(self, parent, title):
         BalloonMessage.__init__(self, parent, title)
 
+        self.progress_bar_root = QtGui.QProgressBar()
+        self.progress_bar_user = QtGui.QProgressBar()
+        self.progress_bar_public = QtGui.QProgressBar()
+        self.progress_bar_root.setMaximumHeight(50)
+        self.progress_bar_user.setMaximumHeight(50)
+        self.progress_bar_user.setMaximumHeight(50)
+        self.layout_root = QtGui.QHBoxLayout()
+        self.layout_user = QtGui.QHBoxLayout()
+        self.layout_public = QtGui.QHBoxLayout()
+        self.label_space = QtGui.QLabel(_("Free space available:"))
+        self.label_root = QtGui.QLabel("<i>" + _("Applications") + "</i>")
+        self.label_user = QtGui.QLabel("<i>" + str(conf.USER) + "</i>")
+        self.label_public = QtGui.QLabel("<i>" + _("Public") + "</i>")
+        self.layout_root.addWidget(self.label_root)
+        self.layout_user.addWidget(self.label_user)
+        self.layout_public.addWidget(self.label_public)
+        self.layout_root.addWidget(self.progress_bar_root)
+        self.layout_user.addWidget(self.progress_bar_user)
+        self.layout_public.addWidget(self.progress_bar_public)
+        self.contents_layout.addWidget(self.label_space)
+        self.contents_layout.addLayout(self.layout_root)
+        self.contents_layout.addLayout(self.layout_user)
+        self.contents_layout.addLayout(self.layout_public)
+        self.label_space.hide()
+        self.label_root.hide()
+        self.label_user.hide()
+        self.label_public.hide()
+        self.progress_bar_root.hide()
+        self.progress_bar_user.hide()
+        self.progress_bar_public.hide()
         self.sections = {}
 
     def add_section(self, key, msg, default, smartdict, hlayout, progress=False):
@@ -808,13 +856,31 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
 
     def remove_section(self, key):
         if not self.sections.has_key(key):
-		    logging.debug("Failed to remove balloon section '%s'" % (key,))
+            logging.debug("Failed to remove balloon section '%s'" % (key,))
         else:
             self.sections[key].hide()
             del self.sections[key]
             self.resize_to_minimum()
             if not len(self.sections):
                 self.hide()
+
+    def update_progress_root(self, percent):
+        self.progress_bar_root.setValue(int(percent))
+        self.progress_bar_root.show()
+        self.label_root.show()
+        self.label_space.show()
+
+    def update_progress_user(self, percent):
+        self.progress_bar_user.setValue(int(percent))
+        self.progress_bar_user.show()
+        self.label_user.show()
+        self.label_space.show()
+
+    def update_progress_public(self, percent):
+        self.progress_bar_public.setValue(int(percent))
+        self.progress_bar_public.show()
+        self.label_public.show()
+        self.label_space.show()
 
 
 class SmartDictLayout(QtGui.QVBoxLayout):
@@ -832,7 +898,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         # Registring callbck to resize balloon
         self.smartdict.register_on_set_item_callback(self.resize_smartdisct_balloon)
         self.smartdict.register_on_del_item_callback(self.resize_smartdisct_balloon)
-		
+
         self.hline = QtGui.QFrame()
         self.hline.setFrameShape(QtGui.QFrame.HLine)
         self.hline.setFrameShadow(QtGui.QFrame.Sunken)

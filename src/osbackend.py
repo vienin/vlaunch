@@ -559,6 +559,10 @@ class OSBackend(object):
         elif os.path.dirname(name) == "/UFO/Settings":
             conf.write_value_to_file("guest", os.path.basename(name), newValue)
 
+        # Disk space management
+        elif os.path.dirname(name) == "/UFO/DiskSpace":
+            gui.app.update_disk_space_progress(os.path.basename(name), newValue)
+
         # Credentials management
         elif os.path.dirname(name) == "/UFO/Credentials":
             if os.path.basename(name) == "Status":
