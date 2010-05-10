@@ -286,7 +286,7 @@ class OSBackend(object):
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
                 logging.debug("Using host dvd drive")
-                self.vbox.current_machine.attach_dvd(host_drive = True)
+                self.vbox.current_machine.attach_dvd(host_drive = True, blacklist=["UFO"])
 
             if conf.LIVECD or not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")

@@ -483,13 +483,13 @@ class VBoxMachine():
             self.machine.saveSettings()
         return 0
 
-    def attach_dvd(self, location='', host_drive=False, save=False):
+    def attach_dvd(self, location='', host_drive=False, blacklist=[], save=False):
         dvd = None
         if host_drive:
             if self.hypervisor.vbox_version() >= "3.1.0":
                 drives = self.hypervisor.host.get_dvd_drives()
                 for drive in drives:
-                    if drive.hostDrive:
+                    if drive.hostDrive and drive.name not in blacklist:
                         dvd = drive
             else:
                 dvd = self.machine.DVDDrive.captureHostDrive(self.machine.DVDDrive.getHostDrive())
