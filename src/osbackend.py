@@ -152,7 +152,8 @@ class OSBackend(object):
         self.vbox.set_extra_data("GUI/SuppressMessages", ",remindAboutAutoCapture,confirmInputCapture," + 
                                  "remindAboutMouseIntegrationOn,remindAboutMouseIntegrationOff," + 
                                  "remindAboutInaccessibleMedia,remindAboutWrongColorDepth,confirmGoingFullscreen," +
-                                 "showRuntimeError.warning.HostAudioNotResponding")
+                                 "showRuntimeError.warning.HostAudioNotResponding," +
+                                 "showRuntimeError.warning.3DSupportIncompatibleAdditions")
 
         if not conf.MENUBAR:
             self.vbox.set_extra_data("GUI/Customizations", "noMenuBar")
