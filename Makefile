@@ -89,7 +89,9 @@ install: generate-mo
 	
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
+	cp -R sdk/bindings/xpcom/python/xpcom $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp -R vboxapi sdk ufovboxapi.py linuxbackend.py launcher.py updater.py createrawvmdk.py keyring_ctypes.py conf.py utils.py ask-password ufo_subprocess.py osbackend.py gui*.py $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp .autorun $(DESTDIR)$(TARGET_PATH)/
 
