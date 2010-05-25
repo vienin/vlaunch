@@ -302,37 +302,38 @@ class VBoxHypervisor():
 
     def minimal_callbacks_maker_loop(self):
         try:
-            names, values, x, x = self.current_machine.machine.enumerateGuestProperties("*")
-    
-            id = 0
-            guest_props = {}
-            while id < len(names):
-                guest_props[names[id]] = values[id]
+            if self.current_machine.machine.state != self.constants.MachineState_Starting:
+                names, values, x, x = self.current_machine.machine.enumerateGuestProperties("*")
 
-                if not self.guest_props.has_key(names[id]) or self.guest_props[names[id]] != values[id]:
-                    if names[id] == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode" and not self.guest_props.has_key("/UFO/Boot/Progress"):
-                        guest_props[names[id]] = "0x0x0"
-                        self.current_machine.set_guest_property(names[id], guest_props[names[id]])
+                id = 0
+                guest_props = {}
+                while id < len(names):
+                    guest_props[names[id]] = values[id]
 
-                    else:
-                        self.vbox_callback_obj.onGuestPropertyChange(self.current_machine.uuid,
-                                                                     names[id],
-                                                                     guest_props[names[id]],
-                                                                     "")
-                id += 1
-            
-            self.guest_props = guest_props
-            
-            state = self.current_machine.machine.state
-            last_state = self.current_machine.last_state
-            if self.current_machine.last_state != state:
-                if state == self.constants.MachineState_Running and \
-                   last_state == self.constants.MachineState_PoweredOff:
-                    self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Starting)
-                if state == self.constants.MachineState_PoweredOff:
-                    self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Stopping)
-                    
-                self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, state)
+                    if not self.guest_props.has_key(names[id]) or self.guest_props[names[id]] != values[id]:
+                        if names[id] == "/VirtualBox/GuestAdd/Vbgl/Video/SavedMode" and not self.guest_props.has_key("/UFO/Boot/Progress"):
+                            guest_props[names[id]] = "0x0x0"
+                            self.current_machine.set_guest_property(names[id], guest_props[names[id]])
+
+                        else:
+                            self.vbox_callback_obj.onGuestPropertyChange(self.current_machine.uuid,
+                                                                         names[id],
+                                                                         guest_props[names[id]],
+                                                                         "")
+                    id += 1
+
+                self.guest_props = guest_props
+
+                state = self.current_machine.machine.state
+                last_state = self.current_machine.last_state
+                if self.current_machine.last_state != state:
+                    if state == self.constants.MachineState_Running and \
+                       last_state == self.constants.MachineState_PoweredOff:
+                        self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Starting)
+                    if state == self.constants.MachineState_PoweredOff:
+                        self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Stopping)
+
+                    self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, state)
         except:
             self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_Stopping)
             self.vbox_callback_obj.onMachineStateChange(self.current_machine.uuid, self.constants.MachineState_PoweredOff)

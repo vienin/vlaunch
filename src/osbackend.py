@@ -715,13 +715,16 @@ class OSBackend(object):
             if gui.app.callbacks_timer:
                 gui.app.stop_callbacks_timer()
 
-            gui.app.set_tooltip(_("UFO: terminated"))
-            gui.app.create_temporary_balloon(_("Goodbye"),
-                                             _("You can now safely eject your UFO key."))
+            # TODO: understand why 'goodbye' ballon
+            # isn't shown on windows platfroms...
+            if sys.platform != "win32":
+                gui.app.set_tooltip(_("UFO: terminated"))
+                gui.app.create_temporary_balloon(_("Goodbye"),
+                                                 _("You can now safely eject your UFO key."))
 
-            # Let's show balloon message 3s
-            time.sleep(3)
-            gui.app.destroy_temporary_balloon()
+                # Let's show balloon message 3s
+                time.sleep(3)
+                gui.app.destroy_temporary_balloon()
             
             # main loop end condition
             self.vbox.current_machine.is_finished = True
