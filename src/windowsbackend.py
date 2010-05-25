@@ -194,6 +194,9 @@ class WindowsBackend(OSBackend):
             device_parts.update({ (int(part.Index) + 1) : part_info })
         return device_parts
 
+    def find_device_by_uuid(self, path):
+        return ""
+
     def find_device_by_volume(self, dev_volume):
         logical_disks = self.WMI.Win32_LogicalDisk (VolumeName = dev_volume)
         if not logical_disks:
