@@ -1,14 +1,14 @@
 @echo off
 @echo PROCESSOR_ARCHITECTURE: %PROCESSOR_ARCHITECTURE%
 
-set VBOX_PATH=X:\vbox
-
 del /F /Q /S dist build
 
 if %PROCESSOR_ARCHITECTURE% == x86    goto x86
 if %PROCESSOR_ARCHITECTURE% == AMD64  goto amd64
 
 :x86
+set VBOX_PATH=F:\vbox
+
 set VBOX_BIN_PATH=%VBOX_PATH%\out\win.x86\release\bin
 set QT_BIN_PATH=%VBOX_PATH%\tools\win.x86\Qt\4.5.2-32bits\bin
 set MSVC_PATH="E:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT"
@@ -23,6 +23,8 @@ xcopy /E /Y %MSVC_PATH% dist\Microsoft.VC90.CRT\
 goto begin
 
 :amd64
+set VBOX_PATH=C:\Users\agorabox\Desktop\vbox
+
 set VBOX_BIN_PATH=%VBOX_PATH%\out\win.amd64\release\bin
 set QT_BIN_PATH=%VBOX_PATH%\tools\win.x86\Qt\4.5.2-64bits\bin
 set VBOX_BIN_DEST="."
@@ -58,6 +60,7 @@ xcopy /E /Y %MSVC_PATH% %VBOX_BIN_DEST%\Microsoft.VC90.CRT\
 
 xcopy /E /Y "%VBOX_BIN_PATH%\*"  %VBOX_BIN_DEST%
 copy %QT_BIN_PATH%\QtNetwork4.dll  %VBOX_BIN_DEST%
+copy %QT_BIN_PATH%\QtOpenGL4.dll  %VBOX_BIN_DEST%
 
 del /F /Q /S %VBOX_BIN_DEST%\tst*.*
 del /F /Q /S %VBOX_BIN_DEST%\testcase
@@ -72,7 +75,8 @@ move /Y launcher-windows.exe ufo.exe
 C:\Python26\python.exe -c  "import glob, tarfile; tar = tarfile.open('..\windows.%PROCESSOR_ARCHITECTURE%.tgz', 'w:gz'); tar.add('.'); tar.close();"
 
 cd ..
-pscp.exe -i id_rsa.ppk windows.%PROCESSOR_ARCHITECTURE%.tgz vienin@kickstart.alpha.agorabox.org:/var/www/html/private/virtualization
+pscp.exe -i id_rsa.ppk windows.%PROCESSOR_ARCHITECTURE%.tgz bob@kickstart.alpha.agorabox.org:/var/www/html/private/virtualization
 rem pscp.exe -i id_rsa.ppk dist\ufo.exe bob@kickstart.agorabox.org:/var/www/html/private/virtualization
 
 :end
+
