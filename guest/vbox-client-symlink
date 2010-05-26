@@ -62,8 +62,13 @@ do
 	if [ $? -eq 0 ]; then
 		echo $ligne >> $HOME/.sharelinks.new
 	else
-		unlink "$HOME/${ligne%;*}"
-		rm "${desktop}/${ligne%;*}.desktop"
+		if [ -h "$HOME/${ligne%;*}" ]; then
+			unlink "$HOME/${ligne%;*}"
+			rm "${desktop}/${ligne%;*}.desktop"
+		else
+			# This occurs when vlaunch-guest has been updated from 0.9 to 1.0
+			[ -h "${desktop}/${ligne%;*}" ] && unlink "${desktop}/${ligne%;*}"
+		fi
 		rmdir "${target}/${ligne#*;}"
 	fi
 done

@@ -154,6 +154,6 @@ download-binaries:
 	wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
 	wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-${OVERLAY_DEV_TYPE}-UUID=${OVERLAY_DEV_UUID}.vdi
 	wget -O USBDiskEjector1.1.2.zip http://quick.mixnmojo.com/files/USBDiskEjector1.1.2.zip
-	unzip USBDiskEjector1.1.2.zip
+	unzip -o USBDiskEjector1.1.2.zip
 
 rpm: download-binaries build-rpm
