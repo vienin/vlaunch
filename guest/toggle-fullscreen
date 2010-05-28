@@ -1,3 +1,10 @@
 #!/bin/sh
 
-VBoxControl guestproperty set /UFO/GUI/Fullscreen "1"
+if [ ! -f /tmp/tooglefullscreenstate ]; then
+	echo 1 > /tmp/tooglefullscreenstate
+	state=0
+else
+	state=`cat /tmp/tooglefullscreenstate`
+	[ "$state" == 0 ] && echo 1 > /tmp/tooglefullscreenstate || echo 0 > /tmp/tooglefullscreenstate
+fi
+VBoxControl guestproperty set /UFO/GUI/Fullscreen "$state"
