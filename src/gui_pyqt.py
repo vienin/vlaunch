@@ -41,9 +41,11 @@ class QtUFOGui(QtGui.QApplication):
         self.animation = None
         self.tray      = None
         self.splash    = None
-        self.usb_check_timer  = None
-        self.net_adapt_timer  = None
-        self.callbacks_timer  = None
+
+        self.usb_check_timer  = QtCore.QTimer(self)
+        self.net_adapt_timer  = QtCore.QTimer(self)
+        self.callbacks_timer  = QtCore.QTimer(self)
+
         self.console_window   = None
         self.settings_window  = None
         self.antivirus_window = None
@@ -180,15 +182,13 @@ class QtUFOGui(QtGui.QApplication):
             elif event.disk == "public":
                 self.tray.persistent_balloon.update_progress_public(event.progress)
 
-
         elif isinstance(event, TimerEvent):
             if event.stop:
                 event.timer.stop()
                 del event.timer
                 event.timer = None
             else:
-                if not event.timer:
-                    event.timer = QtCore.QTimer(self)
+                if not event.timer.isActive():
                     self.connect(event.timer, QtCore.SIGNAL("timeout()"), event.function)
                     event.timer.start(event.time * 1000)
             
@@ -222,38 +222,16 @@ class QtUFOGui(QtGui.QApplication):
 
     def destroy_splash_screen(self):
         self.sendEvent(self, DestroySplashEvent())
-        
-    def start_usb_check_timer(self, time, function):
-        self.postEvent(self, TimerEvent(self.usb_check_timer,
-                                        time, 
-                                        function))
-        
-    def stop_usb_check_timer(self):
-        self.postEvent(self, TimerEvent(self.usb_check_timer,
-                                        time=None, 
-                                        function=None, 
-                                        stop=True))
 
-    def start_net_adapt_timer(self, time, function):
-        self.postEvent(self, TimerEvent(self.net_adapt_timer,
-                                        time, 
-                                        function))
-        
-    def stop_net_adapt_timer(self):
-        self.postEvent(self, TimerEvent(self.net_adapt_timer,
-                                        time=None, 
-                                        function=None, 
-                                        stop=True))
-    
-    def start_callbacks_timer(self, time, function):
-        self.postEvent(self, TimerEvent(self.callbacks_timer,
-                                        time, 
-                                        function))
-        
-    def stop_callbacks_timer(self):
-        self.postEvent(self, TimerEvent(self.callbacks_timer,
-                                        time=None, 
-                                        function=None, 
+    def start_check_timer(self, timer, time, function):
+        self.postEvent(self, TimerEvent(timer=timer,
+                                        time=time,
+                                        function=function))
+
+    def stop_check_timer(self, timer):
+        self.postEvent(self, TimerEvent(timer=timer,
+                                        time=None,
+                                        function=None,
                                         stop=True))
 
     def create_temporary_balloon(self, title, msg, progress=False, timeout=0, vlayout=None):

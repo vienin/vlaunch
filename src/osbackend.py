@@ -76,9 +76,9 @@ class OSBackend(object):
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
+        self.os_name        = os_name
         self.eject_at_exit  = conf.EJECTATEXIT
         self.env            = self.update_env()
-        self.os_name        = os_name
 
         if conf.VOICE:
             import voice
@@ -399,7 +399,7 @@ class OSBackend(object):
         if conf.GUESTDEBUG:
             self.vbox.current_machine.set_guest_property("/UFO/Debug", "1")
             gui.dialog_info(msg=_("UFO is running in debug mode.\n"
-                                  "Be aware to disable debug mode at end of the debug session."),
+                                  "Be aware to disable debug mode at the next session."),
                             title=_("Debug mode"))
             self.send_debug_rep = True
 
@@ -618,7 +618,7 @@ class OSBackend(object):
                                                        hlayout={ 'type' : gui.UsbAttachementLayout,
                                                                  'args' : (self.vbox.current_machine.attach_usb,)})
 
-                gui.app.start_usb_check_timer(5, self.check_usb_devices)
+                gui.app.start_check_timer(gui.app.usb_check_timer, 5, self.check_usb_devices)
 
                 if conf.AUTOFULLSCREEN or self.fullscreen:
                     gui.app.fullscreen_window(False)
@@ -708,12 +708,12 @@ class OSBackend(object):
 
             gui.app.destroy_persistent_balloon_sections()
 
-            if gui.app.usb_check_timer:
-                gui.app.stop_usb_check_timer()
-            if gui.app.net_adapt_timer:
-                gui.app.stop_net_adapt_timer()
-            if gui.app.callbacks_timer:
-                gui.app.stop_callbacks_timer()
+            if gui.app.usb_check_timer.isActive():
+                gui.app.stop_check_timer(gui.app.usb_check_timer)
+            if gui.app.net_adapt_timer.isActive():
+                gui.app.stop_check_timer(gui.app.net_adapt_timer)
+            if gui.app.callbacks_timer.isActive():
+                gui.app.stop_check_timer(gui.app.callbacks_timer)
 
             # TODO: understand why 'goodbye' ballon
             # isn't shown on windows platfroms...
@@ -762,15 +762,15 @@ class OSBackend(object):
         # callbacks, we pool on virtual machine's properties
         # and call corresponding callback method
         if not self.vbox.callbacks_aware:
-            
+
             # Special case when Qt backend unavailable and virtualbox < 3.0.0,
             # in this case we are not able to catch termination
             if gui.backend != "PyQt":
                 sys.exit(1)
-                
-            gui.app.start_callbacks_timer(1, self.vbox.minimal_callbacks_maker_loop)
 
-        gui.app.start_net_adapt_timer(5, self.vbox.check_network_adapters)
+            gui.app.start_check_timer(gui.app.callbacks_timer, 1, self.vbox.minimal_callbacks_maker_loop)
+
+        gui.app.start_check_timer(gui.app.net_adapt_timer, 5, self.vbox.check_network_adapters)
         
         # As we use waitForEvents(interval) from vboxapi,
         # we are not able to use another type of loop, as 
@@ -781,7 +781,7 @@ class OSBackend(object):
         # following interval value (default: 50ms)
         while not self.vbox.current_machine.is_finished:
             self.wait_for_events(0.05)
-        
+
     def wait_for_events(self, interval):
         # This function is overloaded only on Windows
         if self.vbox.callbacks_aware:
@@ -877,7 +877,3 @@ class OSBackend(object):
         # clean environment
         logging.debug("Clean up")
         self.global_cleanup()
-
-        # quit application
-        gui.app.quit()
-

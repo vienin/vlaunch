@@ -123,10 +123,11 @@ if __name__ == "__main__":
                 sys.exit(0)
             
         backend.run()
+
         if conf.GUESTDEBUG and backend.send_debug_rep:
             if gui.dialog_error_report(_("Debug mode"),
                                        _("UFO was run in debug mode.\n"
-                                       "You can help fixing your problem by submitting the debug reports"),
+                                         "You can help fixing your problem by submitting the debug reports"),
                                        _("Send debug reports"),
                                        error=False):
                 report_files = glob.glob(conf.LOGFILE + "*")
@@ -146,7 +147,7 @@ if __name__ == "__main__":
         if gui.dialog_error_report(_("Error"),
                                    _("UFO a encountered a fatal error and will now be closed.") + "\n" + \
                                    _("You can help fixing this problem by submitting an error report"),
-                                   _("Send a report"), 
+                                   _("Send a report"),
                                    trace):
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
         try:
@@ -158,3 +159,5 @@ if __name__ == "__main__":
             shutil.copy(log_path, os.path.join(os.path.dirname(log_path), "last_log.log"))
         except: pass
 
+    # quit application
+    gui.app.quit()
