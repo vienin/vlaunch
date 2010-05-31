@@ -392,7 +392,7 @@ class OSBackend(object):
 
         self.credentials = self.set_credentials
         
-        # build removable devices attachements
+        # build removable devices attachments
         self.check_usb_devices()
 
         # set debug mode
@@ -435,7 +435,7 @@ class OSBackend(object):
                         name = str(usb[1])
                         if name.find(':_') != -1:
                             name = name.split(':_')[1]
-                        self.vbox.current_machine.usb_master = { 'name'   : name, 'path'   : usb[0] }
+                        self.vbox.current_machine.usb_master = { 'name' : "UFO", 'path' : usb[0] }
                         self.vbox.current_machine.attach_usb(self.vbox.current_machine.usb_master)
 
                 elif self.vbox.current_machine.usb_attachmnts.has_key(usb[1]):
