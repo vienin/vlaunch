@@ -105,7 +105,11 @@ config = \
           "smartkey" : False,
           "lockatexit" : False,
           "voice" : False,
-          "ejectatexit" : False
+          "ejectatexit" : False,
+          "proxyhttp" : AUTO_STRING,
+          "proxyhttps" : AUTO_STRING,
+          "proxyftp" : AUTO_STRING,
+          "proxysocks" : AUTO_STRING,
         },
       "rawdisk" :
         {
@@ -372,6 +376,37 @@ settings = \
                            "of the host computer cpu properties."),
               'reboot' : True
             },
+          ]
+      },
+      { 'tabname'  : _("Network"),
+        'iconfile' : "proxy.png",
+        'settings' :
+          [
+            { 'grpid'  : "proxies",
+              'group'  : [
+                           { 'confid' : "proxyhttp",
+                             'sectid' : "launcher",
+                             'short'  : _("Web proxy"),
+                             'autocb' : True,
+                           },
+                           { 'confid' : "proxyhttps",
+                             'sectid' : "launcher",
+                             'short'  : _("Secure Web proxy"),
+                             'autocb' : True,
+                           },
+                           { 'confid' : "proxyftp",
+                             'sectid' : "launcher",
+                             'short'  : _("FTP proxy"),
+                             'autocb' : True,
+                           },
+                           { 'confid' : "proxysocks",
+                             'sectid' : "launcher",
+                             'short'  : _("SOCKS proxy"),
+                             'autocb' : True,
+                           }
+                         ],
+              'label'  : _("Use autodetection for proxy servers or configure them manually using <br>format <i>hostname:port</i>")
+            }
           ]
       },
       { 'tabname'  : _("System"),

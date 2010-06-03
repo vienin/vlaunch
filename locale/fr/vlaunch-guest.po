@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch-guest\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-05-08 16:39+0200\n"
+"POT-Creation-Date: 2010-06-03 19:58+0200\n"
 "PO-Revision-Date: 2010-01-19 02:59+0100\n"
 "Last-Translator: Bob <sylvain.baubeau@agorabox.org>\n"
 "Language-Team: French\n"
@@ -15,19 +15,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: guest/vbox-client-symlink:125
+#: guest/vbox-client-symlink:130
 msgid "USB device"
 msgstr "Périphérique USB"
 
-#: guest/vbox-client-symlink:126
+#: guest/vbox-client-symlink:131
 msgid "A new USB device has been detected,\\n\\n"
 msgstr "Un nouveau périphérique USB a été détecté,\\n\\n"
 
-#: guest/vbox-client-symlink:127
+#: guest/vbox-client-symlink:132
 #, sh-format
 msgid "$awaited_share_name mounted on $awaited_share_mntpt\\n\\n"
 msgstr "$awaited_share_name monté sur $awaited_share_mntpt\\n\\n"
 
-#: guest/vbox-client-symlink:128
+#: guest/vbox-client-symlink:133
 msgid "Do you want to mount it on your UFO desktop ?"
 msgstr "Voulez-vous le monter sur votre bureau UFO ?"

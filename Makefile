@@ -7,7 +7,7 @@ SOURCES=README COPYING vboxapi sdk boot src/*.py tools/ask-password tools/*.py \
         graphics/animated-bar.mng graphics/UFO.ico graphics/UFO.svg graphics/UFO.png graphics/settings.png graphics/about.png \
         graphics/.background graphics/VolumeIcon.icns graphics/credentials.png graphics/advanced.png graphics/graphics.png graphics/behavior.png graphics/personal.png \
         graphics/antivirus.png graphics/ignore_virus.png graphics/delete_virus.png \
-        graphics/force.png graphics/exit.png graphics/system.png graphics/eject.png graphics/attach.png \
+        graphics/force.png graphics/exit.png graphics/system.png graphics/proxy.png graphics/eject.png graphics/attach.png \
         setup/settings.conf setup/bootfloppy.img setup/.autorun setup/autorun.inf setup/DS_Store \
         locale windows.AMD64.tgz windows.x86.tgz mac-intel.tgz ufo_overlay.vdi Manuel\ d\'utilisation.pdf USB_Disk_Eject.exe
 

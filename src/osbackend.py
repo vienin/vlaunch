@@ -270,9 +270,18 @@ class OSBackend(object):
             if conf.MACADDR == "":
                 conf.write_value_to_file("vm", "macaddr", self.vbox.current_machine.get_mac_addr())
 
-            proxy = self.get_proxy()
-            if proxy:
-                self.vbox.current_machine.set_guest_property("/UFO/ProxyHTTP", "%s:%d" % proxy)
+            for protocol in [ "http", "https", "ftp", "socks" ]:
+                proxy, port = "", 0
+                confvalue = getattr(conf, "PROXY" + protocol.upper())
+                if confvalue == conf.AUTO_STRING:
+                    if protocol != "socks":
+                        value = self.get_proxy(protocol + "://agorabox.org")
+                        if value: proxy, port = value
+                else:
+                    proxy, port = confvalue.split(":")
+                if proxy and port:
+                    self.vbox.current_machine.set_guest_property("/UFO/Proxy/%s" % (protocol.upper(),),
+                                                                     "%s:%d" % (proxy, int(port)))
 
             # attach boot iso
             if conf.BOOTFLOPPY:

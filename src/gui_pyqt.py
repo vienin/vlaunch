@@ -1754,9 +1754,16 @@ class Settings(QtGui.QDialog):
                             
                             # Set current value
                             
-                            edit   = QtGui.QLineEdit(current_value)
+                            if current_value == conf.AUTO_STRING:
+                                value = ""
+                            else:
+                                value = current_value
+                            edit   = QtGui.QLineEdit(value)
+                            label  = QtGui.QLabel(self.tr(item['short']))
+                            label.setMinimumWidth(150)
                             signal = edit.textChanged
                             funct  = self.on_selection
+                            val_layout.addWidget(label)
                             
                     else:
                         raise Exception("Base type not yet supported")
@@ -1772,6 +1779,8 @@ class Settings(QtGui.QDialog):
                         if custom and custom['function']:
                             checkbox.toggled.connect(custom['function'])
                             
+                        if current_value == conf.AUTO_STRING:
+                            checkbox.setChecked(QtCore.Qt.Checked)
                         val_layout.addWidget(checkbox)
                         
                     # Connect items to action slot
