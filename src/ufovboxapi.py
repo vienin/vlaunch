@@ -652,7 +652,7 @@ class VBoxMachine():
 
     def set_resolution(self, resolution, save=False):
         self.machine.setGuestProperty('/VirtualBox/GuestAdd/Vbgl/Video/SavedMode', 
-                                     resolution + 'x32', '')
+                                      resolution + 'x32', '')
         if save:
             self.machine.saveSettings()
         return 0

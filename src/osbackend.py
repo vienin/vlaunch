@@ -68,6 +68,7 @@ class OSBackend(object):
     def __init__(self, os_name):
         self.tmp_swapdir    = ""
         self.tmp_overlaydir = ""
+        self.vbox_install   = ""
         self.vbox           = None
         self.puel           = False
         self.splash         = None
