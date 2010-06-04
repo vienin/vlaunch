@@ -68,16 +68,9 @@ operating systems : Linux, Windows and MacOSX.
 
 %prep
 %setup -n vlaunch-%{version}
-rm -rf iso
-mkdir iso
-mount -o loop -t vfat bootfloppy.img iso
-cp boot/grub.conf iso/boot/grub/grub.conf
-umount iso
-mv bootfloppy.img UFO-VirtualBox-boot.img
+make download-binaries
+make bootfloppy
 
-# mkisofs -R -b boot/grub/stage2_eltorito -no-emul-boot -boot-load-size 4 -boot-info-table -o UFO-VirtualBox-boot.iso iso
-
-rm -rf iso
 
 %build
 make %{?_smp_mflags}
@@ -140,6 +133,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/antivirus.png
 %{TARGET_PATH}/.data/images/ignore_virus.png
 %{TARGET_PATH}/.data/images/delete_virus.png
+%{TARGET_PATH}/.data/images/proxy.png
 
 %{TARGET_PATH}/.data/launcher.filelist
 %{TARGET_PATH}/.data/locale/fr/LC_MESSAGES/vlaunch.mo
