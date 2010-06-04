@@ -569,6 +569,12 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             if balloon.isVisible():
                 if not self.on_top:
                     balloon_y = balloon_y - balloon.height() - 10
+                if ((self.on_top and balloon_y < balloon.y()) or \
+                   (not self.on_top and balloon_y > balloon.y())) and \
+                   balloon.y() != 0:
+                    y = balloon.y()
+                    balloon.vertical_shift(balloon_y)
+                    balloon_y = y
                 balloon.move(screenRect.width() - balloon.width() - 10, balloon_y)
                 if self.on_top:
                     balloon_y = balloon_y + balloon.height() + 10
@@ -608,10 +614,10 @@ class BalloonMessage(QtGui.QWidget):
         elif sys.platform == "linux2":
             flags = QtCore.Qt.WindowStaysOnTopHint | \
                     QtCore.Qt.X11BypassWindowManagerHint | \
-                    QtCore.Qt.Popup
+                    QtCore.Qt.ToolTip
         else:
             flags = QtCore.Qt.WindowStaysOnTopHint | \
-                    QtCore.Qt.Popup
+                    QtCore.Qt.ToolTip
 
         QtGui.QWidget.__init__(self, None, flags)
 
@@ -625,6 +631,11 @@ class BalloonMessage(QtGui.QWidget):
                           'ballooncolortext'     : conf.BALLOONCOLORTEXT }
 
         self.rearrange_callback = rearrange_callback
+
+        self.show_timer = QtCore.QTimer(self)
+        self.connect(self.show_timer, QtCore.SIGNAL("timeout()"), self.opacity_timer)
+        self.move_timer = QtCore.QTimer(self)
+        self.connect(self.move_timer, QtCore.SIGNAL("timeout()"), self.shift_timer)
 
         # Build basic balloon features: icon, title, msg
         self.baloon_layout   = QtGui.QHBoxLayout(self)
@@ -717,8 +728,30 @@ class BalloonMessage(QtGui.QWidget):
     def opacity_timer(self):
         if self.currentAlpha <= 255:
             self.currentAlpha += 15
-            self.timer.start(1)
+        else:
+            self.show_timer.stop()
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
+
+    def shift_timer(self):
+        self.shift = 5
+        if self.current_shift != 0:
+            if self.current_shift < 0:
+                if self.current_shift + self.shift > 0:
+                    diff = self.current_shift + self.shift
+                    self.shift = self.shift - diff
+
+                self.move(self.x(), self.y() - self.shift)
+                self.current_shift = self.current_shift + self.shift
+
+            else:
+                if self.current_shift - self.shift < 0:
+                    diff = self.current_shift - self.shift
+                    self.shift = self.shift + diff
+
+                self.move(self.x(), self.y() + self.shift)
+                self.current_shift = self.current_shift - self.shift
+        else:
+            self.move_timer.stop()
     
     def resizeEvent(self, evt):
         if self.fake:
@@ -738,16 +771,17 @@ class BalloonMessage(QtGui.QWidget):
         self.draw(event=True)
 
     def showEvent(self, event):
-        self.timer = QtCore.QTimer(self)
-        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.opacity_timer)
-        self.timer.start(1)
-        
+        self.show_timer.start(1)
         self.resize_to_minimum()
         self.rearrange_callback()
 
     def resize_to_minimum(self):
         self.contents_layout.layout().activate()
         self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
+
+    def vertical_shift(self, new_y):
+        self.current_shift = new_y - self.y()
+        self.move_timer.start(1)
 
     def draw(self, event=False):
         self.title_label.setText("<b><font color=%s>%s</font></b>" % \
