@@ -19,6 +19,11 @@ URL=http://www.glumol.com/chicoutimi/vlaunch
 OVERLAY_DEV_UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5
 OVERLAY_DEV_TYPE=ext4-no_journal-no_huge_files
 
+POFILES         = $(wildcard locale/vlaunch*/*.po)
+MOFILES         = $(patsubst %.po,%.mo,$(POFILES))
+
+MSGFMT          = msgfmt --statistics --verbose
+MSGMERGE        = msgmerge -v -U
 
 ifneq ($(findstring ../Makefile.mk,$(wildcard ../Makefile.mk)), )
 	include ../Makefile.mk
@@ -26,7 +31,7 @@ endif
 
 all:
 
-install: generate-mo
+install: install-mo
 	python -c "from ConfigParser import ConfigParser; cf = ConfigParser(); cf.read('settings.conf'); cf.set('launcher', 'VERSION', '$(VERSION)'); cf.write(open('settings.conf', 'w'))"
 
 	# build vdi file for swap device
@@ -43,12 +48,6 @@ install: generate-mo
 
 	python -c "open(\"$(DESTDIR)$(TARGET_PATH)/._\xef\x80\xa9\", \"w\").write(open(\"VolumeIcon-OS-trick\").read())"
 
-	for lang in `ls locale`; \
-	do \
-	    install -D -m 755 locale/$$lang/vlaunch.mo $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo; \
-	    install -D -m 755 locale/$$lang/vlaunch-guest.mo $(DESTDIR)/usr/share/locale/$$lang/LC_MESSAGES/vlaunch-guest.mo; \
-	done
-	
 	cp settings.conf $(DESTDIR)$(TARGET_PATH)/.data/settings/settings.conf
 	cp UFO.svg *.bmp *.mng *.png $(DESTDIR)$(TARGET_PATH)/.data/images/
 	cp UFO.ico $(DESTDIR)$(TARGET_PATH)/UFO.ico
@@ -123,19 +122,35 @@ install: generate-mo
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
 	
 generate-pot:
-	pygettext.py -d vlaunch src
-	xgettext --from-code UTF-8 -o vlaunch-guest.pot -d vlaunch-guest -L Shell guest/vbox-client-symlink
+	pygettext.py -o vlaunch.pot -p locale/vlaunch src
+	xgettext --from-code UTF-8 -o vlaunch-guest.pot -p locale/vlaunch-guest -L Shell guest/vbox-client-symlink
 
-update-po: generate-pot
-	msgmerge -U locale/fr/vlaunch.po vlaunch.pot
-	msgmerge -U locale/fr/vlaunch-guest.po vlaunch-guest.pot
+update-po: Makefile $(POTFILE) refresh-po
 
-generate-mo:
-	for lang in `ls locale`; \
+refresh-po: Makefile
+	for cat in $(POFILES); do \
+		lang=`basename $$cat .po`; \
+		dir=`dirname $$cat`; \
+		component=`basename $$dir`; \
+		# echo $(MSGMERGE) $$cat $$dir/$$component.pot; \
+		if $(MSGMERGE) $$cat $$dir/$$component.pot ; then \
+			echo "$(MSGMERGE) of $$lang succeeded" ; \
+		else \
+			echo "$(MSGMERGE) of $$lang failed" ; \
+		fi \
+	done
+
+%.mo: %.po
+	$(MSGFMT) -o $@ $<
+
+generate-mo: $(MOFILES)
+
+install-mo: $(MOFILES)
+	for po in $(MOFILES); \
 	do \
-	    mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES; \
-	    msgfmt -o locale/$$lang/vlaunch.mo locale/$$lang/vlaunch.po; \
-	    msgfmt -o locale/$$lang/vlaunch-guest.mo locale/$$lang/vlaunch-guest.po; \
+	    lang=`basename $$po .mo`; \
+	    install -D -m 755 $$po $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo; \
+	    install -D -m 755 $$po $(DESTDIR)/usr/share/locale/$$lang/LC_MESSAGES/vlaunch-guest.mo; \
 	done
 
 updater:
