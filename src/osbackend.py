@@ -725,19 +725,12 @@ class OSBackend(object):
             if gui.app.callbacks_timer.isActive():
                 gui.app.stop_check_timer(gui.app.callbacks_timer)
 
-            # TODO: understand why 'goodbye' ballon
-            # isn't shown on windows platfroms...
-            if sys.platform != "win32":
-                gui.app.set_tooltip(_("UFO: terminated"))
-                gui.app.create_temporary_balloon(_("Goodbye"),
-                                                 _("You can now safely eject your UFO key."))
-
-                # Let's show balloon message 3s
-                time.sleep(3)
-                gui.app.destroy_temporary_balloon()
-            
-            # main loop end condition
-            self.vbox.current_machine.is_finished = True
+            gui.app.set_tooltip(_("UFO: terminated"))
+            gui.app.process_gui_events()
+            gui.app.create_temporary_balloon(_("Goodbye"),
+                                             _("You can now safely eject your UFO key."))
+                                             
+            gui.app.start_single_timer(gui.app.termination_timer, 3, self.termination_callback)
         
         self.vbox.current_machine.last_state = state
 
@@ -764,6 +757,12 @@ class OSBackend(object):
         except: 
             logging.debug("import keyring failed, (keyring.get_password)!")
 
+    def termination_callback(self):
+        gui.app.destroy_temporary_balloon()
+        
+        # main loop end condition
+        self.vbox.current_machine.is_finished = True
+            
     def wait_for_termination(self):
         # Destroy our own splash screen
         self.destroy_splash_screen()
@@ -788,7 +787,7 @@ class OSBackend(object):
         # ones the other loop is stated.
         #
         # So we handle Qt events ourself with the configurable
-        # following interval value (default: 50ms)
+        # following interval value (default: 10ms)
         while not self.vbox.current_machine.is_finished:
             self.wait_for_events(0.01)
 

@@ -45,6 +45,7 @@ class QtUFOGui(QtGui.QApplication):
         self.usb_check_timer  = QtCore.QTimer(self)
         self.net_adapt_timer  = QtCore.QTimer(self)
         self.callbacks_timer  = QtCore.QTimer(self)
+        self.termination_timer  = QtCore.QTimer(self)
 
         self.console_window   = None
         self.settings_window  = None
@@ -190,6 +191,8 @@ class QtUFOGui(QtGui.QApplication):
             else:
                 if not event.timer.isActive():
                     self.connect(event.timer, QtCore.SIGNAL("timeout()"), event.function)
+                    if event.single:
+                        event.timer.setSingleShot(True)
                     event.timer.start(event.time * 1000)
             
         else:
@@ -223,6 +226,12 @@ class QtUFOGui(QtGui.QApplication):
     def destroy_splash_screen(self):
         self.sendEvent(self, DestroySplashEvent())
 
+    def start_single_timer(self, timer, time, function):
+        self.postEvent(self, TimerEvent(timer=timer,
+                                        time=time,
+                                        function=function,
+                                        single=True))
+                                        
     def start_check_timer(self, timer, time, function):
         self.postEvent(self, TimerEvent(timer=timer,
                                         time=time,
@@ -443,12 +452,13 @@ class PersistentBalloonEvent(QtCore.QEvent):
         self.destroy   = destroy
 
 class TimerEvent(QtCore.QEvent):
-    def __init__(self, timer, time, function, stop=False):
+    def __init__(self, timer, time, function, stop=False, single=False):
         super(TimerEvent, self).__init__(QtCore.QEvent.None)
         self.timer    = timer
         self.time     = time
         self.function = function
         self.stop     = stop
+        self.single   = single
 
 class ToolTipEvent(QtCore.QEvent):
     def __init__(self, tip):
@@ -700,6 +710,8 @@ class BalloonMessage(QtGui.QWidget):
             self.vlayout.set_parent(self)
             self.contents_layout.addLayout(self.vlayout)
 
+        self.move(0, 0)
+
     def set_message(self, msg):
         self.msg = "<font color=%s>%s</font>" % (self.colors['ballooncolortext'], msg)
         self.text_label.setText(self.msg)
@@ -727,7 +739,7 @@ class BalloonMessage(QtGui.QWidget):
 
     def opacity_timer(self):
         if self.currentAlpha <= 255:
-            self.currentAlpha += 5
+            self.currentAlpha += 10
         else:
             self.show_timer.stop()
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
@@ -782,7 +794,6 @@ class BalloonMessage(QtGui.QWidget):
         self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
 
     def vertical_shift(self, new_y):
-        self.percent_shift = 0
         self.current_shift = new_y - self.y()
         self.move_timer.start(1)
 
