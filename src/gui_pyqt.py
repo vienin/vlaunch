@@ -727,7 +727,7 @@ class BalloonMessage(QtGui.QWidget):
 
     def opacity_timer(self):
         if self.currentAlpha <= 255:
-            self.currentAlpha += 15
+            self.currentAlpha += 5
         else:
             self.show_timer.stop()
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
@@ -762,6 +762,8 @@ class BalloonMessage(QtGui.QWidget):
         self.rearrange_callback()
 
     def hideEvent(self, evt):
+        self.currentAlpha = 0
+        self.setWindowOpacity(0.0)
         self.rearrange_callback()
             
     def closeEvent(self, evt):
@@ -780,6 +782,7 @@ class BalloonMessage(QtGui.QWidget):
         self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
 
     def vertical_shift(self, new_y):
+        self.percent_shift = 0
         self.current_shift = new_y - self.y()
         self.move_timer.start(1)
 

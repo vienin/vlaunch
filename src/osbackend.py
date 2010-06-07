@@ -790,7 +790,7 @@ class OSBackend(object):
         # So we handle Qt events ourself with the configurable
         # following interval value (default: 50ms)
         while not self.vbox.current_machine.is_finished:
-            self.wait_for_events(0.05)
+            self.wait_for_events(0.01)
 
     def wait_for_events(self, interval):
         # This function is overloaded only on Windows
