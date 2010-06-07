@@ -28,7 +28,7 @@ import tarfile
 from ConfigParser import ConfigParser
 import gui
 import tempfile
-import conf
+from conf import conf
 import socket
 import utils
 

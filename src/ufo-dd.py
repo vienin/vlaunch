@@ -4,7 +4,7 @@ import logging
 import subprocess
 import os
 import sys
-import conf
+from conf import conf
 from PyQt4 import QtGui
 
 class MainWindow(QtGui.QDialog):

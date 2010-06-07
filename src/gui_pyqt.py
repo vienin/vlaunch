@@ -26,7 +26,7 @@ from ConfigParser import ConfigParser
 from utils import SmartDict
 from ufovboxapi import *
 import time, utils
-import conf
+from conf import conf
 import logging
 import glob
 import math
@@ -1855,7 +1855,7 @@ class Settings(QtGui.QDialog):
                     dialog_info(title=_("Restart required"),
                                 msg=_("You need to restart U.F.O for this changes to be applied"))
                 cp.write(open(conf.conf_file, "w"))
-                reload(conf)
+                conf.reload()
 
         self.setVisible(False)
         self.close()
@@ -1894,7 +1894,7 @@ class Settings(QtGui.QDialog):
                     for item in items:
                         cp.remove_option(item['sectid'], item['confid'])
             cp.write(open(conf.conf_file, "w"))
-            reload(conf)
+            conf.reload()
             self.setVisible(False)
             self.close()
             self.accept()

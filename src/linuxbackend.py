@@ -21,7 +21,7 @@
 
 import os, sys, statvfs
 import os.path as path
-import conf
+from conf import conf
 import logging
 import platform
 import gui

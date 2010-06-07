@@ -25,7 +25,7 @@ import os, os.path as path
 import wmi
 import sys
 import logging
-import conf
+from conf import conf
 import tempfile
 import platform
 import glob

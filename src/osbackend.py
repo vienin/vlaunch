@@ -22,7 +22,7 @@
 import glob
 import os.path as path
 import createrawvmdk
-import conf
+from conf import conf
 import tempfile
 import gui
 import time
@@ -117,7 +117,7 @@ class OSBackend(object):
         
     def destroy_splash_screen(self):
         gui.app.destroy_splash_screen()
-        
+
     def init_vbox_hypervisor(self):
         logging.debug("Creating VBoxHypervisor")
 

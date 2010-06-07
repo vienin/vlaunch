@@ -25,7 +25,7 @@ import struct
 import glob
 import sys
 import os, os.path as path
-import conf
+from conf import conf
 import shutil
 import gui
 import tempfile

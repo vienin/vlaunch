@@ -28,6 +28,7 @@ import time
 import sys
 
 from utils import SmartDict
+from conf import conf
 
 try:
     import pywintypes
@@ -164,7 +165,7 @@ class VBoxHypervisor():
                 machine = self.vbox.createMachine(base_dir, machine_name,
                                                   "00000000-0000-0000-0000-000000000000")
                 machine.OSTypeId = os_type
-                self.vbox.registerMachine(machine)         
+                self.vbox.registerMachine(machine)
         except Exception, e:
             logging.debug(e)
             return 1
@@ -175,6 +176,7 @@ class VBoxHypervisor():
             if machine.name == machine_name:
                 self.session = self.vm_manager.openMachineSession(machine.id)
                 self.current_machine = VBoxMachine(self, self.session.machine)
+                conf.register_handler(self.on_guest_property_set)
                 return 0
         return 1
     
@@ -351,6 +353,9 @@ class VBoxHypervisor():
                 self.network = one_least_active
             else:
                 logging.debug("Successfully set networking to NAT")
+
+    def on_guest_property_set(self, key, value):
+       self.current_machine.set_guest_property(key, value)
 
 class VBoxMachine():
 

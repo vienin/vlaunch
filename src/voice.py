@@ -1,6 +1,6 @@
 import imp
 import logging
-import conf
+from conf import conf
 
 def create_voice_synthetizer():
     try:

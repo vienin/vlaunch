@@ -25,19 +25,7 @@ from optparse import OptionParser
 import utils
 import gettext
 
-AUTO_INTEGER = -1
-AUTO_STRING  = "auto"
-
 path.supports_unicode_filenames = True
-
-if sys.platform == "darwin" and getattr(sys, "frozen", None):
-    SCRIPT_PATH = path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO"))
-else:
-    SCRIPT_PATH = path.realpath(sys.argv[0])
-SCRIPT_NAME = path.basename(sys.argv[0])
-SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
-
-print "SCRIPT_PATH", SCRIPT_PATH
 
 args = [ arg for arg in sys.argv[1:] if not arg.startswith("-psn_") ]
 parser = OptionParser()
@@ -51,22 +39,34 @@ parser.add_option("-s", "--settings", dest="settings", default=False,
                   action="store_true", help="launch only settings dialog")
 (options, args) = parser.parse_args(args=args)
 
-STATUS_NORMAL = 0
-STATUS_IGNORE = 1
-STATUS_GUEST  = 2
-STATUS_EXIT   = 3
+class GuestProperty:
+    def __init__(self, default, name):
+        self.default = default
+        self.name = name
 
-NET_HOST  = 1
-NET_NAT   = 2
+    def get_property_name(self):
+        return self.name
 
-resolutionValues    = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600', '640x480'],
-                        '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
-reintegrationValues = [ 'overlay=ext4=UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5', 
-                        'overlay=tmpfs', 
-                        'overlay=' ]
-languageValues      = [ 'fr_FR', 'en_US' ]
+class Conf:
+    AUTO_INTEGER = -1
+    AUTO_STRING  = "auto"
 
-config = \
+    STATUS_NORMAL = 0
+    STATUS_IGNORE = 1
+    STATUS_GUEST  = 2
+    STATUS_EXIT   = 3
+
+    NET_HOST  = 1
+    NET_NAT   = 2
+
+    resolutionValues     = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600', '640x480'],
+                                  '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
+    reintegrationValues  = [ 'overlay=ext4=UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5',
+                                  'overlay=tmpfs',
+                                  'overlay=' ]
+    languageValues       = [ 'fr_FR', 'en_US' ]
+
+    config = \
     {
       "virtualbox" :
         {
@@ -106,10 +106,10 @@ config = \
           "lockatexit" : False,
           "voice" : False,
           "ejectatexit" : False,
-          "proxyhttp" : AUTO_STRING,
-          "proxyhttps" : AUTO_STRING,
-          "proxyftp" : AUTO_STRING,
-          "proxysocks" : AUTO_STRING,
+          "proxyhttp" : GuestProperty(AUTO_STRING, "/UFO/Proxy/HTTP"),
+          "proxyhttps" : GuestProperty(AUTO_STRING, "/UFO/Proxy/HTTPS"),
+          "proxyftp" : GuestProperty(AUTO_STRING, "/UFO/Proxy/FTP"),
+          "proxysocks" : GuestProperty(AUTO_STRING, "/UFO/Proxy/SOCKS"),
         },
       "rawdisk" :
         {
@@ -158,305 +158,343 @@ config = \
         }
     }
 
-cp = ConfigParser()
-                             
-try:
-    files = [path.join(SCRIPT_DIR, "settings.conf"), # Used on Mac OS LiveCD
-             path.join(SCRIPT_DIR, "..", "..", ".data", "settings", "settings.conf"), # Windows - Normal case
-             path.join(SCRIPT_DIR, "..", ".data", "settings", "settings.conf"), # Linux - Normal case
-             path.join(SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf")] # Mac - Normal case
-    if os.environ.has_key("_MEIPASS2"): # Used on Windows & Linux Live
-        files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
-    if options.update:
-        files.append(path.join(options.update, ".data", "settings", "settings.conf"))
-    settings = cp.read(files)
-    conf_file = settings[0]
-except:
-    print "Could not read settings.conf"
-    conf_file = ""
+    def __init__(self):
+        self.handlers = []
+        if sys.platform == "darwin" and getattr(sys, "frozen", None):
+            self.SCRIPT_PATH = path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO"))
+        else:
+            self.SCRIPT_PATH = path.realpath(sys.argv[0])
+        self.SCRIPT_NAME = path.basename(sys.argv[0])
+        self.SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
-print "Using configuration file:", conf_file
+        print "SCRIPT_PATH", self.SCRIPT_PATH
 
-for section, keys in config.items():
-    if not cp.has_section(section):   
-        cp.add_section(section)
-    for key, default in keys.items():
-        try:
-            if type(default) == bool:
-                globals()[key.upper()] = type(default)(int(cp.get(section, key)))
+        self.load()
+
+        if options.update:
+            self.DATA_DIR = path.join(options.update, ".data")
+        else:
+            self.DATA_DIR = ""
+        self.BIN = ""
+
+        if sys.platform == "linux2":
+            if self.LIVECD:
+                self.DATA_DIR = os.environ["_MEIPASS2"]
+                # no BIN as the livecd always provides a settings.conf
             else:
-                globals()[key.upper()] = type(default)(cp.get(section, key))
-        except NoOptionError, err:
-            globals()[key.upper()] = default
+                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(self.SCRIPT_PATH)), ".data")
+                vbox_path = utils.call(["which", "VirtualBox"], output=True, log=False)[1].strip()
+                if not path.lexists(vbox_path): self.BIN = ""
+                else: self.BIN = path.dirname(vbox_path)
 
-if options.update:
-    DATA_DIR = path.join(options.update, ".data")
-else:
-    DATA_DIR = ""
-BIN = ""
+        elif sys.platform == "darwin":
+            if self.LIVECD:
+                self.DATA_DIR = path.join(path.dirname(self.SCRIPT_PATH), "..", "Resources", ".data")
+            else:
+                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(self.SCRIPT_PATH))))), ".data")
+            self.BIN = path.join(self.SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
-if sys.platform == "linux2":
-    if LIVECD:
-        DATA_DIR = os.environ["_MEIPASS2"]
-        # no BIN as the livecd always provides a settings.conf
-    else:
-        if not DATA_DIR: DATA_DIR = path.join(path.dirname(path.dirname(SCRIPT_PATH)), ".data")
-        vbox_path = utils.call(["which", "VirtualBox"], output=True, log=False)[1].strip()
-        if not path.lexists(vbox_path): BIN = ""
-        else: BIN = path.dirname(vbox_path)
+        else:
+            if self.LIVECD:
+                self.DATA_DIR = os.environ["_MEIPASS2"]
+                # no BIN as the livecd always provides a settings.conf
+            else:
+                if not self.DATA_DIR: self.DATA_DIR = path.join(self.SCRIPT_DIR, "..", "..", ".data")
+                self.BIN = path.join(self.SCRIPT_DIR)
 
-elif sys.platform == "darwin":
-    if LIVECD:
-        DATA_DIR = path.join(path.dirname(SCRIPT_PATH), "..", "Resources", ".data")
-    else:
-        if not DATA_DIR: DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(SCRIPT_PATH))))), ".data")
-    BIN = path.join(SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
+        try:
+            gettext.translation('vlaunch', path.join(self.DATA_DIR, "locale"), languages=[self.LANGUAGE]).install(unicode=True)
+        except:
+            print "Could find a translation for " + self.LANGUAGE
+            print "Available translations", gettext.find("vlaunch", localedir=path.join(self.DATA_DIR, "locale"), all=1), "in", path.join(self.DATA_DIR, "locale")
+            gettext.install('vlaunch')
 
-else:
-    if LIVECD:
-        DATA_DIR = os.environ["_MEIPASS2"]
-        # no BIN as the livecd always provides a settings.conf
-    else:
-        if not DATA_DIR: DATA_DIR = path.join(SCRIPT_DIR, "..", "..", ".data")
-        BIN = path.join(SCRIPT_DIR)
+        self.setup()
 
-def make_path(base, value):
-    if value:
-        return path.normpath(path.join(base,path.expanduser(value)))
-    else:
-        return ""
+    def make_path(self, base, value):
+        if value:
+            return path.normpath(path.join(base,path.expanduser(value)))
+        else:
+            return ""
 
-if BIN: BIN = path.join(DATA_DIR, BIN)
-LOG = path.join(DATA_DIR, LOG)
-IMGDIR = path.join(DATA_DIR, IMGDIR)
-VBOXDRIVERS = make_path(BIN, VBOXDRIVERS)
-BOOTFLOPPY = make_path(DATA_DIR, BOOTFLOPPY)
-BOOTISO = make_path(DATA_DIR, BOOTISO)
-SWAPFILE  = make_path(DATA_DIR, SWAPFILE)
-OVERLAYFILE  = make_path(DATA_DIR, OVERLAYFILE)
-BOOTDISK = make_path(DATA_DIR, BOOTDISK)
-ROOTVDI = make_path(DATA_DIR, ROOTVDI)
-
-try:
-    gettext.translation('vlaunch', path.join(DATA_DIR, "locale"), languages=[LANGUAGE]).install(unicode=True)
-except:
-    print "Could find a translation for " + LANGUAGE
-    print "Available translations", gettext.find("vlaunch", localedir=path.join(DATA_DIR, "locale"), all=1), "in", path.join(DATA_DIR, "locale")
-    gettext.install('vlaunch')
-
-
-"""
-Here is a dictionary based model to represent settings dialog window.
-
-Available settings are organized in many main tabs (categories),
-each one contains a list of settings or group of settings (one setting
-for one configuration variable)
-"""
-
-reintegrationStrings = [ _('Host disk'), _('Memory'), _('Direct') ]
-languageStrings      = [ _('French'), _('English') ]
-
-settings = \
-    [ 
-      { 'tabname'  : _("Behavior"),
-        'iconfile' : "behavior.png",     
-        'settings' : 
-          [ 
-            { 'confid' : "resolution",
-              'sectid' : "vm",
-              'short'  : _("Window resolution"),
-              'label'  : _("Choose the starting resolution of the window.\n"
-                           "Note that if the chosen resolution is higher or equal than the\n"
-                           "computer one, the window will be displayed in fullscreen mode."),
-              'values' : resolutionValues 
-            },
-            { 'confid' : "voice",
-              'sectid' : "launcher",
-              'short'  : _("Activate voice"),
-              'label'  : _("Enable this option if you want to turn on voice synthesis.")
-            },
-            { 'confid' : "autofullscreen",
-              'sectid' : "launcher",
-              'short'  : _("Fullscreen automatic"),
-              'label'  : _("Enable this option if you want the window switch to fullscreen\n"
-                           "mode at login.")
-            },
-            { 'confid' : "autominimize",
-              'sectid' : "launcher",
-              'short'  : _("Minimize automatic"),
-              'label'  : _("Enable this option if you want the window switch to minimized\n"
-                           "mode at startup and shutdown.")
-            },
-            { 'confid' : "ejectatexit",
-              'sectid' : "launcher",
-              'short'  : _("Eject key at shutdown"),
-              'label'  : _("Enable this option if you want to eject the key at shutdown.")
-            },
-          ]
-      },
-      { 'tabname'  : _("Appearance"),
-        'iconfile' : "graphics.png", 
-        'settings' : 
-          [ 
-            { 'confid' : "language",
-              'sectid' : "launcher",
-              'short'  : _("Language"),
-              'label'  : _("Choose your language."),
-              'values' : languageValues,
-              'strgs'  : languageStrings,
-              'reboot' : True
-
-            },
-            { 'confid' : "menubar",
-              'sectid' : "vm",
-              'short'  : _("Menu bar"),
-              'label'  : _("Display/hide the window menu bar."),
-            },
-            { 'grpid'  : "ballooncolors",
-              'group'  : [ 
-                           { 'confid' : "ballooncolor",
-                             'sectid' : "launcher",
-                             'short'  : _("Balloon top color")
-                           },
-                           { 'confid' : "ballooncolorgradient",
-                             'sectid' : "launcher",
-                             'short'  : _("Balloon bottom color")
-                           },
-                           { 'confid' : "ballooncolortext",
-                             'sectid' : "launcher",
-                             'short'  : _("Balloon text color")
-                           }
-                         ],
-              'label'  : _("Customize colors of the balloon message window. Use different\n"
-                           "collors for top and bottom to get a color gradient.")
-            }
-          ]
-      },
-      { 'tabname'  : _("Advanced"),
-        'iconfile' : "advanced.png",
-        'settings' : 
-          [ 
-            { 'confid' : "ramsize",
-              'sectid' : "vm",
-              'short'  : _("Memory"),
-              'label'  : _("Set the size of the virtual machine memory."),
-              'range'  : [MINRAM, 4096],
-              'autocb' : True,
-              'reboot' : True
-            },
-            { 'confid' : "cpus",
-              'sectid' : "vm",
-              'short'  : _("CPU number"),
-              'label'  : _("Set the number of cpus connected to the virtual machine."),
-              'range'  : [1, 16],
-              'autocb' : True,
-              'reboot' : True
-            },
-            { 'confid' : "accel3d",
-              'sectid' : "vm",
-              'short'  : _("3D acceleration"),
-              'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n"
-                           "availability of this feature depends of the host computer 3D\n"
-                           "device."),
-              'reboot' : True
-            },
-            { 'grpid'  : "virtext",
-              'group'  : [ 
-                           { 'confid' : "vt",
-                             'sectid' : "vm",
-                             'short'  : _("VT-x/AMD-V")
-                           },
-                           { 'confid' : "nestedpaging",
-                             'sectid' : "vm",
-                             'short'  : _("Nested paging")
-                           }
-                         ],
-              'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n"
-                           "extentions are enabled, availability of this feature depends\n"
-                           "of the host computer cpu properties."),
-              'reboot' : True
-            },
-          ]
-      },
-      { 'tabname'  : _("Network"),
-        'iconfile' : "proxy.png",
-        'settings' :
-          [
-            { 'grpid'  : "proxies",
-              'group'  : [
-                           { 'confid' : "proxyhttp",
-                             'sectid' : "launcher",
-                             'short'  : _("Web proxy"),
-                             'autocb' : True,
-                           },
-                           { 'confid' : "proxyhttps",
-                             'sectid' : "launcher",
-                             'short'  : _("Secure Web proxy"),
-                             'autocb' : True,
-                           },
-                           { 'confid' : "proxyftp",
-                             'sectid' : "launcher",
-                             'short'  : _("FTP proxy"),
-                             'autocb' : True,
-                           },
-                           { 'confid' : "proxysocks",
-                             'sectid' : "launcher",
-                             'short'  : _("SOCKS proxy"),
-                             'autocb' : True,
-                           }
-                         ],
-              'label'  : _("Use autodetection for proxy servers or configure them manually using <br>format <i>hostname:port</i>")
-            }
-          ]
-      },
-      { 'tabname'  : _("System"),
-        'iconfile' : "system.png",
-        'settings' : 
-          [ 
-            { 'confid' : "guestdebug",
-              'sectid' : "vm",
-              'short'  : _("Debug mode"),
-              'label'  : _("Set debug mode to get more complete log files.")
-            },
-            { 'confid' : "reintegration",
-              'sectid' : "vm",
-              'short'  : _("Reintegration policy"),
-              'label'  : _("DANGEROUS. Select the reintegration policy.\n"
-                           "The reintegration policy defines how system modifications\n"
-                           "are written on the removable device."),
-              'values' : reintegrationValues,
-              'strgs'  : reintegrationStrings,
-              'reboot' : True
-            },
-            { 'confid' : "cmdline",
-              'sectid' : "vm",
-              'short'  : _("Kernel command line"),
-              'label'  : _("DANGEROUS. Set the kernel command line parameters.\n"
-                           "If the following parameters already exist on the kernel\n"
-                           "command line, they will be overwritten.")
-            }
-          ]
-      }
-    ]
+    def register_handler(self, handler):
+        self.handlers.append(handler)
         
-def get_auto_value(type_instance):
-    assert type(type_instance) != bool
-    
-    if type(type_instance) == int:
-        return AUTO_INTEGER
-    elif type(type_instance) == str:
-        return AUTO_STRING
+    def unregister_handler(self, handler):
+        self.handlers.remove(handler)
 
-def get_default_value(id):
-    for k, v in config.items():
-        if id in v:
-            return v[id]
+    def __getattr__(self, attr):
+        if self.__dict__.has_key(attr):
+            return self.__dict__[attr]
+        else:
+            return self.__dict__[attr.upper()]
 
-def write_value_to_file(section, id, value):
-    cp = ConfigParser()
-    cp.read(conf_file)
-    if not cp.has_section(section):
-        cp.add_section(section)
-    cp.set(section, id, value)
-    cp.write(open(conf_file, "w"))
+    def __setattr__(self, attr, value):
+        if isinstance(self.get_default_value(attr.lower()), GuestProperty):
+            for handler in self.handlers:
+                handler(self.get_default_value(attr.lower()).get_property_name(), value)
+        self.__dict__[attr.upper()] = value
+
+    def load(self):
+        self.cp = ConfigParser()
+        self.options = options
+        try:
+            files = [path.join(self.SCRIPT_DIR, "settings.conf"), # Used on Mac OS LiveCD
+                     path.join(self.SCRIPT_DIR, "..", "..", ".data", "settings", "settings.conf"), # Windows - Normal case
+                     path.join(self.SCRIPT_DIR, "..", ".data", "settings", "settings.conf"), # Linux - Normal case
+                     path.join(self.SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf")] # Mac - Normal case
+            if os.environ.has_key("_MEIPASS2"): # Used on Windows & Linux Live
+                files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
+            if options.update:
+                files.append(path.join(options.update, ".data", "settings", "settings.conf"))
+            settings = self.cp.read(files)
+            self.conf_file = settings[0]
+        except:
+            print "Could not read settings.conf"
+            self.conf_file = ""
+
+        print "Using configuration file:", self.conf_file
+
+        for section, keys in self.config.items():
+            if not self.cp.has_section(section):
+                self.cp.add_section(section)
+            for key, default in keys.items():
+                try:
+                    if type(default) == bool:
+                        setattr(self, key.upper(), type(default)(int(self.cp.get(section, key))))
+                    if isinstance(default, GuestProperty):
+                        setattr(self, key.upper(), type(default.default)(self.cp.get(section, key)))
+                    else:
+                        setattr(self, key.upper(), type(default)(self.cp.get(section, key)))
+                except NoOptionError, err:
+                    setattr(self, key.upper(), default)
+
+    def reload(self):
+        self.load()
+
+    def get_auto_value(self, type_instance):
+        assert type(type_instance) != bool
+
+        if type(type_instance) == int:
+            return self.AUTO_INTEGER
+        elif type(type_instance) == str:
+            return self.AUTO_STRING
+
+    def get_default_value(self, id):
+        for k, v in self.config.items():
+            if id in v:
+                return v[id]
+
+    def write_value_to_file(self, section, id, value):
+        cp = ConfigParser()
+        cp.read(self.conf_file)
+        if not cp.has_section(section):
+            cp.add_section(section)
+        cp.set(section, id, value)
+        cp.write(open(self.conf_file, "w"))
+
+    def setup(self):
+        """
+        Here is a dictionary based model to represent settings dialog window.
+
+        Available settings are organized in many main tabs (categories),
+        each one contains a list of settings or group of settings (one setting
+        for one configuration variable)
+        """
+
+        self.reintegrationStrings = [ _('Host disk'), _('Memory'), _('Direct') ]
+        self.languageStrings      = [ _('French'), _('English') ]
+
+        self.settings = [ \
+          { 'tabname'  : _("Behavior"),
+            'iconfile' : "behavior.png",
+            'settings' :
+              [
+                { 'confid' : "resolution",
+                  'sectid' : "vm",
+                  'short'  : _("Window resolution"),
+                  'label'  : _("Choose the starting resolution of the window.\n"
+                               "Note that if the chosen resolution is higher or equal than the\n"
+                               "computer one, the window will be displayed in fullscreen mode."),
+                  'values' : self.resolutionValues
+                },
+                { 'confid' : "voice",
+                  'sectid' : "launcher",
+                  'short'  : _("Activate voice"),
+                  'label'  : _("Enable this option if you want to turn on voice synthesis.")
+                },
+                { 'confid' : "autofullscreen",
+                  'sectid' : "launcher",
+                  'short'  : _("Fullscreen automatic"),
+                  'label'  : _("Enable this option if you want the window switch to fullscreen\n"
+                               "mode at login.")
+                },
+                { 'confid' : "autominimize",
+                  'sectid' : "launcher",
+                  'short'  : _("Minimize automatic"),
+                  'label'  : _("Enable this option if you want the window switch to minimized\n"
+                               "mode at startup and shutdown.")
+                },
+                { 'confid' : "ejectatexit",
+                  'sectid' : "launcher",
+                  'short'  : _("Eject key at shutdown"),
+                  'label'  : _("Enable this option if you want to eject the key at shutdown.")
+                },
+              ]
+          },
+          { 'tabname'  : _("Appearance"),
+            'iconfile' : "graphics.png",
+            'settings' :
+              [
+                { 'confid' : "language",
+                  'sectid' : "launcher",
+                  'short'  : _("Language"),
+                  'label'  : _("Choose your language."),
+                  'values' : self.languageValues,
+                  'strgs'  : self.languageStrings,
+                  'reboot' : True
+                },
+                { 'confid' : "menubar",
+                  'sectid' : "vm",
+                  'short'  : _("Menu bar"),
+                  'label'  : _("Display/hide the window menu bar."),
+                },
+                { 'grpid'  : "ballooncolors",
+                  'group'  : [
+                               { 'confid' : "ballooncolor",
+                                 'sectid' : "launcher",
+                                 'short'  : _("Balloon top color")
+                               },
+                               { 'confid' : "ballooncolorgradient",
+                                 'sectid' : "launcher",
+                                 'short'  : _("Balloon bottom color")
+                               },
+                               { 'confid' : "ballooncolortext",
+                                 'sectid' : "launcher",
+                                 'short'  : _("Balloon text color")
+                               }
+                             ],
+                  'label'  : _("Customize colors of the balloon message window. Use different\n"
+                               "collors for top and bottom to get a color gradient.")
+                }
+              ]
+          },
+          { 'tabname'  : _("Advanced"),
+            'iconfile' : "advanced.png",
+            'settings' :
+              [
+                { 'confid' : "ramsize",
+                  'sectid' : "vm",
+                  'short'  : _("Memory"),
+                  'label'  : _("Set the size of the virtual machine memory."),
+                  'range'  : [self.MINRAM, 4096],
+                  'autocb' : True,
+                  'reboot' : True
+                },
+                { 'confid' : "cpus",
+                  'sectid' : "vm",
+                  'short'  : _("CPU number"),
+                  'label'  : _("Set the number of cpus connected to the virtual machine."),
+                  'range'  : [1, 16],
+                  'autocb' : True,
+                  'reboot' : True
+                },
+                { 'confid' : "accel3d",
+                  'sectid' : "vm",
+                  'short'  : _("3D acceleration"),
+                  'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n"
+                               "availability of this feature depends of the host computer 3D\n"
+                               "device."),
+                  'reboot' : True
+                },
+                { 'grpid'  : "virtext",
+                  'group'  : [
+                               { 'confid' : "vt",
+                                 'sectid' : "vm",
+                                 'short'  : _("VT-x/AMD-V")
+                               },
+                               { 'confid' : "nestedpaging",
+                                 'sectid' : "vm",
+                                 'short'  : _("Nested paging")
+                               }
+                             ],
+                  'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n"
+                               "extentions are enabled, availability of this feature depends\n"
+                               "of the host computer cpu properties."),
+                  'reboot' : True
+                },
+              ]
+          },
+          { 'tabname'  : _("Network"),
+            'iconfile' : "proxy.png",
+            'settings' :
+              [
+                { 'grpid'  : "proxies",
+                  'group'  : [
+                               { 'confid' : "proxyhttp",
+                                 'sectid' : "launcher",
+                                 'short'  : _("Web proxy"),
+                                 'autocb' : True,
+                               },
+                               { 'confid' : "proxyhttps",
+                                 'sectid' : "launcher",
+                                 'short'  : _("Secure Web proxy"),
+                                 'autocb' : True,
+                               },
+                               { 'confid' : "proxyftp",
+                                 'sectid' : "launcher",
+                                 'short'  : _("FTP proxy"),
+                                 'autocb' : True,
+                               },
+                               { 'confid' : "proxysocks",
+                                 'sectid' : "launcher",
+                                 'short'  : _("SOCKS proxy"),
+                                 'autocb' : True,
+                               }
+                             ],
+                  'label'  : _("Use autodetection for proxy servers or configure them manually using <br>format <i>hostname:port</i>")
+                }
+              ]
+          },
+          { 'tabname'  : _("System"),
+            'iconfile' : "system.png",
+            'settings' :
+              [
+                { 'confid' : "guestdebug",
+                  'sectid' : "vm",
+                  'short'  : _("Debug mode"),
+                  'label'  : _("Set debug mode to get more complete log files.")
+                },
+                { 'confid' : "reintegration",
+                  'sectid' : "vm",
+                  'short'  : _("Reintegration policy"),
+                  'label'  : _("DANGEROUS. Select the reintegration policy.\n"
+                               "The reintegration policy defines how system modifications\n"
+                               "are written on the removable device."),
+                  'values' : self.reintegrationValues,
+                  'strgs'  : self.reintegrationStrings,
+                  'reboot' : True
+                },
+                { 'confid' : "cmdline",
+                  'sectid' : "vm",
+                  'short'  : _("Kernel command line"),
+                  'label'  : _("DANGEROUS. Set the kernel command line parameters.\n"
+                               "If the following parameters already exist on the kernel\n"
+                               "command line, they will be overwritten.")
+                }
+              ]
+          } ]
+
+        if self.BIN: self.BIN = path.join(self.DATA_DIR, self.BIN)
+        self.LOG = path.join(self.DATA_DIR, self.LOG)
+        self.IMGDIR = path.join(self.DATA_DIR, self.IMGDIR)
+        self.VBOXDRIVERS = self.make_path(self.BIN, self.VBOXDRIVERS)
+        self.BOOTFLOPPY = self.make_path(self.DATA_DIR, self.BOOTFLOPPY)
+        self.BOOTISO = self.make_path(self.DATA_DIR, self.BOOTISO)
+        self.SWAPFILE  = self.make_path(self.DATA_DIR, self.SWAPFILE)
+        self.OVERLAYFILE  = self.make_path(self.DATA_DIR, self.OVERLAYFILE)
+        self.BOOTDISK = self.make_path(self.DATA_DIR, self.BOOTDISK)
+        self.ROOTVDI = self.make_path(self.DATA_DIR, self.ROOTVDI)
+
+conf = Conf()
 
