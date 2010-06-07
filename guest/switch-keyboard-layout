@@ -1,0 +1,19 @@
+#!/bin/sh
+
+cmdline=`cat /proc/cmdline`
+wantedlang="${cmdline#*KEYTABLE=}"
+wantedlang="${wantedlang%% *}"
+
+i=0
+langs=`gconftool-2 --get /desktop/gnome/peripherals/keyboard/kbd/layouts | tr -d '[]' | tr "\t," ". "`
+for lang in $langs
+do
+    lang=`echo $lang | tr "." "\t"`
+    if [ "$lang" = "$wantedlang" ]
+    then
+        gconftool-2 --set /desktop/gnome/peripherals/keyboard/general/defaultGroup --type int $i
+    else
+        i=$(($i + 1))
+    fi
+done
+

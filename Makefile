@@ -107,6 +107,8 @@ install: install-mo
 	install -D -m 644 guest/vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 644 guest/toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
 	install -D -m 644 guest/notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
+	install -D -m 755 guest/auto-proxy guest/switch-keyboard-layout $(DESTDIR)/usr/bin/
+	install -D -m 644 guest/auto-proxy.desktop guest/switch-keyboard-layout.desktop $(DESTDIR)/etc/xdg/autostart
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
@@ -122,7 +124,6 @@ refresh-po: Makefile
 		lang=`basename $$cat .po`; \
 		dir=`dirname $$cat`; \
 		component=`basename $$dir`; \
-		# echo $(MSGMERGE) $$cat $$dir/$$component.pot; \
 		if $(MSGMERGE) $$cat $$dir/$$component.pot ; then \
 			echo "$(MSGMERGE) of $$lang succeeded" ; \
 		else \

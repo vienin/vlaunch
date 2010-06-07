@@ -1,0 +1,13 @@
+
+[Desktop Entry]
+Encoding=UTF-8
+Name=Set host keyboard layout
+Name[en]=Mappage clavier de la machine hôte
+Comment=Set the keyboard layout for the host machine
+Comment[fr]=Selectionne le mappage clavier en fonction de la machine hôte
+Exec=/usr/bin/switch-keyboard-layout
+Terminal=false
+StartupNotify=false
+Type=Application
+Categories=GNOME;GTK;Utility;
+X-Desktop-File-Install-Version=0.15

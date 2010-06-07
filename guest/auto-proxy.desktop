@@ -1,0 +1,13 @@
+
+[Desktop Entry]
+Encoding=UTF-8
+Name=Auto detect web proxy
+Name[fr]=Auto detection des proxy web
+Comment=Auto detect web proxy
+Comment[fr]=Auto detection des proxy web
+Exec=/usr/bin/auto-proxy
+Terminal=false
+StartupNotify=false
+Type=Application
+Categories=GNOME;GTK;Utility;
+X-Desktop-File-Install-Version=0.15

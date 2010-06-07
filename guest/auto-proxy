@@ -1,0 +1,54 @@
+#!/bin/sh
+
+TEXTDOMAIN=vlaunch-guest
+
+runlevel=`runlevel | cut -d " " -f 2`
+use_proxy=0
+
+if [ "$runlevel" = "4" ]; then
+    for kind in HTTP HTTPS FTP SOCKS
+    do
+        proxy_prop=`vbox-get-property /UFO/Proxy/${kind}`
+        proxy_host=`echo $proxy_prop | cut -f 1 -d ':'`
+        proxy_port=`echo $proxy_prop | cut -f 2 -d ':'`
+
+        case "${kind}" in
+            HTTP)
+                if [ "$proxy_host" ] && [ -n "$proxy_port" ]; then
+                    use_proxy=1
+                    gconftool-2 --set /system/http_proxy/host --type string $proxy_host
+                    gconftool-2 --set /system/http_proxy/port --type int $proxy_port
+                else
+                    gconftool-2 --unset /system/http_proxy/host /system/http_proxy/port
+                fi
+                ;;
+
+            *)
+                [ "${kind}" = "HTTPS" ] && kind="secure" || kind=`echo ${kind} | tr "A-Z" "a-z"`
+                if [ "$proxy_host" ] && [ -n "$proxy_port" ]; then
+                    use_proxy=1
+                    gconftool-2 --set /system/proxy/${kind}_host --type string $proxy_host
+                    gconftool-2 --set /system/proxy/${kind}_port --type int $proxy_port
+                else
+                    gconftool-2 --unset /system/proxy/${kind}_host /system/proxy/${kind}_port
+                fi
+                ;;
+        esac
+    done
+
+    if [ "$use_proxy" -eq 0 ]; then
+        gconftool-2 --unset /system/http_proxy/use_http_proxy /system/proxy/mode
+    else
+        gconftool-2 --set /system/http_proxy/use_same_proxy --type bool false
+        gconftool-2 --set --type string /system/proxy/mode manual
+        gconftool-2 --set --type bool /system/proxy/use_http_proxy true
+        notify-send --icon=gnome-network-properties $"Proxy servers are configured. Go to the UFO settings panel to customize them."
+    fi
+else
+    if [ `gconftool-2 --get /system/proxy/mode` = "manual" ];
+    then
+        notify-send --icon=gnome-network-properties $"Proxy servers are configured. Go to 'System / Preferences / Network Proxy' to customize them."
+    fi
+fi
+
+

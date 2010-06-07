@@ -178,6 +178,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/security/console.apps/vbox-set-property
 %{_sysconfdir}/security/console.apps/toggle-fullscreen
 %{_sysconfdir}/security/console.apps/notify-logged-in
+%{_bindir}/auto-proxy
+%{_bindir}/switch-keyboard-layout
 %{_bindir}/vbox-client-symlink
 %{_bindir}/vbox-client-dnd
 %{_bindir}/vbox-get-property
@@ -190,6 +192,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_sbindir}/vbox-set-property
 %{_sbindir}/toggle-fullscreen
 %{_sbindir}/notify-logged-in
+%{_sysconfdir}/xdg/autostart/auto-proxy.desktop
+%{_sysconfdir}/xdg/autostart/switch-keyboard-layout.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
 %{_sysconfdir}/xdg/autostart/notify-logged-in.desktop
