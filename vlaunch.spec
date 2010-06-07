@@ -25,7 +25,7 @@ Requires:       kernel-vbox python-augeas
 %package guest
 Summary: Install guest part files
 Group: Applications/System
-Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui pam_vbox
+Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui vbox-dbus
 
 %package generic
 Summary: Install specific files for generic distribution
