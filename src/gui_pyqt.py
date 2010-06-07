@@ -774,17 +774,26 @@ class BalloonMessage(QtGui.QWidget):
         self.rearrange_callback()
 
     def hideEvent(self, evt):
+        if self.fake:
+            return
+
         self.currentAlpha = 0
         self.setWindowOpacity(0.0)
         self.rearrange_callback()
             
     def closeEvent(self, evt):
+        if self.fake:
+            return
+
         self.rearrange_callback()
-            
+
     def paintEvent(self, evt):
         self.draw(event=True)
 
     def showEvent(self, event):
+        if self.fake:
+            return
+
         self.show_timer.start(1)
         self.resize_to_minimum()
         self.rearrange_callback()
@@ -1532,7 +1541,7 @@ class Settings(QtGui.QDialog):
         # Registering custom handlers and layouts
         
         self.register_custom_handler('ballooncolors',
-                                     self.create_ballon_custom_layout(),
+                                     self.create_balloon_custom_layout(),
                                      self.on_balloon_color_selection)
         
         # Fill main dialog with configuration tabs
@@ -1986,15 +1995,14 @@ class Settings(QtGui.QDialog):
         self.balloon_preview.colors[control.conf_infos['confid']] = color
         self.balloon_preview.repaint()
     
-    def create_ballon_custom_layout(self):
+    def create_balloon_custom_layout(self):
         custom_layout = QtGui.QVBoxLayout()
         val_layout = QtGui.QHBoxLayout()
         val_layout.addSpacing(30)
         
-        self.balloon_preview = BalloonMessage(self, 
-                                              fake  = True, 
-                                              title =_("Message title"), 
-                                              msg   = _("Message contents"))
+        self.balloon_preview = BalloonMessage(title=_("Message title"),
+                                              fake= True,
+                                              msg=_("Message contents"))
         val_layout.addWidget(self.balloon_preview)
         val_layout.addSpacing(30)
         custom_layout.addSpacing(15)
