@@ -87,6 +87,16 @@ class OSBackend(object):
         else:
             self.voice = None
 
+        self.growing_data_files = [ "settings/settings.conf",
+                                    ".VirtualBox/VirtualBox.xml",
+                                    ".VirtualBox/compreg.dat",
+                                    ".VirtualBox/xpti.dat",
+                                    ".VirtualBox/Machines/UFO/UFO.xml",
+                                    ".VirtualBox/Machines/UFO/Logs/VBox.log"
+                                  ]
+        self.reservation_file   = "reservationfile"
+        self.reservation_size   = 512000
+
     def update_env(self):
         if not path.isabs(conf.HOME):
             conf.HOME = path.join(conf.DATA_DIR, conf.HOME)
@@ -819,6 +829,22 @@ class OSBackend(object):
             os.unlink(path.join(conf.HOME, "VirtualBox.xml"))
         if os.path.exists(path.join(conf.HOME, "Machines")):
             shutil.rmtree(path.join(conf.HOME, "Machines"))
+        if os.path.exists(path.join(conf.DATA_DIR, self.reservation_file)):
+            os.unlink(path.join(conf.DATA_DIR, self.reservation_file))
+
+    def reserve_disk_space(self):
+        used = 0
+        for growing_file in self.growing_data_files:
+            if os.path.exists(path.join(conf.DATA_DIR, growing_file)):
+                used = used + os.stat(path.join(conf.DATA_DIR, growing_file)).st_size
+
+        size_to_reserve = self.reservation_size - used
+        available_size = utils.get_free_space(conf.DATA_DIR)
+
+        if size_to_reserve > available_size:
+            size_to_reserve = available_size
+
+        open(path.join(conf.DATA_DIR, self.reservation_file), 'a').truncate(size_to_reserve)
 
     def global_cleanup(self):
         if self.vbox.license_agreed():
@@ -877,6 +903,7 @@ class OSBackend(object):
         logging.debug("Creating virtual machine")
         self.create_virtual_machine()
         self.configure_virtual_machine(create_vmdk = create_vmdk)
+        self.reserve_disk_space()
 
         # launch vm
         logging.debug("Launching virtual machine")

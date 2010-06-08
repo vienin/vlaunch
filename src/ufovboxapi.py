@@ -404,7 +404,6 @@ class VBoxMachine():
         self.hypervisor.session = self.hypervisor.vm_manager.mgr.getSessionObject(self.hypervisor.vm_manager.vbox)
         progress = self.hypervisor.vm_manager.vbox.openRemoteSession(self.hypervisor.session, self.uuid, "gui", "")
         progress.waitForCompletion(-1)
-        completed = progress.completed
         rc = int(progress.resultCode)
         if rc == 0:
             self.machine = self.hypervisor.session.machine
@@ -427,19 +426,19 @@ class VBoxMachine():
                 return 0
 
         except:
-           return 2
+            return 2
 
     def is_running(self):
-       try:
+        try:
             state = self.machine.state
             if state != self.hypervisor.constants.MachineState_Aborted and \
                state != self.hypervisor.constants.MachineState_PoweredOff and \
                state != self.hypervisor.constants.MachineState_Null:
                 return True
-       except:
+        except:
             pass
 
-       return False
+        return False
 
     def set_variable(self, variable_expr, variable_value, save=False):
         expr = 'self.machine.' + variable_expr + ' = ' + variable_value

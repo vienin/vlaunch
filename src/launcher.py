@@ -27,7 +27,7 @@ import os.path as path
 import tempfile
 import urllib
 import traceback
-import glob
+
 
 format = "%(asctime)s %(levelname)s %(message)s"
 if conf.options.update:
