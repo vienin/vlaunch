@@ -3,6 +3,7 @@ FRAMEWORKS=dist/UFO.app/Contents/Frameworks
 MACOS=dist/UFO.app/Contents/MacOS
 VBOXAPP=dist/UFO.app/Contents/Resources/VirtualBox.app
 VBOXMACOS=dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
+SETTINGSAPP=dist/settings.app
 
 py2app:
 	if [ ! -f ../src/UFO.py ]; \
@@ -104,6 +105,14 @@ mac-launcher: clean py2app
 	install_name_tool -change /opt/local/lib/libz.1.dylib /usr/lib/libz.1.dylib ${VBOXMACOS}/libz.1.dylib
 
 	install_name_tool -change /opt/local/lib/libiconv.2.dylib @executable_path/libiconv.2.dylib ${VBOXMACOS}/libiconv.2.dylib
+
+	# build settings app
+	mkdir -p ${SETTINGSAPP}/Contents/MacOS
+	mkdir -p ${SETTINGSAPP}/Contents/Resources
+	cp PkgInfo.settings ${SETTINGSAPP}/Contents/PkgInfo
+	cp Info.plist.settings ${SETTINGSAPP}/Contents/Info.plist
+	cp mac-settings-link ${SETTINGSAPP}/Contents/MacOS/settings
+	cp ../graphics/ufo.icns ${SETTINGSAPP}/Contents/MacOS/Resources/ufo.icns
 
 tar-mac-launcher:
 	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
