@@ -27,5 +27,5 @@ def create_voice_synthetizer():
         return FLiteSynthetizer()
 
     except ImportError:
-        logging.error("Could not find any voice synthetizer")
+        logging.debug("Could not find any voice synthetizer")
         return None

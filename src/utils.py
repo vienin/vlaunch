@@ -20,6 +20,7 @@
 
 
 import logging
+import logging.handlers
 import sys
 if sys.platform == "win32": import subprocess
 else: import ufo_subprocess as subprocess
@@ -49,6 +50,33 @@ class SmartDict(dict):
         super(SmartDict, self).__delitem__(key)
         for callback in  self.on_del_item_callbacks:
             callback(key)
+
+
+class RoolOverLogger():
+
+    format = "%(asctime)s [%(levelname)s] %(message)s"
+
+    def __init__(self, file_path, count):
+        do_roolover = os.path.exists(file_path)
+        self.file_handler = logging.handlers.RotatingFileHandler(file_path, backupCount=count)
+        self.file_handler.setFormatter(logging.Formatter(self.format))
+        self.file_handler.setLevel(logging.DEBUG)
+
+        if do_roolover:
+            self.file_handler.doRollover()
+
+        self.logger = logging.getLogger(os.path.basename(file_path))
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.addHandler(self.file_handler)
+
+    def debug(self, msg):
+        self.logger.debug(msg)
+
+    def safe_debug(self, msg):
+        try:
+            self.logger.debug(msg)
+        except:
+            pass
 
 
 def grep(input, pattern, inverse=False):
@@ -103,7 +131,6 @@ except:
         if type(cmds[0]) == str:
             cmds = [ cmds ]
         lastproc = None
-        procs = []
         for i, cmd in enumerate(cmds):
             if log: logging.debug(" ".join(cmd) + " with environment : " + str(env))
             if lastproc:
@@ -154,4 +181,8 @@ def relpath(path, start=os.path.curdir):
     if not rel_list:
         return os.path.curdir
     return os.path.join(*rel_list)
+
+def get_free_space(path):
+    stats = os.statvfs(path)
+    return stats.f_bavail * stats.f_bsize
 

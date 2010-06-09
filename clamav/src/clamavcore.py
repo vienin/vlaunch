@@ -19,7 +19,6 @@ import logging
 
 from string import atoi
 from custom_clamav.clamav import *
-from logging import StreamHandler
 
 main_url = 'http://database.clamav.net/main.cvd'
 daily_url = 'http://database.clamav.net/daily.cvd'
