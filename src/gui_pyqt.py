@@ -624,7 +624,7 @@ class BalloonMessage(QtGui.QWidget):
         elif sys.platform == "linux2":
             flags = QtCore.Qt.WindowStaysOnTopHint | \
                     QtCore.Qt.X11BypassWindowManagerHint | \
-                    QtCore.Qt.ToolTip
+                    QtCore.Qt.Popup
         else:
             flags = QtCore.Qt.WindowStaysOnTopHint | \
                     QtCore.Qt.ToolTip

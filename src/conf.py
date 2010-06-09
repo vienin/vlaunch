@@ -40,14 +40,24 @@ parser.add_option("-s", "--settings", dest="settings", default=False,
 (options, args) = parser.parse_args(args=args)
 
 class GuestProperty:
-    def __init__(self, default, name):
+    def __init__(self, default, name, value=None):
         self.default = default
         self.name = name
+        if value:
+            self.value = value
+        else:
+            self.value = default
 
     def get_property_name(self):
         return self.name
 
-class Conf:
+    def get_value(self):
+        return self.value
+
+    def set_value(self, value):
+        self.value = value
+
+class Conf(object):
     AUTO_INTEGER = -1
     AUTO_STRING  = "auto"
 
@@ -223,17 +233,30 @@ class Conf:
     def unregister_handler(self, handler):
         self.handlers.remove(handler)
 
-    def __getattr__(self, attr):
-        if self.__dict__.has_key(attr):
-            return self.__dict__[attr]
-        else:
-            return self.__dict__[attr.upper()]
+    def __getattribute__(self, attr):
+        value = None
+        for k, v in Conf.config.items():
+            if attr.lower() in v:
+                value = v[attr.lower()]
+        if isinstance(value, GuestProperty):
+            return object.__getattribute__(self, attr.lower()).get_value()
+        try:
+            return object.__getattribute__(self, attr)
+        except:
+            return object.__getattribute__(self, attr.lower())
 
     def __setattr__(self, attr, value):
-        if isinstance(self.get_default_value(attr.lower()), GuestProperty):
+        attr = attr.lower()
+        prop = None
+        for k, v in Conf.config.items():
+            if attr.lower() in v:
+                prop = v[attr.lower()]
+        if isinstance(prop, GuestProperty):
             for handler in self.handlers:
-                handler(self.get_default_value(attr.lower()).get_property_name(), value)
-        self.__dict__[attr.upper()] = value
+                handler(prop.name, value)
+            self.__dict__[attr] = GuestProperty(prop.default, prop.name, value)
+        else:
+            self.__dict__[attr] = value
 
     def load(self):
         self.cp = ConfigParser()

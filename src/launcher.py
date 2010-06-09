@@ -28,8 +28,7 @@ import tempfile
 import urllib
 import traceback
 
-
-format = "%(asctime)s %(levelname)s %(message)s"
+format = "%(asctime)s [%(levelname)s] %(message)s"
 if conf.options.update:
     conf.LOGFILE = path.join(tempfile.gettempdir(), "ufo-updater.log")
 else:
@@ -37,11 +36,16 @@ else:
     if not os.path.exists(log_dir):
         try: os.makedirs(log_dir)
         except: pass
-    conf.LOGFILE = path.join(log_dir, str(datetime.datetime.now()).replace(' ', '_').replace(':', '-') + "_" + os.path.basename(conf.LOG))
+    conf.LOGFILE = path.join(log_dir, os.path.basename(conf.LOG))
+
 try:
-    logging.basicConfig(format=format, level=logging.DEBUG, filename=path.join(conf.SCRIPT_DIR, conf.LOGFILE))
-    log_path = path.join(conf.SCRIPT_DIR, conf.LOGFILE)
+    from utils import RoolOverLogger
+    log_path    = path.join(conf.SCRIPT_DIR, conf.LOGFILE)
+    root_logger = RoolOverLogger(log_path, 10)
+
+    logging.debug = root_logger.safe_debug
     print "Logging to " + log_path
+
 except:
     try:
         temp = path.join(tempfile.gettempdir(), path.basename(conf.LOG))
@@ -49,8 +53,11 @@ except:
                             filename=temp)
         log_path = temp
         print "Logging to " + log_path
+
     except:
         print "Could not redirect log to file"
+
+logging.debug(datetime.datetime.now())
 
 import gui
 import updater
@@ -124,13 +131,14 @@ if __name__ == "__main__":
             
         backend.run()
 
-        if conf.GUESTDEBUG and backend.send_debug_rep:
+        if conf.GUESTDEBUG:
             if gui.dialog_error_report(_("Debug mode"),
                                        _("UFO was run in debug mode.\n"
                                          "You can help fixing your problem by submitting the debug reports"),
                                        _("Send debug reports"),
                                        error=False):
-                report_files = glob.glob(conf.LOGFILE + "*")
+                report_files = glob.glob(conf.LOGFILE + "_*")
+                report_files.insert(0, conf.LOGFILE)
                 reports = ""
                 for file in report_files:
                     reports += "\n" + ("_" * len(file)) + "\n" + file + "\n\n"
