@@ -31,6 +31,7 @@ import platform
 import utils
 from ufovboxapi import *
 from ConfigParser import ConfigParser
+from utils import RoolOverLogger
 
 try:
     import keyring
@@ -44,13 +45,17 @@ except:
         print "Could find a keyring backend"
 
 class UFOVboxMonitor(VBoxMonitor):
-    
+
+    log_black_list = [ "/UFO/DiskSpace", "/UFO/Debug", "/UFO/Credentials/AuthTok", "/UFO/Boot/Progress" ]
+
     def __init__(self, os_backend):
         VBoxMonitor.__init__(self)
         self.os_backend = os_backend
         
     def onGuestPropertyChange(self, id, name, newValue, flags):
-        logging.debug("Guest property: %s" % name)
+        if name not in self.log_black_list and \
+           os.path.dirname(name) not in self.log_black_list:
+            logging.debug("Guest property: %s -> %s" % (name, newValue))
         if self.os_backend.vbox.current_machine.uuid == id:
             self.os_backend.onGuestPropertyChange(name, newValue, flags)
             
@@ -68,11 +73,12 @@ class OSBackend(object):
     def __init__(self, os_name):
         self.tmp_swapdir    = ""
         self.tmp_overlaydir = ""
+        self.vbox_install   = ""
+        self.debug_reports  = {}
         self.vbox           = None
         self.puel           = False
         self.splash         = None
         self.do_not_update  = False
-        self.send_debug_rep = False
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None
@@ -85,6 +91,16 @@ class OSBackend(object):
             self.voice = voice.create_voice_synthetizer()
         else:
             self.voice = None
+
+        self.growing_data_files = [ "settings/settings.conf",
+                                    ".VirtualBox/VirtualBox.xml",
+                                    ".VirtualBox/compreg.dat",
+                                    ".VirtualBox/xpti.dat",
+                                    ".VirtualBox/Machines/UFO/UFO.xml",
+                                    ".VirtualBox/Machines/UFO/Logs/VBox.log"
+                                  ]
+        self.reservation_file   = "reservationfile"
+        self.reservation_size   = 512000
 
     def update_env(self):
         if not path.isabs(conf.HOME):
@@ -270,9 +286,9 @@ class OSBackend(object):
             if conf.MACADDR == "":
                 conf.write_value_to_file("vm", "macaddr", self.vbox.current_machine.get_mac_addr())
 
-            for protocol in [ "http", "https", "ftp", "socks" ]:
+            for protocol in [ "HTTP", "HTTPS", "FTP", "SOCKS" ]:
                 proxy, port = "", 0
-                confvalue = getattr(conf, "PROXY" + protocol.upper())
+                confvalue = getattr(conf, "PROXY" + protocol)
                 if confvalue == conf.AUTO_STRING:
                     if protocol != "socks":
                         value = self.get_proxy(protocol + "://agorabox.org")
@@ -280,8 +296,7 @@ class OSBackend(object):
                 else:
                     proxy, port = confvalue.split(":")
                 if proxy and port:
-                    self.vbox.current_machine.set_guest_property("/UFO/Proxy/%s" % (protocol.upper(),),
-                                                                     "%s:%d" % (proxy, int(port)))
+                    setattr(conf, "PROXY" + protocol, "%s:%d" % (proxy, int(port)))
 
             # attach boot iso
             if conf.BOOTFLOPPY:
@@ -410,7 +425,6 @@ class OSBackend(object):
             gui.dialog_info(msg=_("UFO is running in debug mode.\n"
                                   "Be aware to disable debug mode at the next session."),
                             title=_("Debug mode"))
-            self.send_debug_rep = True
 
         self.vbox.close_session()
 
@@ -676,7 +690,11 @@ class OSBackend(object):
 
         # Debug management
         elif "/UFO/Debug/" in name:
-            open(conf.LOGFILE + "_" + os.path.basename(name), 'a').write(unicode(newValue).encode("UTF-8") + "\n")
+            debug = os.path.basename(name)
+            if not self.debug_reports.has_key(debug):
+                self.debug_reports[debug] = RoolOverLogger(conf.LOGFILE + "_" + debug, 1)
+
+            self.debug_reports[debug].safe_debug(newValue)
 
         elif name == "/UFO/EjectAtExit":
             self.eject_at_exit = int(newValue)
@@ -724,19 +742,12 @@ class OSBackend(object):
             if gui.app.callbacks_timer.isActive():
                 gui.app.stop_check_timer(gui.app.callbacks_timer)
 
-            # TODO: understand why 'goodbye' ballon
-            # isn't shown on windows platfroms...
-            if sys.platform != "win32":
-                gui.app.set_tooltip(_("UFO: terminated"))
-                gui.app.create_temporary_balloon(_("Goodbye"),
-                                                 _("You can now safely eject your UFO key."))
-
-                # Let's show balloon message 3s
-                time.sleep(3)
-                gui.app.destroy_temporary_balloon()
-            
-            # main loop end condition
-            self.vbox.current_machine.is_finished = True
+            gui.app.set_tooltip(_("UFO: terminated"))
+            gui.app.process_gui_events()
+            gui.app.create_temporary_balloon(_("Goodbye"),
+                                             _("You can now safely eject your UFO key."))
+                                             
+            gui.app.start_single_timer(gui.app.termination_timer, 3, self.termination_callback)
         
         self.vbox.current_machine.last_state = state
 
@@ -763,6 +774,12 @@ class OSBackend(object):
         except: 
             logging.debug("import keyring failed, (keyring.get_password)!")
 
+    def termination_callback(self):
+        gui.app.destroy_temporary_balloon()
+        
+        # main loop end condition
+        self.vbox.current_machine.is_finished = True
+            
     def wait_for_termination(self):
         # Destroy our own splash screen
         self.destroy_splash_screen()
@@ -787,9 +804,9 @@ class OSBackend(object):
         # ones the other loop is stated.
         #
         # So we handle Qt events ourself with the configurable
-        # following interval value (default: 50ms)
+        # following interval value (default: 10ms)
         while not self.vbox.current_machine.is_finished:
-            self.wait_for_events(0.05)
+            self.wait_for_events(0.01)
 
     def wait_for_events(self, interval):
         # This function is overloaded only on Windows
@@ -819,6 +836,22 @@ class OSBackend(object):
             os.unlink(path.join(conf.HOME, "VirtualBox.xml"))
         if os.path.exists(path.join(conf.HOME, "Machines")):
             shutil.rmtree(path.join(conf.HOME, "Machines"))
+        if os.path.exists(path.join(conf.DATA_DIR, self.reservation_file)):
+            os.unlink(path.join(conf.DATA_DIR, self.reservation_file))
+
+    def reserve_disk_space(self):
+        used = 0
+        for growing_file in self.growing_data_files:
+            if os.path.exists(path.join(conf.DATA_DIR, growing_file)):
+                used = used + os.stat(path.join(conf.DATA_DIR, growing_file)).st_size
+
+        size_to_reserve = self.reservation_size - used
+        available_size = utils.get_free_space(conf.DATA_DIR)
+
+        if size_to_reserve > available_size:
+            size_to_reserve = available_size
+
+        open(path.join(conf.DATA_DIR, self.reservation_file), 'a').truncate(size_to_reserve)
 
     def global_cleanup(self):
         if self.vbox.license_agreed():
@@ -877,6 +910,7 @@ class OSBackend(object):
         logging.debug("Creating virtual machine")
         self.create_virtual_machine()
         self.configure_virtual_machine(create_vmdk = create_vmdk)
+        self.reserve_disk_space()
 
         # launch vm
         logging.debug("Launching virtual machine")

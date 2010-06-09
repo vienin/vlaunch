@@ -84,77 +84,118 @@ class WindowsBackend(OSBackend):
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
         return OSBackend.call(self, cmd, env, shell, cwd, output)
 
+    def get_service_state(self, service):
+        logging.debug("Checking if service " + service + " exists")
+        retcode, output = self.call([ "sc", "query", service ], shell=True, output=True)
+        if retcode == 0 and not ("FAILED" in output):
+            logging.debug("Service " + service + " exists")
+            lines = output.split("\n")
+            for line in lines:
+                splt = line.split()
+                if "STATE" in splt:
+                    logging.debug("Service " + service + ": state " + splt[-1])
+                    return splt[-1]
+            logging.debug("Service " + service + ": unknown state")
+            return "FAILED"
+        else:
+            logging.debug("Service " + service + " does not exists")
+            return "FAILED"
+			
+    def create_service(self, service, path):
+        logging.debug("Creating service " + service)
+        ret, output = self.call([ "sc", "create", service, "binpath=", path, "type=", "kernel",
+                                  "start=", "demand", "error=", "normal", "displayname=", service ], 
+                                shell=True, output=True)
+        return ret
+
+    def start_service(self, service):
+        logging.debug("Starting service " + service)
+        ret, output = self.call([ "sc", "start", service ], shell=True, output=True)
+        return ret
+        
+    def stop_service(self, service):
+        logging.debug("Stopping service " + service)
+        ret, output = self.call([ "sc", "stop", service ], shell=True, output=True)
+        return ret
+        
+    def register_vbox_com(self, vbox_path):
+        if self.call([ path.join(vbox_path, "VBoxSVC.exe"), "/reregserver" ], cwd = vbox_path, shell=True):
+            return False
+
+        self.call([ "regsvr32.exe", "/S", path.join(vbox_path, "VBoxC.dll") ], cwd = vbox_path, shell=True)
+        self.call([ "rundll32.exe", "/S", path.join(vbox_path, "VBoxRT.dll"), "RTR3Init" ], cwd = vbox_path, shell=True)
+        return True
+        
     def start_services(self):
         start_service = True
+        
+        # Is vbox installed ?
+        vboxdrv_state = self.get_service_state("VBoxDrv")
+        if vboxdrv_state == "RUNNING":
+            # try to unload VboxDrv
+            self.stop_service("VBoxDrv")
+            
+            # is service is really stopped ?
+            vboxdrv_state = self.get_service_state("VBoxDrv")
+            if vboxdrv_state != "STOPPED" or not os.environ.get("VBOX_INSTALL_PATH"):
+                return 2
+                
+            self.vbox_install = os.environ.get("VBOX_INSTALL_PATH")
+
+        elif vboxdrv_state == "STOP_PENDING":
+            return 2
+
         if conf.CREATESRVS:
-            logging.debug("Checking if service PortableVBoxDrv exists")
-            retcode, output = self.call([ "sc", "query", "PortableVBoxDrv" ], shell=True, output=True)
             create_service = True
-            if retcode == 0 and not ("FAILED" in output):
-                logging.debug("Service PortableVBoxDrv exists")
-                lines = output.split("\n")
-                for line in lines:
-                    splt = line.split()
-                    if "STATE" in splt:
-                        logging.debug("State " + splt[-1])
-                        if splt[-1] == "STOPPED":
-                            logging.debug("Removing PortableVBoxDrv")
-                            self.call([ "sc", "delete", "PortableVBoxDrv" ], shell=True)
-                        elif splt[-1] == "RUNNING":
-                            logging.debug("Service PortableVBoxDrv is running")
-                            create_service = False
-                            start_service = False
+            portable_vboxdrv_state = self.get_service_state("PortableVBoxDrv")
+            if portable_vboxdrv_state == "STOPPED":
+                logging.debug("Removing PortableVBoxDrv")
+                self.call([ "sc", "delete", "PortableVBoxDrv" ], shell=True)
+                
+            elif portable_vboxdrv_state == "RUNNING":
+                logging.debug("Service PortableVBoxDrv is running")
+                create_service = False
+                start_service = False
 
             if create_service:
                 logging.debug("Creating services :")
-                ret, output = self.call([ "sc", "create", "PortableVBoxDrv",
-                                           "binpath=", path.join(conf.VBOXDRIVERS, "VBoxDrv.sys"),
-                                           "type=", "kernel", "start=", "demand", "error=", "normal", 
-                                           "displayname=", "PortableVBoxDrv" ], shell=True, output=True)
-                if ret == 5 or "FAILED" in output:
+                if self.create_service("PortableVBoxDrv",
+                                       path.join(conf.VBOXDRIVERS, "VBoxDrv.sys")) != 0:
+                    # We dont have root permissons
                     return 1
 
             if self.puel:
-                self.call([ "sc", "create", "PortableVBoxUSBMon", "binpath=", 
-                             path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"),
-                             "type=", "kernel", "start=", "demand", "error=", "normal", 
-                             "displayname=", "PortableVBoxUSBMon" ], shell=True)
-                         
+                self.create_service("PortableVBoxUSBMon",
+                                    path.join(conf.BIN, "drivers", "USB", "filter", "VBoxUSBMon.sys"))
 
                 try:
-                    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, 
+                    key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE,
                                           "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
                     if _winreg.QueryValue(key, "DisplayName") != "VirtualBox USB":
-                        self.call(["sc", "create", "VBoxUSB", "binpath=", 
-                                   path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"),
-                                   "type=", "kernel", "start=", "demand", "error=", "normal", 
-                                   "displayname=", "PortableVBoxUSB" ], shell=True)
+                        self.create_service("VBoxUSB",
+                                            path.join(conf.BIN, "drivers", "USB", "device", "VBoxUSB.sys"))
+
                 except:
                     logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
     
         if conf.STARTSRVS and start_service:
             logging.debug("Starting services :")
-        
-            code, output = self.call([ "sc", "start", "PortableVBoxDRV" ], shell=True, output=True)
-            if code in [ 1060, 5 ] or "FAILED" in output:
+            start_portable_vboxdrv = self.start_service("PortableVBoxDRV")
+            if start_portable_vboxdrv in [ 1060, 5]:
                 logging.debug("Got error: " + str(code) + " " + output)
                 return 1
+            elif start_portable_vboxdrv == 183:
+                logging.debug("VirtualBox seems to be installed but not catched (sc start service returns 183)")
+                return 2
 
             if self.puel:
-                self.call([ "sc", "start", "PortableVBoxUSBMon" ], shell=True)
+                self.start_service("PortableVBoxUSBMon")
 
         logging.debug("Re-registering server:")
-
-        if self.call([ path.join(conf.BIN, "VBoxSVC.exe"), "/reregserver" ], cwd = conf.BIN, shell=True):
+        if not self.register_vbox_com(conf.BIN):
             return 1
-        
-        self.call([ "regsvr32.exe", "/S", path.join(conf.BIN, "VBoxC.dll") ], cwd = conf.BIN, shell=True)
-        self.call([ "rundll32.exe", "/S", path.join(conf.BIN, "VBoxRT.dll"), "RTR3Init" ], cwd = conf.BIN, shell=True)
-    
-        return 0
 
-    def kill_resilient_vbox(self):
-        self.call([ 'taskkill', '/F', '/IM', 'VBoxSVC.exe' ], shell=True) 
+        return 0
 
     def stop_services(self):
         if conf.STARTSRVS:
@@ -178,6 +219,15 @@ class WindowsBackend(OSBackend):
                     self.call([ "sc", "delete", "VBoxUSB" ], shell=True)
             except:
                 logging.debug("The key HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\VBoxUSB does not exist")
+
+        if self.vbox_install:
+            # We assume that if VBoxDrv can be stopped and restart, so PortableVboxDrv too
+            self.stop_service("PortableVBoxDrv")
+            self.start_service("VBoxDrv")
+            self.register_vbox_com(self.vbox_install)
+
+    def kill_resilient_vbox(self):
+        self.call([ 'taskkill', '/F', '/IM', 'VBoxSVC.exe' ], shell=True) 
 
     def get_device_parts(self, device_name):
         disks = self.WMI.Win32_DiskDrive(Name = device_name)
@@ -347,7 +397,14 @@ class WindowsBackend(OSBackend):
             msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as administrator'")
         else:
             msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'")
-        gui.dialog_info(title=_("Not enough permissions"), msg="\n\n" + msg)
+        gui.dialog_info(title=_("Not enough permissions"), msg=msg)
+        sys.exit(1)
+		
+    def installed_vbox_error(self):
+        msg = _("We have detected an existing VirtualBox installation on this computer.\n"
+                "UFO is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run UFO.\n\n"
+                "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.")
+        gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
         sys.exit(1)
 
     def prepare(self):
@@ -355,13 +412,11 @@ class WindowsBackend(OSBackend):
         if not conf.HOME: 
             conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
 
-        try:
-            key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, "SYSTEM\\CurrentControlSet\\Services\\VBoxUSB")
-            conf.VBOX_INSTALLED = True
-        except:
-            conf.VBOX_INSTALLED = False
-
-        if self.start_services():
+        services_state = self.start_services()
+        if services_state == 2:
+            logging.debug("Cannot stop the installed VirtualBox")
+            self.installed_vbox_error()
+        elif services_state == 1:
             logging.debug("Insufficient rights")
             self.rights_error()
 

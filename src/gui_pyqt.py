@@ -45,6 +45,7 @@ class QtUFOGui(QtGui.QApplication):
         self.usb_check_timer  = QtCore.QTimer(self)
         self.net_adapt_timer  = QtCore.QTimer(self)
         self.callbacks_timer  = QtCore.QTimer(self)
+        self.termination_timer  = QtCore.QTimer(self)
 
         self.console_window   = None
         self.settings_window  = None
@@ -190,6 +191,8 @@ class QtUFOGui(QtGui.QApplication):
             else:
                 if not event.timer.isActive():
                     self.connect(event.timer, QtCore.SIGNAL("timeout()"), event.function)
+                    if event.single:
+                        event.timer.setSingleShot(True)
                     event.timer.start(event.time * 1000)
             
         else:
@@ -223,6 +226,12 @@ class QtUFOGui(QtGui.QApplication):
     def destroy_splash_screen(self):
         self.sendEvent(self, DestroySplashEvent())
 
+    def start_single_timer(self, timer, time, function):
+        self.postEvent(self, TimerEvent(timer=timer,
+                                        time=time,
+                                        function=function,
+                                        single=True))
+                                        
     def start_check_timer(self, timer, time, function):
         self.postEvent(self, TimerEvent(timer=timer,
                                         time=time,
@@ -443,12 +452,13 @@ class PersistentBalloonEvent(QtCore.QEvent):
         self.destroy   = destroy
 
 class TimerEvent(QtCore.QEvent):
-    def __init__(self, timer, time, function, stop=False):
+    def __init__(self, timer, time, function, stop=False, single=False):
         super(TimerEvent, self).__init__(QtCore.QEvent.None)
         self.timer    = timer
         self.time     = time
         self.function = function
         self.stop     = stop
+        self.single   = single
 
 class ToolTipEvent(QtCore.QEvent):
     def __init__(self, tip):
@@ -493,9 +503,10 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
 
         self.temporary_balloon  = None
-        self.persistent_balloon = MultiSmartDictBalloonMessage(self, title=_("UFO informations balloon"))
-        self.fit_balloon(self.persistent_balloon)
-
+        self.persistent_balloon = MultiSmartDictBalloonMessage(title=_("UFO informations balloon"),
+                                                               rearrange_callback=self.rearrange_balloons)
+        self.balloons = [ self.persistent_balloon ]
+        
         self.minimized = False
 
         self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"),
@@ -511,14 +522,12 @@ class TrayIcon(QtGui.QSystemTrayIcon):
             self.connect(self.destroytimer, QtCore.SIGNAL("timeout()"), self.destroy_temporary_balloon)
             self.destroytimer.start(timeout)
 
-        self.temporary_balloon = BalloonMessage(parent=self,
-                                                title=title,
+        self.temporary_balloon = BalloonMessage(title=title,
                                                 msg=msg,
                                                 progress=progress,
                                                 vlayout=vlayout,
-                                                resize_callback=self.move_persistent_balloon)
-
-        self.fit_balloon(self.temporary_balloon)
+                                                rearrange_callback=self.rearrange_balloons)
+        self.balloons.insert(0, self.temporary_balloon)
         self.temporary_balloon.show()
 
     def update_temporary_balloon_message(self, msg):
@@ -532,6 +541,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
 
     def destroy_temporary_balloon(self):
         if self.temporary_balloon:
+            self.balloons.remove(self.temporary_balloon)
             self.temporary_balloon.hide()
             self.temporary_balloon.close()
             del self.temporary_balloon
@@ -556,21 +566,29 @@ class TrayIcon(QtGui.QSystemTrayIcon):
     def update_persistent_balloon_progress(self, key, progress):
         if self.persistent_balloon.sections.has_key(key):
             self.persistent_balloon.sections[key].set_progress(progress)
+        
+    def rearrange_balloons(self):
+        self.on_top = self.geometry().y() < screenRect.height() / 2
 
-    def move_persistent_balloon(self, overhead):
-        if self.persistent_balloon:
-            self.fit_balloon(self.persistent_balloon, overhead)
-    
-    def fit_balloon(self, balloon, overhead=0):
-        if overhead:
-            overhead = overhead + 10
-        if self.geometry().y() < screenRect.height() / 2:
-            y = self.geometry().bottom() + 10 + overhead
+        if self.on_top:
+            balloon_y = self.geometry().bottom() + 10
         else:
-            y = self.geometry().top() - balloon.height() - 10 - overhead
-
-        balloon.move(balloon.x(), y)
-
+            balloon_y = self.geometry().top()
+        
+        for balloon in self.balloons:
+            if balloon.isVisible():
+                if not self.on_top:
+                    balloon_y = balloon_y - balloon.height() - 10
+                if ((self.on_top and balloon_y < balloon.y()) or \
+                   (not self.on_top and balloon_y > balloon.y())) and \
+                   balloon.y() != 0:
+                    y = balloon.y()
+                    balloon.vertical_shift(balloon_y)
+                    balloon_y = y
+                balloon.move(screenRect.width() - balloon.width() - 10, balloon_y)
+                if self.on_top:
+                    balloon_y = balloon_y + balloon.height() + 10
+        
     def activate(self, reason):
         if reason == QtGui.QSystemTrayIcon.DoubleClick:
             if self.minimized:
@@ -599,7 +617,7 @@ class BalloonMessage(QtGui.QWidget):
     DEFAULT_HEIGHT = 80
     DEFAULT_WIDTH  = 350
 
-    def __init__(self, parent, title, msg=None, progress=False, vlayout=None, fake=False, resize_callback=None):
+    def __init__(self, title, msg=None, progress=False, vlayout=None, fake=False, rearrange_callback=None):
         if sys.platform == "win32":
             flags = QtCore.Qt.WindowStaysOnTopHint | \
                     QtCore.Qt.ToolTip
@@ -609,19 +627,25 @@ class BalloonMessage(QtGui.QWidget):
                     QtCore.Qt.Popup
         else:
             flags = QtCore.Qt.WindowStaysOnTopHint | \
-                    QtCore.Qt.Popup
+                    QtCore.Qt.ToolTip
 
         QtGui.QWidget.__init__(self, None, flags)
 
-        self.parent   = parent
         self.title    = title
         self.msg      = msg
-        self.progress = progress
         self.fake     = fake
+        self.progress = progress
         self.icon     = os.path.join(conf.IMGDIR, "UFO.png")
         self.colors   = { 'ballooncolor'         : conf.BALLOONCOLOR,
                           'ballooncolorgradient' : conf.BALLOONCOLORGRADIENT,
                           'ballooncolortext'     : conf.BALLOONCOLORTEXT }
+
+        self.rearrange_callback = rearrange_callback
+
+        self.show_timer = QtCore.QTimer(self)
+        self.connect(self.show_timer, QtCore.SIGNAL("timeout()"), self.opacity_timer)
+        self.move_timer = QtCore.QTimer(self)
+        self.connect(self.move_timer, QtCore.SIGNAL("timeout()"), self.shift_timer)
 
         # Build basic balloon features: icon, title, msg
         self.baloon_layout   = QtGui.QHBoxLayout(self)
@@ -685,8 +709,8 @@ class BalloonMessage(QtGui.QWidget):
             self.vlayout = vlayout['type'](*vlayout['args'])
             self.vlayout.set_parent(self)
             self.contents_layout.addLayout(self.vlayout)
-            
-        self.resize_callback = resize_callback
+
+        self.move(0, 0)
 
     def set_message(self, msg):
         self.msg = "<font color=%s>%s</font>" % (self.colors['ballooncolortext'], msg)
@@ -711,48 +735,77 @@ class BalloonMessage(QtGui.QWidget):
         if self.progress_bar and self.progress_bar.value() == 100:
             self.progress_bar.hide()
             self.resize_to_minimum()
+            self.rearrange_callback()
 
     def opacity_timer(self):
         if self.currentAlpha <= 255:
-            self.currentAlpha += 15
-            self.timer.start(1)
+            self.currentAlpha += 10
+        else:
+            self.show_timer.stop()
         self.setWindowOpacity(1. / 255. * self.currentAlpha)
+
+    def shift_timer(self):
+        self.shift = 5
+        if self.current_shift != 0:
+            if self.current_shift < 0:
+                if self.current_shift + self.shift > 0:
+                    diff = self.current_shift + self.shift
+                    self.shift = self.shift - diff
+
+                self.move(self.x(), self.y() - self.shift)
+                self.current_shift = self.current_shift + self.shift
+
+            else:
+                if self.current_shift - self.shift < 0:
+                    diff = self.current_shift - self.shift
+                    self.shift = self.shift + diff
+
+                self.move(self.x(), self.y() + self.shift)
+                self.current_shift = self.current_shift - self.shift
+        else:
+            self.move_timer.stop()
     
     def resizeEvent(self, evt):
         if self.fake:
             return
 
         self.setMask(self.draw())
-        self.move(screenRect.width() - self.width() - 10, self.y())
-        
-        if self.resize_callback:
-            self.resize_callback(self.height())
+        self.resize_to_minimum()
+        self.rearrange_callback()
 
     def hideEvent(self, evt):
-        if self.resize_callback:
-            self.resize_callback(0)
+        if self.fake:
+            return
+
+        self.currentAlpha = 0
+        self.setWindowOpacity(0.0)
+        self.rearrange_callback()
             
     def closeEvent(self, evt):
-        if self.resize_callback:
-            self.resize_callback(0)
-            
+        if self.fake:
+            return
+
+        self.rearrange_callback()
+
     def paintEvent(self, evt):
         self.draw(event=True)
 
     def showEvent(self, event):
-        self.timer = QtCore.QTimer(self)
-        self.connect(self.timer, QtCore.SIGNAL("timeout()"), self.opacity_timer)
-        self.timer.start(1)
-        
-        if self.resize_callback:
-            self.resize_callback(self.height())
+        if self.fake:
+            return
+
+        self.show_timer.start(1)
+        self.resize_to_minimum()
+        self.rearrange_callback()
 
     def resize_to_minimum(self):
         self.contents_layout.layout().activate()
         self.resize(self.DEFAULT_WIDTH, self.DEFAULT_HEIGHT)
-        if self.isVisible():
-            self.parent.show()
-        
+
+    def vertical_shift(self, new_y):
+        self.current_shift = new_y - self.y()
+        self.move_timer.start(1)
+
     def draw(self, event=False):
         self.title_label.setText("<b><font color=%s>%s</font></b>" % \
                                  (self.colors['ballooncolortext'], self.title))
@@ -788,8 +841,8 @@ class BalloonMessage(QtGui.QWidget):
 
 
 class MultiSmartDictBalloonMessage(BalloonMessage):
-    def __init__(self, parent, title):
-        BalloonMessage.__init__(self, parent, title)
+    def __init__(self, title, rearrange_callback=None):
+        BalloonMessage.__init__(self, title=title, rearrange_callback=rearrange_callback)
 
         self.progress_bar_root = QtGui.QProgressBar()
         self.progress_bar_user = QtGui.QProgressBar()
@@ -834,6 +887,7 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
             self.contents_layout.addLayout(self.sections[key])
             self.sections[key].refresh()
             self.resize_to_minimum()
+            self.rearrange_callback()
 
     def remove_section(self, key):
         if not self.sections.has_key(key):
@@ -844,6 +898,7 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
             self.resize_to_minimum()
             if not len(self.sections):
                 self.hide()
+            self.rearrange_callback()
 
     def update_progress_root(self, percent):
         self.progress_bar_root.setValue(int(percent))
@@ -907,6 +962,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
     def resize_smartdisct_balloon(self, key=None, value=None):
         self.layout().activate()
         self.parent.resize_to_minimum()
+        self.parent.rearrange_callback()
 
     def set_message(self, msg):
         self.text_label.setText(QtCore.QString("<font color=%s>%s</font>" % \
@@ -932,6 +988,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
             self.progress_bar.hide()
             self.layout().activate()
             self.parent.resize_to_minimum()
+            self.parent.rearrange_callback()
             
     def refresh(self, key=None, value=None):
         self.old_displayed_hlayouts = self.diplayed_hlayouts.copy()
@@ -982,6 +1039,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
 
         del self.hline
         del self.text_label
+        self.parent.rearrange_callback()
 
 
 class UsbAttachementLayout(QtGui.QHBoxLayout):
@@ -1483,8 +1541,10 @@ class Settings(QtGui.QDialog):
         # Registering custom handlers and layouts
         
         self.register_custom_handler('ballooncolors',
-                                     self.create_ballon_custom_layout(),
+                                     self.create_balloon_custom_layout(),
                                      self.on_balloon_color_selection)
+        self.register_custom_handler('guestdebug',
+                                     self.create_debug_custom_layout())
         
         # Fill main dialog with configuration tabs
         
@@ -1532,6 +1592,9 @@ class Settings(QtGui.QDialog):
                 else:
                     setting['value'] = self.get_conf(setting.get('confid'))
                     self.registred_selections.update({ setting.get('confid') : setting })
+
+            if setting.get('hide') and setting['hide']:
+                continue
 
             set_layout = QtGui.QVBoxLayout()
             set_layout.addWidget(QtGui.QLabel(self.tr(setting['label'])))
@@ -1929,7 +1992,7 @@ class Settings(QtGui.QDialog):
                        " -> "   + unicode(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
         return msg
 
-    def register_custom_handler(self, confid, layout, function):
+    def register_custom_handler(self, confid, layout, function=None):
         self.custom_handlers.update({ confid : { 'layout'   : layout, 'function' : function }})
     
     def on_balloon_color_selection(self, color):
@@ -1937,20 +2000,47 @@ class Settings(QtGui.QDialog):
         self.balloon_preview.colors[control.conf_infos['confid']] = color
         self.balloon_preview.repaint()
     
-    def create_ballon_custom_layout(self):
+    def create_balloon_custom_layout(self):
         custom_layout = QtGui.QVBoxLayout()
         val_layout = QtGui.QHBoxLayout()
         val_layout.addSpacing(30)
         
-        self.balloon_preview = BalloonMessage(self, 
-                                              fake  = True, 
-                                              title =_("Message title"), 
-                                              msg   = _("Message contents"))
+        self.balloon_preview = BalloonMessage(title=_("Message title"),
+                                              fake= True,
+                                              msg=_("Message contents"))
         val_layout.addWidget(self.balloon_preview)
         val_layout.addSpacing(30)
         custom_layout.addSpacing(15)
         custom_layout.addLayout(val_layout)
         
+        return custom_layout
+
+    def create_debug_custom_layout(self):
+        def send_debug_reports():
+            control = self.sender()
+            control.setEnabled(False)
+            import urllib
+            report_files = glob.glob(os.path.join(os.path.dirname(conf.LOGFILE ), "*"))
+
+            if conf.USER: user = conf.USER
+            else: user = "None"
+            reports = "REPORT SENDED MANUALLY BY USER (" + user + ")"
+            for file in report_files:
+                reports += "\n" + ("_" * len(file)) + "\n" + file + "\n\n"
+                reports += open(file, 'r').read()
+            params = urllib.urlencode({'report': reports})
+            try:
+                urllib.urlopen(conf.REPORTURL, params)
+            except:
+                pass
+
+        custom_layout = QtGui.QHBoxLayout()
+        custom_layout.addSpacing(30)
+        send_button = QtGui.QPushButton(_("Send debug reports"))
+        self.connect(send_button, QtCore.SIGNAL('clicked()'), send_debug_reports)
+        custom_layout.addWidget(send_button)
+        custom_layout.addSpacing(30)
+
         return custom_layout
         
 # Globals
