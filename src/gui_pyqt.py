@@ -1543,6 +1543,8 @@ class Settings(QtGui.QDialog):
         self.register_custom_handler('ballooncolors',
                                      self.create_balloon_custom_layout(),
                                      self.on_balloon_color_selection)
+        self.register_custom_handler('guestdebug',
+                                     self.create_debug_custom_layout())
         
         # Fill main dialog with configuration tabs
         
@@ -1590,6 +1592,9 @@ class Settings(QtGui.QDialog):
                 else:
                     setting['value'] = self.get_conf(setting.get('confid'))
                     self.registred_selections.update({ setting.get('confid') : setting })
+
+            if setting.get('hide') and setting['hide']:
+                continue
 
             set_layout = QtGui.QVBoxLayout()
             set_layout.addWidget(QtGui.QLabel(self.tr(setting['label'])))
@@ -1987,7 +1992,7 @@ class Settings(QtGui.QDialog):
                        " -> "   + unicode(self.user_readable(self.registred_selections[sel]['value'])) + "\n"
         return msg
 
-    def register_custom_handler(self, confid, layout, function):
+    def register_custom_handler(self, confid, layout, function=None):
         self.custom_handlers.update({ confid : { 'layout'   : layout, 'function' : function }})
     
     def on_balloon_color_selection(self, color):
@@ -2008,6 +2013,34 @@ class Settings(QtGui.QDialog):
         custom_layout.addSpacing(15)
         custom_layout.addLayout(val_layout)
         
+        return custom_layout
+
+    def create_debug_custom_layout(self):
+        def send_debug_reports():
+            control = self.sender()
+            control.setEnabled(False)
+            import urllib
+            report_files = glob.glob(os.path.join(os.path.dirname(conf.LOGFILE ), "*"))
+
+            if conf.USER: user = conf.USER
+            else: user = "None"
+            reports = "REPORT SENDED MANUALLY BY USER (" + user + ")"
+            for file in report_files:
+                reports += "\n" + ("_" * len(file)) + "\n" + file + "\n\n"
+                reports += open(file, 'r').read()
+            params = urllib.urlencode({'report': reports})
+            try:
+                urllib.urlopen(conf.REPORTURL, params)
+            except:
+                pass
+
+        custom_layout = QtGui.QHBoxLayout()
+        custom_layout.addSpacing(30)
+        send_button = QtGui.QPushButton(_("Send debug reports"))
+        self.connect(send_button, QtCore.SIGNAL('clicked()'), send_debug_reports)
+        custom_layout.addWidget(send_button)
+        custom_layout.addSpacing(30)
+
         return custom_layout
         
 # Globals

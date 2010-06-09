@@ -344,7 +344,8 @@ class Conf(object):
                 { 'confid' : "voice",
                   'sectid' : "launcher",
                   'short'  : _("Activate voice"),
-                  'label'  : _("Enable this option if you want to turn on voice synthesis.")
+                  'label'  : _("Enable this option if you want to turn on voice synthesis."),
+                  'hide'   : True
                 },
                 { 'confid' : "autofullscreen",
                   'sectid' : "launcher",

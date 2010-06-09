@@ -53,9 +53,9 @@ class SmartDict(dict):
 
 
 class RoolOverLogger():
-    
+
     format = "%(asctime)s [%(levelname)s] %(message)s"
-    
+
     def __init__(self, file_path, count):
         do_roolover = os.path.exists(file_path)
         self.file_handler = logging.handlers.RotatingFileHandler(file_path, backupCount=count)
