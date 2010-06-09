@@ -1,7 +1,10 @@
 #!/bin/sh
 
-value=`VBoxControl -nologo guestproperty get $1`
-ret=$?
-[ $ret -ne 0 ] && exit $ret
-echo ${value#Value: }
+dbus-send --system --dest=org.agorabox.vbox --print-reply --type=method_call /GuestProperty org.agorabox.vbox.GuestProperty.GetProperty string:$1 | while read line;
+do
+    read value
+    echo $(echo $value | tr -d '\"' | cut -d " " -f 2)
+done
+
+exit $?
 
