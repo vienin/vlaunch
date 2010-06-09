@@ -1,5 +1,5 @@
 #!/bin/sh
 
-value=`VBoxControl -nologo guestproperty set $1 $2`
+dbus-send --system --dest=org.agorabox.vbox --type=method_call /GuestProperty org.agorabox.vbox.GuestProperty.SetProperty "string:$1" "string:$2"
 exit $?
 
