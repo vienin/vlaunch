@@ -410,8 +410,7 @@ class Antivirus(QtGui.QDialog):
         virus_layout.addWidget(ignore_button)
         virus_layout.addWidget(delete_button)
         virus_command.setLayout(virus_layout)
-        
-        
+
         layout.addWidget(self.virus_list)
         layout.addWidget(virus_command)
         virus_tab.setLayout(layout)
@@ -421,7 +420,7 @@ class Antivirus(QtGui.QDialog):
         """
         Remove Virus Tab
         """
-        if self.virus_tab_exist :
+        if self.virus_tab_exist:
             self.tab_widget.removeTab(self.virus_tab_exist)
             self.virus_tab_exist = False
         
@@ -476,14 +475,18 @@ class Antivirus(QtGui.QDialog):
         if self.virus_tab_exist : 
             self.tab_widget.setCurrentIndex(self.virus_tab_exist)
         QtGui.QWidget.show(self)
-        
+
+    def closeEvent(self, evt):
+        self.thread_scan.terminate()
+
+
 class T_scan(QtCore.QThread):
     """
     Scan Thread
     """
     def __init__(self, parent=None):
         QtCore.QThread.__init__(self, parent)
-        self.clamav_instance = False
+        self.clamav_instance = None
         self.mutex_running = threading.Lock()
         self.action = -1
         self.start(QtCore.QThread.LowestPriority)
@@ -598,7 +601,7 @@ class T_scan(QtCore.QThread):
         Restore filter behavior
         """
         self.clamav_instance.other_file = False
-    
+
 
 class TestForm(QtGui.QMainWindow):
     def __init__(self, parent=None):

@@ -23,14 +23,12 @@ from custom_clamav.clamav import *
 main_url = 'http://database.clamav.net/main.cvd'
 daily_url = 'http://database.clamav.net/daily.cvd'
 
-cd_database_path = ".\\update_cd\\"
-database_path = ".\\update\\"
-
+database_path = ".\\update_cd\\"
+update_database_path = ".\\update\\"
 main_path = database_path + "main.cvd"
 daily_path = database_path + "daily.cvd"
-
-main_type = 1
-daily_type = 2
+update_main_path = update_database_path + "main.cvd"
+update_daily_path = update_database_path + "daily.cvd"
 
 logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format='[%(thread)d] %(levelname)-2s %(filename)s:%(lineno)d %(message)s')
 
@@ -82,42 +80,38 @@ class Py_Clamav(object):
     other_file = True
 
     def __init__(self, inform, progress_callback=None):
-        global database_path
         self.inform = inform
         self.running = False
         self.engine = None
-        self.database_loaded = False
-        self.update_if_necessary(progress_callback)
-        try:
-            self.initialize()
-        except:
-            self.use_emergency_database()
-            self.initialize()
-        self.database_loaded = True
         
-    def initialize(self):
+        self.main_need_update  = False
+        self.daily_need_update = False
+        self.update_if_necessary(progress_callback)
+        self.initialize(database_path)
+        
+    def initialize(self, path):
         self.inform(_("initializing database"))
+        logging.debug("Antivirus: cl_init")
         res = cl_init(CL_INIT_DEFAULT)
         if res != CL_SUCCESS and res != CL_EARG :
             raise Py_Clamav_Exception(res)
-
+        logging.debug("Antivirus: cl_engine_new")
         self.engine = cl_engine_new()
         if self.engine == None:
             raise Py_Clamav_Exception(CL_Py_Engine_Error)
         sigs = 0
-
-        ret, sigs = cl_load(database_path, self.engine, sigs, CL_DB_STDOPT)
+        logging.debug("Antivirus: cl_load")
+        ret, sigs = cl_load(path, self.engine, sigs, CL_DB_STDOPT)
 
         if ret != CL_SUCCESS:
             raise Py_Clamav_Exception(ret)
-        
-        ret = cl_engine_compile(self.engine) 
+        logging.debug("Antivirus: cl_engine_compile")
+        ret = cl_engine_compile(self.engine)
         
         if ret != CL_SUCCESS:
             raise Py_Clamav_Exception(ret)
-        
+
         self.inform(_("virus database ready"))
-        return CL_Py_Return_Ok
 
     def add_filter(self, ext):
         """
@@ -167,11 +161,6 @@ class Py_Clamav(object):
 
         if not os.path.exists(file_name):
             raise Py_Clamav_Exception(CL_Py_File_Not_Found)
-
-        if not self.database_loaded:
-            f_func("Waiting for database loading")
-            while not self.database_loaded:
-                time.sleep(0.2)
 
         f_func('scanning ' + self.pretty_path(file_name))
         try:
@@ -252,83 +241,69 @@ class Py_Clamav(object):
                 break
             self.__file_treatment(os.path.join(dir_path+"/"+file_name), f_func, v_func)
 
-    def use_emergency_database(self):
-        logging.debug("Antivirus: using emergency database")
-        shutil.copy2(os.path.join(cd_database_path + "main.cvd"), os.path.join(database_path + "main.cvd"))
-        shutil.copy2(os.path.join(cd_database_path + "daily.cvd"), os.path.join(database_path + "daily.cvd"))
-    
+    def replace_database(self):
+        logging.debug("Antivirus: replacing database")
+        if self.main_need_update:
+            if os.path.exists(main_path):
+                os.rename(main_path, main_path + ".last")
+            os.rename(update_main_path, main_path)
+            if os.path.exists(main_path + ".last"):
+                os.remove(main_path + ".last")
+        if self.daily_need_update:
+            if os.path.exists(daily_path):
+                os.rename(daily_path, daily_path + ".last")
+            os.rename(update_daily_path, daily_path)
+            if os.path.exists(daily_path + ".last"):
+                os.remove(daily_path + ".last")
+
     def update_if_necessary(self, call_function_progress=None):
         """
         Check if clamav is up to date, else force update
         """
-        global main_url
-        global daily_url
-        global main_path
-        global daily_path
-
+        
         self.inform(_("checking database updates"))
- 
-        try:
-            # Test if tmporary database file exists, remove them
-            tmp_files = glob.glob(os.path.join(database_path, "*.tmp"))
-            if len(tmp_files):
-                for tmp in tmp_files:
-                    os.unlink(tmp)
-
-            # Test if updated database exists, download last one
-            if not os.path.exists(main_path):
-                logging.debug("Antivirus: no updated main file, forcing update")
-                self.inform(_("dowloading database update (1/2)"))
-                urllib.urlretrieve(main_url, main_path + ".tmp", call_function_progress)
-                os.rename(main_path + ".tmp", main_path)
-            if not os.path.exists(daily_path):
-                logging.debug("Antivirus: no updated daily file, forcing update")
-                self.inform(_("dowloading database update (2/2)"))
-                urllib.urlretrieve(daily_url, daily_path + ".tmp", call_function_progress)
-                os.rename(daily_path + ".tmp", daily_path)
-        except:
-            self.use_emergency_database()
+            
+        # Test if database update has failed during last session
+        self.rescue_failed_update()
             
         try:
-            # Test if update download has failed during last session
-            self.rescue_failed_update()
-
             # Here we have update database files in update directory
             r_current_version = self.__get_remote_current_version()
             logging.debug("Antivirus: current remote database version, " + str(r_current_version))
             if not r_current_version:
                 return
-        
-            main_need_update  = False
-            daily_need_update = False
+
             l_main_current_version  = self.__get_local_current_version(main_path)
             l_daily_current_version = self.__get_local_current_version(daily_path)
             logging.debug("Antivirus: current local database version, " + str(l_main_current_version) + ", " + str(l_daily_current_version))
 
             # Test if updated database version is deprecated
             if not l_main_current_version or l_main_current_version < r_current_version["main"]:
-                main_need_update = True
+                self.main_need_update = True
             if not l_daily_current_version or l_daily_current_version < r_current_version["daily"]:
-                daily_need_update = True
-                
-            # Retreive remote database files
-            if main_need_update:
-                self.inform(_("dowloading database update (1/2)"))
-                os.rename(main_path, main_path + ".last")
-                urllib.urlretrieve(main_url, main_path, call_function_progress)
-                os.remove(main_path + ".last")
+                self.daily_need_update = True
 
-            if daily_need_update:
-                self.inform(_("dowloading database update (2/2)"))
-                os.rename(daily_path, daily_path + ".last")
-                urllib.urlretrieve(daily_url, daily_path, call_function_progress)
-                os.remove(daily_path + ".last")
+            if self.main_need_update or self.daily_need_update:
+                # Retreive remote database files
+                if self.main_need_update:
+                    self.inform(_("dowloading database update (1/2)"))
+                    urllib.urlretrieve(main_url, update_main_path, call_function_progress)
+
+                if self.daily_need_update:
+                    self.inform(_("dowloading database update (2/2)"))
+                    urllib.urlretrieve(daily_url, update_daily_path, call_function_progress)
+
+                self.replace_database()
 
         except:
-            logging.debug("Antivirus: update downoad failed")
+            logging.debug("Antivirus: update download failed")
+            self.main_need_update  = False
+            self.daily_need_update = False
             self.rescue_failed_update()
 
     def rescue_failed_update(self):
+        for erroneous_file in glob.glob(os.path.join(update_database_path, "*")):
+            os.unlink(erroneous_file)
         if os.path.exists(main_path + ".last"):
             logging.debug("Antivirus: retrieving " + main_path + ".last")
             if os.path.exists(main_path):

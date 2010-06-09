@@ -20,6 +20,8 @@ c:\Python26\python.exe setup-arch-dispatcher.py py2exe
 mkdir "dist\Microsoft.VC90.CRT"
 xcopy /E /Y %MSVC_PATH% dist\Microsoft.VC90.CRT\
 
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-settings-link.au3 /out dist\settings.exe /icon ../graphics/UFO.ico
+
 goto begin
 
 :amd64
@@ -45,7 +47,6 @@ cmd /C comregister.cmd
 
 c:\Python26\python.exe "%SETUP_SCRIPT%" py2exe
 rem --custom-boot-script custom-boot-script.py
-
 
 cd dist
 

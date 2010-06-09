@@ -508,6 +508,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.balloons = [ self.persistent_balloon ]
         
         self.minimized = False
+        self.on_top    = self.geometry().y() < screenRect.height() / 2
 
         self.connect(self, QtCore.SIGNAL("activated(QSystemTrayIcon::ActivationReason)"),
                                          self.activate)
@@ -569,7 +570,6 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         
     def rearrange_balloons(self):
         self.on_top = self.geometry().y() < screenRect.height() / 2
-
         if self.on_top:
             balloon_y = self.geometry().bottom() + 10
         else:
@@ -577,17 +577,21 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         
         for balloon in self.balloons:
             if balloon.isVisible():
+                on_top_changed = self.on_top != balloon.on_top
                 if not self.on_top:
                     balloon_y = balloon_y - balloon.height() - 10
-                if ((self.on_top and balloon_y < balloon.y()) or \
-                   (not self.on_top and balloon_y > balloon.y())) and \
-                   balloon.y() != 0:
-                    y = balloon.y()
+
+                if not on_top_changed and \
+                   ((self.on_top and balloon_y < balloon.y()) or \
+                   (not self.on_top and balloon_y > balloon.y())):
+                    balloon.move(screenRect.width() - balloon.width() - 10, balloon.y())
                     balloon.vertical_shift(balloon_y)
-                    balloon_y = y
-                balloon.move(screenRect.width() - balloon.width() - 10, balloon_y)
+                else:
+                    balloon.move(screenRect.width() - balloon.width() - 10, balloon_y)
+
                 if self.on_top:
                     balloon_y = balloon_y + balloon.height() + 10
+                balloon.on_top = self.on_top
         
     def activate(self, reason):
         if reason == QtGui.QSystemTrayIcon.DoubleClick:
@@ -710,7 +714,7 @@ class BalloonMessage(QtGui.QWidget):
             self.vlayout.set_parent(self)
             self.contents_layout.addLayout(self.vlayout)
 
-        self.move(0, 0)
+        self.on_top = None
 
     def set_message(self, msg):
         self.msg = "<font color=%s>%s</font>" % (self.colors['ballooncolortext'], msg)
