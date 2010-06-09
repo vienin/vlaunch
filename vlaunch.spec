@@ -27,6 +27,11 @@ Summary: Install guest part files
 Group: Applications/System
 Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui vbox-dbus
 
+%package vlaunch-guestmode
+Summary: Guest mode for the UFO distribution
+Group: Applications/System
+Requires: vlaunch = %{version}-%{release}
+
 %package generic
 Summary: Install specific files for generic distribution
 Group: Applications/System
@@ -49,6 +54,9 @@ operating systems : Linux, Windows and MacOSX.
 
 %description guest
 Installs guest binaries that provide guest part of custom VirtualBox-OSE features.
+
+%descript guestmode
+Set up a profile for guest mode : user without a password, customs shortcuts, ...
 
 %description generic
 vlaunch installs VirtualBox binaries and virtual machines configuration 
@@ -199,6 +207,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/xdg/autostart/notify-logged-in.desktop
 %{_datadir}/applications/toggle-fullscreen.desktop
 %{_datadir}/locale/fr/LC_MESSAGES/vlaunch-guest.mo
+
+%files guestmode
 
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp

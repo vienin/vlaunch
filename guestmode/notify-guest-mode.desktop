@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Version=1.0
+Name=Notify user about the guest mode
+Name[fr_FR]=Notifie l'utilisateur du mode invité
+Comment=Notify user about the guest mode
+Comment[fr_FR]=Notifie l'utilisateur du mode invité
+Exec=/usr/bin/notify-guest-mode
+X-GNOME-Autostart-enabled=true
