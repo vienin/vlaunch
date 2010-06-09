@@ -48,7 +48,10 @@ class GuestProperty:
         else:
             self.value = default
 
-    def get_property_name(self):
+    def get_default(self):
+        return self.default
+
+    def get_name(self):
         return self.name
 
     def get_value(self):
@@ -70,11 +73,12 @@ class Conf(object):
     NET_NAT   = 2
 
     resolutionValues     = { '4:3'  : ['1400x1050', '1280x1024', '1024x768', '800x600', '640x480'],
-                                  '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
+                              '16:9' : ['1680x1050', '1280x960', '832x624', '700x525', '512x384'] }
     reintegrationValues  = [ 'overlay=ext4=UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5',
-                                  'overlay=tmpfs',
-                                  'overlay=' ]
+                             'overlay=tmpfs',
+                             'overlay=' ]
     languageValues       = [ 'fr_FR', 'en_US' ]
+    guiValues            = [ "gnome", "cairo-dock", "moblin" ]
 
     config = \
     {
@@ -160,7 +164,8 @@ class Conf(object):
           "reintegration" : reintegrationValues[2],
           "guestdebug" : False,
           "guestmode" : False,
-          "guestuser" : "user"
+          "guestuser" : "guest",
+          "gui" : GuestProperty(guiValues[0], "/UFO/GUI")
         },
       "guest" :
         {
@@ -252,6 +257,8 @@ class Conf(object):
             if attr.lower() in v:
                 prop = v[attr.lower()]
         if isinstance(prop, GuestProperty):
+            if isinstance(value, GuestProperty):
+                value = value.get_value()
             for handler in self.handlers:
                 handler(prop.name, value)
             self.__dict__[attr] = GuestProperty(prop.default, prop.name, value)
@@ -303,6 +310,14 @@ class Conf(object):
         elif type(type_instance) == str:
             return self.AUTO_STRING
 
+    def get_all_guestprops(self):
+        guestprops = []
+        for k, v in self.config.items():
+            for name, value in v.items():
+                if isinstance(value, GuestProperty):
+                    guestprops.append(object.__getattribute__(self, name))
+        return guestprops
+
     def get_default_value(self, id):
         for k, v in self.config.items():
             if id in v:
@@ -327,6 +342,7 @@ class Conf(object):
 
         self.reintegrationStrings = [ _('Host disk'), _('Memory'), _('Direct') ]
         self.languageStrings      = [ _('French'), _('English') ]
+        self.guiStrings           = [ _('GNOME'), _('Cairo-dock'), _("Moblin") ]
 
         self.settings = [ \
           { 'tabname'  : _("Behavior"),
@@ -400,7 +416,14 @@ class Conf(object):
                              ],
                   'label'  : _("Customize colors of the balloon message window. Use different\n"
                                "collors for top and bottom to get a color gradient.")
-                }
+                },
+                { 'confid' : "gui",
+                  'sectid' : "vm",
+                  'short'  : _("User interface"),
+                  'label'  : _("Select a graphical interface."),
+                  'values' : self.guiValues,
+                  'strgs'  : self.guiStrings,
+                },
               ]
           },
           { 'tabname'  : _("Advanced"),

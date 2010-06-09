@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-06-03 20:00+CEST\n"
+"POT-Creation-Date: 2010-06-09 03:11+CEST\n"
 "PO-Revision-Date: 2010-05-06 21:34+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
@@ -14,35 +14,47 @@ msgstr ""
 "Content-Transfer-Encoding: UTF-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: src/conf.py:256
+#: src/conf.py:307
 msgid "Direct"
 msgstr "Direct"
 
-#: src/conf.py:256
+#: src/conf.py:307
 msgid "Host disk"
 msgstr "Disque hôte"
 
-#: src/conf.py:256 src/conf.py:341
+#: src/conf.py:307 src/conf.py:398
 msgid "Memory"
 msgstr "Memoire vive"
 
-#: src/conf.py:257
+#: src/conf.py:308
 msgid "English"
 msgstr "Anglais"
 
-#: src/conf.py:257
+#: src/conf.py:308
 msgid "French"
 msgstr "Français"
 
-#: src/conf.py:261
+#: src/conf.py:309
+msgid "Cairo-dock"
+msgstr ""
+
+#: src/conf.py:309
+msgid "GNOME"
+msgstr ""
+
+#: src/conf.py:309
+msgid "Moblin"
+msgstr ""
+
+#: src/conf.py:312
 msgid "Behavior"
 msgstr "Comportement"
 
-#: src/conf.py:267
+#: src/conf.py:318
 msgid "Window resolution"
 msgstr "Résolution de la fenêtre"
 
-#: src/conf.py:268
+#: src/conf.py:319
 msgid ""
 "Choose the starting resolution of the window.\n"
 "Note that if the chosen resolution is higher or equal than the\n"
@@ -52,19 +64,19 @@ msgstr ""
 "Notez que si la résolution choisie est supérieure ou égale à celle\n"
 "de l'ordinateur, la fenêtre sera affichée en mode plein écran."
 
-#: src/conf.py:275
+#: src/conf.py:326
 msgid "Activate voice"
 msgstr "Activer la voix"
 
-#: src/conf.py:276
+#: src/conf.py:327
 msgid "Enable this option if you want to turn on voice synthesis."
 msgstr "Activez cette option si vous voulez activer la syntèse de voix."
 
-#: src/conf.py:280
+#: src/conf.py:331
 msgid "Fullscreen automatic"
 msgstr "Plein écran automatique"
 
-#: src/conf.py:281
+#: src/conf.py:332
 msgid ""
 "Enable this option if you want the window switch to fullscreen\n"
 "mode at login."
@@ -72,11 +84,11 @@ msgstr ""
 "Activez cette option si vous voulez que la fenêtre soit affichée\n"
 "en mode plein écran à l'arrivée au bureau."
 
-#: src/conf.py:286
+#: src/conf.py:337
 msgid "Minimize automatic"
 msgstr "Réduction automatique"
 
-#: src/conf.py:287
+#: src/conf.py:338
 msgid ""
 "Enable this option if you want the window switch to minimized\n"
 "mode at startup and shutdown."
@@ -84,49 +96,49 @@ msgstr ""
 "Activez cette option si vous voulez que la fenêtre soit réduite\n"
 "durant les étapes de démarage et de fermeture."
 
-#: src/conf.py:292
+#: src/conf.py:343
 msgid "Eject key at shutdown"
 msgstr "Ejecter la clé à l'extinction"
 
-#: src/conf.py:293
+#: src/conf.py:344
 msgid "Enable this option if you want to eject the key at shutdown."
 msgstr ""
 "Activez cette option si vous voulez que la clé soit ejectée\n"
 "à l'extinction de la machine virtuelle."
 
-#: src/conf.py:297 src/launcher.py:119
+#: src/conf.py:348 src/launcher.py:119
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/conf.py:303
+#: src/conf.py:354
 msgid "Language"
 msgstr "Langue"
 
-#: src/conf.py:304
+#: src/conf.py:355
 msgid "Choose your language."
 msgstr "Choississez la langue."
 
-#: src/conf.py:312
+#: src/conf.py:362
 msgid "Menu bar"
 msgstr "Barre de menu"
 
-#: src/conf.py:313
+#: src/conf.py:363
 msgid "Display/hide the window menu bar."
 msgstr "Afficher/cacher la barre de menu."
 
-#: src/conf.py:319
+#: src/conf.py:369
 msgid "Balloon top color"
 msgstr "Couleur du haut"
 
-#: src/conf.py:323
+#: src/conf.py:373
 msgid "Balloon bottom color"
 msgstr "Couleur du bas"
 
-#: src/conf.py:327
+#: src/conf.py:377
 msgid "Balloon text color"
 msgstr "Couleur du texte"
 
-#: src/conf.py:330
+#: src/conf.py:380
 msgid ""
 "Customize colors of the balloon message window. Use different\n"
 "collors for top and bottom to get a color gradient."
@@ -135,27 +147,35 @@ msgstr ""
 "Utilisez des couleurs différentes pour le haut et le bas pour\n"
 "obtenir un dégradé de couleurs."
 
-#: src/conf.py:335
+#: src/conf.py:385
+msgid "User interface"
+msgstr ""
+
+#: src/conf.py:386
+msgid "Select a graphical interface."
+msgstr ""
+
+#: src/conf.py:392
 msgid "Advanced"
 msgstr "Avancé"
 
-#: src/conf.py:342
+#: src/conf.py:399
 msgid "Set the size of the virtual machine memory."
 msgstr "Spécifiez la taille de la mémoire vive de la machine virtuelle."
 
-#: src/conf.py:349
+#: src/conf.py:406
 msgid "CPU number"
 msgstr "Nombre de processeurs"
 
-#: src/conf.py:350
+#: src/conf.py:407
 msgid "Set the number of cpus connected to the virtual machine."
 msgstr "Spécifiez le nombre de processeurs de la machine virtuelle."
 
-#: src/conf.py:357
+#: src/conf.py:414
 msgid "3D acceleration"
 msgstr "Accélération 3D"
 
-#: src/conf.py:358
+#: src/conf.py:415
 msgid ""
 "Set the 3D acceleration capability. Even if 3D is enabled,\n"
 "availability of this feature depends of the host computer 3D\n"
@@ -165,15 +185,15 @@ msgstr ""
 "la disponibilité de cette fonctionalité dépend du matériel\n"
 "de l'ordinateur."
 
-#: src/conf.py:367
+#: src/conf.py:424
 msgid "VT-x/AMD-V"
 msgstr "VT-x/AMD-V"
 
-#: src/conf.py:371
+#: src/conf.py:428
 msgid "Nested paging"
 msgstr "Pagination enchevêtrée"
 
-#: src/conf.py:374
+#: src/conf.py:431
 msgid ""
 "Set the virtualization extentions. Even if virtualizatuion\n"
 "extentions are enabled, availability of this feature depends\n"
@@ -183,51 +203,51 @@ msgstr ""
 "soit activée,la disponibilité de cette fonctionalité dépend du\n"
 "matériel de l'ordinateur."
 
-#: src/conf.py:381
+#: src/conf.py:438
 msgid "Network"
 msgstr "Réseau"
 
-#: src/conf.py:389
+#: src/conf.py:446
 msgid "Web proxy"
 msgstr "Serveur mandataire HTTP"
 
-#: src/conf.py:394
+#: src/conf.py:451
 msgid "Secure Web proxy"
 msgstr "Serveur mandataire HTTP sécurisé"
 
-#: src/conf.py:399
+#: src/conf.py:456
 msgid "FTP proxy"
 msgstr "Serveur mandataire FTP"
 
-#: src/conf.py:404
+#: src/conf.py:461
 msgid "SOCKS proxy"
 msgstr "Hôte SOCKS"
 
-#: src/conf.py:408
+#: src/conf.py:465
 msgid ""
 "Use autodetection for proxy servers or configure them manually using "
 "<br>format <i>hostname:port</i>"
 msgstr ""
-"Détecter les serveurs mandataires ou configurer les manuellement "
-"<br>en utilisant le format <i>hôte:port</i>"
+"Détecter les serveurs mandataires ou configurer les manuellement <br>en "
+"utilisant le format <i>hôte:port</i>"
 
-#: src/conf.py:412
+#: src/conf.py:469
 msgid "System"
 msgstr "Système"
 
-#: src/conf.py:418 src/launcher.py:128 src/osbackend.py:412
+#: src/conf.py:475 src/launcher.py:128 src/osbackend.py:412
 msgid "Debug mode"
 msgstr "Mode débogage"
 
-#: src/conf.py:419
+#: src/conf.py:476
 msgid "Set debug mode to get more complete log files."
 msgstr "Activer le mode débogage."
 
-#: src/conf.py:423
+#: src/conf.py:480
 msgid "Reintegration policy"
 msgstr "Politique de réintégration"
 
-#: src/conf.py:424
+#: src/conf.py:481
 msgid ""
 "DANGEROUS. Select the reintegration policy.\n"
 "The reintegration policy defines how system modifications\n"
@@ -237,11 +257,11 @@ msgstr ""
 "La politique de réintégration definie la manière dont les\n"
 "modifications du système sont écrites sur le support amovible."
 
-#: src/conf.py:433
+#: src/conf.py:490
 msgid "Kernel command line"
 msgstr "Ligne de commande du noyau"
 
-#: src/conf.py:434
+#: src/conf.py:491
 msgid ""
 "DANGEROUS. Set the kernel command line parameters.\n"
 "If the following parameters already exist on the kernel\n"

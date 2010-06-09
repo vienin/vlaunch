@@ -397,11 +397,6 @@ class OSBackend(object):
             except:
                 logging.debug("Exception while creating overlay")
 
-        logging.debug("conf.CMDLINE: " + conf.CMDLINE)
-        logging.debug("conf.REINTEGRATION: " + conf.REINTEGRATION)
-        self.vbox.current_machine.set_guest_property("/UFO/CommandLine", 
-                                                     conf.REINTEGRATION + " " + conf.CMDLINE)
-
         # manage password keyring
         if keyring:
             if conf.USER:
@@ -425,6 +420,10 @@ class OSBackend(object):
             gui.dialog_info(msg=_("UFO is running in debug mode.\n"
                                   "Be aware to disable debug mode at the next session."),
                             title=_("Debug mode"))
+
+        for guestprop in conf.get_all_guestprops():
+            self.vbox.current_machine.set_guest_property(guestprop.get_name(),
+                                                         guestprop.get_value())
 
         self.vbox.close_session()
 
