@@ -188,6 +188,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/security/console.apps/notify-logged-in
 %{_bindir}/auto-proxy
 %{_bindir}/switch-keyboard-layout
+%{_bindir}/update-free-space
 %{_bindir}/vbox-client-symlink
 %{_bindir}/vbox-client-dnd
 %{_bindir}/vbox-get-property
@@ -205,6 +206,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
 %{_sysconfdir}/xdg/autostart/notify-logged-in.desktop
+%{_sysconfdir}/xdg/autostart/update-free-space.desktop
 %{_datadir}/applications/toggle-fullscreen.desktop
 %{_datadir}/locale/fr/LC_MESSAGES/vlaunch-guest.mo
 

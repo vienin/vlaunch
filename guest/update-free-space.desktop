@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Version=1.0
+Name=update-free-space
+Name[fr_FR]=update-free-space
+Comment[fr_FR]=Informe l'ordinateur hôte de l'espace disque disponible
+Comment=Notify the host about the available space
+Exec=/usr/bin/update-free-space
+X-GNOME-Autostart-enabled=true

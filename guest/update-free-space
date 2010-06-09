@@ -1,0 +1,11 @@
+#!/bin/sh
+
+while [ 1 ]; do
+    public=`df | grep /media/UFO | awk '{ print $5 }' | tr -d "%"`
+    root=`df | head -n 2 | tail -n 1 | awk '{ print $5 }' | tr -d "%"`
+    home=`df | grep /home/$USER | awk '{ print $5 }' | tr -d "%"`
+    [ -n "$public" ] && vbox-set-property /UFO/DiskSpace/public $public
+    [ -n "$root" ] && vbox-set-property /UFO/DiskSpace/root $root
+    [ -n "$home" ] && vbox-set-property /UFO/DiskSpace/user $home
+    sleep 30
+done
