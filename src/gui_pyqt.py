@@ -1836,14 +1836,15 @@ class Settings(QtGui.QDialog):
                         
                         # Connect items to action slot
                         
+                        if current_value == conf.AUTO_STRING:
+                            checkbox.setChecked(QtCore.Qt.Checked)
+
                         checkbox.conf_infos = item
                         checkbox.toggled.connect(self.on_selection)
                         checkbox.toggled.connect(edit.setDisabled)
                         if custom and custom['function']:
                             checkbox.toggled.connect(custom['function'])
                             
-                        if current_value == conf.AUTO_STRING:
-                            checkbox.setChecked(QtCore.Qt.Checked)
                         val_layout.addWidget(checkbox)
                         
                     # Connect items to action slot
