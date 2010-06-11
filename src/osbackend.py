@@ -569,6 +569,13 @@ class OSBackend(object):
                             title=_("Missing binaries"))
             sys.exit(1)
 
+    def installed_vbox_error(self):
+        msg = _("We have detected an existing VirtualBox installation on this computer.\n"
+                "UFO is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run UFO.\n\n"
+                "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.")
+        gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
+        sys.exit(1)
+
     def onGuestPropertyChange(self, name, newValue, flags):
         # Shared folder management
         if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":

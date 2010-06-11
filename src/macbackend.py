@@ -329,6 +329,8 @@ class MacBackend(OSBackend):
             #     self.call([ "chmod", "-R", "644", f ])
         
             self.load_kexts()
+        else:
+            self.installed_vbox_error()
 
         os.chdir(path.join(conf.BIN, "..", "Frameworks"))
 
