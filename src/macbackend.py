@@ -283,23 +283,32 @@ class MacBackend(OSBackend):
 
             sys.exit(0)
 
-    def load_kexts(self):
-        # loading kernel extentions
-        KEXTS = path.join(conf.BIN, self.KEXTS)
-        tmpdir = tempfile.mkdtemp()
-        
+    def get_kernel_modules(self):
         if self.OS_VERSION < "9":
             modules = [ "VBoxDrvTiger.kext" ]
         else:
             modules = [ "VBoxDrv.kext", "VBoxNetFlt.kext" ]
+        return modules
+
+    def load_kexts(self):
+        # loading kernel extentions
+        KEXTS = path.join(conf.BIN, self.KEXTS)
+        self.tmpdir = tempfile.mkdtemp()
+        
+        modules = self.get_kernel_modules()
 
         for module in modules:
-            modulepath = path.join(tmpdir, module)
+            modulepath = path.join(self.tmpdir, module)
             shutil.copytree(path.join(KEXTS, module), modulepath)
             self.call(["chmod", "-R", "644", modulepath ])
             self.call(["chown", "-R", "0:0", modulepath ])
 
-        self.call(["/sbin/kextload"] + map(lambda x: path.join(tmpdir, x), modules))
+        self.call(["/sbin/kextload"] + map(lambda x: path.join(self.tmpdir, x), modules))
+
+    def unload_kexts(self):
+        modules = self.get_kernel_modules()
+        modules.reverse()
+        self.call(["/sbin/kextunload"] + map(lambda x: path.join(self.tmpdir, x), modules))
 
     def kill_resilient_vbox(self):
         # Kill resident com server
@@ -329,6 +338,8 @@ class MacBackend(OSBackend):
         
         if conf.PARTS == "all":
             self.call([ "diskutil", "mountDisk", conf.DEV ])
+
+        self.unload_kexts()
 
         if self.tmpdir:
             shutil.rmtree(self.tmpdir)
