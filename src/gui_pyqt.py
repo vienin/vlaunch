@@ -96,7 +96,7 @@ class QtUFOGui(QtGui.QApplication):
             if sys.platform != "darwin":
                 self.tray.setContextMenu(self.menu)
 
-        elif isinstance(event, DownloadFinishedEvent):
+        elif isinstance(event, JobFinishedEvent):
             event.callback(event.error)
 
         elif isinstance(event, CreateSplashEvent):
@@ -107,9 +107,6 @@ class QtUFOGui(QtGui.QApplication):
 
         elif isinstance(event, CommandEvent):
             event.callback(event.error)
-            
-        elif isinstance(event, UpdateEvent):
-            event.callback()
 
         elif isinstance(event, TemporaryBalloonEvent):
             if event.destroy:
@@ -194,7 +191,10 @@ class QtUFOGui(QtGui.QApplication):
                     if event.single:
                         event.timer.setSingleShot(True)
                     event.timer.start(event.time * 1000)
-            
+
+        elif isinstance(event, UpdateProgressEvent):
+            event.progress_bar.setValue(event.percent)
+
         else:
             return False
 
@@ -204,7 +204,7 @@ class QtUFOGui(QtGui.QApplication):
         self.vbox = vbox
         self.backend = backend
         self.postEvent(self, SetTrayIconEvent())
-        
+
     def _create_splash_screen(self):
         images = glob.glob(os.path.join(conf.IMGDIR, "ufo-*.bmp"))
         if images:
@@ -405,17 +405,17 @@ class QtUFOGui(QtGui.QApplication):
     def update_disk_space_progress(self, disk, progress):
         self.postEvent(self, UpdateDiskSpaceEvent(disk, progress))
 
-class UpdateDiskSpaceEvent(QtCore.QEvent):
-    def __init__(self, disk, progress):
-        super(UpdateDiskSpaceEvent, self).__init__(QtCore.QEvent.None)
-        self.disk = disk
-        self.progress = progress
-
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
         super(NoneEvent, self).__init__(QtCore.QEvent.None)
         self.size = size
         self.total = total
+
+class UpdateDiskSpaceEvent(QtCore.QEvent):
+    def __init__(self, disk, progress):
+        super(UpdateDiskSpaceEvent, self).__init__(QtCore.QEvent.None)
+        self.disk = disk
+        self.progress = progress
 
 class SetTrayIconEvent(QtCore.QEvent):
     def __init__(self):
@@ -476,9 +476,9 @@ class ConsoleWindowEvent(QtCore.QEvent):
         self.winid = winid
         self.type  = type
 
-class DownloadFinishedEvent(QtCore.QEvent):
+class JobFinishedEvent(QtCore.QEvent):
     def __init__(self, callback, error=False):
-        super(DownloadFinishedEvent, self).__init__(QtCore.QEvent.None)
+        super(JobFinishedEvent, self).__init__(QtCore.QEvent.None)
         self.callback = callback
         self.error = error
 
@@ -488,10 +488,11 @@ class CommandEvent(QtCore.QEvent):
         self.callback = callback
         self.error = error
 
-class UpdateEvent(QtCore.QEvent):
-    def __init__(self, callback):
-        super(UpdateEvent, self).__init__(QtCore.QEvent.None)
-        self.callback = callback
+class UpdateProgressEvent(QtCore.QEvent):
+    def __init__(self, progress_bar, percent):
+        super(UpdateProgressEvent, self).__init__(QtCore.QEvent.None)
+        self.progress_bar = progress_bar
+        self.percent      = percent
 
 
 class TrayIcon(QtGui.QSystemTrayIcon):
@@ -1243,11 +1244,6 @@ class CredentialsLayout(QtGui.QVBoxLayout):
         self.hbox.removeWidget(self.guest_button)
 
 
-# Gere le téléchargement dans un thread a part.
-# Envoie Deux type d'evenement à l'application :
-#   1. NoneEvent pour chaque mise a jour de la progression du téléchargemetn
-#   2. FinishedEvent quand il termine(sur une erreur ou non)
-# ATTENTION: pour chaque appel de stop par le thread principale il faut recréer l'objet downloader
 class Downloader(threading.Thread):
     def __init__(self, file, dest, progress, finished_callback):
         threading.Thread.__init__(self)
@@ -1261,9 +1257,9 @@ class Downloader(threading.Thread):
         try:
             filename, headers = urlretrieve(self.file, self.dest, reporthook=self.on_progress)
         except:
-            app.postEvent(app, DownloadFinishedEvent(self.finished_callback, True))
+            app.postEvent(app, JobFinishedEvent(self.finished_callback, True))
         else:
-            app.postEvent(app, DownloadFinishedEvent(self.finished_callback, False))
+            app.postEvent(app, JobFinishedEvent(self.finished_callback, False))
         sys.exit()
 
     def on_progress(self, count, blockSize, totalSize):
@@ -1273,7 +1269,8 @@ class Downloader(threading.Thread):
         self.count = count
         self.maximum = totalSize
         self.downloaded = float(blockSize*count)/totalSize
-        app.update_progress(self.progress, self.downloaded)
+        app.postEvent(app, UpdateProgressEvent(self.progress,
+                                                int(self.downloaded * 100)))
 
     def stop(self):
         self.to_be_stopped = True
@@ -1285,20 +1282,49 @@ class CommandLauncher(threading.Thread):
         self.cmd = cmd
         self.callback = callback
 
-    def update(self):
-        app.postEvent(app, UpdateEvent(self.update))
-            
     def run(self):
-        t = utils.call(self.cmd, spawn=True)
-        while t.poll() == None:
-            self.update()
-            time.sleep(1)
+        if isinstance(self.cmd[0], str):
+            utils.call(self.cmd)
+        else:
+            self.cmd[0](*self.cmd[1:])
+
         app.postEvent(app, CommandEvent(self.callback, False))
         sys.exit()
-    
+
+
+class Extractor(threading.Thread):
+    def __init__(self, tar, dest, progress, finished_callback, tarcmd=False):
+        threading.Thread.__init__(self)
+        self.tar  = tar
+        self.dest = dest
+        self.progress = progress
+        self.finished_callback = finished_callback
+
+    def run(self):
+        try:
+            members  = self.tar.getmembers()
+            nb_files = len(members)
+
+            self.step  = nb_files / 100.0
+            self.count = 0
+            for m in members:
+                self.tar.extract(m, self.dest)
+                self.count = self.count + 1
+                if int(self.count / self.step) > self.progress.value():
+                    self.on_progress(self.count / self.step)
+
+        except:
+            app.postEvent(app, JobFinishedEvent(self.finished_callback, True))
+        else:
+            app.postEvent(app, JobFinishedEvent(self.finished_callback, False))
+        sys.exit()
+
+    def on_progress(self, percent):
+        app.postEvent(app, UpdateProgressEvent(self.progress, percent))
+
 
 class WaitWindow(QtGui.QDialog):
-    def __init__(self,  cmd, title, msg, success_msg, error_msg, parent=None):
+    def __init__(self, cmd, title, msg, success_msg, error_msg, parent=None):
         super(WaitWindow, self).__init__(main)
         self.cmd = cmd
         self.setWindowTitle(title)
@@ -1313,15 +1339,15 @@ class WaitWindow(QtGui.QDialog):
         self.animation.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.addButton(self.cancelButton, QtGui.QDialogButtonBox.ActionRole)
-        self.connect(self.cancelButton, QtCore.SIGNAL("canceled()"), self.cancel_command)
         self.cancelButton.hide()
         topLayout = QtGui.QHBoxLayout()
         main_layout = QtGui.QVBoxLayout()
-        main_layout.addLayout(topLayout) 
+        main_layout.addLayout(topLayout)
         main_layout.addWidget(self.statusLabel)
         main_layout.addWidget(buttonBox)
         main_layout.addWidget(self.animation)
         self.setLayout(main_layout)
+
         self.animated = QtGui.QMovie(os.path.join(conf.IMGDIR, "animated-bar.mng"), 
                                      QtCore.QByteArray(), 
                                      self.animation)
@@ -1329,21 +1355,14 @@ class WaitWindow(QtGui.QDialog):
         self.animated.setSpeed(100)
         self.animation.setMovie(self.animated)
 
-    def cancel_command(self):
-        pass 
+        self.animated.start()
+        self.command.start()
 
     def finished(self, error):
         if error:
-            self.statusLabel.setText(self.error_msg)
+            self.reject()
         else:
-            self.statusLabel.setText(self.success_msg)
-        self.close()
-
-    def run(self):
-        self.animated.start()
-        self.show()
-        self.command.start()
-        return self.exec_()
+            self.accept()
 
 
 class DownloadWindow(QtGui.QDialog):
@@ -1372,7 +1391,6 @@ class DownloadWindow(QtGui.QDialog):
         buttonBox.addButton(self.downloadButton,
                 QtGui.QDialogButtonBox.ActionRole)
         buttonBox.addButton(self.actionButton, QtGui.QDialogButtonBox.RejectRole)
-        # On se connecte au Slot Qt pointant sur les evenement C++, sender, SIGNAL, callable
         self.connect(self.downloadButton, QtCore.SIGNAL("clicked()"), self.download_file)
         self.connect(self.actionButton, QtCore.SIGNAL("clicked()"), self.action)
         topLayout = QtGui.QHBoxLayout()
@@ -1477,9 +1495,8 @@ class DownloadWindow(QtGui.QDialog):
         self.outFile.close()
         if error:
             self.outFile.remove()
-            QtGui.QMessageBox.information(self, 
-                                          _("Error"),
-                                          _("Download has failed. Please check your Internet connection"))
+            self.done(0)
+
         else:
             self.finished = True
             self.downloadButton.hide()
@@ -1492,6 +1509,34 @@ class DownloadWindow(QtGui.QDialog):
             
         self.downloadButton.setEnabled(True)
         self.outFile = None
+
+
+class ExtractWindow(QtGui.QProgressDialog):
+    def __init__(self, tgz, dest, title, msg):
+        super(ExtractWindow, self).__init__(main)
+        self.tgz   = tgz
+        self.dest  = dest
+        self.title = title
+        self.msg   = QtGui.QLabel(msg)
+        self.cancel   = QtGui.QPushButton(_("Cancel"))
+        self.progress = QtGui.QProgressBar(self)
+        self.setLabel(self.msg)
+        self.cancel.setEnabled(False)
+        self.setCancelButton(self.cancel)
+        self.setBar(self.progress)
+        self.setWindowTitle(title)
+
+        self.extractor = Extractor(self.tgz,
+                                   self.dest,
+                                   progress=self.progress,
+                                   finished_callback=self.extraction_finished)
+        self.extractor.start()
+
+    def extraction_finished(self, error):
+        if error:
+            self.reject()
+        else:
+            self.accept()
 
 
 class OurMessageBox(QtGui.QMessageBox):
@@ -2047,8 +2092,12 @@ class Settings(QtGui.QDialog):
         custom_layout.addSpacing(30)
 
         return custom_layout
-        
+
 # Globals
+
+def extract_tar(tgz, dest, title=_("Installing"), msg=_("Please wait")):
+    extract_win = ExtractWindow(tgz=tgz, dest=dest, title=title, msg=msg)
+    return extract_win.exec_() == QtGui.QDialog.Accepted
 
 def download_file(url, filename, title = _("Downloading"),
                   msg = _("Please wait"),
@@ -2066,8 +2115,8 @@ def download_file(url, filename, title = _("Downloading"),
 
 def wait_command(cmd, title=_("Please wait"), msg=_("Operation in progress"),
                  success_msg=_("Operation successfully completed"), error_msg=("An error has occurred")):
-    cmdWin = WaitWindow(cmd, title, msg, success_msg, error_msg)
-    cmdWin.run()
+    cmd_window = WaitWindow(cmd, title, msg, success_msg, error_msg)
+    return cmd_window.exec_() == QtGui.QDialog.Accepted
 
 def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"

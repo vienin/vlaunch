@@ -78,7 +78,6 @@ class OSBackend(object):
         self.vbox           = None
         self.puel           = False
         self.splash         = None
-        self.do_not_update  = False
         self.credentials    = None
         self.keyring_valid  = False
         self.remember_pass  = None

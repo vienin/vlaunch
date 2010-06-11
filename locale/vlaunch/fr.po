@@ -852,7 +852,7 @@ msgstr "Téléchargement de la mise à jour"
 
 #: src/updater.py:104
 msgid "Please wait while the update is being downloaded"
-msgstr "Veuillez patienter pendant que la mise à jour est télécharger"
+msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
 
 #: src/updater.py:105
 msgid ""
