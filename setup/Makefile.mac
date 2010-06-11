@@ -112,7 +112,7 @@ mac-launcher: clean py2app
 	cp PkgInfo.settings ${SETTINGSAPP}/Contents/PkgInfo
 	cp Info.plist.settings ${SETTINGSAPP}/Contents/Info.plist
 	cp mac-settings-link ${SETTINGSAPP}/Contents/MacOS/settings
-	cp ../graphics/ufo.icns ${SETTINGSAPP}/Contents/MacOS/Resources/ufo.icns
+	cp ../graphics/ufo.icns ${SETTINGSAPP}/Contents/Resources/ufo.icns
 
 tar-mac-launcher:
 	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
