@@ -128,7 +128,7 @@ if __name__ == "__main__":
             settings.show()
             if not settings.exec_():
                 sys.exit(0)
-            
+
         backend.run()
 
         if conf.GUESTDEBUG:
@@ -148,15 +148,23 @@ if __name__ == "__main__":
                     urllib.urlopen(conf.REPORTURL, params)
                 except:
                     pass
-            
+
     except Exception, e:
+        import errno
         trace = traceback.format_exc()
         logging.debug(trace)
+        if isinstance(e, OSError) and e.errno == errno.ECHILD:
+            msg = _("UFO has encountered a minor error. Restarting the application may fix the problem.")
+            error = False
+        else:
+            msg = _("UFO has encountered a fatal error and will now be closed.")
+            error = True
         if gui.dialog_error_report(_("Error"),
-                                   _("UFO a encountered a fatal error and will now be closed.") + "\n" + \
+                                   msg + "\n\n" + \
                                    _("You can help fixing this problem by submitting an error report"),
                                    _("Send a report"),
-                                   trace):
+                                   trace,
+                                   error=error):
             params = urllib.urlencode({'report': open(log_path, 'r').read()})
         try:
             urllib.urlopen(conf.REPORTURL, params)
