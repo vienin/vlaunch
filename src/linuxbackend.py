@@ -86,6 +86,11 @@ class LinuxBackend(OSBackend):
         if os.getuid() != 0:
             self.run_as_root.call([sys.executable] + sys.argv + [ "--respawn" ], replace=True)
 
+        if isinstance(self, GenericLinuxBackend):
+            gui.dialog_info(title=_("Warning"),
+                            msg=_("Your Linux distribution is not officially supported by U.F.O.\n"
+                                  "You may or may not encounter errors. Install PyQt4 and VirtualBox... and pray :)"))
+
         self.call(["rmmod", "kvm-intel"])
         self.call(["rmmod", "kvm-amd"])
         self.call(["rmmod", "kvm"])
