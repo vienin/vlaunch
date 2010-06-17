@@ -402,7 +402,7 @@ class OSBackend(object):
                 password = self.get_password()
                 if password:
                     self.keyring_valid = True
-                    self.set_credentials(password)
+                    self.set_credentials(conf.USER, password)
                 else:
                     logging.debug("Found no credentials")
         else:
