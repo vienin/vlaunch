@@ -170,7 +170,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %{TARGET_PATH}/Linux/ufo
 %{TARGET_PATH}/Linux/bin
-%{TARGET_PATH}/Linux/settings
 
 "%{TARGET_PATH}/Manuel d'utilisation.pdf"
 
@@ -213,6 +212,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %files guestmode
 %{_bindir}/notify-guest-mode
+%{_bindir}/bind-fat-folders
+%{_sbindir}/bind-fat-folders
+%{_sysconfdir}/security/console.apps/bind-fat-folders.app
+%{_sysconfdir}/pam.d/bind-fat-folders
 %{_sysconfdir}/xdg/autostart/notify-guest-mode.desktop
 
 %files generic

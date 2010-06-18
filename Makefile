@@ -17,7 +17,7 @@ MSGMERGE        = msgmerge -v -U
 
 SOURCES = src/ufovboxapi.py src/linuxbackend.py src/launcher.py src/updater.py src/createrawvmdk.py src/keyring_ctypes.py src/conf.py src/utils.py src/ufo_subprocess.py src/osbackend.py src/gui*.py
 
-GUESTBIN        = vbox-client-symlink vbox-client-dnd vbox-get-property vbox-set-property toggle-fullscreen notify-logged-in
+GUESTBIN        = guest/vbox-client-symlink guest/vbox-client-dnd guest/vbox-get-property guest/vbox-set-property guest/toggle-fullscreen guest/notify-logged-in guestmode/bind-fat-folders
 
 ifneq ($(findstring ../Makefile.mk,$(wildcard ../Makefile.mk)), )
 	include ../Makefile.mk
@@ -97,11 +97,11 @@ install: install-mo
 	mkdir -p $(DESTDIR)/usr/bin
 	for prog in $(GUESTBIN); \
 	do \
-	    install -D -m 644 guest/$$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
-	    install -D -m 644 guest/$$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \
+	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
+	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \
 	    ln -s consolehelper $(DESTDIR)/usr/bin/$$prog; \
-	    install -D -m 755 guest/$$prog $(DESTDIR)/usr/sbin/$$prog; \
-	    install -D -m 755 guest/$$prog $(DESTDIR)/usr/sbin; \
+	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin/$$prog; \
+	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin; \
 	done
 	
 	install -D -m 644 guest/vbox-client-symlink.desktop $(DESTDIR)/etc/xdg/autostart/vbox-client-symlink.desktop
@@ -110,6 +110,7 @@ install: install-mo
 	install -D -m 644 guest/notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
 	install -D -m 755 guest/auto-proxy guest/switch-keyboard-layout guest/update-free-space guestmode/notify-guest-mode $(DESTDIR)/usr/bin/
 	install -D -m 644 guest/auto-proxy.desktop guest/switch-keyboard-layout.desktop guest/update-free-space.desktop guestmode/notify-guest-mode.desktop $(DESTDIR)/etc/xdg/autostart
+	install -D -m 755 guestmode/00-bind-fat-folders.sh $(DESTDIR)/etc/X11/xinit/xinitrc.d/
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
