@@ -59,7 +59,7 @@ mac-launcher: clean py2app
 	# mv ${VBOXMACOS}/VBoxPython{2_3.so,2_5.so}
 	cp /opt/local/lib/libiconv.2.dylib /opt/local/lib/libz.1.dylib /opt/local/lib/libcrypto.0.9.8.dylib /opt/local/lib/libcurl.4.dylib ${VBOXMACOS}/
 	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
-	strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
+	#strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
 	rm -rf ${VBOXMACOS}/testcase 
 	rm -rf ${VBOXMACOS}/tst* 
 	rm -f ${RESOURCES}/site.pyc
@@ -114,7 +114,13 @@ mac-launcher: clean py2app
 	cp mac-settings-link ${SETTINGSAPP}/Contents/MacOS/settings
 	cp ../graphics/ufo.icns ${SETTINGSAPP}/Contents/Resources/ufo.icns
 
-tar-mac-launcher:
+strip:
+	find dist -exec strip -S {} \; 2> /dev/null; \
+	ditto -arch i386 -arch x86_64 dist dist-stripped; \
+	rm -rf dist; \
+	mv dist-stripped dist
+
+tar-mac-launcher: strip
 	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
 
 upload-mac-launcher: mac-launcher tar-mac-launcher
