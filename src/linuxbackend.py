@@ -328,7 +328,7 @@ class FedoraLinuxBackend(LinuxBackend):
             logging.debug("Kernel is: " + kernel)
             
             logging.debug("Installing VirtualBox")
-            gui.wait_command(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel, kernel + "-devel", "gcc", "make", "lzma"],
+            gui.wait_command(["yum", "-y", "install", "VirtualBox-OSE", "VirtualBox-OSE-kmodsrc", kernel, kernel + "-devel", "gcc", "make", "lzma", "xz"],
                              msg=_("Installing VirtualBox Open Source edition. This can take a few minutes"))
 
         version = self.call(["rpm", "-q", "--queryformat", "%{VERSION}", "VirtualBox-OSE"], output=True)[1]
@@ -336,23 +336,34 @@ class FedoraLinuxBackend(LinuxBackend):
 
         lsmod = self.call([[ "lsmod" ], [ "grep", "vboxdrv" ]], output=True)[1]
         if not lsmod:
+            cant_compile = False
             need_reboot = False
             import yum
             yumbase = yum.YumBase()
             yumbase.doConfigSetup()
             pkglist = yumbase.doPackageLists('installed')
-            exactmatch, matched, unmatched = yum.packages.parsePackages(pkglist.installed, [ kernel ])
-            exactmatch.sort(key=lambda x: x.version)
+            devel_exactmatch, devel_matched, devel_unmatched = yum.packages.parsePackages(pkglist.installed, [ kernel + "-devel" ])
+            devel_exactmatch.sort(key=lambda x: x.version)
+            kern_exactmatch, kern_matched, kern_unmatched = yum.packages.parsePackages(pkglist.installed, [ kernel ])
+            kern_exactmatch.sort(key=lambda x: x.version)
             yumbase.close()
             yumbase.closeRpmDB()
-            if exactmatch:
-                latest = exactmatch[-1]
-                if not os.uname()[2].startswith("%s-%s" % (exactmatch[-1].version, exactmatch[-1].release)):
+            if devel_exactmatch:
+                latest = devel_exactmatch[-1]
+                if not os.uname()[2].startswith("%s-%s" % (devel_exactmatch[-1].version, devel_exactmatch[-1].release)):
+                    cant_compile = True
+            if kern_exactmatch:
+                latest = kern_exactmatch[-1]
+                if not os.uname()[2].startswith("%s-%s" % (kern_exactmatch[-1].version, kern_exactmatch[-1].release)):
                     need_reboot = True
 
-            if need_reboot:
+            if cant_compile:
+                if need_reboot:
+                    msg = _("You are not running the latest installed version of the kernel.\nA reboot is required for UFO to work.")
+                else:
+                    msg = _("An error has occurred during the installation of VirtualBox.\nPlease install the latest %s and %s-devel packages." % (kernel, kernel))
                 gui.dialog_info(title=_("Warning"),
-                                msg=_("A reboot is required\n"),
+                                msg=msg,
                                 error=False)
                 sys.exit(0)
 
