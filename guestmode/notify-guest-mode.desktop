@@ -8,4 +8,4 @@ Comment=Notify user about the guest mode
 Comment[fr_FR]=Notifie l'utilisateur du mode invité
 Exec=/usr/bin/notify-guest-mode
 X-GNOME-Autostart-enabled=true
-AutostartCondition=GNOME /etc/sysconfig/ufo/mainuser
+AutostartCondition=unless-exists /etc/sysconfig/ufo/mainuser
