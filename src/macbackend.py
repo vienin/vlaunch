@@ -332,6 +332,9 @@ class MacBackend(OSBackend):
         else:
             self.installed_vbox_error()
 
+        if "x86_64" in os.uname()[-1]:
+            self.unsupported_platform(arch="Mac OS X 64 bits")
+
         os.chdir(path.join(conf.BIN, "..", "Frameworks"))
 
     def cleanup(self):

@@ -575,6 +575,11 @@ class OSBackend(object):
         gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
         sys.exit(1)
 
+    def unsupported_platform(self, arch):
+        msg = _("We're sorry but your architecture (%s) is not yet supported.") % (arch,)
+        gui.dialog_info(title=_("Unsupported architecture"), msg=msg)
+        sys.exit(1)
+
     def onGuestPropertyChange(self, name, newValue, flags):
         # Shared folder management
         if os.path.dirname(name) == "/UFO/Com/GuestToHost/Shares/UserAccept":
