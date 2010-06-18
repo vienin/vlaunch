@@ -632,7 +632,7 @@ class BalloonMessage(QtGui.QWidget):
                     QtCore.Qt.Popup
         else:
             flags = QtCore.Qt.WindowStaysOnTopHint | \
-                    QtCore.Qt.ToolTip
+                    QtCore.Qt.Popup
 
         QtGui.QWidget.__init__(self, None, flags)
 
