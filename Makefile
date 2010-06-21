@@ -113,6 +113,11 @@ install: install-mo
 	install -D -m 644 guest/auto-proxy.desktop guest/switch-keyboard-layout.desktop guest/update-free-space.desktop guestmode/notify-guest-mode.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 755 guestmode/00-bind-fat-folders.sh $(DESTDIR)/etc/X11/xinit/xinitrc.d/00-bind-fat-folders.sh
 	
+	mkdir -p $(DESTDIR)/home/guest/.config/guestmode
+	mkdir -p $(DESTDIR)/home/guest/.config/tsumufs
+	touch $(DESTDIR)/home/guest/.config/guestmode/enabled
+	touch $(DESTDIR)/home/guest/.config/tsumufs/disabled
+
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
 	

@@ -31,6 +31,7 @@ Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui vbox-dbus
 Summary: Guest mode for the UFO distribution
 Group: Applications/System
 Requires: vlaunch = %{version}-%{release}
+Requires(pre): %{_sbindir}/useradd, %{_sbindir}/usermod, %{_bindir}/sed
 
 %package generic
 Summary: Install specific files for generic distribution
@@ -89,17 +90,14 @@ rm -rf $RPM_BUILD_ROOT
 make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH}
 
 
-%post guest
-# Temporarely disables pam_vbox
-# if [ $1 == 1 ]; then
-#     authconfig --enablevbox --update
-# fi
+%pre guestmode
+useradd guest
+usermod -G ufo -a guest
+passwd -f -d guest
+passwd -f -d root
+sed -i 's/#*\(default_user *\)[a-zA-Z]*/\1guest/' /etc/slim.conf
 
-%postun guest
-# Temporarely disables pam_vbox
-# if [ $1 == 0 ]; then
-#     authconfig --disablevbox --update
-# fi
+%postun guestmode
 
 
 %clean
@@ -220,6 +218,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/pam.d/bind-fat-folders
 %{_sysconfdir}/xdg/autostart/notify-guest-mode.desktop
 %{_sysconfdir}/X11/xinit/xinitrc.d/00-bind-fat-folders.sh
+%defattr(-,guest,guest,-)
+%dir /home/guest
+/home/guest/.config/guestmode/enabled
+/home/guest/.config/tsumufs/disabled
 
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp
