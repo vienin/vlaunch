@@ -14,9 +14,8 @@ user=`basename $HOME`
 if [ "$user" = "guest" ]; then
     for folder in Bureau Documents Images Modèles Musique Téléchargements Vidéos
     do
-        mount --bind /media/UFO/$folder $PUBLIC/$folder
+        mount --bind /media/UFO/Public/$folder $HOME/$folder
     done
 else
-    PUBLIC=$HOME/Bureau/Public
+    mount --bind /media/UFO/Public $HOME/Public
 fi
-
