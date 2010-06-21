@@ -13,10 +13,11 @@ set_proxy() {
 
     case "${kind}" in
         HTTP)
-            if [ "$proxy_host" ] && [ -n "$proxy_port" ]; then
+            if [ "$proxy_prop" != "auto" ] && [ -n "$proxy_host" ] && [ -n "$proxy_port" ]; then
                 use_proxy=1
                 gconftool-2 --set /system/http_proxy/host --type string $proxy_host
                 gconftool-2 --set /system/http_proxy/port --type int $proxy_port
+                gconftool-2 --set --type string /system/proxy/mode manual
             else
                 gconftool-2 --unset /system/http_proxy/host /system/http_proxy/port
             fi
@@ -24,10 +25,11 @@ set_proxy() {
 
         *)
             [ "${kind}" = "HTTPS" ] && kind="secure" || kind=`echo ${kind} | tr "A-Z" "a-z"`
-            if [ "$proxy_host" ] && [ -n "$proxy_port" ]; then
+            if [ "$proxy_prop" != "auto" ] && [ "$proxy_host" ] && [ -n "$proxy_port" ]; then
                 use_proxy=1
                 gconftool-2 --set /system/proxy/${kind}_host --type string $proxy_host
                 gconftool-2 --set /system/proxy/${kind}_port --type int $proxy_port
+                gconftool-2 --set --type string /system/proxy/mode manual
             else
                 gconftool-2 --unset /system/proxy/${kind}_host /system/proxy/${kind}_port
             fi
