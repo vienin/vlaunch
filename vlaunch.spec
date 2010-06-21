@@ -151,6 +151,7 @@ rm -rf $RPM_BUILD_ROOT
 #%{TARGET_PATH}/Windows/msvcp71.dll
 %{TARGET_PATH}/Windows/python26.dll
 %{TARGET_PATH}/Windows/ufo.exe
+%{TARGET_PATH}/Windows/settings.exe
 %{TARGET_PATH}/Windows/Microsoft.VC90.CRT
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/bin64
@@ -169,6 +170,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app
 
 %{TARGET_PATH}/Linux/ufo
+%{TARGET_PATH}/Linux/settings
 %{TARGET_PATH}/Linux/bin
 
 "%{TARGET_PATH}/Manuel d'utilisation.pdf"
@@ -214,9 +216,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/notify-guest-mode
 %{_bindir}/bind-fat-folders
 %{_sbindir}/bind-fat-folders
-%{_sysconfdir}/security/console.apps/bind-fat-folders.app
+%{_sysconfdir}/security/console.apps/bind-fat-folders
 %{_sysconfdir}/pam.d/bind-fat-folders
 %{_sysconfdir}/xdg/autostart/notify-guest-mode.desktop
+%{_sysconfdir}/X11/xinit/xinitrc.d/00-bind-fat-folders.sh
 
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp

@@ -97,10 +97,11 @@ install: install-mo
 	mkdir -p $(DESTDIR)/usr/bin
 	for prog in $(GUESTBIN); \
 	do \
-	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$prog; \
-	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$prog; \
-	    ln -s consolehelper $(DESTDIR)/usr/bin/$$prog; \
-	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin/$$prog; \
+	    progname=`basename $$prog`; \
+	    install -D -m 644 $$prog.pam $(DESTDIR)/etc/pam.d/$$progname; \
+	    install -D -m 644 $$prog.console $(DESTDIR)/etc/security/console.apps/$$progname; \
+	    ln -s consolehelper $(DESTDIR)/usr/bin/$$progname; \
+	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin/$$progname; \
 	    install -D -m 755 $$prog $(DESTDIR)/usr/sbin; \
 	done
 	
@@ -110,7 +111,7 @@ install: install-mo
 	install -D -m 644 guest/notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
 	install -D -m 755 guest/auto-proxy guest/switch-keyboard-layout guest/update-free-space guestmode/notify-guest-mode $(DESTDIR)/usr/bin/
 	install -D -m 644 guest/auto-proxy.desktop guest/switch-keyboard-layout.desktop guest/update-free-space.desktop guestmode/notify-guest-mode.desktop $(DESTDIR)/etc/xdg/autostart
-	install -D -m 755 guestmode/00-bind-fat-folders.sh $(DESTDIR)/etc/X11/xinit/xinitrc.d/
+	install -D -m 755 guestmode/00-bind-fat-folders.sh $(DESTDIR)/etc/X11/xinit/xinitrc.d/00-bind-fat-folders.sh
 	
 	cd $(DESTDIR)$(TARGET_PATH) && find . -mindepth 1 -not -path "./.data*" | sed 's/^.\///' > /tmp/launcher.filelist
 	install -D -m 755 /tmp/launcher.filelist $(DESTDIR)$(TARGET_PATH)/.data/launcher.filelist
