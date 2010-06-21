@@ -3,7 +3,7 @@
 [ ! -d /media/UFO ] && mkdir /media/UFO
 runlevel=`runlevel | cut -d " " -f 2`
 if [ "$runlevel" = 4 ]; then
-    mount.vboxsf PUBLIC /media/UFO -o uid=$USERHELPER_UID,rw,dmode=755,fmode=755
+    mount.vboxsf UFO /media/UFO -o uid=$USERHELPER_UID,rw,dmode=755,fmode=755
 else
     . /etc/sysconfig/ufo/uuids
     fat=`findfs UUID=$UFO`
