@@ -31,7 +31,7 @@ Requires: VirtualBox-OSE-guest >= 2.2.4 agorabox-ui vbox-dbus
 Summary: Guest mode for the UFO distribution
 Group: Applications/System
 Requires: vlaunch = %{version}-%{release}
-Requires(pre): %{_sbindir}/useradd, %{_sbindir}/usermod, %{_bindir}/sed
+Requires(pre): %{_sbindir}/useradd, %{_sbindir}/usermod, /bin/sed
 
 %package generic
 Summary: Install specific files for generic distribution
