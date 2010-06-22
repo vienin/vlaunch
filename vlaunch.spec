@@ -32,6 +32,7 @@ Summary: Guest mode for the UFO distribution
 Group: Applications/System
 Requires: vlaunch = %{version}-%{release}
 Requires(pre): %{_sbindir}/useradd, %{_sbindir}/usermod, /bin/sed
+Requires(post): /bin/chown
 
 %package generic
 Summary: Install specific files for generic distribution
@@ -96,6 +97,10 @@ usermod -G ufo -a guest
 passwd -f -d guest
 passwd -f -d root
 sed -i 's/#*\(default_user *\)[a-zA-Z]*/\1guest/' /etc/slim.conf
+
+%post guestmode
+chown -R guest:guest /home/guest/.config
+
 
 %postun guestmode
 
@@ -220,10 +225,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/pam.d/bind-fat-folders
 %{_sysconfdir}/xdg/autostart/notify-guest-mode.desktop
 %{_sysconfdir}/X11/xinit/xinitrc.d/00-bind-fat-folders.sh
-%defattr(-,guest,guest,-)
-%dir /home/guest
-/home/guest/.config/guestmode/enabled
-/home/guest/.config/tsumufs/disabled
+%attr(0700,guest,guest) %dir /home/guest
+%attr(0700,guest,guest) /home/guest/.config/guestmode/enabled
+%attr(0700,guest,guest) /home/guest/.config/tsumufs/disabled
 
 %files generic
 %{TARGET_PATH}/.data/images/ufo-generic.bmp
