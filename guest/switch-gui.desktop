@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Version=1.0
+Name=GUI manager
+Name[fr]=Gestion de l'interface graphique
+Comment[fr]=Gestion de l'interface graphique UFO
+Comment=Manages the UFO GUI
+Exec=/usr/bin/switch-gui
+X-GNOME-Autostart-enabled=true
+

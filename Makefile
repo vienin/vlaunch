@@ -109,7 +109,9 @@ install: install-mo
 	install -D -m 644 guest/vbox-client-dnd.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 644 guest/toggle-fullscreen.desktop $(DESTDIR)/usr/share/applications/toggle-fullscreen.desktop
 	install -D -m 644 guest/notify-logged-in.desktop $(DESTDIR)/etc/xdg/autostart/
+	install -D -m 644 guest/switch-gui.desktop $(DESTDIR)/etc/xdg/autostart/
 	install -D -m 755 guest/auto-proxy guest/switch-keyboard-layout guest/update-free-space guestmode/notify-guest-mode $(DESTDIR)/usr/bin/
+	install -D -m 755 guest/switch-gui $(DESTDIR)/usr/bin/
 	install -D -m 644 guest/auto-proxy.desktop guest/switch-keyboard-layout.desktop guest/update-free-space.desktop guestmode/notify-guest-mode.desktop $(DESTDIR)/etc/xdg/autostart
 	install -D -m 755 guestmode/00-bind-fat-folders.sh $(DESTDIR)/etc/X11/xinit/xinitrc.d/00-bind-fat-folders.sh
 	

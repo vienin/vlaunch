@@ -1,0 +1,50 @@
+#!/bin/sh
+
+TEXTDOMAIN=vlaunch-guest
+
+start_cairo_dock() {
+	echo "start-cairo-dock"
+	gconftool-2 --set /desktop/gnome/session/use_cairo_dock --type bool true
+	gconftool-2 --set /desktop/gnome/session/use_gnome_panel --type bool false
+}
+
+start_gnome() {
+	echo "start-gnome"
+	gconftool-2 --set /desktop/gnome/session/use_gnome_panel --type bool true
+	gconftool-2 --set /desktop/gnome/session/use_cairo_dock --type bool false
+}
+
+start_moblin() {
+	switchdesk moblin
+	zenity --info --text $"You need to logout to use the Moblin desktop."
+}
+
+set_gui() {
+	case "$1" in
+		gnome)
+			start_gnome
+			;;
+		moblin)
+			start_moblin
+			;;
+		cairo-dock)
+			start_cairo_dock
+			;;
+	esac
+}
+
+set_gui `vbox-get-property /UFO/GUI`
+
+dbus-monitor --system type='signal',interface='org.agorabox.vbox.GuestProperty',member='changed' | while read line
+do
+	if [ "$line" != "${line%%member='changed'}" ];
+	then
+		read key
+		read value 
+		[ "$key" = "${key%%/UFO/GUI\"}" ] && continue
+		key=$(echo $key | cut -d " " -f 2 | tr -d '\"')
+		value=$(echo $value | cut -d " " -f 2 | tr -d '\"')
+		set_gui $value
+	fi
+done
+

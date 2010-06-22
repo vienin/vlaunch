@@ -187,6 +187,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sysconfdir}/security/console.apps/toggle-fullscreen
 %{_sysconfdir}/security/console.apps/notify-logged-in
 %{_bindir}/auto-proxy
+%{_bindir}/switch-gui
 %{_bindir}/switch-keyboard-layout
 %{_bindir}/update-free-space
 %{_bindir}/vbox-client-symlink
@@ -202,6 +203,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_sbindir}/toggle-fullscreen
 %{_sbindir}/notify-logged-in
 %{_sysconfdir}/xdg/autostart/auto-proxy.desktop
+%{_sysconfdir}/xdg/autostart/switch-gui.desktop
 %{_sysconfdir}/xdg/autostart/switch-keyboard-layout.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-symlink.desktop
 %{_sysconfdir}/xdg/autostart/vbox-client-dnd.desktop
