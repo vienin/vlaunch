@@ -60,6 +60,12 @@ class GuestProperty:
     def set_value(self, value):
         self.value = value
 
+    def __repr__(self):
+        if type(self.value) == bool:
+            return str(int(self.value))
+        else:
+            return str(self.value)
+
 class Conf(object):
     AUTO_INTEGER = -1
     AUTO_STRING  = "auto"
@@ -162,7 +168,7 @@ class Conf(object):
           "rootvdi" : "",
           "cmdline" : "ro 4",
           "reintegration" : reintegrationValues[2],
-          "guestdebug" : False,
+          "guestdebug" : GuestProperty(False, "/UFO/Debug"),
           "guestmode" : False,
           "guestuser" : "guest",
           "gui" : GuestProperty(guiValues[0], "/UFO/GUI")
