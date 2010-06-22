@@ -63,7 +63,7 @@ def check_update(backend):
                     removed_space = removed_space + os.stat(path.join(path.dirname(conf.DATA_DIR), file.strip())).st_size
 
                 while True:
-                    available_space = utils.get_free_space(conf.DATA_DIR)
+                    available_space = backend.get_free_space(conf.DATA_DIR)
                     if available_space + removed_space < latest_real_size:
                         input = gui.dialog_error_report(_("Insufficient free space"),
                                                         _("The available space on your UFO key is insufficient for the update.<br><br>"

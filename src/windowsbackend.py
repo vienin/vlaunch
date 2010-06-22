@@ -354,6 +354,11 @@ class WindowsBackend(OSBackend):
                 return max(int(ram[0].TotalPhysicalMemory) / 1024 / 1024 / 2, 384)
         return 0
 
+    def get_free_space(self, path):
+        import win32api
+        available, x, x = win32api.GetDiskFreeSpaceEx(path)
+        return available
+
     def get_host_shares(self):
         import _winreg
         shares = []

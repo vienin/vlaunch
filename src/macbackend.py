@@ -136,6 +136,10 @@ class MacBackend(OSBackend):
                 maxmem = max(int(ival), maxmem)
         return maxmem
 
+    def get_free_space(self, path):
+        stats = os.statvfs(path)
+        return stats.f_bavail * stats.f_bsize
+
     def get_dvd_device(self):
         pass
 

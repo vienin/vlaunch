@@ -181,8 +181,3 @@ def relpath(path, start=os.path.curdir):
     if not rel_list:
         return os.path.curdir
     return os.path.join(*rel_list)
-
-def get_free_space(path):
-    stats = os.statvfs(path)
-    return stats.f_bavail * stats.f_bsize
-

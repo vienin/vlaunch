@@ -855,7 +855,7 @@ class OSBackend(object):
                 used = used + os.stat(path.join(conf.DATA_DIR, growing_file)).st_size
 
         size_to_reserve = self.reservation_size - used
-        available_size = utils.get_free_space(conf.DATA_DIR)
+        available_size = self.get_free_space(conf.DATA_DIR)
 
         if size_to_reserve > available_size:
             size_to_reserve = available_size

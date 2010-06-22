@@ -174,6 +174,10 @@ class LinuxBackend(OSBackend):
         cached = int(grep(mem_info, "Cached:").split()[1])
         return max((free + cached) / 1024, 384)
 
+    def get_free_space(self, path):
+        stats = os.statvfs(path)
+        return stats.f_bavail * stats.f_bsize
+
     def get_dvd_device(self):
         if path.exists("/dev/cdrom"):
             return "/dev/cdrom"
