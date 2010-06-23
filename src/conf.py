@@ -266,7 +266,7 @@ class Conf(object):
             if isinstance(value, GuestProperty):
                 value = value.get_value()
             for handler in self.handlers:
-                handler(prop.name, value)
+                handler(prop.name, str(prop))
             self.__dict__[attr] = GuestProperty(prop.default, prop.name, value)
         else:
             self.__dict__[attr] = value
@@ -295,11 +295,11 @@ class Conf(object):
             if not self.cp.has_section(section):
                 self.cp.add_section(section)
             for key, default in keys.items():
+                if isinstance(default, GuestProperty):
+                    default = default.default
                 try:
                     if type(default) == bool:
                         setattr(self, key.upper(), type(default)(int(self.cp.get(section, key))))
-                    if isinstance(default, GuestProperty):
-                        setattr(self, key.upper(), type(default.default)(self.cp.get(section, key)))
                     else:
                         setattr(self, key.upper(), type(default)(self.cp.get(section, key)))
                 except NoOptionError, err:
