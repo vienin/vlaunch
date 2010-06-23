@@ -166,7 +166,7 @@ class Conf(object):
           "accel3d" : True,
           "menubar" : False,
           "rootvdi" : "",
-          "cmdline" : "ro 4",
+          "cmdline" : "rhgb ro quiet 4",
           "reintegration" : reintegrationValues[2],
           "guestdebug" : GuestProperty(False, "/UFO/Debug"),
           "guestmode" : False,
