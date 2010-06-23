@@ -2,4 +2,21 @@
 
 TEXTDOMAIN=vlaunch-guest
 
+desktop=$(xdg-user-dir DESKTOP)
+
+[ ! -f /etc/sysconfig/ufo/mainuser ] && [ ! -f $desktop/firstboot.desktop ] && cat > $desktop/firstboot.desktop <<EOF
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Terminal=false
+Exec=/usr/bin/ufo-firstboot
+Name=Initialize your key
+Name[fr_FR]=Identifiez vous !
+Icon=firstboot.png
+EOF
+
+chmod +x $desktop/firstboot.desktop
 notify-send --icon=/usr/share/icons/UFO/48x48/places/firstboot.png $"You are currently logged in guest mode. Please consider clicking on the 'Setup my key' icon to get access to services like synchronization of your files, encryption, and more"
