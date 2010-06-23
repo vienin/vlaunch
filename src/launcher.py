@@ -29,8 +29,13 @@ import urllib
 import traceback
 
 format = "%(asctime)s [%(levelname)s] %(message)s"
-if conf.options.update:
-    conf.LOGFILE = path.join(tempfile.gettempdir(), "ufo-updater.log")
+if conf.options.update or conf.options.dd:
+    if conf.options.update:
+        log = "ufo-updater.log"
+    elif conf.options.dd:
+        log = "ufo-cloner.log"
+    conf.LOGFILE = path.join(tempfile.gettempdir(), log)
+
 else:
     log_dir = os.path.dirname(conf.LOG)
     if not os.path.exists(log_dir):
@@ -104,18 +109,23 @@ if conf.USER:
     logging.debug("Customer: " + conf.USER)
 else:
     logging.debug("Customer: None")
-    
-if conf.options.update and conf.options.relaunch:
-    updater.self_update(conf.options.update, conf.options.relaunch)
-elif not conf.NOUPDATE and not conf.options.respawn:
-    updater.check_update(backend)
 
-logging.debug("Checking for running UFO processes")
-backend.check_process()
 
 if __name__ == "__main__":
     try:
-        if '--settings' in sys.argv:
+        if conf.options.update and conf.options.relaunch:
+            updater.self_update(conf.options.update, conf.options.relaunch)
+        elif not conf.NOUPDATE and not conf.options.respawn:
+            updater.check_update(backend)
+
+        if conf.options.dd:
+            from ufo_dd import DDWindow
+            cloner=DDWindow(backend, conf.options.relaunch)
+            cloner.show()
+            cloner.exec_()
+            sys.exit(1)
+
+        if conf.options.settings:
             settings = gui.Settings()
             settings.show()
             settings.exec_()
@@ -128,6 +138,9 @@ if __name__ == "__main__":
             settings.show()
             if not settings.exec_():
                 sys.exit(0)
+
+        logging.debug("Checking for running UFO processes")
+        backend.check_process()
 
         backend.run()
 

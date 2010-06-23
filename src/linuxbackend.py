@@ -79,12 +79,31 @@ class LinuxBackend(OSBackend):
             else:
                 sys.exit(0)
     
+    def prepare_self_copy(self):
+        self_copied_path = tempfile.mkdtemp(prefix="ufo-self-copied")
+        exe_path = os.path.join(self_copied_path, "Linux", "ufo")
+
+        os.mkdir(os.path.join(self_copied_path, ".data"))
+        path = os.path.dirname(os.path.dirname(conf.SCRIPT_PATH))
+        copytree(os.path.join(path, "Linux"), os.path.join(self_copied_path, "Linux"))
+        copytree(os.path.join(path, ".data" , "images"), os.path.join(self_copied_path, ".data", "images"))
+        copytree(os.path.join(path, ".data", "locale"), os.path.join(self_copied_path, ".data", "locale"))
+
+        return exe_path;
+
     def prepare_update(self):
         return conf.SCRIPT_PATH
     
+    def execv_as_root(self, executable, cmd):
+        logging.shutdown()
+        self.run_as_root.call(cmd, replace=True)
+
+    def is_admin(self):
+        return os.getuid() == 0;
+
     def prepare(self):
-        if os.getuid() != 0:
-            self.run_as_root.call([sys.executable] + sys.argv + [ "--respawn" ], replace=True)
+        if not self.is_admin():
+            self.execv_as_root(sys.executable, [sys.executable] + sys.argv + [ "--respawn" ])
 
         if isinstance(self, GenericLinuxBackend):
             gui.dialog_info(title=_("Warning"),
@@ -142,6 +161,11 @@ class LinuxBackend(OSBackend):
             if path.startswith(mountpoint):
                 return dev[:-1]
         return ""
+
+    def umount_device(self, mntpoint):
+        if self.call(["umount", mntpoint]) != 0:
+            return False
+        return True
 
     def prepare_device(self, disk):
         self.call(["umount", disk + "3"])
@@ -218,10 +242,12 @@ class LinuxBackend(OSBackend):
         if os.path.exists('/dev/disk/by-id'):
             usb_devices = [os.path.realpath(os.path.join('/dev/disk/by-id', link)) \
                            for link in os.listdir('/dev/disk/by-id') if link[0:3] == "usb"]
-            usb_paths = [mnt.split()[1] for mnt in open('/proc/mounts', 'r').readlines() \
-                         if mnt.split()[0] in usb_devices]
-            return [[path, os.path.basename(path)] for path in usb_paths]
-        return [], []
+            usbs = []
+            for mnt in open('/proc/mounts', 'r').readlines():
+                if mnt.split()[0] in usb_devices:
+                    usbs.append([mnt.split()[1], os.path.basename(mnt.split()[1]), mnt.split()[0][:len(mnt.split()[0])-1]])
+            return usbs
+        return []
 
     def get_usb_sticks(self):
         if os.path.exists('/dev/disk/by-id'):
@@ -230,7 +256,7 @@ class LinuxBackend(OSBackend):
                            if link[0:3] == "usb" and "-part" not in link ]
             return [[dev, open(path.join("/", "sys", "block", path.basename(dev), "device", "model")).read().strip()] \
                     for dev in usb_devices]
-        return [], []
+        return []
 
     def find_resolution(self):
         if gui.backend == "PyQt":
@@ -461,7 +487,7 @@ class KdeSudoRunAsRoot(RunAsRoot):
         if replace: 
             os.execv("/usr/bin/kdesudo", self.prefix + command)
         else:
-            utils.call( self.prefix + command, "Veuillez patientez lors de l\'installation des composants", interactive)
+            print 'utils.call( self.prefix + command, "Veuillez patientez lors de l\'installation des composants", interactive)'
 
 
 class GkSudoRunAsRoot(RunAsRoot):

@@ -49,6 +49,7 @@ class QtUFOGui(QtGui.QApplication):
 
         self.console_window   = None
         self.settings_window  = None
+        self.cloner_window    = None
         self.antivirus_window = None
         self.console_winid    = 0
         self.backend          = None
@@ -60,6 +61,9 @@ class QtUFOGui(QtGui.QApplication):
         action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
                                         QtCore.QString(_("Settings...")), self);
         action_settings.setStatusTip(_("Configure the UFO launcher"))
+        action_cloner = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "cloner.png")),
+                                        QtCore.QString(_("Cloner...")), self);
+        action_cloner.setStatusTip(_("Clone your UFO key"))
         action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
                                         QtCore.QString(_("Quit")), self);
         action_quit.setStatusTip(_("Quit"))
@@ -78,6 +82,13 @@ class QtUFOGui(QtGui.QApplication):
             self.connect(action_antivirus, QtCore.SIGNAL("triggered()"), self.antivirus)
         except:
             logging.debug("Can't load clamav module")
+
+        try:
+            import ufo_dd
+            self.menu.addAction(action_cloner)
+            self.connect(action_cloner, QtCore.SIGNAL("triggered()"), self.cloner)
+        except:
+            logging.debug("Can't load ufo-dd module")
 
         self.menu.addAction(action_about)
         self.menu.addAction(action_force_quit)
@@ -345,7 +356,30 @@ class QtUFOGui(QtGui.QApplication):
         self.settings_window.exec_()
         del self.settings_window
         self.settings_window = None
-    
+
+    def cloner(self):
+        if self.cloner_window:
+            self.cloner_window.showNormal()
+            return
+
+        while self.vbox.current_machine.is_running():
+            input = dialog_error_report(_("Warning"),
+                                        _("The UFO virtual machine is currently running.\n"
+                                          "Please shutdown the UFO virtual machine before using the UFO cloner"),
+                                        _("Retry"),
+                                        error=False)
+            if not input:
+                return
+            time.sleep(0.3)
+
+        from ufo_dd import DDWindow
+        self.cloner_window = DDWindow(self.backend)
+
+        self.cloner_window.show()
+        self.cloner_window.exec_()
+        del self.cloner_window
+        self.cloner_window = None
+
     def quit(self):
         if self.vbox.current_machine.is_running():
             if not self.vbox.current_machine.is_booted or \
@@ -361,7 +395,7 @@ class QtUFOGui(QtGui.QApplication):
         if self.vbox.current_machine.is_running():
             no  = _("No")
             if dialog_question(title=_("Dangerous"),
-                               msg=_("UFO virtual machine is currently running.\n"
+                               msg=_("The UFO virtual machine is currently running.\n"
                                      "Forcing machine to shutdown is very DANGEROUS, "
                                      "the modification made during this session will "
                                      "be lost. You should use the \"Quit\" menu "
@@ -1283,12 +1317,17 @@ class CommandLauncher(threading.Thread):
         self.callback = callback
 
     def run(self):
+        error = False
         if isinstance(self.cmd[0], str):
-            utils.call(self.cmd)
+            if utils.call(self.cmd) != 0:
+                error = True
         else:
-            self.cmd[0](*self.cmd[1:])
+            try:
+                self.cmd[0](*self.cmd[1:])
+            except:
+                error = True
 
-        app.postEvent(app, CommandEvent(self.callback, False))
+        app.postEvent(app, CommandEvent(self.callback, error))
         sys.exit()
 
 
@@ -1367,8 +1406,9 @@ class WaitWindow(QtGui.QDialog):
 
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, title, msg, autostart,
-                 success_msg, autoclose=False, embedded_progress=True):
-        super(DownloadWindow, self).__init__(main)
+                 success_msg, autoclose=False,
+                 embedded_progress=True, parent=None):
+        super(DownloadWindow, self).__init__(parent)
         self.url = url
         self.fileName = filename
         self.autostart = autostart
@@ -1483,7 +1523,7 @@ class DownloadWindow(QtGui.QDialog):
         self.init_downloader()
         if self.http_request_aborted:
             if self.outFile is not None:
-                self.outFile.close() 
+                self.outFile.close()
                 self.outFile.remove()
                 self.outFile = None
             if not self.embedded_progress:
@@ -2054,7 +2094,7 @@ class Settings(QtGui.QDialog):
         custom_layout = QtGui.QVBoxLayout()
         val_layout = QtGui.QHBoxLayout()
         val_layout.addSpacing(30)
-        
+
         self.balloon_preview = BalloonMessage(title=_("Message title"),
                                               fake= True,
                                               msg=_("Message contents"))
@@ -2101,8 +2141,9 @@ def extract_tar(tgz, dest, title=_("Installing"), msg=_("Please wait")):
 
 def download_file(url, filename, title = _("Downloading"),
                   msg = _("Please wait"),
-                  success_msg = _("Download completed"), autostart=False, autoclose=False):
-    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg,
+                  success_msg = _("Download completed"),
+                  autostart=False, autoclose=False, parent=None):
+    downloadWin = DownloadWindow(parent=parent, url=url, filename=filename, title=title, msg=msg,
                                  autostart=autostart, autoclose=autoclose, success_msg=success_msg, embedded_progress=True)
     if not autostart:
         downloadWin.show()

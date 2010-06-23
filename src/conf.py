@@ -31,10 +31,12 @@ args = [ arg for arg in sys.argv[1:] if not arg.startswith("-psn_") ]
 parser = OptionParser()
 parser.add_option("-u", "--update", dest="update",
                   help="update a UFO launcher located in ", metavar="FOLDER")
+parser.add_option("-d", "--dd", dest="dd", default=False,
+                  action="store_true", help="Launch the UFO cloner")
 parser.add_option("-r", "--respawn", dest="respawn", default=False,
                   action="store_true", help="tells the launcher that it has been respawned ")
 parser.add_option("--relaunch", dest="relaunch", default="",
-                  help="tells the launcher the program to relaunch")
+                  help="tells the launcher about the program to relaunch")
 parser.add_option("-s", "--settings", dest="settings", default=False,
                   action="store_true", help="launch only settings dialog")
 (options, args) = parser.parse_args(args=args)
@@ -110,7 +112,8 @@ class Conf(object):
           "configurevm" : 1,
           "uninstalldrivers" : 0,
           "noupdate" : 0,
-          "isourl" : "http://downloads.agorabox.org/launcher/latest",
+          "imgurl" : "http://downloads.agorabox.org/img/latest",
+          "isourl" : "http://downloads.agorabox.org/iso/latest",
           "updateurl" : "http://downloads.agorabox.org/launcher/",
           "vboxdrivers" : "drivers\\VBoxDrv",
           "livecd" : 0,

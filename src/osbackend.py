@@ -46,7 +46,10 @@ except:
 
 class UFOVboxMonitor(VBoxMonitor):
 
-    log_black_list = [ "/UFO/DiskSpace", "/UFO/Debug", "/UFO/Credentials/AuthTok", "/UFO/Boot/Progress" ]
+    log_black_list = [ "/UFO/DiskSpace",
+                       "/UFO/Debug",
+                       "/UFO/Credentials/AuthTok",
+                       "/UFO/Boot/Progress" ]
 
     def __init__(self, os_backend):
         VBoxMonitor.__init__(self)

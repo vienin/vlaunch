@@ -65,6 +65,22 @@ class WindowsBackend(OSBackend):
             self.error_already_running("\n".join([ x.Name for x in processes ]), "VirtualBox")
             sys.exit(0)
 
+    def prepare_self_copy(self):
+        self_copied__path = tempfile.mkdtemp(prefix="ufo-self-copied")
+        exe_path = path.join(self_copied__path, "ufo.exe")
+        patterns = [ "bin\\*.exe", "*.exe", "*.dll", "bin\\library.zip", "bin\\Qt*.dll", "bin\\msv*.dll", "bin\\*.pyd", "bin\\py*.dll" ]
+        logging.debug("Copying launcher to " + self_copied__path)
+        files = []
+        for pattern in patterns:
+            files += [ utils.relpath(x, conf.SCRIPT_DIR) for x in glob.glob(path.join(conf.SCRIPT_DIR, pattern)) ]
+        for file in files:
+            dest = path.join(self_copied__path, file)
+            folder = path.dirname(dest)
+            if not path.exists(folder):
+                os.makedirs(folder)
+            copyfile(file, dest)
+        return exe_path
+
     def prepare_update(self):
         updater_path = tempfile.mkdtemp(prefix="ufo-updater")
         logging.debug("Copying updater to " + updater_path)
@@ -100,7 +116,7 @@ class WindowsBackend(OSBackend):
         else:
             logging.debug("Service " + service + " does not exists")
             return "FAILED"
-			
+
     def create_service(self, service, path):
         logging.debug("Creating service " + service)
         ret, output = self.call([ "sc", "create", service, "binpath=", path, "type=", "kernel",
@@ -404,13 +420,25 @@ class WindowsBackend(OSBackend):
             msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'")
         gui.dialog_info(title=_("Not enough permissions"), msg=msg)
         sys.exit(1)
-		
+
     def installed_vbox_error(self):
         msg = _("We have detected an existing VirtualBox installation on this computer.\n"
                 "UFO is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run UFO.\n\n"
                 "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.")
         gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
         sys.exit(1)
+
+    def execv_as_root(self, executable, cmd):
+        os.execv(executable, cmd)
+
+    def is_admin(self):
+        # We assume that we are admin as the exe manifest requires
+        return True;
+
+    def umount_device(self, mntpoint):
+        if self.call([ path.join(conf.BIN, "USB_Disk_Eject.exe"), "/REMOVELETTER",  mntpoint], shell=True) != 0:
+            return False
+        return True
 
     def prepare(self):
         # Ajusting paths
