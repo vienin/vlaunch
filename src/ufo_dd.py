@@ -22,6 +22,8 @@ class DDWindow(QtGui.QDialog):
         self.target_filename = ""
         self.setWindowTitle(_("UFO cloner"))
 
+        self.dl_mutex = False
+
         self.usbs = {}
         for usb in self.backend.get_usb_sticks():
             self.usbs[usb[1]] = usb[0]
@@ -143,6 +145,10 @@ class DDWindow(QtGui.QDialog):
         self.clone(source, target)
 
     def on_dl(self):
+        if self.dl_mutex:
+            return
+        self.dl_mutex = True
+
         filedialog = QtGui.QFileDialog(self, _("Please select a destination directory for the download"), os.getcwd())
         filedialog.setFileMode(QtGui.QFileDialog.Directory)
         filedialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
@@ -165,6 +171,7 @@ class DDWindow(QtGui.QDialog):
         else:
             gui.dialog_info(title=_("Warning"),
                             msg=_("The download has encountered a fatal error, please check your Internet connection and retry"))
+        self.dl_mutex = False
 
     def clone(self, source, target):
         cmd = [ "if=" + str(source), "of=" + str(target), "bs=1M" ]
