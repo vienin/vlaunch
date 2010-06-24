@@ -7,7 +7,7 @@ if %PROCESSOR_ARCHITECTURE% == x86    goto x86
 if %PROCESSOR_ARCHITECTURE% == AMD64  goto amd64
 
 :x86
-set VBOX_PATH=F:\vbox
+set VBOX_PATH=F:\gitorious\vbox
 
 set VBOX_BIN_PATH=%VBOX_PATH%\out\win.x86\release\bin
 set QT_BIN_PATH=%VBOX_PATH%\tools\win.x86\Qt\4.5.2-32bits\bin
@@ -21,6 +21,7 @@ mkdir "dist\Microsoft.VC90.CRT"
 xcopy /E /Y %MSVC_PATH% dist\Microsoft.VC90.CRT\
 
 "C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-settings-link.au3 /out dist\settings.exe /icon ../graphics/UFO.ico
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-cloner-link.au3 /out dist\cloner.exe /icon ../graphics/UFO.ico
 
 goto begin
 
