@@ -81,7 +81,7 @@ install: install-mo
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp src/launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp setup/linux-settings-link $(DESTDIR)$(TARGET_PATH)/Linux/settings
+	cp setup/linux-settings-link setup/linux-cloner-link $(DESTDIR)$(TARGET_PATH)/Linux/settings
 	cp -R sdk/bindings/xpcom/python/xpcom $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp -R vboxapi sdk $(SOURCES) $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp setup/.autorun $(DESTDIR)$(TARGET_PATH)/
