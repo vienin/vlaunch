@@ -55,6 +55,8 @@ install: install-mo
 	cp setup/autorun.inf $(DESTDIR)$(TARGET_PATH)/
 	cp USB_Disk_Eject.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin
 	cp USB_Disk_Eject.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin64
+	cp dd.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin
+	cp dd.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin64
 	
 	# build mac-intel tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
@@ -179,5 +181,7 @@ download-binaries:
 	wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
 	wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-${OVERLAY_DEV_TYPE}-UUID=${OVERLAY_DEV_UUID}.vdi
 	wget -O USBDiskEjector1.1.2.zip http://quick.mixnmojo.com/files/USBDiskEjector1.1.2.zip
+	wget -O dd-0.5.zip http://www.chrysocome.net/downloads/dd-0.5.zip
 	unzip -o USBDiskEjector1.1.2.zip
+	unzip -o dd-0.5.zip
 
