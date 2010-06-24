@@ -21,7 +21,7 @@
 
 from PyQt4 import QtGui, QtCore
 import threading, sys, os
-from urllib import urlretrieve
+from urllib import urlretrieve, urlopen
 from ConfigParser import ConfigParser
 from utils import SmartDict
 from ufovboxapi import *
@@ -1289,7 +1289,12 @@ class Downloader(threading.Thread):
 
     def run(self):
         try:
-            filename, headers = urlretrieve(self.file, self.dest, reporthook=self.on_progress)
+            remote = urlopen(self.file)
+            if remote.code == 404:
+                raise Exception("404 error")
+            remote.close()
+
+            urlretrieve(self.file, self.dest, reporthook=self.on_progress)
         except:
             app.postEvent(app, JobFinishedEvent(self.finished_callback, True))
         else:
