@@ -39,7 +39,7 @@ def get_latest_version():
     latest_size = int(urllib.urlopen(conf.UPDATEURL + "/launcher-" + string_version + ".tar.bz2").headers.get("content-length"))
     latest_real_size = int(urllib.urlopen(conf.UPDATEURL + "/size-" + string_version).read())
     
-    logging.debug("Available version on the Net : " + str(string_version) + " (" + str(latest_size / 1000) + " k)")
+    logging.debug("Available version on the Net : " + str(string_version) + " (" + str(latest_size / 1024) + " k)")
     return latest_version, latest_size, latest_real_size
  
 def check_update(backend):
@@ -52,7 +52,7 @@ def check_update(backend):
             logging.debug("Updating to new version. Asking to user...")
             input = gui.dialog_question(title=_("Update available"),
                 msg=_("A more recent version of the U.F.O launcher is available,"
-                      "do you want to install it ? (%s Mo to download) ?") % (latest_size / 1000000,),
+                      "do you want to install it ? (%s Mo to download) ?") % (latest_size / (1024*1024),),
                 button1=_("Yes"), button2=_("No"))
             logging.debug("Got : " + str(input))
             if input == _("Yes"):
@@ -72,7 +72,7 @@ def check_update(backend):
                         input = gui.dialog_error_report(_("Insufficient free space"),
                                                         _("The available space on your UFO key is insufficient for the update.<br><br>"
                                                           "Please remove more than <b>%s Mo</b> in the <b>\"Public\"</b> directory and retry.") %
-                                                          ((latest_real_size - (available_space + removed_space)) / 1000000,),
+                                                          ((latest_real_size - (available_space + removed_space)) / (1024*1024),),
                                                         _("Retry"),
                                                         error=False)
                         if not input:
@@ -89,6 +89,7 @@ def check_update(backend):
                         path.dirname(conf.DATA_DIR), ".".join(map(str, latest_version)),
                         "--relaunch", conf.SCRIPT_PATH ]
                 logging.debug("Launching updater : " + " ".join(cmd))
+                logging.shutdown()
                 os.execv(executable, cmd)
                 sys.exit(0)
 

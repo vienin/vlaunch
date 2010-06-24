@@ -34,7 +34,7 @@ import time
 import utils
 
 from osbackend import OSBackend
-from shutil import copyfile
+from shutil import copyfile, copytree
 
 class WindowsBackend(OSBackend):
 
@@ -66,36 +66,30 @@ class WindowsBackend(OSBackend):
             sys.exit(0)
 
     def prepare_self_copy(self):
-        self_copied__path = tempfile.mkdtemp(prefix="ufo-self-copied")
-        exe_path = path.join(self_copied__path, "ufo.exe")
-        patterns = [ "bin\\*.exe", "*.exe", "*.dll", "bin\\library.zip", "bin\\Qt*.dll", "bin\\msv*.dll", "bin\\*.pyd", "bin\\py*.dll" ]
-        logging.debug("Copying launcher to " + self_copied__path)
+        self_copied_path = tempfile.mkdtemp(prefix="ufo-self-copied")
+        patterns = [ "*.exe", "*.dll", "library.zip", "Qt*.dll", "msv*.dll", "*.pyd", "py*.dll", "Microsoft.VC*.CRT"]
+        logging.debug("Copying launcher to " + self_copied_path)
         files = []
         for pattern in patterns:
             files += [ utils.relpath(x, conf.SCRIPT_DIR) for x in glob.glob(path.join(conf.SCRIPT_DIR, pattern)) ]
+
+        os.mkdir(os.path.join(self_copied_path, "Windows"))
+        os.mkdir(os.path.join(self_copied_path, ".data"))
         for file in files:
-            dest = path.join(self_copied__path, file)
-            folder = path.dirname(dest)
-            if not path.exists(folder):
-                os.makedirs(folder)
-            copyfile(file, dest)
-        return exe_path
+            dest = path.join(self_copied_path, "Windows", file)
+            if os.path.isdir(file):
+                copytree(file, dest)
+            else:
+                copyfile(file, dest)
+
+        key_root = path.dirname(path.dirname(conf.SCRIPT_DIR))
+        copytree(path.join(key_root, ".data" , "images"), path.join(self_copied_path, ".data", "images"))
+        copytree(path.join(key_root, ".data", "locale"), path.join(self_copied_path, ".data", "locale"))
+
+        return path.join(self_copied_path, "Windows", path.basename(conf.SCRIPT_PATH))
 
     def prepare_update(self):
-        updater_path = tempfile.mkdtemp(prefix="ufo-updater")
-        logging.debug("Copying updater to " + updater_path)
-        exe_path = path.join(updater_path, "ufo.exe")
-        patterns = [ "*.exe", "*.dll", "bin\\library.zip", "bin\\Qt*.dll", "bin\\msv*.dll", "bin\\*.pyd", "bin\\py*.dll" ]
-        files = []
-        for pattern in patterns:
-            files += [ utils.relpath(x, conf.SCRIPT_DIR) for x in glob.glob(path.join(conf.SCRIPT_DIR, pattern)) ]
-        for file in files:
-            dest = path.join(updater_path, file)
-            folder = path.dirname(dest)
-            if not path.exists(folder):
-                os.makedirs(folder)
-            copyfile(file, dest)
-        return exe_path
+        return self.prepare_self_copy()
 
     def call(self, cmd, env = None, shell = True, cwd = None, output=False):
         return OSBackend.call(self, cmd, env, shell, cwd, output)
