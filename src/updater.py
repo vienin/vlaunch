@@ -60,7 +60,11 @@ def check_update(backend):
                 # Check available space
                 removed_space = 0
                 for file in open(os.path.join(conf.DATA_DIR, "launcher.filelist")).readlines():
-                    removed_space = removed_space + os.stat(path.join(path.dirname(conf.DATA_DIR), file.strip())).st_size
+                    try:
+                        size = os.stat(path.join(path.dirname(conf.DATA_DIR), file.strip())).st_size
+                    except:
+                        continue
+                    removed_space = removed_space + size
 
                 while True:
                     available_space = backend.get_free_space(conf.DATA_DIR)
