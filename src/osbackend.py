@@ -371,7 +371,7 @@ class OSBackend(object):
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
                 self.vbox.current_machine.set_guest_property("/UFO/Storages/Swap/Device", swap_dev)
                         
-                free_size = self.get_free_size(self.tmp_swapdir)
+                free_size = self.get_free_space(self.tmp_swapdir) / (1024*1024)
                 if free_size:
                     swap_size = min(conf.SWAPSIZE, free_size)
                     self.vbox.current_machine.set_guest_property("/UFO/Storages/Swap/Size", str(swap_size))
@@ -393,7 +393,7 @@ class OSBackend(object):
                 # Set guest prop about max size of the overlay to 
                 # to set appropriate quota within guest side.
                 #
-                # free_size = self.get_free_size(self.tmp_overlaydir)
+                # free_size = self.get_free_space(self.tmp_overlaydir) / (1024*1024)
                 # if free_size:
                 #     virtual_box.machine.set_guest_property("overlay_quota", ...)
             except:

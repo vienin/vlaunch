@@ -466,13 +466,6 @@ class WindowsBackend(OSBackend):
         time.sleep(interval)
         gui.app.process_gui_events()
 
-    def get_free_size(self, path):
-        logical_disks = self.WMI.Win32_LogicalDisk (Caption = path[0:2])
-        if not logical_disks:
-            return ""
-
-        return int(logical_disks[0].FreeSpace) / 1000000
-
     def onExtraDataCanChange(self, key, value):
         # win32com need 3 return values (2 out parameters and return value)
         return "", True, 0

@@ -269,10 +269,6 @@ class LinuxBackend(OSBackend):
             return self.call([["/usr/bin/xrandr"], ["grep", "*"]], output=True)[1].split()[0]
         return ""
         
-    def get_free_size(self, path):
-        stats = os.statvfs(path)
-        return (stats[statvfs.F_BSIZE] * stats[statvfs.F_BFREE]) / 1000000
-        
     def onExtraDataCanChange(self, key, value):
         # xpcom only return the both out parameters
         return True, ""

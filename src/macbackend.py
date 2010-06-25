@@ -379,11 +379,7 @@ class MacBackend(OSBackend):
             return str(gui.screenRect.width()) + "x" + str(gui.screenRect.height())
         
         return ""
-        
-    def get_free_size(self, path):
-        return 1000
-    
+
     def onExtraDataCanChange(self, key, value):
         # xpcom only return the both out parameters
         return True, ""
-
