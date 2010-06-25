@@ -183,8 +183,8 @@ def SplashScreen(*args, **kw):
     print "Can't display a splash screen with zenity"
     return None
 
-def dialog_error_report(title, msg, action=None, details=None):
-    dialog_info(title, msg, error = True)
+def dialog_error_report(title, msg, action=None, details=None, error=True):
+    dialog_info(title, msg, error = error)
     return True
     
 def dialog_choices(title, msg, column, choices):
