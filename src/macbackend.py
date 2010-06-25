@@ -337,7 +337,7 @@ class MacBackend(OSBackend):
                 cmd = [ sys.executable ] + sys.argv
             cmd += [ "--respawn" ]
 
-            self.execv_as_root(cmd, True)
+            self.execv(cmd, True)
             sys.exit(1)
 
         if not conf.VBOX_INSTALLED:
