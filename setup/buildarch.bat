@@ -21,7 +21,7 @@ mkdir "dist\Microsoft.VC90.CRT"
 xcopy /E /Y %MSVC_PATH% dist\Microsoft.VC90.CRT\
 
 "C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-settings-link.au3 /out dist\settings.exe /icon ../graphics/UFO.ico
-"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-cloner-link.au3 /out dist\cloner.exe /icon ../graphics/UFO.ico
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-creator-link.au3 /out dist\creator.exe /icon ../graphics/UFO.ico
 
 goto begin
 

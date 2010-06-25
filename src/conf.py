@@ -32,7 +32,7 @@ parser = OptionParser()
 parser.add_option("-u", "--update", dest="update",
                   help="update a UFO launcher located in ", metavar="FOLDER")
 parser.add_option("-d", "--dd", dest="dd", default=False,
-                  action="store_true", help="Launch the UFO cloner")
+                  action="store_true", help="Launch the UFO creator")
 parser.add_option("-r", "--respawn", dest="respawn", default=False,
                   action="store_true", help="tells the launcher that it has been respawned ")
 parser.add_option("--relaunch", dest="relaunch", default="",

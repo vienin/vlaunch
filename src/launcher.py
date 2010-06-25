@@ -33,7 +33,7 @@ if conf.options.update or conf.options.dd:
     if conf.options.update:
         log = "ufo-updater.log"
     elif conf.options.dd:
-        log = "ufo-cloner.log"
+        log = "ufo-creator.log"
     conf.LOGFILE = path.join(tempfile.gettempdir(), log)
 
 else:
@@ -120,9 +120,9 @@ if __name__ == "__main__":
 
         if conf.options.dd:
             from ufo_dd import DDWindow
-            cloner=DDWindow(backend, conf.options.relaunch)
-            cloner.show()
-            cloner.exec_()
+            creator=DDWindow(backend, conf.options.relaunch)
+            creator.show()
+            creator.exec_()
             sys.exit(1)
 
         if conf.options.settings:

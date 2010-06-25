@@ -20,7 +20,7 @@ class DDWindow(QtGui.QDialog):
 
         self.source_filename = ""
         self.target_filename = ""
-        self.setWindowTitle(_("UFO cloner"))
+        self.setWindowTitle(_("UFO creator"))
 
         self.dl_mutex = False
 
@@ -239,7 +239,7 @@ class DDWindow(QtGui.QDialog):
                 executable = conf.SCRIPT_PATH
 
             cmd = [ executable, "--dd", "--relaunch", source + "#" + target]
-            logging.debug("Launching cloner : " + " ".join(cmd))
+            logging.debug("Launching creator : " + " ".join(cmd))
 
             self.backend.execv(cmd, root=need_admin)
             sys.exit(0)
