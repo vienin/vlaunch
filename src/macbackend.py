@@ -92,25 +92,23 @@ class MacBackend(OSBackend):
             self.error_already_running('', 'VirtualBox')
             sys.exit(0)
 
-    def prepare_update(self):
-        tmpdir = tempfile.mkdtemp(prefix="ufo-updater")
-
-        src = path.join(conf.DATA_DIR, "..", "Mac-Intel")
-        logging.debug("Copying " + path.join(src, "UFO.app") + " to " + tmpdir)
-        output = self.call([ [ "tar", "-cf", "-", "-C", src, "UFO.app" ],
-                             [ "tar", "xf", "-", "-C", tmpdir ] ], output = True)[1]
-                                                  
-        return path.join(tmpdir, "UFO.app", "Contents", "MacOS", "UFO")
+    def prepare_update(self):                           
+        return self.prepare_self_copy()
 
     def prepare_self_copy(self):
-        self_copied__path = tempfile.mkdtemp(prefix="ufo-self-copied")
+        self_copied_path = tempfile.mkdtemp(prefix="ufo-self-copied")
+        os.mkdir(path.join(self_copied_path, ".data"))
 
-        src = path.join(conf.DATA_DIR, "..", "Mac-Intel")
-        logging.debug("Copying " + path.join(src, "UFO.app") + " to " + self_copied__path)
-        self.call([ [ "tar", "-cf", "-", "-C", src, "UFO.app" ],
-                    [ "tar", "xf", "-", "-C", self_copied__path ] ], output = True)[1]
+        src = path.join(conf.DATA_DIR, "..")
+        logging.debug("Copying " + src + " to " + self_copied_path)
+        self.call([ [ "tar", "-cf", "-", "-C", src, "Mac-Intel"],
+                    [ "tar", "xf", "-", "-C", self_copied_path ] ], output = True)[1]
+        self.call([ [ "tar", "-cf", "-", "-C", conf.DATA_DIR, "images" ],
+                    [ "tar", "xf", "-", "-C", path.join(self_copied_path, ".data") ] ], output = True)[1]
+        self.call([ [ "tar", "-cf", "-", "-C", conf.DATA_DIR, "locale" ],
+                    [ "tar", "xf", "-", "-C", path.join(self_copied_path, ".data") ] ], output = True)[1]
 
-        return path.join(self_copied__path, "UFO.app", "Contents", "MacOS", "UFO")
+        return path.join(self_copied_path, "Mac-Intel", "UFO.app", "Contents", "MacOS", "UFO")
 
     def get_model(self, dev):
         medianame = utils.grep(self.call(["/usr/sbin/diskutil", "info", dev], output=True)[1], "Media Name:")
@@ -253,41 +251,43 @@ class MacBackend(OSBackend):
             return 0
         return 0
 
-    def execv_as_root(self, executable, cmd):
-        tries = 0
-        while tries < 3:
-            logging.debug("Asking user password")
-            remember = False
-            password = gui.dialog_password(remember=False)
-            if password == None:
-                ret = -1
-                break
+    def execv(self, cmd, root=False):
+        if root:
+            tries = 0
+            while tries < 3:
+                logging.debug("Asking user password")
+                remember = False
+                password = gui.dialog_password(remember=False)
+                if password == None:
+                    ret = -1
+                    break
 
-            self.call([ "sudo", "-k" ])
-            ret = self.call([ [ "echo", str(password)],
-                              [ "sudo", "-S", "touch", sys.executable ] ], log=False)[0]
+                self.call([ "sudo", "-k" ])
+                ret = self.call([ [ "echo", str(password)],
+                                  [ "sudo", "-S", "touch", sys.executable ] ], log=False)[0]
+                if ret == 0:
+                    if remember:
+                        output = self.call( [ "sudo", "-l" ], output=True)[1]
+                        if not "NOPASSWD: /Volumes/UFO/Mac-Intel/UFO.app/Contents/MacOS/UFO" in output:
+                            sudoline = os.environ["USER"] + " ALL=(ALL) NOPASSWD: /Volumes/UFO/Mac-Intel/UFO.app/Contents/MacOS/UFO"
+                            self.call([ "sudo", "-n", "-s", "echo -e " + sudoline + " >> /etc/sudoers" ])
+                    break
+                else:
+                    gui.dialog_info(title=_("Error"),
+                                    msg=_("Sorry, couldn't authenticate. Please check your password."),
+                                    error=True)
+                    tries += 1
+
             if ret == 0:
-                if remember:
-                    output = self.call( [ "sudo", "-l" ], output=True)[1]
-                    if not "NOPASSWD: /Volumes/UFO/Mac-Intel/UFO.app/Contents/MacOS/UFO" in output:
-                        sudoline = os.environ["USER"] + " ALL=(ALL) NOPASSWD: /Volumes/UFO/Mac-Intel/UFO.app/Contents/MacOS/UFO"
-                        self.call([ "sudo", "-n", "-s", "echo -e " + sudoline + " >> /etc/sudoers" ])
-                break
+                cmd = [ "sudo" ] + cmd
             else:
-                gui.dialog_info(title=_("Error"),
-                                msg=_("Sorry, couldn't authenticate. Please check your password."),
-                                error=True)
-                tries += 1
+                return 
+        logging.debug("Environment: " + str(os.environ))
+        logging.debug("execv: " + " ".join(cmd))
+        logging.shutdown()
 
-        if ret == 0:
-            logging.debug("Environment: " + str(os.environ))
-            logging.debug("Sudoing and execv: " + " ".join([ "/usr/bin/sudo", "-n" ] + cmd))
-            logging.shutdown()
-            if False:
-                os.execv("/usr/bin/sudo", [ "/usr/bin/sudo", "-n" ] + cmd)
-                # self.call([ "sudo" ] + cmd, fork=False)
-            else:
-                self.call([ "sudo" ] + cmd, spawn=True)
+        #os.execv(cmd[0], cmd)
+        self.call(cmd, spawn=True)
 
     def is_admin(self):
         return os.geteuid() == 0;
@@ -337,8 +337,8 @@ class MacBackend(OSBackend):
                 cmd = [ sys.executable ] + sys.argv
             cmd += [ "--respawn" ]
 
-            self.execv_as_root(cmd[0], cmd)
-            exit(1)
+            self.execv_as_root(cmd, True)
+            sys.exit(1)
 
         if not conf.VBOX_INSTALLED:
             if os.path.islink("/Applications/VirtualBox.app"):

@@ -49,7 +49,7 @@ class QtUFOGui(QtGui.QApplication):
 
         self.console_window   = None
         self.settings_window  = None
-        self.cloner_window    = None
+        self.creator_window    = None
         self.antivirus_window = None
         self.console_winid    = 0
         self.backend          = None
@@ -61,9 +61,9 @@ class QtUFOGui(QtGui.QApplication):
         action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
                                         QtCore.QString(_("Settings...")), self);
         action_settings.setStatusTip(_("Configure the UFO launcher"))
-        action_cloner = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "cloner.png")),
-                                        QtCore.QString(_("Cloner...")), self);
-        action_cloner.setStatusTip(_("Clone your UFO key"))
+        action_creator = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "creator.png")),
+                                        QtCore.QString(_("Creator...")), self);
+        action_creator.setStatusTip(_("Clone your UFO key"))
         action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
                                         QtCore.QString(_("Quit")), self);
         action_quit.setStatusTip(_("Quit"))
@@ -85,8 +85,8 @@ class QtUFOGui(QtGui.QApplication):
 
         try:
             import ufo_dd
-            self.menu.addAction(action_cloner)
-            self.connect(action_cloner, QtCore.SIGNAL("triggered()"), self.cloner)
+            self.menu.addAction(action_creator)
+            self.connect(action_creator, QtCore.SIGNAL("triggered()"), self.creator)
         except:
             logging.debug("Can't load ufo-dd module")
 
@@ -357,15 +357,15 @@ class QtUFOGui(QtGui.QApplication):
         del self.settings_window
         self.settings_window = None
 
-    def cloner(self):
-        if self.cloner_window:
-            self.cloner_window.showNormal()
+    def creator(self):
+        if self.creator_window:
+            self.creator_window.showNormal()
             return
 
         while self.vbox.current_machine.is_running():
             input = dialog_error_report(_("Warning"),
                                         _("The UFO virtual machine is currently running.\n"
-                                          "Please shutdown the UFO virtual machine before using the UFO cloner"),
+                                          "Please shutdown the UFO virtual machine before using the UFO creator"),
                                         _("Retry"),
                                         error=False)
             if not input:
@@ -373,12 +373,12 @@ class QtUFOGui(QtGui.QApplication):
             time.sleep(0.3)
 
         from ufo_dd import DDWindow
-        self.cloner_window = DDWindow(self.backend)
+        self.creator_window = DDWindow(self.backend)
 
-        self.cloner_window.show()
-        self.cloner_window.exec_()
-        del self.cloner_window
-        self.cloner_window = None
+        self.creator_window.show()
+        self.creator_window.exec_()
+        del self.creator_window
+        self.creator_window = None
 
     def quit(self):
         if self.vbox.current_machine.is_running():
@@ -1290,11 +1290,15 @@ class Downloader(threading.Thread):
     def run(self):
         try:
             remote = urlopen(self.file)
-            if remote.code == 404:
+            if hasattr(remote, "code") and remote.code == 404:
                 raise Exception("404 error")
             remote.close()
 
             urlretrieve(self.file, self.dest, reporthook=self.on_progress)
+
+            if not os.path.exists(self.dest):
+                # The only way to detect 404 error with python < 2.6
+                raise Exception("404 error")
         except:
             app.postEvent(app, JobFinishedEvent(self.finished_callback, True))
         else:

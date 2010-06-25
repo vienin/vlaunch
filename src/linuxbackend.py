@@ -94,9 +94,12 @@ class LinuxBackend(OSBackend):
     def prepare_update(self):
         return conf.SCRIPT_PATH
     
-    def execv_as_root(self, executable, cmd):
+    def execv(self, cmd, root=False):
         logging.shutdown()
-        self.run_as_root.call(cmd, replace=True)
+        if root:
+            self.run_as_root.call(cmd, replace=True)
+        else:
+            os.execv(cmd[0], cmd)
 
     def is_admin(self):
         return os.getuid() == 0;

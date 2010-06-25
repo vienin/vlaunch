@@ -4,6 +4,7 @@ MACOS=dist/UFO.app/Contents/MacOS
 VBOXAPP=dist/UFO.app/Contents/Resources/VirtualBox.app
 VBOXMACOS=dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
 SETTINGSAPP=dist/settings.app
+CREATORAPP=dist/creator.app
 
 py2app:
 	if [ ! -f ../src/UFO.py ]; \
@@ -113,6 +114,14 @@ mac-launcher: clean py2app
 	cp Info.plist.settings ${SETTINGSAPP}/Contents/Info.plist
 	cp mac-settings-link ${SETTINGSAPP}/Contents/MacOS/settings
 	cp ../graphics/ufo.icns ${SETTINGSAPP}/Contents/Resources/ufo.icns
+	
+	# build cloner app
+	mkdir -p ${CREATORAPP}/Contents/MacOS
+	mkdir -p ${CREATORAPP}/Contents/Resources
+	cp PkgInfo.creator ${CREATORAPP}/Contents/PkgInfo
+	cp Info.plist.creator ${CREATORAPP}/Contents/Info.plist
+	cp mac-creator-link ${CREATORAPP}/Contents/MacOS/creator
+	cp ../graphics/ufo.icns ${CREATORAPP}/Contents/Resources/ufo.icns
 
 strip:
 	find dist -exec strip -S {} \; 2> /dev/null; \

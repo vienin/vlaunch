@@ -129,7 +129,7 @@ class DDWindow(QtGui.QDialog):
                 return
             target = self.usbs[str(self.target_key_list.currentItem().text())]
             target_size = self.backend.get_device_size(target) * 512
-            print target
+
             if  target_size < source_size:
                 gui.dialog_info(title=_("Source is higher than the selected target"),
                                 msg=_("The size of the source you have selected (" + str(source_size / (1024 * 1024)) + " Mo)"
@@ -175,7 +175,7 @@ class DDWindow(QtGui.QDialog):
         self.dl_mutex = False
 
     def clone(self, source, target):
-        cmd = [ "if=" + str(source), "of=" + str(target), "bs=1M" ]
+        cmd = [ "if=" + str(source), "of=" + str(target), "bs=" + str(1024*1024) ]
 
         if os.name == "win32":
             cmd.insert(0, "dd.exe")
@@ -221,16 +221,16 @@ class DDWindow(QtGui.QDialog):
         need_admin = False
 
         usbs = self.backend.get_usb_devices()
-        for possible_dev in [source, target]:
-            for usb in self.usbs.values():
-                if possible_dev == usb:
-                    need_admin = True
+        if not self.backend.is_admin():
+            for possible_dev in [source, target]:
+                for usb in self.usbs.values():
+                    if possible_dev == usb:
+                        need_admin = True
         for possible_dev in [source, target]:
             for usb in usbs:
                 if conf.SCRIPT_PATH.startswith(usb[0]):
                     self_copy = True
 
-        self.backend.checking_pyqt()
         if self_copy or need_admin:
             if self_copy:
                 executable = self.backend.prepare_self_copy()
@@ -240,11 +240,7 @@ class DDWindow(QtGui.QDialog):
             cmd = [ executable, "--dd", "--relaunch", source + "#" + target]
             logging.debug("Launching cloner : " + " ".join(cmd))
 
-            if need_admin and not self.backend.is_admin():
-                self.backend.execv_as_root(executable, cmd)
-            else:
-                logging.shutdown()
-                os.execv(executable, cmd)
+            self.backend.execv(cmd, root=need_admin)
             sys.exit(0)
 
     def on_source_select(self):

@@ -422,8 +422,9 @@ class WindowsBackend(OSBackend):
         gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
         sys.exit(1)
 
-    def execv_as_root(self, executable, cmd):
-        os.execv(executable, cmd)
+    def execv(self, cmd, root=False):
+        logging.shutdown()
+        os.execv(cmd[0], cmd)
 
     def is_admin(self):
         # We assume that we are admin as the exe manifest requires

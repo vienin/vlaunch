@@ -5,17 +5,17 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>UFO cloner</string>
+	<string>UFO creator</string>
 	<key>CFBundleExecutable</key>
-	<string>cloner</string>
+	<string>creator</string>
 	<key>CFBundleIconFile</key>
 	<string>ufo.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.pythonmac.unspecified.UFO-cloner</string>
+	<string>org.pythonmac.unspecified.UFO-creator</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>cloner</string>
+	<string>creator</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
