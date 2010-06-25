@@ -165,6 +165,7 @@ class DDWindow(QtGui.QDialog):
                                      msg=_("Please wait while the image is being downloaded"),
                                      parent=self)
         if not retcode:
+            self.source_filename = self.dest_file
             self.source_label.setText(self.dest_file)
             self.source_image.setChecked(True)
 
