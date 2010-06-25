@@ -153,6 +153,7 @@ class DDWindow(QtGui.QDialog):
         filedialog.setFileMode(QtGui.QFileDialog.Directory)
         filedialog.setOption(QtGui.QFileDialog.ShowDirsOnly, True)
         if filedialog.exec_() != QtGui.QDialog.Accepted:
+            self.dl_mutex = False
             return
 
         self.dest_dir = str(filedialog.selectedFiles()[0])
