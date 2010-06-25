@@ -155,6 +155,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/Windows/python26.dll
 %{TARGET_PATH}/Windows/ufo.exe
 %{TARGET_PATH}/Windows/settings.exe
+%{TARGET_PATH}/Windows/cloner.exe
 %{TARGET_PATH}/Windows/Microsoft.VC90.CRT
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/bin64
