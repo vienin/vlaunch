@@ -407,7 +407,7 @@ class WindowsBackend(OSBackend):
 
     def write_image(self, image, device, volume="", callback=None):
         import disk
-        disk.writeImage(image, device, volume=volume, callback=callback):
+        disk.writeImage(image, device, volume=volume, callback=callback)
 
     def rights_error(self):
         msg = _("You don't have enough permissions to run UFO.")
