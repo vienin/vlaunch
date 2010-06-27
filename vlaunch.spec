@@ -175,6 +175,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %{TARGET_PATH}/Linux/ufo
 %{TARGET_PATH}/Linux/settings
+%{TARGET_PATH}/Linux/creator
 %{TARGET_PATH}/Linux/bin
 
 "%{TARGET_PATH}/Manuel d'utilisation.pdf"
