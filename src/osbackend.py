@@ -829,6 +829,19 @@ class OSBackend(object):
 
         gui.app.process_gui_events()
 
+    def write_image(self, image, device, volume="", callback=None):
+        bs = 1024 * 1024
+        src = os.open(image, os.O_RDONLY)
+        size = os.stat(image).st_size
+        dest = os.open(device, os.O_WRONLY)
+        data = os.read(src, bs)
+        written = 0
+        while data:
+            os.write(dest, data)
+            written += len(data)
+            callback(written, size)
+            data = os.read(src, bs)
+
     def find_device_by_path(self, path):
         usbs = self.get_usb_devices()
         for usb in usbs:

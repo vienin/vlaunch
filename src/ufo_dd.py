@@ -1,148 +1,40 @@
-import gui
+from conf import conf
+from PyQt4 import QtGui, QtCore
+
 import logging
 import subprocess
 import time
 import os
 import sys
-from conf import conf
-from PyQt4 import QtGui
+import gui
 
-class DDWindow(QtGui.QDialog):
-    def get_usb_list(self, usbs):
-        choicelist = QtGui.QListWidget()
-        for i in usbs.keys():
-            choicelist.addItem(i)
-        return choicelist
-
+class DDWindow(QtGui.QWizard):
     def __init__(self, backend, relaunch=""):
         super(DDWindow, self).__init__()
         self.backend = backend
-
-        self.source_filename = ""
-        self.target_filename = ""
-        self.setWindowTitle(_("UFO creator"))
-
         self.dl_mutex = False
+        self.usbs = dict(self.backend.get_usb_sticks())
+        self.letters = {}
+        for usb in self.backend.get_usb_devices():
+            devname = usb[2]
+            self.letters[devname] = self.letters.get(devname, []) + [ usb[0][0] ]
+            model = self.usbs[devname]
+            if model.endswith(")"):
+                model = model[:-2] + " " + usb[0] + " )"
+            else:
+                model = model + " ( " + usb[0][:-1] + " )"
+            self.usbs[devname] = model
+        self.usbs = self.usbs.items()
 
-        self.usbs = {}
-        for usb in self.backend.get_usb_sticks():
-            self.usbs[usb[1]] = usb[0]
+        self.connect(self, QtCore.SIGNAL("currentIdChanged(int)"), self.currentIdChanged)
 
-        main_layout = QtGui.QVBoxLayout()
+        self.addPage(self.create_intro_page())
+        self.addPage(self.create_burn_page())
+        self.addPage(self.create_processing_page())
+        self.addPage(self.create_finish_page())
 
-        groupbox = QtGui.QGroupBox(_("Source"))
-        box_layout = QtGui.QVBoxLayout()
-        self.dl_button = QtGui.QPushButton(_("Download latest version from the Internet"))
-        self.dl_button.clicked.connect(self.on_dl)
-        box_layout.addWidget(self.dl_button)
-        self.source = source = QtGui.QButtonGroup()
-
-        self.source_image = source_image = QtGui.QRadioButton(_("From a file"), groupbox)
-        source_image.clicked.connect(self.on_source_select)
-        source.addButton(source_image)
-        hlayout = QtGui.QHBoxLayout()
-        hlayout.addWidget(source_image)
-        self.source_label = QtGui.QLabel("")
-        hlayout.addWidget(self.source_label)
-        box_layout.addLayout(hlayout)
-
-        source_key = QtGui.QRadioButton(_("From a USB key"), groupbox)
-        source.addButton(source_key)
-        hlayout = QtGui.QHBoxLayout()
-        hlayout.addWidget(source_key)
-        box_layout.addLayout(hlayout)
-        self.source_key_list = self.get_usb_list(self.usbs)
-        box_layout.addWidget(self.source_key_list)
-
-        groupbox.setLayout(box_layout)
-        main_layout.addWidget(groupbox)
-
-        groupbox = QtGui.QGroupBox(_("Target"))
-        box_layout = QtGui.QVBoxLayout()
-        self.target = target = QtGui.QButtonGroup()
-
-        self.target_image = target_image = QtGui.QRadioButton(_("To a file"), groupbox)
-        target_image.clicked.connect(self.on_target_select)
-        target.addButton(target_image)
-        hlayout = QtGui.QHBoxLayout()
-        hlayout.addWidget(target_image)
-        self.target_label = QtGui.QLabel("")
-        hlayout.addWidget(self.target_label)
-        box_layout.addLayout(hlayout)
-
-        self.target_key = target_key = QtGui.QRadioButton(_("To a USB key"), groupbox)
-        target.addButton(target_key)
-        hlayout = QtGui.QHBoxLayout()
-        hlayout.addWidget(target_key)
-        box_layout.addLayout(hlayout)
-        self.target_key_list = self.get_usb_list(self.usbs)
-        box_layout.addWidget(self.target_key_list)
-
-        groupbox.setLayout(box_layout)
-        main_layout.addWidget(groupbox)
-
-        hlayout = QtGui.QHBoxLayout()
-        self.start_button = QtGui.QPushButton(_("Start"))
-        self.start_button.clicked.connect(self.on_start)
-        hlayout.addWidget(self.start_button)
-        self.exit_button = QtGui.QPushButton(_("Exit"))
-        self.exit_button.clicked.connect(self.on_exit)
-        hlayout.addWidget(self.exit_button)
-        main_layout.addLayout(hlayout)
-
-        self.setLayout(main_layout)
-
-        if relaunch:
-            self.clone(relaunch.split('#')[0], relaunch.split('#')[1])
-
-    def on_exit(self):
-        sys.exit(0)
-
-    def on_start(self):
-        if not self.source.checkedButton():
-            gui.dialog_info(title=_("Missing source"), msg=_("Please specify a source"))
-            return
-        if not self.target.checkedButton():
-            gui.dialog_info(title=_("Missing target"), msg=_("Please specify a target"))
-            return
-        conf.IMGDIR = os.getcwd()
-        if self.source.checkedButton() == self.source_image:
-            if not self.source_filename:
-                gui.dialog_info(title=_("Missing source image"), msg=_("Please specify a source image"))
-                return
-            source = self.source_filename
-            source_size = os.stat(source).st_size
-        else:
-            if not self.source_key_list.currentItem():
-                gui.dialog_info(title=_("Missing source key"), msg=_("Please specify a source key"))
-                return
-            source = self.usbs[str(self.source_key_list.currentItem().text())]
-            source_size = self.backend.get_device_size(source) * 512
-        if self.target.checkedButton() == self.target_image:
-            if not self.target_filename:
-                gui.dialog_info(title=_("Missing target image"), msg=_("Please specify a target image"))
-                return
-            target = self.target_filename
-        else:
-            if not self.target_key_list.currentItem():
-                gui.dialog_info(title=_("Missing target key"), msg=_("Please specify a target key"))
-                return
-            target = self.usbs[str(self.target_key_list.currentItem().text())]
-            target_size = self.backend.get_device_size(target) * 512
-
-            if  target_size < source_size:
-                gui.dialog_info(title=_("Source is higher than the selected target"),
-                                msg=_("The size of the source you have selected (" + str(source_size / (1024 * 1024)) + " Mo)"
-                                      " is higher than the size of the selected target key (" + str(target_size / (1024 * 1024) ) + " Mo)."
-                                      "<br><br>Please select a source equal or smaller than the target key."))
-                return
-
-        if target == source:
-            gui.dialog_info(title=_("Source and target are the same"), msg=_("Source and target can not be the same"))
-            return
-
-        self.prepare_as_args(str(source), str(target))
-        self.clone(source, target)
+        self.setWindowTitle(_("Mobile PC Creator"))
+        self.show()
 
     def on_dl(self):
         if self.dl_mutex:
@@ -164,11 +56,10 @@ class DDWindow(QtGui.QDialog):
                                      self.dest_file,
                                      title=_("Downloading UFO key image"),
                                      msg=_("Please wait while the image is being downloaded"),
-                                     parent=self)
+                                     parent=self, autoclose = True, autostart = True)
         if not retcode:
             self.source_filename = self.dest_file
-            self.source_label.setText(self.dest_file)
-            self.source_image.setChecked(True)
+            self.source.setText(self.dest_file)
 
         else:
             gui.dialog_info(title=_("Warning"),
@@ -217,28 +108,27 @@ class DDWindow(QtGui.QDialog):
         self.start_button.setEnabled(True)
         self.exit_button.setEnabled(True)
 
-    def prepare_as_args(self, source, target):
+    def prepare_as_args(self):
         self_copy  = False
-        need_admin = False
+        need_admin = not self.backend.is_admin()
 
         usbs = self.backend.get_usb_devices()
-        if not self.backend.is_admin():
-            for possible_dev in [source, target]:
-                for usb in self.usbs.values():
-                    if possible_dev == usb:
-                        need_admin = True
-        for possible_dev in [source, target]:
-            for usb in usbs:
-                if conf.SCRIPT_PATH.startswith(usb[0]):
-                    self_copy = True
+        # if not self.backend.is_admin():
+        #     for possible_dev in [source, target]:
+        #         for usb in self.usbs.values():
+        #             if possible_dev == usb:
+        #                 need_admin = True
+        for usb in usbs:
+            if conf.SCRIPT_PATH.startswith(usb[0]):
+                self_copy = True
 
         if self_copy or need_admin:
             if self_copy:
-                executable = self.backend.prepare_self_copy()
+                executable = [ self.backend.prepare_self_copy() ]
             else:
-                executable = conf.SCRIPT_PATH
+                executable = [ sys.executable ] + sys.argv
 
-            cmd = [ executable, "--dd", "--relaunch", source + "#" + target]
+            cmd = executable + [ "--dd" ]
             logging.debug("Launching creator : " + " ".join(cmd))
 
             self.backend.execv(cmd, root=need_admin)
@@ -249,7 +139,7 @@ class DDWindow(QtGui.QDialog):
         if filedialog.exec_() != QtGui.QDialog.Accepted:
             return
         self.source_filename = str(filedialog.selectedFiles()[0])
-        self.source_label.setText(self.source_filename)
+        self.source.setText(self.source_filename)
 
     def on_target_select(self):
         filedialog = QtGui.QFileDialog(self, _("Please select an UFO image"), os.getcwd())
@@ -258,6 +148,145 @@ class DDWindow(QtGui.QDialog):
         self.target_filename = str(filedialog.selectedFiles()[0])
         self.target_label.setText(self.target_filename)
 
+    def create_intro_page(self):
+        page = QtGui.QWizardPage()
+        page.setTitle("Introduction")
+        label = QtGui.QLabel(_("Welcome to the Mobile PC Creator software.\n\n"
+                               "This tool allows you to put G-Dium Mobile PC on your "
+                               "USB pen drive or your USB hard drive or to backup "
+                               "your G-Dium Mobile PC system into a file.\n\n"
+                               "Please select what you want to do.\n"))
+        label.setWordWrap(True)
+
+        groupbox = QtGui.QGroupBox()
+        create = QtGui.QRadioButton(_("Install G-Dium Mobile PC on a device"), groupbox)
+        backup = QtGui.QRadioButton(_("Backup my G-Dium Mobile PC device"), groupbox)
+        create.setChecked(True)
+
+        layout = QtGui.QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(create)
+        layout.addWidget(backup)
+        page.setLayout(layout)
+
+        return page
+
+    def create_burn_page(self):
+        class BurnPage(QtGui.QWizardPage):
+            def validatePage(_self):
+                filename = self.source.text()
+                if not filename or not os.path.exists(filename):
+                    gui.dialog_info(title=_("Missing source image"),
+                                    msg=_("Please specify a source image or download one by "
+                                          "clicking the 'Download it' button"))
+                    return False
+
+                if self.choicelist.currentItem() == None:
+                    gui.dialog_info(title=_("Missing target device"), msg=_("Please select a target device"))
+                    return False
+
+                self.device = self.usbs[self.choicelist.currentRow()][0]
+                source_size = os.stat(filename).st_size
+                target_size = self.backend.get_device_size(self.device) * 512
+
+                if target_size < source_size:
+                     gui.dialog_info(title=_("The selected device is too small"),
+                                     msg=_("The size of the source you have selected (" + str(source_size / (1024 * 1024)) + " Mo)"
+                                           " is bigger than the size of the selected target device (" + str(target_size / (1024 * 1024) ) + " Mo)."
+                                           "<br><br>Please select a source equal or smaller than the target key."))
+                     return False
+
+                response = gui.dialog_question(title=_("All data on the device will be lost"),
+                                               msg=_("To setup G-Dium Mobile PC on your device, "
+                                                     "the device needs to be formatted. Are you sure you want to continue ?"),
+                                               dangerous = True)
+                if response != _("Yes"):
+                    return False
+                return True
+
+        page = BurnPage()
+        page.setTitle("Install G-Dium Mobile PC on my device")
+        layout = QtGui.QVBoxLayout()
+
+        label = QtGui.QLabel(_("If you already have downloaded an image "
+                               "please select its location, otherwise you "
+                               "can download the latest version from the Web"))
+        label.setWordWrap(True)
+        layout.addWidget(label)
+
+        hlayout = QtGui.QHBoxLayout()
+        self.source = source = QtGui.QLineEdit()
+        browse = QtGui.QPushButton("...")
+        browse.clicked.connect(self.on_source_select)
+        browse.setMaximumWidth(20)
+        download = QtGui.QPushButton("Download it")
+        download.clicked.connect(self.on_dl)
+        hlayout.addWidget(source)
+        hlayout.addWidget(browse)
+        hlayout.addWidget(download)
+        layout.addLayout(hlayout)
+
+        label = QtGui.QLabel(_("Please choose the target device:"))
+        layout.addWidget(label)
+
+        self.choicelist = choicelist = QtGui.QListWidget()
+        for i in self.usbs:
+            choicelist.addItem(i[1])
+        layout.addWidget(choicelist)
+
+        page.setLayout(layout)
+        return page
+
+    def create_processing_page(self):
+        page = QtGui.QWizardPage()
+        page.setTitle("Generating")
+        layout = QtGui.QVBoxLayout()
+
+        label = QtGui.QLabel(_("Please wait while G-Dium Mobile PC is beeing "
+                               "written to the device"))
+        label.setWordWrap(True)
+        layout.addWidget(label)
+
+        self.progress = progress = QtGui.QProgressBar()
+        layout.addWidget(progress)
+
+        page.setLayout(layout)
+        return page
+
+    def create_finish_page(self):
+        page = QtGui.QWizardPage()
+        page.setTitle("Operation successfull !")
+        layout = QtGui.QVBoxLayout()
+
+        label = QtGui.QLabel(_("G-Dium Mobile PC has been successfully installed "
+                               "on your device. You can use it right away.\n\n"
+                               "Enjoy !"))
+        label.setWordWrap(True)
+        layout.addWidget(label)
+
+        page.setLayout(layout)
+        return page
+
+    def is_process_finished(self, value):
+        if value == 100:
+            self.next()
+
+    def update_progress(self, sectors, total):
+        if total:
+            gui.app.postEvent(gui.app, gui.UpdateProgressEvent(self.progress, int(sectors / float(total) * 100)))
+
+    def currentIdChanged(self, id):
+        if id == len(self.pageIds()) - 2:
+            self.progress.setRange(0, 100)
+            self.progress.valueChanged.connect(self.is_process_finished)
+            kwargs = {}
+            if self.letters.has_key(self.device):
+                kwargs["volume"] = self.letters[self.device][0]
+            kwargs["callback"] = self.update_progress
+            import threading
+            threading.Thread(target=self.backend.write_image,
+                             args=(self.source.text(), self.device),
+                             kwargs=kwargs).start()
 
 if __name__ == "__main__":
 

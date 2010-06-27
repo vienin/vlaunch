@@ -405,6 +405,10 @@ class WindowsBackend(OSBackend):
         disks = self.WMI.Win32_DiskDrive()
         return [[ disk.Name, disk.Model ] for disk in disks if disk.InterfaceType == "USB" ]
 
+    def write_image(self, image, device, volume="", callback=None):
+        import disk
+        disk.writeImage(image, device, volume=volume, callback=callback):
+
     def rights_error(self):
         msg = _("You don't have enough permissions to run UFO.")
         logging.debug("Using Windows version " + str(platform.win32_ver()))
