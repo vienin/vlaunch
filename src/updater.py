@@ -150,7 +150,7 @@ def self_update(ufo_dir, relaunch):
 
         gui.wait_command(cmd=[remove_deprecated_files, tar, filelist, os.path.normcase(ufo_dir)],
                          title=_("Removing old files"),
-                         msg=_("Please wait while the old files is being removed"))
+                         msg=_("Please wait while the old files are being removed"))
 
         if sys.platform == "darwin":
             retcode = gui.wait_command(cmd=[ "tar", "-C", ufo_dir, "-xjf", filename ],
