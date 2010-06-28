@@ -63,7 +63,7 @@ class QtUFOGui(QtGui.QApplication):
         action_settings.setStatusTip(_("Configure the UFO launcher"))
         action_creator = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "creator.png")),
                                         QtCore.QString(_("Creator...")), self);
-        action_creator.setStatusTip(_("Clone your UFO key"))
+        action_creator.setStatusTip(_("Create your UFO key"))
         action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
                                         QtCore.QString(_("Quit")), self);
         action_quit.setStatusTip(_("Quit"))
@@ -1647,6 +1647,7 @@ class Settings(QtGui.QDialog):
         # Fill main dialog with configuration tabs
         
         tabWidget = QtGui.QTabWidget()
+        tabWidget.setUsesScrollButtons(False)
         for tab in conf.settings:
             tab_name = unicode(self.tr(tab['tabname']))
             if (not tabs) or (tab_name in tabs):
@@ -1695,7 +1696,9 @@ class Settings(QtGui.QDialog):
                 continue
 
             set_layout = QtGui.QVBoxLayout()
-            set_layout.addWidget(QtGui.QLabel(self.tr(setting['label'])))
+            label = QtGui.QLabel(self.tr(setting['label']))
+            label.setWordWrap(True)
+            set_layout.addWidget(label)
             
             if setting.has_key('group'):
                 item_tab = setting['group']
@@ -1908,8 +1911,10 @@ class Settings(QtGui.QDialog):
                             if custom and custom['function']:
                                 custom = custom.copy()
                                 custom['function'] = None
-                                
-                            val_layout.addWidget(QtGui.QLabel(self.tr(item['short'] + ":")))
+
+                            label = QtGui.QLabel(self.tr(item['short'] + ":"))
+                            label.setWordWrap(True)
+                            val_layout.addWidget(label)
                         
                         else:
                             
@@ -1921,6 +1926,7 @@ class Settings(QtGui.QDialog):
                                 value = current_value
                             edit   = QtGui.QLineEdit(value)
                             label  = QtGui.QLabel(self.tr(item['short']))
+                            label.setWordWrap(True)
                             label.setMinimumWidth(150)
                             signal = edit.textChanged
                             funct  = self.on_selection

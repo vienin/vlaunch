@@ -149,7 +149,7 @@ class DDWindow(QtGui.QWizard):
 
     def create_intro_page(self):
         page = QtGui.QWizardPage()
-        page.setTitle("Introduction")
+        page.setTitle(_("Introduction"))
         label = QtGui.QLabel(_("Welcome to the Mobile PC Creator software.\n\n"
                                "This tool allows you to put G-Dium Mobile PC on your "
                                "USB pen drive or your USB hard drive or to backup "
@@ -189,11 +189,11 @@ class DDWindow(QtGui.QWizard):
                 target_size = self.backend.get_device_size(self.device) * 512
 
                 if target_size < source_size:
-                     gui.dialog_info(title=_("The selected device is too small"),
+                    gui.dialog_info(title=_("The selected device is too small"),
                                      msg=_("The size of the source you have selected (" + str(source_size / (1024 * 1024)) + " Mo)"
                                            " is bigger than the size of the selected target device (" + str(target_size / (1024 * 1024) ) + " Mo)."
                                            "<br><br>Please select a source equal or smaller than the target key."))
-                     return False
+                    return False
 
                 response = gui.dialog_question(title=_("All data on the device will be lost"),
                                                msg=_("To setup G-Dium Mobile PC on your device, "
@@ -204,7 +204,7 @@ class DDWindow(QtGui.QWizard):
                 return True
 
         page = BurnPage()
-        page.setTitle("Install G-Dium Mobile PC on my device")
+        page.setTitle(_("Install G-Dium Mobile PC on my device"))
         layout = QtGui.QVBoxLayout()
 
         label = QtGui.QLabel(_("If you already have downloaded an image "
@@ -218,7 +218,7 @@ class DDWindow(QtGui.QWizard):
         browse = QtGui.QPushButton("...")
         browse.clicked.connect(self.on_source_select)
         browse.setMaximumWidth(20)
-        download = QtGui.QPushButton("Download it")
+        download = QtGui.QPushButton(_("Download it"))
         download.clicked.connect(self.on_dl)
         hlayout.addWidget(source)
         hlayout.addWidget(browse)
@@ -238,7 +238,7 @@ class DDWindow(QtGui.QWizard):
 
     def create_processing_page(self):
         page = QtGui.QWizardPage()
-        page.setTitle("Generating")
+        page.setTitle(_("Generating"))
         layout = QtGui.QVBoxLayout()
 
         label = QtGui.QLabel(_("Please wait while G-Dium Mobile PC is beeing "
@@ -254,7 +254,7 @@ class DDWindow(QtGui.QWizard):
 
     def create_finish_page(self):
         page = QtGui.QWizardPage()
-        page.setTitle("Operation successfull !")
+        page.setTitle(_("Operation successfull !"))
         layout = QtGui.QVBoxLayout()
 
         label = QtGui.QLabel(_("G-Dium Mobile PC has been successfully installed "

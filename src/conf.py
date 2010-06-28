@@ -361,8 +361,8 @@ class Conf(object):
                 { 'confid' : "resolution",
                   'sectid' : "vm",
                   'short'  : _("Window resolution"),
-                  'label'  : _("Choose the starting resolution of the window.\n"
-                               "Note that if the chosen resolution is higher or equal than the\n"
+                  'label'  : _("Choose the starting resolution of the window. "
+                               "Note that if the chosen resolution is higher or equal than the "
                                "computer one, the window will be displayed in fullscreen mode."),
                   'values' : self.resolutionValues
                 },
@@ -375,13 +375,13 @@ class Conf(object):
                 { 'confid' : "autofullscreen",
                   'sectid' : "launcher",
                   'short'  : _("Fullscreen automatic"),
-                  'label'  : _("Enable this option if you want the window switch to fullscreen\n"
+                  'label'  : _("Enable this option if you want the window switch to fullscreen "
                                "mode at login.")
                 },
                 { 'confid' : "autominimize",
                   'sectid' : "launcher",
                   'short'  : _("Minimize automatic"),
-                  'label'  : _("Enable this option if you want the window switch to minimized\n"
+                  'label'  : _("Enable this option if you want the window switch to minimized "
                                "mode at startup and shutdown.")
                 },
                 { 'confid' : "ejectatexit",
@@ -423,7 +423,7 @@ class Conf(object):
                                  'short'  : _("Balloon text color")
                                }
                              ],
-                  'label'  : _("Customize colors of the balloon message window. Use different\n"
+                  'label'  : _("Customize colors of the balloon message window. Use different "
                                "collors for top and bottom to get a color gradient.")
                 },
                 { 'confid' : "gui",
@@ -458,8 +458,8 @@ class Conf(object):
                 { 'confid' : "accel3d",
                   'sectid' : "vm",
                   'short'  : _("3D acceleration"),
-                  'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled,\n"
-                               "availability of this feature depends of the host computer 3D\n"
+                  'label'  : _("Set the 3D acceleration capability. Even if 3D is enabled, "
+                               "availability of this feature depends of the host computer 3D"
                                "device."),
                   'reboot' : True
                 },
@@ -474,8 +474,8 @@ class Conf(object):
                                  'short'  : _("Nested paging")
                                }
                              ],
-                  'label'  : _("Set the virtualization extentions. Even if virtualizatuion\n"
-                               "extentions are enabled, availability of this feature depends\n"
+                  'label'  : _("Set the virtualization extentions. Even if virtualizatuion "
+                               "extentions are enabled, availability of this feature depends "
                                "of the host computer cpu properties."),
                   'reboot' : True
                 },
@@ -524,8 +524,8 @@ class Conf(object):
                 { 'confid' : "reintegration",
                   'sectid' : "vm",
                   'short'  : _("Reintegration policy"),
-                  'label'  : _("DANGEROUS. Select the reintegration policy.\n"
-                               "The reintegration policy defines how system modifications\n"
+                  'label'  : _("DANGEROUS. Select the reintegration policy. "
+                               "The reintegration policy defines how system modifications "
                                "are written on the removable device."),
                   'values' : self.reintegrationValues,
                   'strgs'  : self.reintegrationStrings,
@@ -534,8 +534,8 @@ class Conf(object):
                 { 'confid' : "cmdline",
                   'sectid' : "vm",
                   'short'  : _("Kernel command line"),
-                  'label'  : _("DANGEROUS. Set the kernel command line parameters.\n"
-                               "If the following parameters already exist on the kernel\n"
+                  'label'  : _("DANGEROUS. Set the kernel command line parameters. "
+                               "If the following parameters already exist on the kernel "
                                "command line, they will be overwritten.")
                 }
               ]
