@@ -153,7 +153,7 @@ def self_update(ufo_dir, relaunch):
                          msg=_("Please wait while the old files are being removed"))
 
         if sys.platform == "darwin":
-            retcode = gui.wait_command(cmd=[ "tar", "-C", ufo_dir, "-xjf", filename ],
+            retcode = gui.wait_command(cmd=[ "tar", "--overwrite", "-C", ufo_dir, "-xjf", filename ],
                                        title=_("Installing update"),
                                        msg=_("Please wait while the update is being installed.<br><br>"
                                              "<b>The USB key absolutely must not be unplugged.</b>"))
@@ -165,14 +165,14 @@ def self_update(ufo_dir, relaunch):
                 utils.call([ "diskutil", "mount", dev ])
 
         else:
-            retcode = gui.extract_tar(tgz=tar,
+            success = gui.extract_tar(tgz=tar,
                                       dest=os.path.normcase(ufo_dir),
                                       title=_("Installing update"),
                                       msg=_("Please wait while the update is being installed.<br><br>"
                                         "<b>The USB key absolutely must not be unplugged.</b>"))
 
         tar.close()
-        if not retcode:
+        if not success:
             raise Exception("Installation has failed")
 
         logging.debug("Updating settings.conf")
