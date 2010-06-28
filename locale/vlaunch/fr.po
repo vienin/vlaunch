@@ -5,13 +5,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-06-28 14:04+CEST\n"
-"PO-Revision-Date: 2010-05-06 21:34+0100\n"
+"POT-Creation-Date: 2010-06-28 16:49+CEST\n"
+"PO-Revision-Date: 2010-06-28 17:25+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
 #: src/conf.py:352
@@ -22,9 +22,10 @@ msgstr "Direct"
 msgid "Host disk"
 msgstr "Disque hôte"
 
-#: src/conf.py:352 src/conf.py:444
+#: src/conf.py:352
+#: src/conf.py:444
 msgid "Memory"
-msgstr "Memoire vive"
+msgstr "Mémoire vive"
 
 #: src/conf.py:353
 msgid "English"
@@ -36,15 +37,15 @@ msgstr "Français"
 
 #: src/conf.py:354
 msgid "Cairo-dock"
-msgstr ""
+msgstr "Cairo-dock"
 
 #: src/conf.py:354
 msgid "GNOME"
-msgstr ""
+msgstr "GNOME"
 
 #: src/conf.py:354
 msgid "Moblin"
-msgstr ""
+msgstr "Moblin"
 
 #: src/conf.py:357
 msgid "Behavior"
@@ -55,14 +56,8 @@ msgid "Window resolution"
 msgstr "Résolution de la fenêtre"
 
 #: src/conf.py:364
-msgid ""
-"Choose the starting resolution of the window.\n"
-"Note that if the chosen resolution is higher or equal than the\n"
-"computer one, the window will be displayed in fullscreen mode."
-msgstr ""
-"Choississez la résolution initiale de la fenêtre.\n"
-"Notez que si la résolution choisie est supérieure ou égale à celle\n"
-"de l'ordinateur, la fenêtre sera affichée en mode plein écran."
+msgid "Choose the starting resolution of the window. Note that if the chosen resolution is higher or equal than the computer one, the window will be displayed in fullscreen mode."
+msgstr "Choisissez la résolution initiale de la fenêtre. Notez que si la résolution choisie est supérieure ou égale à celle de l'ordinateur, la fenêtre sera affichée en mode plein écran."
 
 #: src/conf.py:371
 msgid "Activate voice"
@@ -70,43 +65,36 @@ msgstr "Activer la voix"
 
 #: src/conf.py:372
 msgid "Enable this option if you want to turn on voice synthesis."
-msgstr "Activez cette option si vous voulez activer la syntèse de voix."
+msgstr "Activez cette option si vous voulez activer la synthèse de voix."
 
 #: src/conf.py:377
 msgid "Fullscreen automatic"
 msgstr "Plein écran automatique"
 
 #: src/conf.py:378
-msgid ""
-"Enable this option if you want the window switch to fullscreen\n"
-"mode at login."
-msgstr ""
-"Activez cette option si vous voulez que la fenêtre soit affichée\n"
-"en mode plein écran à l'arrivée au bureau."
+msgid "Enable this option if you want the window switch to fullscreen mode at login."
+msgstr "Activez cette option si vous voulez que la fenêtre soit affichée en mode plein écran à l'arrivée au bureau."
 
 #: src/conf.py:383
 msgid "Minimize automatic"
 msgstr "Réduction automatique"
 
 #: src/conf.py:384
-msgid ""
-"Enable this option if you want the window switch to minimized\n"
-"mode at startup and shutdown."
-msgstr ""
-"Activez cette option si vous voulez que la fenêtre soit réduite\n"
-"durant les étapes de démarage et de fermeture."
+msgid "Enable this option if you want the window switch to minimized mode at startup and shutdown."
+msgstr "Activez cette option si vous voulez que la fenêtre soit réduite durant les étapes de démarrage et de fermeture."
 
 #: src/conf.py:389
 msgid "Eject key at shutdown"
-msgstr "Ejecter la clé à l'extinction"
+msgstr "Éjecter la clé à l'extinction"
 
 #: src/conf.py:390
 msgid "Enable this option if you want to eject the key at shutdown."
 msgstr ""
-"Activez cette option si vous voulez que la clé soit ejectée\n"
+"Activez cette option si vous voulez que la clé soit éjectée\n"
 "à l'extinction de la machine virtuelle."
 
-#: src/conf.py:394 src/launcher.py:137
+#: src/conf.py:394
+#: src/launcher.py:137
 msgid "Appearance"
 msgstr "Apparence"
 
@@ -116,7 +104,7 @@ msgstr "Langue"
 
 #: src/conf.py:401
 msgid "Choose your language."
-msgstr "Choississez la langue."
+msgstr "Choisissez la langue."
 
 #: src/conf.py:408
 msgid "Menu bar"
@@ -139,21 +127,16 @@ msgid "Balloon text color"
 msgstr "Couleur du texte"
 
 #: src/conf.py:426
-msgid ""
-"Customize colors of the balloon message window. Use different\n"
-"collors for top and bottom to get a color gradient."
-msgstr ""
-"Personnalisez la couleur de l'infobule de messages.\n"
-"Utilisez des couleurs différentes pour le haut et le bas pour\n"
-"obtenir un dégradé de couleurs."
+msgid "Customize colors of the balloon message window. Use different collors for top and bottom to get a color gradient."
+msgstr "Personnalisez la couleur de l'infobulle de messages. Utilisez des couleurs différentes pour le haut et le bas pour obtenir un dégradé de couleurs."
 
 #: src/conf.py:431
 msgid "User interface"
-msgstr ""
+msgstr "Interface utilisateur"
 
 #: src/conf.py:432
 msgid "Select a graphical interface."
-msgstr ""
+msgstr "Sélectionner une interface utilisateur."
 
 #: src/conf.py:438
 msgid "Advanced"
@@ -176,14 +159,8 @@ msgid "3D acceleration"
 msgstr "Accélération 3D"
 
 #: src/conf.py:461
-msgid ""
-"Set the 3D acceleration capability. Even if 3D is enabled,\n"
-"availability of this feature depends of the host computer 3D\n"
-"device."
-msgstr ""
-"Activez l'accélération 3D. Bien que cette option soit activée,\n"
-"la disponibilité de cette fonctionalité dépend du matériel\n"
-"de l'ordinateur."
+msgid "Set the 3D acceleration capability. Even if 3D is enabled, availability of this feature depends of the host computer 3Ddevice."
+msgstr "Activez l'accélération 3D. Bien que cette option soit activée, la disponibilité de cette fonctionnalité dépend du matériel de l'ordinateur."
 
 #: src/conf.py:470
 msgid "VT-x/AMD-V"
@@ -194,14 +171,8 @@ msgid "Nested paging"
 msgstr "Pagination enchevêtrée"
 
 #: src/conf.py:477
-msgid ""
-"Set the virtualization extentions. Even if virtualizatuion\n"
-"extentions are enabled, availability of this feature depends\n"
-"of the host computer cpu properties."
-msgstr ""
-"Activez les extentions de virtualisation. Bien que cette option\n"
-"soit activée,la disponibilité de cette fonctionalité dépend du\n"
-"matériel de l'ordinateur."
+msgid "Set the virtualization extentions. Even if virtualizatuion extentions are enabled, availability of this feature depends of the host computer cpu properties."
+msgstr "Activez les extensions de virtualisation. Bien que cette option soit activée,la disponibilité de cette fonctionnalité dépend du matériel de l'ordinateur."
 
 #: src/conf.py:484
 msgid "Network"
@@ -224,18 +195,16 @@ msgid "SOCKS proxy"
 msgstr "Hôte SOCKS"
 
 #: src/conf.py:511
-msgid ""
-"Use autodetection for proxy servers or configure them manually using "
-"<br>format <i>hostname:port</i>"
-msgstr ""
-"Détecter les serveurs mandataires ou configurer les manuellement <br>en "
-"utilisant le format <i>hôte:port</i>"
+msgid "Use autodetection for proxy servers or configure them manually using <br>format <i>hostname:port</i>"
+msgstr "Détecter les serveurs mandataires ou configurer les manuellement <br>en utilisant le format <i>hôte:port</i>"
 
 #: src/conf.py:515
 msgid "System"
 msgstr "Système"
 
-#: src/conf.py:521 src/launcher.py:149 src/osbackend.py:423
+#: src/conf.py:521
+#: src/launcher.py:149
+#: src/osbackend.py:423
 msgid "Debug mode"
 msgstr "Mode débogage"
 
@@ -248,28 +217,16 @@ msgid "Reintegration policy"
 msgstr "Politique de réintégration"
 
 #: src/conf.py:527
-msgid ""
-"DANGEROUS. Select the reintegration policy.\n"
-"The reintegration policy defines how system modifications\n"
-"are written on the removable device."
-msgstr ""
-"DANGEREUX. Selectione la politique de réintégration.\n"
-"La politique de réintégration definie la manière dont les\n"
-"modifications du système sont écrites sur le support amovible."
+msgid "DANGEROUS. Select the reintegration policy. The reintegration policy defines how system modifications are written on the removable device."
+msgstr "DANGEREUX. Sélectionne la politique de réintégration. La politique de réintégration définie la manière dont les modifications du système sont écrites sur le support amovible."
 
 #: src/conf.py:536
 msgid "Kernel command line"
 msgstr "Ligne de commande du noyau"
 
 #: src/conf.py:537
-msgid ""
-"DANGEROUS. Set the kernel command line parameters.\n"
-"If the following parameters already exist on the kernel\n"
-"command line, they will be overwritten."
-msgstr ""
-"DANGEREUX. Defini les paramètres de la ligne de commande du\n"
-"noyau. Si les paramètres suivants existe déjà sur la ligne de\n"
-"commande du noyau, il seront surchargés."
+msgid "DANGEROUS. Set the kernel command line parameters. If the following parameters already exist on the kernel command line, they will be overwritten."
+msgstr "DANGEREUX. Défini les paramètres de la ligne de commande du noyau. Si les paramètres suivants existe déjà sur la ligne de commande du noyau, il seront surchargés."
 
 #: src/gui_pyqt.py:59
 msgid "About"
@@ -289,17 +246,19 @@ msgstr "Configurez le lanceur UFO"
 
 #: src/gui_pyqt.py:65
 msgid "Creator..."
-msgstr ""
+msgstr "Creator..."
 
 #: src/gui_pyqt.py:66
-msgid "Clone your UFO key"
-msgstr ""
+msgid "Create your UFO key"
+msgstr "Créer votre clé UFO"
 
-#: src/gui_pyqt.py:68 src/gui_pyqt.py:69
+#: src/gui_pyqt.py:68
+#: src/gui_pyqt.py:69
 msgid "Quit"
 msgstr "Quitter"
 
-#: src/gui_pyqt.py:71 src/gui_pyqt.py:72
+#: src/gui_pyqt.py:71
+#: src/gui_pyqt.py:72
 msgid "Force to quit"
 msgstr "Forcer à quitter"
 
@@ -307,7 +266,8 @@ msgstr "Forcer à quitter"
 msgid "Antivirus..."
 msgstr "Antivirus..."
 
-#: src/gui_pyqt.py:75 src/gui_pyqt.py:421
+#: src/gui_pyqt.py:75
+#: src/gui_pyqt.py:421
 msgid "Antivirus"
 msgstr "Antivirus"
 
@@ -323,24 +283,28 @@ msgstr "Version "
 msgid "For more information, please visit"
 msgstr "Pour plus d'informations, visitez "
 
-#: src/gui_pyqt.py:366 src/gui_pyqt.py:387 src/linuxbackend.py:112
-#: src/linuxbackend.py:394 src/osbackend.py:241 src/osbackend.py:504
-#: src/ufo_dd.py:65 src/ufo_dd.py:84
+#: src/gui_pyqt.py:366
+#: src/gui_pyqt.py:387
+#: src/linuxbackend.py:112
+#: src/linuxbackend.py:394
+#: src/osbackend.py:241
+#: src/osbackend.py:504
+#: src/ufo_dd.py:65
+#: src/ufo_dd.py:84
 msgid "Warning"
 msgstr "Attention"
 
 #: src/gui_pyqt.py:367
-#, fuzzy
 msgid ""
 "The UFO virtual machine is currently running.\n"
 "Please shutdown the UFO virtual machine before using the UFO creator"
-msgstr ""
-"La machine virtuelle UFO est en cours de démarrage.\n"
-"Vous ne pouvez pas éteindre la machine pendant le démarrage."
+msgstr "La machine virtuelle UFO est en cours de démarrage. Vous ne pouvez pas éteindre la machine pendant le démarrage."
 
-#: src/gui_pyqt.py:369 src/ufo_dd.py:87 src/updater.py:76
+#: src/gui_pyqt.py:369
+#: src/ufo_dd.py:87
+#: src/updater.py:76
 msgid "Retry"
-msgstr ""
+msgstr "Réessayer"
 
 #: src/gui_pyqt.py:388
 msgid ""
@@ -350,8 +314,12 @@ msgstr ""
 "La machine virtuelle UFO est en cours de démarrage.\n"
 "Vous ne pouvez pas éteindre la machine pendant le démarrage."
 
-#: src/gui_pyqt.py:396 src/gui_pyqt.py:2029 src/gui_pyqt.py:2044
-#: src/gui_pyqt.py:2194 src/osbackend.py:507 src/osbackend.py:508
+#: src/gui_pyqt.py:396
+#: src/gui_pyqt.py:2035
+#: src/gui_pyqt.py:2050
+#: src/gui_pyqt.py:2200
+#: src/osbackend.py:507
+#: src/osbackend.py:508
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
@@ -361,21 +329,16 @@ msgid "Dangerous"
 msgstr "Dangereux"
 
 #: src/gui_pyqt.py:398
-#, fuzzy
 msgid ""
 "The UFO virtual machine is currently running.\n"
-"Forcing machine to shutdown is very DANGEROUS, the modification made during "
-"this session will be lost. You should use the \"Quit\" menu action to "
-"shutdown UFO properly.\n"
+"Forcing machine to shutdown is very DANGEROUS, the modification made during this session will be lost. You should use the \"Quit\" menu action to shutdown UFO properly.\n"
 "\n"
 "Do you really want to kill the UFO virtual machine ?"
 msgstr ""
 "La machine virtuelle UFO est en cours d'exécution.\n"
-"Forcer la fermeture de la machine est dangereux. Les modifications "
-"effectuées pendant cette session peuvent être perdues. Vous devriez utiliser "
-"le bouton \"Quitter\" pour fermer UFO proprement.\n"
+"Forcer la fermeture de la machine est dangereux. Les modifications effectuées pendant cette session peuvent être perdues. Vous devriez utiliser le bouton \"Quitter\" pour fermer UFO proprement.\n"
 "\n"
-"Voulez-vous vraiment forcer la fermeture d'UFO ?"
+"Voulez-vous vraiment forcer la fermeture de UFO ?"
 
 #: src/gui_pyqt.py:422
 msgid "No virus found"
@@ -397,11 +360,13 @@ msgstr "Applications"
 msgid "Public"
 msgstr "Public"
 
-#: src/gui_pyqt.py:1093 src/gui_pyqt.py:1111
+#: src/gui_pyqt.py:1093
+#: src/gui_pyqt.py:1111
 msgid "Detach"
 msgstr "Détacher"
 
-#: src/gui_pyqt.py:1096 src/gui_pyqt.py:1108
+#: src/gui_pyqt.py:1096
+#: src/gui_pyqt.py:1108
 msgid "Attach"
 msgstr "Attacher"
 
@@ -417,12 +382,15 @@ msgstr "Ignorer"
 msgid "You already are authenticated"
 msgstr "Vous êtes déjà authentifié"
 
-#: src/gui_pyqt.py:1190 src/gui_pyqt.py:1215 src/gui_pyqt.py:1272
+#: src/gui_pyqt.py:1190
+#: src/gui_pyqt.py:1215
+#: src/gui_pyqt.py:1272
 #: src/gui_pyqt.py:1276
 msgid "Authenticate"
 msgstr "S'authentifier"
 
-#: src/gui_pyqt.py:1201 src/gui_pyqt.py:1276
+#: src/gui_pyqt.py:1201
+#: src/gui_pyqt.py:1276
 msgid "Guest mode"
 msgstr "Mode invité"
 
@@ -430,12 +398,17 @@ msgstr "Mode invité"
 msgid "UFO password:"
 msgstr "Mot de passe UFO:"
 
-#: src/gui_pyqt.py:1240 src/gui_pyqt.py:2239
+#: src/gui_pyqt.py:1240
+#: src/gui_pyqt.py:2245
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
-#: src/gui_pyqt.py:1384 src/gui_pyqt.py:1437 src/gui_pyqt.py:1465
-#: src/gui_pyqt.py:1502 src/gui_pyqt.py:1570 src/gui_pyqt.py:1668
+#: src/gui_pyqt.py:1384
+#: src/gui_pyqt.py:1437
+#: src/gui_pyqt.py:1465
+#: src/gui_pyqt.py:1502
+#: src/gui_pyqt.py:1570
+#: src/gui_pyqt.py:1669
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -443,7 +416,9 @@ msgstr "Annuler"
 msgid "Download"
 msgstr "Télécharger"
 
-#: src/gui_pyqt.py:1493 src/launcher.py:176 src/macbackend.py:276
+#: src/gui_pyqt.py:1493
+#: src/launcher.py:176
+#: src/macbackend.py:276
 #: src/updater.py:193
 msgid "Error"
 msgstr "Erreur"
@@ -452,7 +427,8 @@ msgstr "Erreur"
 msgid "Could not write to file %s: %s."
 msgstr "Impossible d'écrire dans le fichier %s: %s."
 
-#: src/gui_pyqt.py:1509 src/gui_pyqt.py:2151
+#: src/gui_pyqt.py:1509
+#: src/gui_pyqt.py:2157
 msgid "Downloading"
 msgstr "En cours de téléchargement"
 
@@ -472,91 +448,106 @@ msgstr ""
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/gui_pyqt.py:1664
+#: src/gui_pyqt.py:1665
 msgid "Ok"
 msgstr "Ok"
 
-#: src/gui_pyqt.py:1673
+#: src/gui_pyqt.py:1674
 msgid "Defaults"
 msgstr "Réglages par défaut"
 
-#: src/gui_pyqt.py:1680
+#: src/gui_pyqt.py:1681
 msgid "UFO settings"
 msgstr "Paramètres de UFO"
 
-#: src/gui_pyqt.py:1849 src/gui_pyqt.py:1933 src/gui_pyqt.py:1974
+#: src/gui_pyqt.py:1852
+#: src/gui_pyqt.py:1939
+#: src/gui_pyqt.py:1980
 msgid "Auto"
 msgstr "Auto"
 
-#: src/gui_pyqt.py:2017
+#: src/gui_pyqt.py:2023
 msgid "Restart required"
 msgstr "Redémarrage requis"
 
-#: src/gui_pyqt.py:2018
+#: src/gui_pyqt.py:2024
 msgid "You need to restart U.F.O for this changes to be applied"
 msgstr ""
 "Le redémarrage de U.F.O est nécessaire pour que \n"
 "les changements soit pris en compte"
 
-#: src/gui_pyqt.py:2028 src/gui_pyqt.py:2043 src/gui_pyqt.py:2194
-#: src/osbackend.py:506 src/ufo_dd.py:203 src/updater.py:56 src/updater.py:58
+#: src/gui_pyqt.py:2034
+#: src/gui_pyqt.py:2049
+#: src/gui_pyqt.py:2200
+#: src/osbackend.py:506
+#: src/ufo_dd.py:203
+#: src/updater.py:56
+#: src/updater.py:58
 msgid "Yes"
 msgstr "Oui"
 
-#: src/gui_pyqt.py:2030
+#: src/gui_pyqt.py:2036
 msgid "Would you cancel the following changes ?"
 msgstr "Voulez vous annuler les changements suivants ?"
 
-#: src/gui_pyqt.py:2045
+#: src/gui_pyqt.py:2051
 msgid "Would you reset all settings to default ?"
-msgstr "Voulez vous réinitialiser les réglages par defaut ?"
+msgstr "Voulez vous réinitialiser les réglages par défaut ?"
 
-#: src/gui_pyqt.py:2071
+#: src/gui_pyqt.py:2077
 msgid "Activated"
 msgstr "Activé"
 
-#: src/gui_pyqt.py:2073
+#: src/gui_pyqt.py:2079
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: src/gui_pyqt.py:2107
+#: src/gui_pyqt.py:2113
 msgid "Message title"
 msgstr "Titre du message"
 
-#: src/gui_pyqt.py:2109
+#: src/gui_pyqt.py:2115
 msgid "Message contents"
 msgstr "Contenu du message"
 
-#: src/gui_pyqt.py:2138 src/launcher.py:152
+#: src/gui_pyqt.py:2144
+#: src/launcher.py:152
 msgid "Send debug reports"
-msgstr "Envoyer les rapports de déboguage"
+msgstr "Envoyer les rapports de débogage"
 
-#: src/gui_pyqt.py:2147
+#: src/gui_pyqt.py:2153
 msgid "Installing"
-msgstr ""
+msgstr "Installer"
 
-#: src/gui_pyqt.py:2147 src/gui_pyqt.py:2152 src/gui_pyqt.py:2166
-#: src/gui_zenity.py:164 src/linuxbackend.py:311 src/ufo_dd.py:96
+#: src/gui_pyqt.py:2153
+#: src/gui_pyqt.py:2158
+#: src/gui_pyqt.py:2172
+#: src/gui_zenity.py:164
+#: src/linuxbackend.py:311
+#: src/ufo_dd.py:96
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
-#: src/gui_pyqt.py:2153
+#: src/gui_pyqt.py:2159
 msgid "Download completed"
 msgstr "Téléchargement terminé"
 
-#: src/gui_pyqt.py:2166 src/gui_zenity.py:164
+#: src/gui_pyqt.py:2172
+#: src/gui_zenity.py:164
 msgid "Operation in progress"
 msgstr "Opération en cours"
 
-#: src/gui_pyqt.py:2167 src/gui_zenity.py:165
+#: src/gui_pyqt.py:2173
+#: src/gui_zenity.py:165
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:2232
+#: src/gui_pyqt.py:2238
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:2236 src/gui_zenity.py:178
+#: src/gui_pyqt.py:2242
+#: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
 
@@ -573,9 +564,7 @@ msgid "Press 'Download' to start downloading the U.F.O Live image."
 msgstr "Cliquez sur 'Télécharger' pour commencer le téléchargement."
 
 #: src/launcher.py:87
-msgid ""
-"This operation can take up to a few hours, depending on your connection "
-"speed."
+msgid "This operation can take up to a few hours, depending on your connection speed."
 msgstr ""
 "Cette opération peut prendre de quelques minutes à plusieurs heures\n"
 "suivant la vitesse de votre connexion."
@@ -585,15 +574,12 @@ msgid ""
 "UFO was run in debug mode.\n"
 "You can help fixing your problem by submitting the debug reports"
 msgstr ""
-"UFO a été exécuté en mode déboguage. Vous pouvez aider à la correction de "
-"votre problème en soumettant\n"
-"les rapports de déboguage."
+"UFO a été exécuté en mode débogage. Vous pouvez aider à la correction de votre problème en soumettant\n"
+"les rapports de débogage."
 
 #: src/launcher.py:171
-msgid ""
-"UFO has encountered a minor error. Restarting the application may fix the "
-"problem."
-msgstr ""
+msgid "UFO has encountered a minor error. Restarting the application may fix the problem."
+msgstr "UFO a rencontré une erreur mineure. Redémarrer l'application peut réglé le problème."
 
 #: src/launcher.py:174
 msgid "UFO has encountered a fatal error and will now be closed."
@@ -601,9 +587,7 @@ msgstr "UFO a rencontré une erreur fatale et doit fermer."
 
 #: src/launcher.py:178
 msgid "You can help fixing this problem by submitting an error report"
-msgstr ""
-"Vous pouvez aider à la correction du problème en soumettant le rapport "
-"d'erreur."
+msgstr "Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur."
 
 #: src/launcher.py:179
 msgid "Send a report"
@@ -612,9 +596,10 @@ msgstr "Envoyer le rapport d'erreur"
 #: src/linuxbackend.py:113
 msgid ""
 "Your Linux distribution is not officially supported by U.F.O.\n"
-"You may or may not encounter errors. Install PyQt4 and VirtualBox... and "
-"pray :)"
+"You may or may not encounter errors. Install PyQt4 and VirtualBox... and pray :)"
 msgstr ""
+"Votre distribution Linux n'est pas officiellement supportée par UFO.\n"
+"Il est possible que vous rencontriez des erreurs. Installer PyQt4 et VirtualBox... et croisez les doigts !"
 
 #: src/linuxbackend.py:242
 msgid "My Linux documents"
@@ -622,7 +607,7 @@ msgstr "Mes documents Linux"
 
 #: src/linuxbackend.py:312
 msgid "Installing %s (required by UFO)"
-msgstr "Installation de %s (composant réquis par UFO)"
+msgstr "Installation de %s (composant requis par UFO)"
 
 #: src/linuxbackend.py:313
 msgid "%s was successfully installed"
@@ -638,15 +623,15 @@ msgstr "Configuration des dépôts Agorabox pour Yum"
 
 #: src/linuxbackend.py:361
 msgid "Installing VirtualBox Open Source edition. This can take a few minutes"
-msgstr ""
-"Installation de VirtualBox Open Source Edition. Ceci peut prendre plusieurs "
-"minutes"
+msgstr "Installation de VirtualBox Open Source Edition. Ceci peut prendre plusieurs minutes"
 
 #: src/linuxbackend.py:391
 msgid ""
 "You are not running the latest installed version of the kernel.\n"
 "A reboot is required for UFO to work."
 msgstr ""
+"Votre système n'utilise pas la dernière version du noyau installée.\n"
+"Le redémarrage du système est nécessaire au fonctionnement de UFO."
 
 #: src/linuxbackend.py:408
 msgid "Compiling VirtualBox drivers"
@@ -674,17 +659,15 @@ msgstr ""
 "La mémoire vive disponible est faible,\n"
 "cela peut influer sur la vitesse d'exécution de la machine virtuelle UFO.\n"
 "\n"
-"Fermer des applications ou redémarrer l'ordinateur peut améliorer les "
-"performances."
+"Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances."
 
 #: src/osbackend.py:421
-#, fuzzy
 msgid ""
 "UFO is running in debug mode.\n"
 "Be aware to disable debug mode at the next session."
 msgstr ""
-"UFO est exécuté en mode déboguage.\n"
-"Prennez garde à désactiver le mode débogaguage à la fin de la session."
+"UFO est exécuté en mode débogage.\n"
+"Prenez garde à désactiver le mode débogage à la fin de la session."
 
 #: src/osbackend.py:505
 msgid "Could not find an UFO key, try again ?"
@@ -692,11 +675,11 @@ msgstr "Aucune clé UFO n'a été trouvée, réessayer ?"
 
 #: src/osbackend.py:515
 msgid "No USB device found"
-msgstr "Aucune clée trouvée"
+msgstr "Aucune clé trouvée"
 
 #: src/osbackend.py:516
 msgid "Select the USB device you want to install UFO on"
-msgstr "Selectionnez le périphérique USB sur lequel vous voulez installer UFO"
+msgstr "Sélectionnez le périphérique USB sur lequel vous voulez installer UFO"
 
 #: src/osbackend.py:517
 msgid "Device"
@@ -711,8 +694,8 @@ msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
 msgstr ""
-"Une instance de %s est en déjà cours d'éxécution.\n"
-"Veuillez fermer toutes les fenêtres de %s et recomencez."
+"Une instance de %s est en déjà cours d'exécution.\n"
+"Veuillez fermer toutes les fenêtres de %s et recommencez."
 
 #: src/osbackend.py:562
 msgid "Force to close"
@@ -726,27 +709,31 @@ msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:574 src/windowsbackend.py:423
+#: src/osbackend.py:574
+#: src/windowsbackend.py:423
 msgid ""
 "We have detected an existing VirtualBox installation on this computer.\n"
-"UFO is not compatible with this version of VirtualBox, please remove this "
-"VirtualBox installation to run UFO.\n"
+"UFO is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run UFO.\n"
 "\n"
-"Note that if you want to use your own VirtualBox installation, you need to "
-"reboot your computer."
+"Note that if you want to use your own VirtualBox installation, you need to reboot your computer."
 msgstr ""
+"Une installation existante de VirtualBox à été détectée sur cet ordinateur.\n"
+"UFO n'est pas compatible avec cette version de VirtualBox, veuillez désinstaller VirtualBox pour lancer UFO.\n"
+"\n"
+"Notez que si vous voulez utiliser votre propre installation de VirtualBox, vous devez redémarrer votre ordinateur."
 
-#: src/osbackend.py:577 src/windowsbackend.py:426
+#: src/osbackend.py:577
+#: src/windowsbackend.py:426
 msgid "VirtualBox detected"
-msgstr ""
+msgstr "VirtualBox détecté"
 
 #: src/osbackend.py:581
 msgid "We're sorry but your architecture (%s) is not yet supported."
-msgstr ""
+msgstr "Votre architecture (%s) n'est pas encore supportée. Nous sommes désolé et vous conseillons de suivre les mise à jour du logiciel."
 
 #: src/osbackend.py:582
 msgid "Unsupported architecture"
-msgstr ""
+msgstr "Architecture non supportée"
 
 #: src/osbackend.py:611
 msgid "Opening session..."
@@ -781,8 +768,7 @@ msgid ""
 "Please wait while UFO is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
 msgstr ""
-"UFO est en train d'enregistrer les modifications du système (%s méga-"
-"octets),\n"
+"UFO est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
 #: src/osbackend.py:675
@@ -835,15 +821,15 @@ msgstr "Au revoir"
 
 #: src/osbackend.py:760
 msgid "You can now safely eject your UFO key."
-msgstr "Vous pouvez éjecter votre clé UFO en toute securité."
+msgstr "Vous pouvez éjecter votre clé UFO en toute sécurité."
 
 #: src/ufo_dd.py:36
 msgid "Mobile PC Creator"
-msgstr ""
+msgstr "Mobile PC Creator"
 
 #: src/ufo_dd.py:44
 msgid "Please select a destination directory for the download"
-msgstr ""
+msgstr "Veuillez sélectionner un répertoire de destination pour le téléchargement"
 
 #: src/ufo_dd.py:57
 msgid "Downloading UFO key image"
@@ -854,32 +840,26 @@ msgid "Please wait while the image is being downloaded"
 msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
 
 #: src/ufo_dd.py:66
-msgid ""
-"The download has encountered a fatal error, please check your Internet "
-"connection and retry"
-msgstr ""
-"Le téléchargement a echoué. Veuillez vérifier votre connexion à Internet"
+msgid "The download has encountered a fatal error, please check your Internet connection and retry"
+msgstr "Le téléchargement a échoué. Veuillez vérifier votre connexion à Internet"
 
 #: src/ufo_dd.py:97
 msgid "Writing the image to the disk. This process can take several minutes."
-msgstr ""
+msgstr "Écriture des données sur le disque. Cette opération peut prendre plusieurs minutes."
 
 #: src/ufo_dd.py:99
-msgid ""
-"The copy had terminated successfully.<br><br>Please unplug and replug your "
-"UFO key if you want to launch it now."
-msgstr ""
+msgid "The copy had terminated successfully.<br><br>Please unplug and replug your UFO key if you want to launch it now."
+msgstr "La copie s'est déroulée avec succès.<br><br>Veuillez débrancher et rebrancher votre clé UFO si vous voulez l'utiliser maintenant."
 
 #: src/ufo_dd.py:101
 msgid "The copy had terminated successfully."
-msgstr ""
+msgstr "La copie s'est déroulée avec succès."
 
 #: src/ufo_dd.py:102
 msgid "Operation succeed"
 msgstr "Opération effectué avec succès"
 
 #: src/ufo_dd.py:105
-#, fuzzy
 msgid "Operation failed"
 msgstr "L'opération a échoué"
 
@@ -887,37 +867,44 @@ msgstr "L'opération a échoué"
 msgid "The copy has encountered a fatal error and can't be completed"
 msgstr "UFO a rencontré une erreur fatale lors de la copie. La mise à jour ne peut être effectuée."
 
-#: src/ufo_dd.py:138 src/ufo_dd.py:145
+#: src/ufo_dd.py:138
+#: src/ufo_dd.py:145
 msgid "Please select an UFO image"
 msgstr "Vous devez préciser une image source"
+
+#: src/ufo_dd.py:153
+msgid "Introduction"
+msgstr "Introduction"
 
 #: src/ufo_dd.py:154
 msgid ""
 "Welcome to the Mobile PC Creator software.\n"
 "\n"
-"This tool allows you to put G-Dium Mobile PC on your USB pen drive or your "
-"USB hard drive or to backup your G-Dium Mobile PC system into a file.\n"
+"This tool allows you to put G-Dium Mobile PC on your USB pen drive or your USB hard drive or to backup your G-Dium Mobile PC system into a file.\n"
 "\n"
 "Please select what you want to do.\n"
 msgstr ""
+"Bienvenue dans Mobile PC Creator.\n"
+"\n"
+"Cet outil vous permet d'installer G-Dium Mobile PC sur votre clé USB, ou de sauvegarder votre système G-Dium Mobile PC dans un fichier.\n"
+"\n"
+"Veuillez sélectionner l'action de votre choix..\n"
 
 #: src/ufo_dd.py:162
 msgid "Install G-Dium Mobile PC on a device"
-msgstr ""
+msgstr "Installer G-Dium Mobile PC sur un périphérique"
 
 #: src/ufo_dd.py:163
 msgid "Backup my G-Dium Mobile PC device"
-msgstr ""
+msgstr "Sauvegarder un périphérique G-Dium Mobile PC"
 
 #: src/ufo_dd.py:179
 msgid "Missing source image"
 msgstr "Image source manquante"
 
 #: src/ufo_dd.py:180
-msgid ""
-"Please specify a source image or download one by clicking the 'Download it' "
-"button"
-msgstr ""
+msgid "Please specify a source image or download one by clicking the 'Download it' button"
+msgstr "Veuillez spécifier une image source ou téléchargez en une en cliquant sur le bouton 'Télécharger la'"
 
 #: src/ufo_dd.py:185
 msgid "Missing target device"
@@ -936,29 +923,40 @@ msgid "All data on the device will be lost"
 msgstr "Toutes les données sur le périphérique seront perdues"
 
 #: src/ufo_dd.py:200
-msgid ""
-"To setup G-Dium Mobile PC on your device, the device needs to be formatted. "
-"Are you sure you want to continue ?"
-msgstr ""
+msgid "To setup G-Dium Mobile PC on your device, the device needs to be formatted. Are you sure you want to continue ?"
+msgstr "Pour installer G-Dium Mobile PC sur votre clé usb, le périphérique a besoin d'être formaté. Êtes vous certain de vouloir continuer ? "
+
+#: src/ufo_dd.py:208
+msgid "Install G-Dium Mobile PC on my device"
+msgstr "Installer G-Dium Mobile PC sur mon périphérique amovible"
 
 #: src/ufo_dd.py:211
-msgid ""
-"If you already have downloaded an image please select its location, "
-"otherwise you can download the latest version from the Web"
-msgstr ""
+msgid "If you already have downloaded an image please select its location, otherwise you can download the latest version from the Web"
+msgstr "Sélectionner une image si vous l'avez déjà téléchargée, sinon vous pouvez télécharger la dernière version depuis Internet. "
+
+#: src/ufo_dd.py:222
+msgid "Download it"
+msgstr "Télécharger le"
 
 #: src/ufo_dd.py:229
 msgid "Please choose the target device:"
 msgstr "Veuillez sélectionner un périphérique:"
 
+#: src/ufo_dd.py:242
+msgid "Generating"
+msgstr "En cours de génération"
+
 #: src/ufo_dd.py:245
 msgid "Please wait while G-Dium Mobile PC is beeing written to the device"
 msgstr "Veuillez patienter pendant l'installation de G-Dium Mobile PC sur le périphérique"
 
+#: src/ufo_dd.py:258
+msgid "Operation successfull !"
+msgstr "Opération effectué avec succès !"
+
 #: src/ufo_dd.py:261
 msgid ""
-"G-Dium Mobile PC has been successfully installed on your device. You can use "
-"it right away.\n"
+"G-Dium Mobile PC has been successfully installed on your device. You can use it right away.\n"
 "\n"
 "Enjoy !"
 msgstr ""
@@ -971,26 +969,16 @@ msgid "Update available"
 msgstr "Mise à jour disponible"
 
 #: src/updater.py:54
-msgid ""
-"A more recent version of the U.F.O launcher is available,do you want to "
-"install it ? (%s Mo to download) ?"
-msgstr ""
-"Une version plus récente du lanceur U.F.O est disponible,voulez-vous "
-"l'installer (%s Mo à télécharger) ?"
+msgid "A more recent version of the U.F.O launcher is available,do you want to install it ? (%s Mo to download) ?"
+msgstr "Une version plus récente du lanceur U.F.O est disponible,voulez-vous l'installer (%s Mo à télécharger) ?"
 
 #: src/updater.py:72
 msgid "Insufficient free space"
 msgstr "Espace disque insuffisant"
 
 #: src/updater.py:73
-msgid ""
-"The available space on your UFO key is insufficient for the update."
-"<br><br>Please remove more than <b>%s Mo</b> in the <b>\"Public\"</b> "
-"directory and retry."
-msgstr ""
-"La capacité du périphérique est insuffisante. La mise à jour ne peut être installée."
-"<br><br>Veuillez libérer <b>%s Mo</b> dans le dossier <b>\"Public\"</b> "
-" et relancez la mise à jour"
+msgid "The available space on your UFO key is insufficient for the update.<br><br>Please remove more than <b>%s Mo</b> in the <b>\"Public\"</b> directory and retry."
+msgstr "La capacité du périphérique est insuffisante. La mise à jour ne peut être installée.<br><br>Veuillez libérer <b>%s Mo</b> dans le dossier <b>\"Public\"</b>  et relancez la mise à jour"
 
 #: src/updater.py:137
 msgid "Downloading update"
@@ -1002,13 +990,11 @@ msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
 
 #: src/updater.py:139
 msgid ""
-"Your key will now be updated.<br>This operation can take a few "
-"minutes<br><br>\n"
+"Your key will now be updated.<br>This operation can take a few minutes<br><br>\n"
 "<b>The USB key absolutely must not be unplugged during this process.</b>"
 msgstr ""
-"Votre clé va maintenant être mise à jour.<br>Cette opération peut prendre "
-"plusieurs minutes<br><br>\n"
-"<b>La clé ne doit être debranchée en aucun cas.</b>"
+"Votre clé va maintenant être mise à jour.<br>Cette opération peut prendre plusieurs minutes<br><br>\n"
+"<b>La clé ne doit être débranchée en aucun cas.</b>"
 
 #: src/updater.py:152
 msgid "Removing old files"
@@ -1018,17 +1004,15 @@ msgstr "Suppression des fichiers obsolètes"
 msgid "Please wait while the old files are being removed"
 msgstr "Veuillez patienter pendant la suppression des fichiers obsolètes"
 
-#: src/updater.py:157 src/updater.py:170
+#: src/updater.py:157
+#: src/updater.py:170
 msgid "Installing update"
 msgstr "Installation de la mise à jour"
 
-#: src/updater.py:158 src/updater.py:171
-msgid ""
-"Please wait while the update is being installed.<br><br><b>The USB key "
-"absolutely must not be unplugged.</b>"
-msgstr ""
-"Veuillez patienter pendant l'installation de la mise à jour.<br><br>"
-"<b>La clé ne doit être debranchée en aucun cas.</b>"
+#: src/updater.py:158
+#: src/updater.py:171
+msgid "Please wait while the update is being installed.<br><br><b>The USB key absolutely must not be unplugged.</b>"
+msgstr "Veuillez patienter pendant l'installation de la mise à jour.<br><br><b>La clé ne doit être débranchée en aucun cas.</b>"
 
 #: src/updater.py:184
 msgid "Information"
@@ -1051,19 +1035,12 @@ msgid "You don't have enough permissions to run UFO."
 msgstr "Vous ne disposez des autorisations nécessaires pour lancer UFO."
 
 #: src/windowsbackend.py:416
-msgid ""
-"Run UFO as Administrator by right clicking on UFO and select : 'Run as "
-"administrator'"
-msgstr ""
-"Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et "
-"en choisissant 'Lancer en tant qu'administrateur'"
+msgid "Run UFO as Administrator by right clicking on UFO and select : 'Run as administrator'"
+msgstr "Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et en choisissant 'Lancer en tant qu'administrateur'"
 
 #: src/windowsbackend.py:418
-msgid ""
-"Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'"
-msgstr ""
-"Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et "
-"en choisissant 'Lancer en tant que...'"
+msgid "Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'"
+msgstr "Relancer UFO en tant qu'administrateur en faisant un clic droit sur UFO et en choisissant 'Lancer en tant que...'"
 
 #: src/windowsbackend.py:419
 msgid "Not enough permissions"
