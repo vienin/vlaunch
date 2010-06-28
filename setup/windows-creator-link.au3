@@ -1,3 +1,3 @@
 #RequireAdmin
 
-Run(@ScriptDir & "\ufo.exe --dd", @ScriptDir)
+Run(@ScriptDir & "\bin\ufo.x86.exe --dd", @ScriptDir)

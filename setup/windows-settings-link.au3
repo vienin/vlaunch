@@ -1,3 +1,3 @@
 #RequireAdmin
 
-Run(@ScriptDir & "\ufo.exe --settings", @ScriptDir)
+Run(@ScriptDir & "\bin\ufo.x86.exe --settings", @ScriptDir)

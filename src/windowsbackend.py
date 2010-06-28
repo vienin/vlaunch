@@ -435,7 +435,9 @@ class WindowsBackend(OSBackend):
         return True;
 
     def umount_device(self, mntpoint):
-        if self.call([ path.join(conf.BIN, "USB_Disk_Eject.exe"), "/REMOVELETTER",  mntpoint], shell=True) != 0:
+        self.call([ path.join(conf.BIN, "USB_Disk_Eject.exe"), "/REMOVELETTER",  mntpoint[:len(mntpoint)-1]], shell=True)
+        time.sleep(0.5)
+        if os.path.exists(mntpoint):
             return False
         return True
 
