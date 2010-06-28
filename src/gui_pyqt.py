@@ -374,7 +374,7 @@ class QtUFOGui(QtGui.QApplication):
 
         from ufo_dd import DDWindow
         self.creator_window = DDWindow(self.backend)
-
+        self.creator_window.prepare()
         self.creator_window.show()
         self.creator_window.exec_()
         del self.creator_window

@@ -33,7 +33,7 @@ def getHandleOnDevice(device, access):
     hDevice = win32file.CreateFile(devicename, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING, 0, None)
     return hDevice
 
-def getHandleOnVolume(volume, access):
+def getHandleOnVolume(volume, access=win32con.GENERIC_WRITE):
     volumename = "\\\\.\\%c:" % (ord('A') + volume,)
     hVolume = win32file.CreateFile(volumename, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING, 0, None);
     return hVolume

@@ -65,13 +65,9 @@ class DDWindow(QtGui.QWizard):
                             msg=_("The download has encountered a fatal error, please check your Internet connection and retry"))
         self.dl_mutex = False
 
-    def clone(self, source, target):
-        cmd = [ "if=" + str(source), "of=" + str(target), "bs=" + str(1024*1024) ]
-
-        if os.name == "win32":
-            cmd.insert(0, "dd.exe")
-        else:
-            cmd.insert(0, "dd")
+    def launch_process(self):
+        source = self.source.text()
+        target = self.device
 
         self.umounted = False
         usbs = self.backend.get_usb_devices()
@@ -81,55 +77,41 @@ class DDWindow(QtGui.QWizard):
                     self.umounted = True
                     while not self.backend.umount_device(usb[0]):
                         input = gui.dialog_error_report(_("Warning"),
-                                        _("UFO is not able to umount <b>\"" + usb[0] + "\"</b> because it seems to be busy.\n"
-                                          "Please close the program that is using it and retry."),
-                                        _("Retry"),
-                                        error=False)
+                                                        _("UFO is not able to umount <b>\"" + usb[0] + "\"</b> because it seems to be busy.\n"
+                                                          "Please close the program that is using it and retry."),
+                                                        _("Retry"),
+                                                        error=False)
                         if not input:
                             return
                         time.sleep(0.3)
 
-        self.start_button.setEnabled(False)
-        self.exit_button.setEnabled(False)
-        if gui.wait_command(cmd=cmd,
-                            title=_("Please wait"),
-                            msg=_("Writing the image to the disk. This process can take several minutes.")):
-            if self.umounted:
-                msg = _("The copy had terminated successfully.<br><br>Please unplug and replug your UFO key if you want to launch it now.")
-            else:
-                msg = _("The copy had terminated successfully.")
-            gui.dialog_info(title=_("Operation succeed"), msg=msg)
+        self.progress.setRange(0, 100)
+        self.progress.valueChanged.connect(self.is_process_finished)
+        kwargs = {}
+        if self.letters.has_key(self.device):
+            kwargs["volume"] = self.letters[self.device][0]
+        kwargs["callback"] = self.update_progress
+        import threading
+        threading.Thread(target=self.backend.write_image,
+                         args=(source, target),
+                         kwargs=kwargs).start()
 
-        else:
-            gui.dialog_info(title=_("Operation failed"),
-                            msg=_("The copy has encountered a fatal error and can't be completed"),
-                            error=True)
-        self.start_button.setEnabled(True)
-        self.exit_button.setEnabled(True)
-
-    def prepare_as_args(self):
+    def prepare(self):
         self_copy  = False
         need_admin = not self.backend.is_admin()
 
         usbs = self.backend.get_usb_devices()
-        # if not self.backend.is_admin():
-        #     for possible_dev in [source, target]:
-        #         for usb in self.usbs.values():
-        #             if possible_dev == usb:
-        #                 need_admin = True
         for usb in usbs:
             if conf.SCRIPT_PATH.startswith(usb[0]):
                 self_copy = True
 
         if self_copy or need_admin:
             if self_copy:
-                executable = [ self.backend.prepare_self_copy() ]
+                cmd = [ self.backend.prepare_self_copy(), "--dd", "--script-path", self.backend.prepare_self_copy() ]
             else:
-                executable = [ sys.executable ] + sys.argv
+                cmd = [ sys.executable ] + sys.argv + [  "--dd", "--script-path", sys.executable ]
 
-            cmd = executable + [ "--dd" ]
             logging.debug("Launching creator : " + " ".join(cmd))
-
             self.backend.execv(cmd, root=need_admin)
             sys.exit(0)
 
@@ -160,6 +142,7 @@ class DDWindow(QtGui.QWizard):
         groupbox = QtGui.QGroupBox()
         create = QtGui.QRadioButton(_("Install G-Dium Mobile PC on a device"), groupbox)
         backup = QtGui.QRadioButton(_("Backup my G-Dium Mobile PC device"), groupbox)
+        backup.setEnabled(False)
         create.setChecked(True)
 
         layout = QtGui.QVBoxLayout()
@@ -276,16 +259,8 @@ class DDWindow(QtGui.QWizard):
 
     def currentIdChanged(self, id):
         if id == len(self.pageIds()) - 2:
-            self.progress.setRange(0, 100)
-            self.progress.valueChanged.connect(self.is_process_finished)
-            kwargs = {}
-            if self.letters.has_key(self.device):
-                kwargs["volume"] = self.letters[self.device][0]
-            kwargs["callback"] = self.update_progress
-            import threading
-            threading.Thread(target=self.backend.write_image,
-                             args=(self.source.text(), self.device),
-                             kwargs=kwargs).start()
+            self.launch_process()
+
 
 if __name__ == "__main__":
 

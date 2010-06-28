@@ -435,14 +435,20 @@ class WindowsBackend(OSBackend):
         return True;
 
     def umount_device(self, mntpoint):
-        self.call([ path.join(conf.BIN, "USB_Disk_Eject.exe"), "/REMOVELETTER",  mntpoint[:len(mntpoint)-1]], shell=True)
-        time.sleep(0.5)
-        if os.path.exists(mntpoint):
+        import disk
+        import win32api
+        try:
+            hVolume = disk.getHandleOnVolume(mntpoint[0] - ord('A'))
+            disk.getLockOnVolume(hVolume)
+            disk.unmountVolume(hVolume)
+            disk.removeLockOnVolume(hVolume)
+            win32api.CloseHandle(hVolume)
+            return True
+        except:
             return False
-        return True
 
     def prepare(self):
-        # Ajusting paths
+        # Adjusting paths
         if not conf.HOME: 
             conf.HOME = path.join(conf.APP_PATH, ".VirtualBox")
 

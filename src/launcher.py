@@ -121,7 +121,7 @@ if __name__ == "__main__":
         if conf.options.dd:
             from ufo_dd import DDWindow
             creator = DDWindow(backend, conf.options.relaunch)
-            creator.prepare_as_args()
+            creator.prepare()
             creator.show()
             creator.exec_()
             sys.exit(1)

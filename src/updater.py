@@ -87,7 +87,8 @@ def check_update(backend):
                 cmd = [ executable,
                         "--update",
                         path.dirname(conf.DATA_DIR), ".".join(map(str, latest_version)),
-                        "--relaunch", conf.SCRIPT_PATH ]
+                        "--relaunch", conf.SCRIPT_PATH,
+                        "--script-path", executable ]
                 logging.debug("Launching updater : " + " ".join(cmd))
                 logging.shutdown()
                 os.execv(executable, cmd)
