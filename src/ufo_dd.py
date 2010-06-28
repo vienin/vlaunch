@@ -34,7 +34,6 @@ class DDWindow(QtGui.QWizard):
         self.addPage(self.create_finish_page())
 
         self.setWindowTitle(_("Mobile PC Creator"))
-        self.show()
 
     def on_dl(self):
         if self.dl_mutex:
