@@ -3,6 +3,8 @@
 
 del /F /Q /S dist build
 
+set PRODUCT_NAME=Gdium Mobile PC
+
 if %PROCESSOR_ARCHITECTURE% == x86    goto x86
 if %PROCESSOR_ARCHITECTURE% == AMD64  goto amd64
 
@@ -16,13 +18,9 @@ set VBOX_BIN_DEST=bin\
 set SETUP_SCRIPT="setup.py"
 set SIGNTOOL_PATH=F:\6000\bin\SelfSign
 
-c:\Python26\python.exe setup-arch-dispatcher.py py2exe
-
-mkdir "dist\Microsoft.VC90.CRT"
-xcopy /E /Y %MSVC_PATH% dist\Microsoft.VC90.CRT\
-
-"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-settings-link.au3 /out dist\settings.exe /icon ../graphics/setting.ico
-"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-creator-link.au3 /out dist\creator.exe /icon ../graphics/creator.ico
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-launcher-link.au3 /out dist\"%PRODUCT_NAME%.exe" /icon ../graphics/UFO.ico
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-settings-link.au3 /out dist\"%PRODUCT_NAME% options.exe" /icon ../graphics/setting.ico
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe" /in windows-creator-link.au3 /out dist\"%PRODUCT_NAME% creator.exe" /icon ../graphics/creator.ico
 
 goto begin
 
@@ -74,7 +72,8 @@ mkdir %VBOX_BIN_DEST%\drivers
 mkdir %VBOX_BIN_DEST%\drivers\VBoxDrv
 move /Y %VBOX_BIN_DEST%\VBoxDrv.sys %VBOX_BIN_DEST%\drivers\VBoxDrv
 move /Y %VBOX_BIN_DEST%\launcher.exe %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
-move /Y launcher-windows.exe ufo.exe
+@echo move /Y launcher-windows.exe "%PRODUCT_NAME%.exe"
+move /Y launcher-windows.exe "%PRODUCT_NAME%.exe"
 
 %SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
 %SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" ufo.exe settings.exe creator.exe

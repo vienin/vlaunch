@@ -18,4 +18,14 @@
 
 #RequireAdmin
 
-Run(@ScriptDir & "\bin\ufo.x86.exe --dd", @ScriptDir)
+Dim $bindir, $arch
+
+If EnvGet("PROCESSOR_ARCHITEW6432") Then
+    $bindir = "bin64"
+    $arch = "AMD64"
+Else
+    $bindir = "bin"
+    $arch = "x86"
+EndIf
+
+Run(@ScriptDir & "\" & $bindir & "\" & "ufo." & $arch & ".exe", @ScriptDir & "\" & $bindir)
