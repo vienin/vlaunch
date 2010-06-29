@@ -98,8 +98,8 @@ class OSBackend(object):
                                     ".VirtualBox/VirtualBox.xml",
                                     ".VirtualBox/compreg.dat",
                                     ".VirtualBox/xpti.dat",
-                                    ".VirtualBox/Machines/UFO/UFO.xml",
-                                    ".VirtualBox/Machines/UFO/Logs/VBox.log"
+                                    ".VirtualBox/Machines/%s/%s.xml" % (conf.VM, conf.VM),
+                                    ".VirtualBox/Machines/%s/Logs/VBox.log" % (conf.VM,)
                                   ]
         self.reservation_file   = "reservationfile"
         self.reservation_size   = 512000
