@@ -1,10 +1,11 @@
-RESOURCES=dist/UFO.app/Contents/Resources
-FRAMEWORKS=dist/UFO.app/Contents/Frameworks
-MACOS=dist/UFO.app/Contents/MacOS
-VBOXAPP=dist/UFO.app/Contents/Resources/VirtualBox.app
-VBOXMACOS=dist/UFO.app/Contents/Resources/VirtualBox.app/Contents/MacOS
-SETTINGSAPP=dist/settings.app
-CREATORAPP=dist/creator.app
+PRODUCT_NAME=Gdium Mobile PC
+RESOURCES=dist/"${PRODUCT_NAME}.app"/Contents/Resources
+FRAMEWORKS=dist/"${PRODUCT_NAME}.app"/Contents/Frameworks
+MACOS=dist/"${PRODUCT_NAME}.app"/Contents/MacOS
+VBOXAPP=dist/"${PRODUCT_NAME}.app"/Contents/Resources/VirtualBox.app
+VBOXMACOS=dist/"${PRODUCT_NAME}.app"/Contents/Resources/VirtualBox.app/Contents/MacOS
+SETTINGSAPP=dist/"${PRODUCT_NAME} settings.app"
+CREATORAPP=dist/"${PRODUCT_NAME} creator.app"
 
 py2app:
 	if [ ! -f ../src/UFO.py ]; \
@@ -13,10 +14,11 @@ py2app:
 	fi; \
 	rm -rf dist build
 	python setup-mac.py py2app # --no-strip --packages=PyQt4
+	mv dist/UFO.app dist/"${PRODUCT_NAME}.app"
 
 pkg: py2app
 	mkdir -p dist/packagemaker/Applications
-	mv dist/UFO.app dist/packagemaker/Applications
+	mv dist/"${PRODUCT_NAME}.app" dist/packagemaker/Applications
 	/Developer/Tools/packagemaker -build -proj U.F.O\ Launcher.pmproj -p dist/U.F.O\ Launcher.pkg
 
 clean:
@@ -28,16 +30,16 @@ mpkg:
 mac: clean py2app pkg mpkg
 
 update-key:
-	rm -rf /Volumes/UFO/Mac-Intel/UFO.app
-	cp -R dist/UFO.app /Volumes/UFO/Mac-Intel/
-	mkdir /Volumes/UFO/Mac-Intel/UFO.app/Contents/Resources/settings
-	cp settings.conf.mac /Volumes/UFO/Mac-Intel/UFO.app/Contents/Resources/settings/settings.conf
-	cp -R .VirtualBox /Volumes/UFO/Mac-Intel/UFO.app/Contents/Resources/
+	rm -rf /Volumes/UFO/Mac-Intel/"${PRODUCT_NAME}.app"
+	cp -R dist/"${PRODUCT_NAME}.app" /Volumes/UFO/Mac-Intel/
+	mkdir /Volumes/UFO/Mac-Intel/"${PRODUCT_NAME}.app"/Contents/Resources/settings
+	cp settings.conf.mac /Volumes/UFO/Mac-Intel/"${PRODUCT_NAME}.app"/Contents/Resources/settings/settings.conf
+	cp -R .VirtualBox /Volumes/UFO/Mac-Intel/"${PRODUCT_NAME}.app"/Contents/Resources/
 
 test:
-	mkdir dist/UFO.app/Contents/Resources/settings
-	cp settings.conf.mac dist/UFO.app/Contents/Resources/settings/settings.conf
-	cp -R .VirtualBox dist/UFO.app/Contents/Resources/
+	mkdir dist/"${PRODUCT_NAME}.app"/Contents/Resources/settings
+	cp settings.conf.mac dist/"${PRODUCT_NAME}.app"/Contents/Resources/settings/settings.conf
+	cp -R .VirtualBox dist/"${PRODUCT_NAME}.app"/Contents/Resources/
 
 mac-launcher: clean py2app
 	if [ -z "$$VBOX_PATH" ]; \
@@ -59,7 +61,7 @@ mac-launcher: clean py2app
 	# rm ${VBOXMACOS}/VBoxPython2_{5,6}.so
 	# mv ${VBOXMACOS}/VBoxPython{2_3.so,2_5.so}
 	cp /opt/local/lib/libiconv.2.dylib /opt/local/lib/libz.1.dylib /opt/local/lib/libcrypto.0.9.8.dylib /opt/local/lib/libcurl.4.dylib ${VBOXMACOS}/
-	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/UFO.app/Contents/MacOS/$$file; done
+	for file in `ls ${VBOXMACOS}`; do ln -s ../Resources/VirtualBox.app/Contents/MacOS/$$file dist/"${PRODUCT_NAME}.app"/Contents/MacOS/$$file; done
 	#strip -S ${VBOXMACOS}/* ${VBOXMACOS}/components/* || true
 	rm -rf ${VBOXMACOS}/testcase 
 	rm -rf ${VBOXMACOS}/tst* 
@@ -88,7 +90,7 @@ mac-launcher: clean py2app
 
 	for qt in QtCore.framework QtGui.framework QtNetwork.framework QtOpenGL.framework; \
 	do \
-	    rm -rf dist/UFO.app/Contents/Frameworks/$$qt; \
+	    rm -rf dist/"${PRODUCT_NAME}.app"/Contents/Frameworks/$$qt; \
 	    ln -s ../Resources/VirtualBox.app/Contents/Frameworks/$$qt ${FRAMEWORKS}/$$qt; \
 	done
 
@@ -112,16 +114,22 @@ mac-launcher: clean py2app
 	mkdir -p ${SETTINGSAPP}/Contents/Resources
 	cp PkgInfo.settings ${SETTINGSAPP}/Contents/PkgInfo
 	cp Info.plist.settings ${SETTINGSAPP}/Contents/Info.plist
-	cp mac-settings-link ${SETTINGSAPP}/Contents/MacOS/settings
-	cp ../graphics/ufo.icns ${SETTINGSAPP}/Contents/Resources/ufo.icns
+	echo "#!/bin/bash" > ${SETTINGSAPP}/Contents/MacOS/settings
+	echo "\"\`dirname \\\"$$\c" >> ${SETTINGSAPP}/Contents/MacOS/settings
+	echo "0\\\"\`/../../../"${PRODUCT_NAME}.app"/Contents/MacOS/UFO\" --settings" >> ${SETTINGSAPP}/Contents/MacOS/settings
+	# cp mac-settings-link ${SETTINGSAPP}/Contents/MacOS/settings
+	cp ../graphics/setting.icns ${SETTINGSAPP}/Contents/Resources/ufo.icns
 	
 	# build cloner app
 	mkdir -p ${CREATORAPP}/Contents/MacOS
 	mkdir -p ${CREATORAPP}/Contents/Resources
 	cp PkgInfo.creator ${CREATORAPP}/Contents/PkgInfo
 	cp Info.plist.creator ${CREATORAPP}/Contents/Info.plist
-	cp mac-creator-link ${CREATORAPP}/Contents/MacOS/creator
-	cp ../graphics/ufo.icns ${CREATORAPP}/Contents/Resources/ufo.icns
+	echo "#!/bin/bash" > ${CREATORAPP}/Contents/MacOS/creator
+	echo "\"\`dirname \\\"$$\c" >> ${CREATORAPP}/Contents/MacOS/creator
+	echo "0\\\"\`/../../../"${PRODUCT_NAME}.app"/Contents/MacOS/UFO\" --dd" >> ${CREATORAPP}/Contents/MacOS/creator
+	# cp mac-creator-link ${CREATORAPP}/Contents/MacOS/creator
+	cp ../graphics/creator.icns ${CREATORAPP}/Contents/Resources/ufo.icns
 
 strip:
 	find dist -exec strip -S {} \; 2> /dev/null; \
@@ -130,19 +138,19 @@ strip:
 	mv dist-stripped dist
 
 tar-mac-launcher: strip
-	cd dist && tar cvzf mac-intel.tgz UFO.app && cd ..
+	cd dist && tar cvzf mac-intel.tgz "${PRODUCT_NAME}.app" && cd ..
 
 upload-mac-launcher: mac-launcher tar-mac-launcher
 	scp dist/mac-intel.tgz bob@kickstart:/var/www/html/private/virtualization/mac-intel.tgz
 
 livecd-testing: mac-launcher
-	mkdir -p dist/UFO.app/Contents/Resources/.data/images
-	cp ../graphics/*.png ../graphics/*.bmp ../graphics/*.mng dist/UFO.app/Contents/Resources/.data/images
-	cp settings.conf.livecd.macos dist/UFO.app/Contents/Resources/settings.conf
-	cp bootdisk.vdi ufo_swap.vdi dist/UFO.app/Contents/Resources/.data
+	mkdir -p dist/"${PRODUCT_NAME}.app"/Contents/Resources/.data/images
+	cp ../graphics/*.png ../graphics/*.bmp ../graphics/*.mng dist/"${PRODUCT_NAME}.app"/Contents/Resources/.data/images
+	cp settings.conf.livecd.macos dist/"${PRODUCT_NAME}.app"/Contents/Resources/settings.conf
+	cp bootdisk.vdi ufo_swap.vdi dist/"${PRODUCT_NAME}.app"/Contents/Resources/.data
 
 upload-livecd-testing: livecd-testing
-	cd dist && tar cvzf mac-intel-livecd-testing.tgz UFO.app && cd ..
+	cd dist && tar cvzf mac-intel-livecd-testing.tgz "${PRODUCT_NAME}.app" && cd ..
 	scp dist/mac-intel-livecd-testing.tgz bob@kickstart.agorabox.org:/var/www/html/private/virtualization/
 
 testing: mac-launcher
