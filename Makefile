@@ -6,6 +6,8 @@ ARCHIVE=$(DIR).tar.gz
 SPECFILE=$(NAME).spec
 URL=http://www.glumol.com/chicoutimi/vlaunch
 
+PRODUCTNAME=Gdium Mobile PC
+
 OVERLAY_DEV_UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5
 OVERLAY_DEV_TYPE=ext4-no_journal-no_huge_files
 
@@ -59,32 +61,29 @@ install: install-mo
 	cp dd.exe $(DESTDIR)$(TARGET_PATH)/Windows/bin64
 	
 	# build mac-intel tree
-	mkdir -p $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/MacOS
+	mkdir -p "$(DESTDIR)$(TARGET_PATH)/Mac-Intel/$(PRODUCTNAME).app/Contents/MacOS"
 	tar xvzf mac-intel.tgz -C $(DESTDIR)$(TARGET_PATH)/Mac-Intel
-	rm -rf $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/.VirtualBox/
-
-	# find $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app/Contents/Frameworks -type l -exec unlink {} \;
+	rm -rf "$(DESTDIR)$(TARGET_PATH)/Mac-Intel/$(PRODUCTNAME).app/Contents/Resources/.VirtualBox/"
 
 	# Create symlinks for Mac OS X using the XSYM format"
 	# http://www.opensource.apple.com/source/msdosfs/msdosfs-136.5/msdosfs.kextproj/msdosfs.kmodproj/fat.h
-	echo find $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app -type l
-	mac_symlinks=`find $(DESTDIR)$(TARGET_PATH)/Mac-Intel/UFO.app -type l`; \
-	for symlink in $$mac_symlinks; \
+	find "$(DESTDIR)$(TARGET_PATH)/Mac-Intel/$(PRODUCTNAME).app" -type l | while read symlink; \
 	do \
-	    tools/create_fat_symlink.py `readlink $$symlink` $$symlink; \
+	    echo  tools/create_fat_symlink.py "`readlink \"$$symlink\"`" "$$symlink"; \
+	    tools/create_fat_symlink.py "`readlink \"$$symlink\"`" "$$symlink"; \
 	done
 
 	install -D graphics/.background/ufo.png $(DESTDIR)$(TARGET_PATH)/.background/ufo.png
 	cp setup/DS_Store $(DESTDIR)$(TARGET_PATH)/.DS_Store
 	cp graphics/VolumeIcon.icns $(DESTDIR)$(TARGET_PATH)/.VolumeIcon.icns
-	tools/create_fat_symlink.py Mac-Intel/UFO.app $(DESTDIR)$(TARGET_PATH)/UFO.app
+	tools/create_fat_symlink.py "Mac-Intel/$(PRODUCTNAME).app" "$(DESTDIR)$(TARGET_PATH)/$(PRODUCTNAME).app"
 	
 	# build linux tree
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
-	cp src/launcher-linux.py $(DESTDIR)$(TARGET_PATH)/Linux/ufo
-	cp setup/linux-settings-link $(DESTDIR)$(TARGET_PATH)/Linux/settings
-	cp setup/linux-creator-link $(DESTDIR)$(TARGET_PATH)/Linux/creator
+	cp src/launcher-linux.py "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME)"
+	cp setup/linux-settings-link "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
+	cp setup/linux-creator-link "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
 	cp -R sdk/bindings/xpcom/python/xpcom $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp -R vboxapi sdk $(SOURCES) $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	cp setup/.autorun $(DESTDIR)$(TARGET_PATH)/
@@ -181,8 +180,8 @@ download-binaries:
 	wget -O windows.x86.tgz http://kickstart/private/virtualization/windows.x86.tgz
 	wget -O "Manuel d'utilisation.pdf" http://myufo.agorabox.fr/sites/myufo/media/files/guide_ufo.pdf
 	wget -O "ufo_overlay.vdi" http://kickstart/private/virtualization/ufo_overlay-${OVERLAY_DEV_TYPE}-UUID=${OVERLAY_DEV_UUID}.vdi
-	wget -O USBDiskEjector1.1.2.zip http://quick.mixnmojo.com/files/USBDiskEjector1.1.2.zip
-	wget -O dd-0.5.zip http://www.chrysocome.net/downloads/dd-0.5.zip
+	wget -O USBDiskEjector1.1.2.zip http://kickstart/private/virtualization/USBDiskEjector1.1.2.zip
+	wget -O dd-0.5.zip http://kickstart/private/virtualization/dd-0.5.zip
 	unzip -o USBDiskEjector1.1.2.zip
 	unzip -o dd-0.5.zip
 

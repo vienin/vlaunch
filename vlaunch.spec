@@ -1,6 +1,7 @@
 %define TARGET_PATH /media/UFO
 %define OVERLAY_DEV_UUID b07ac827-ce0c-4741-ae81-1f234377b4b5
 %define OVERLAY_DEV_TYPE ext4-no_journal-no_huge_files
+%define PRODUCTNAME Gdium Mobile PC
 
 Name:           vlaunch
 Version:        1.0
@@ -119,7 +120,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.DS_Store
 %{TARGET_PATH}/.VolumeIcon.icns
 %{TARGET_PATH}/._
-%{TARGET_PATH}/UFO.app
+"%{TARGET_PATH}/%{PRODUCTNAME}.app"
 %{TARGET_PATH}/.data/settings
 %{TARGET_PATH}/.data/.VirtualBox/HardDisks
 %{TARGET_PATH}/.data/.VirtualBox/Images/UFO-VirtualBox-boot.img
@@ -151,32 +152,31 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/locale/fr/LC_MESSAGES/vlaunch.mo
 %dir %{TARGET_PATH}/.data/logs
 
-#%{TARGET_PATH}/Windows/msvcr71.dll
-#%{TARGET_PATH}/Windows/msvcp71.dll
-%{TARGET_PATH}/Windows/python26.dll
-%{TARGET_PATH}/Windows/ufo.exe
-%{TARGET_PATH}/Windows/settings.exe
-%{TARGET_PATH}/Windows/creator.exe
-%{TARGET_PATH}/Windows/Microsoft.VC90.CRT
+"%{TARGET_PATH}/Windows/%{PRODUCTNAME}.exe"
+"%{TARGET_PATH}/Windows/%{PRODUCTNAME} options.exe"
+"%{TARGET_PATH}/Windows/%{PRODUCTNAME} creator.exe"
 %{TARGET_PATH}/Windows/bin
 %{TARGET_PATH}/Windows/bin64
 
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/MacOS
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/PkgInfo
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Info.plist
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Frameworks
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/include
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/lib
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/UFO.py*
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/site.py*
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/ufo.icns
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/__boot__.py*
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/__error__.sh
-%{TARGET_PATH}/Mac-Intel/UFO.app/Contents/Resources/VirtualBox.app
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/MacOS"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/PkgInfo"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Info.plist"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Frameworks"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/include"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/lib"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/UFO.py"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/UFO.pyc"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/site.py"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/site.pyc"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/ufo.icns"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/__boot__.py"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/__boot__.pyc"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/__error__.sh"
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/VirtualBox.app"
 
-%{TARGET_PATH}/Linux/ufo
-%{TARGET_PATH}/Linux/settings
-%{TARGET_PATH}/Linux/creator
+"%{TARGET_PATH}/Linux/%{PRODUCTNAME}"
+"%{TARGET_PATH}/Linux/%{PRODUCTNAME} options"
+"%{TARGET_PATH}/Linux/%{PRODUCTNAME} creator"
 %{TARGET_PATH}/Linux/bin
 
 "%{TARGET_PATH}/Manuel d'utilisation.pdf"

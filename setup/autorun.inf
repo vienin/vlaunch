@@ -1,4 +1,4 @@
 [autorun]
-action=Lancer U.F.O
+action=Lancer Gdium Mobile PC
 icon=UFO.ico
-shellexecute=Windows\ufo.exe
+shellexecute=""Windows\Gdium Mobile PC.exe""
