@@ -152,7 +152,7 @@ class Conf(object):
         },
       "vm" :
         {
-          "vm" : "UFO",
+          "vm" : "Gdium Mobile PC",
           "os" : "Fedora",
           "nettype" : 2,
           "hostnet" : "",
