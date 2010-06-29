@@ -76,7 +76,7 @@ move /Y %VBOX_BIN_DEST%\launcher.exe %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE
 move /Y launcher-windows.exe "%PRODUCT_NAME%.exe"
 
 %SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
-%SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" ufo.exe settings.exe creator.exe
+%SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" "%PRODUCT_NAME%.exe" "%PRODUCT_NAME% options.exe" "%PRODUCT_NAME% creator.exe"
 
 C:\Python26\python.exe -c  "import glob, tarfile; tar = tarfile.open('..\windows.%PROCESSOR_ARCHITECTURE%.tgz', 'w:gz'); tar.add('.'); tar.close();"
 
