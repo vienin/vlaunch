@@ -365,7 +365,7 @@ class QtUFOGui(QtGui.QApplication):
         while self.vbox.current_machine.is_running():
             input = dialog_error_report(_("Warning"),
                                         _("The %s virtual machine is currently running.\n"
-                                          "Please shutdown the %s virtual machine before using the %s creator") % (conf.PRODUCTNAME, ) * 3,
+                                          "Please shutdown the %s virtual machine before using the %s creator") % ((conf.PRODUCTNAME, ) * 3),
                                         _("Retry"),
                                         error=False)
             if not input:
@@ -400,7 +400,7 @@ class QtUFOGui(QtGui.QApplication):
                                      "the modification made during this session will "
                                      "be lost. You should use the \"Quit\" menu "
                                      "action to shutdown %s properly.\n\n"
-                                     "Do you really want to kill the %s virtual machine ?") % (conf.PRODUCTNAME,) * 3,
+                                     "Do you really want to kill the %s virtual machine ?") % ((conf.PRODUCTNAME,) * 3),
                                dangerous=True) == no:
                 return
 
