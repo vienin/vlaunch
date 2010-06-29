@@ -136,10 +136,10 @@ class Conf(object):
           "proxyhttps" : GuestProperty(AUTO_STRING, "/UFO/Proxy/HTTPS"),
           "proxyftp" : GuestProperty(AUTO_STRING, "/UFO/Proxy/FTP"),
           "proxysocks" : GuestProperty(AUTO_STRING, "/UFO/Proxy/SOCKS"),
-          "linuxexe" : "ufo",
-          "windowsexe" : "ufo.exe",
-          "macexe" : "UFO.app/Contents/MacOS/UFO",
-          "productname" : "UFO"
+          "linuxexe" : "Gdium Mobile PC",
+          "windowsexe" : "Gdium Mobile PC.exe",
+          "macexe" : "Gdium Mobile PC.app/Contents/MacOS/UFO",
+          "productname" : "Gdium Mobile PC"
         },
       "rawdisk" :
         {
