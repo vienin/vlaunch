@@ -12,8 +12,9 @@ set VBOX_PATH=F:\gitorious\vbox
 set VBOX_BIN_PATH=%VBOX_PATH%\out\win.x86\release\bin
 set QT_BIN_PATH=%VBOX_PATH%\tools\win.x86\Qt\4.5.2-32bits\bin
 set MSVC_PATH="E:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT"
-set VBOX_BIN_DEST="bin\"
+set VBOX_BIN_DEST=bin\
 set SETUP_SCRIPT="setup.py"
+set SIGNTOOL_PATH=F:\6000\bin\SelfSign
 
 c:\Python26\python.exe setup-arch-dispatcher.py py2exe
 
@@ -31,6 +32,7 @@ set VBOX_PATH=C:\Users\agorabox\Desktop\vbox
 set VBOX_BIN_PATH=%VBOX_PATH%\out\win.amd64\release\bin
 set QT_BIN_PATH=%VBOX_PATH%\tools\win.x86\Qt\4.5.2-64bits\bin
 set VBOX_BIN_DEST="."
+set SIGNTOOL_PATH=c:\WinDDK\7600.16385.1\bin\amd64\
 
 set SETUP_SCRIPT="setup-64bits.py"
 
@@ -73,6 +75,9 @@ mkdir %VBOX_BIN_DEST%\drivers\VBoxDrv
 move /Y %VBOX_BIN_DEST%\VBoxDrv.sys %VBOX_BIN_DEST%\drivers\VBoxDrv
 move /Y %VBOX_BIN_DEST%\launcher.exe %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
 move /Y launcher-windows.exe ufo.exe
+
+%SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
+%SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" ufo.exe settings.exe creator.exe
 
 C:\Python26\python.exe -c  "import glob, tarfile; tar = tarfile.open('..\windows.%PROCESSOR_ARCHITECTURE%.tgz', 'w:gz'); tar.add('.'); tar.close();"
 
