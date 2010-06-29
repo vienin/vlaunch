@@ -132,6 +132,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/personal.png
 %{TARGET_PATH}/.data/images/behavior.png
 %{TARGET_PATH}/.data/images/UFO.png
+%{TARGET_PATH}/.data/images/creator.png
 %{TARGET_PATH}/.data/images/credentials.png
 %{TARGET_PATH}/.data/images/close.png
 %{TARGET_PATH}/.data/images/settings.png
