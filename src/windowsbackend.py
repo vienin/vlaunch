@@ -71,22 +71,24 @@ class WindowsBackend(OSBackend):
         logging.debug("Copying launcher to " + self_copied_path)
         files = []
         for pattern in patterns:
-            files += [ utils.relpath(x, conf.SCRIPT_DIR) for x in glob.glob(path.join(conf.SCRIPT_DIR, pattern)) ]
+            files += glob.glob(path.join(conf.SCRIPT_DIR, pattern))
 
         os.mkdir(os.path.join(self_copied_path, "Windows"))
+        os.mkdir(os.path.join(self_copied_path, "Windows", "bin"))
         os.mkdir(os.path.join(self_copied_path, ".data"))
         for file in files:
-            dest = path.join(self_copied_path, "Windows", file)
+            dest = os.path.join(self_copied_path, "Windows", "bin", os.path.basename(file))
+            logging.debug("Copying " + str(file) + " to " + str(dest))
             if os.path.isdir(file):
                 copytree(file, dest)
             else:
                 copyfile(file, dest)
 
-        key_root = path.dirname(path.dirname(conf.SCRIPT_DIR))
+        key_root = os.path.dirname(os.path.dirname(conf.SCRIPT_DIR))
         copytree(path.join(key_root, ".data" , "images"), path.join(self_copied_path, ".data", "images"))
         copytree(path.join(key_root, ".data", "locale"), path.join(self_copied_path, ".data", "locale"))
 
-        return path.join(self_copied_path, "Windows", path.basename(conf.SCRIPT_PATH))
+        return path.join(self_copied_path, "Windows", "bin", os.path.basename(conf.SCRIPT_PATH))
 
     def prepare_update(self):
         return self.prepare_self_copy()

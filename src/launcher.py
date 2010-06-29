@@ -64,9 +64,9 @@ except:
 
 logging.debug(datetime.datetime.now())
 logging.debug("argv: " + str(sys.argv))
-logging.debug("SCRIPT_PATH: " + str(self.SCRIPT_PATH))
-logging.debug("SCRIPT_NAME: " + str(self.SCRIPT_NAME))
-logging.debug("SCRIPT_DIR: " + str(self.SCRIPT_DIR))
+logging.debug("SCRIPT_PATH: " + str(conf.SCRIPT_PATH))
+logging.debug("SCRIPT_NAME: " + str(conf.SCRIPT_NAME))
+logging.debug("SCRIPT_DIR: " + str(conf.SCRIPT_DIR))
 
 import gui
 import updater

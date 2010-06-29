@@ -64,9 +64,9 @@ class QtUFOGui(QtGui.QApplication):
         action_creator = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "creator.png")),
                                         QtCore.QString(_("Creator...")), self);
         action_creator.setStatusTip(_("Create your %s key") % (conf.PRODUCTNAME,))
-        action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
+        action_exit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
                                         QtCore.QString(_("Quit")), self);
-        action_quit.setStatusTip(_("Quit"))
+        action_exit.setStatusTip(_("Quit"))
         action_force_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "force.png")),
                                         QtCore.QString(_("Force to quit")), self);
         action_force_quit.setStatusTip(_("Force to quit"))
@@ -92,10 +92,10 @@ class QtUFOGui(QtGui.QApplication):
 
         self.menu.addAction(action_about)
         self.menu.addAction(action_force_quit)
-        self.menu.addAction(action_quit)
+        self.menu.addAction(action_exit)
         self.connect(action_about, QtCore.SIGNAL("triggered()"), self.about)
         self.connect(action_settings, QtCore.SIGNAL("triggered()"), self.settings)
-        self.connect(action_quit, QtCore.SIGNAL("triggered()"), self.quit)
+        self.connect(action_exit, QtCore.SIGNAL("triggered()"), self.exit)
         self.connect(action_force_quit, QtCore.SIGNAL("triggered()"), self.force_to_quit)
         
         self.setWindowIcon(QtGui.QIcon(os.path.join(conf.IMGDIR, "UFO.png")))
@@ -380,7 +380,7 @@ class QtUFOGui(QtGui.QApplication):
         del self.creator_window
         self.creator_window = None
 
-    def quit(self):
+    def exit(self):
         if self.vbox.current_machine.is_running():
             if not self.vbox.current_machine.is_booted or \
                self.vbox.current_machine.power_down() == 1:
