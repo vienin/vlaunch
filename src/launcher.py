@@ -82,8 +82,8 @@ if conf.LIVECD:
         sys.path.append(conf.BIN)
         res = gui.download_file(conf.ISOURL,
                                 filename=conf.BOOTISO,
-                                msg=_("A U.F.O Live CD is required to continue.") + "\n" + \
-                                    _("Press 'Download' to start downloading the U.F.O Live image.") + "\n\n" + \
+                                msg=_("A %s Live CD is required to continue.") % (conf.PRODUCTNAME, ) + "\n" + \
+                                    _("Press 'Download' to start downloading the %s Live image.") % (conf.PRODUCTNAME, ) + "\n\n" + \
                                     _("This operation can take up to a few hours, depending on your connection speed."))
         if res:
             sys.exit(1)
@@ -147,8 +147,8 @@ if __name__ == "__main__":
 
         if conf.GUESTDEBUG:
             if gui.dialog_error_report(_("Debug mode"),
-                                       _("UFO was run in debug mode.\n"
-                                         "You can help fixing your problem by submitting the debug reports"),
+                                       _("%s was run in debug mode.\n"
+                                         "You can help fixing your problem by submitting the debug reports") % (conf.PRODUCTNAME,),
                                        _("Send debug reports"),
                                        error=False):
                 report_files = glob.glob(conf.LOGFILE + "_*")
@@ -168,10 +168,10 @@ if __name__ == "__main__":
         trace = traceback.format_exc()
         logging.debug(trace)
         if isinstance(e, OSError) and e.errno == errno.ECHILD:
-            msg = _("UFO has encountered a minor error. Restarting the application may fix the problem.")
+            msg = _("%s has encountered a minor error. Restarting the application may fix the problem.") % (conf.PRODUCTNAME,)
             error = False
         else:
-            msg = _("UFO has encountered a fatal error and will now be closed.")
+            msg = _("%s has encountered a fatal error and will now be closed.") % (conf.PRODUCTNAME,)
             error = True
         if gui.dialog_error_report(_("Error"),
                                    msg + "\n\n" + \

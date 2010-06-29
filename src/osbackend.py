@@ -240,8 +240,8 @@ class OSBackend(object):
             if int(ram) <= int(conf.MINRAM):
                 gui.dialog_info(title=_("Warning"), 
                                 msg=_("The available memory on this computer is low.\n"
-                                      "This can deeply impact the speed of the UFO virtual machine.\n\n"
-                                      "Closing some applications or restarting the computer may help"),
+                                      "This can deeply impact the speed of the %s virtual machine.\n\n"
+                                      "Closing some applications or restarting the computer may help") % (conf.PRODUCTNAME,),
                                 error=False)
         
             logging.debug("Setting RAM to " + str(ram))
@@ -418,8 +418,8 @@ class OSBackend(object):
 
         # set debug mode
         if conf.GUESTDEBUG:
-            gui.dialog_info(msg=_("UFO is running in debug mode.\n"
-                                  "Be aware to disable debug mode at the next session."),
+            gui.dialog_info(msg=_("%s is running in debug mode.\n"
+                                  "Be aware to disable debug mode at the next session.") % (conf.PRODUCTNAME,),
                             title=_("Debug mode"))
 
         for guestprop in conf.get_all_guestprops():
@@ -502,7 +502,7 @@ class OSBackend(object):
                     return conf.STATUS_NORMAL
                 
                 input = gui.dialog_question(title=_("Warning"),
-                                            msg=_("Could not find an UFO key, try again ?"),
+                                            msg=_("Could not find an %s key, try again ?") % (conf.PRODUCTNAME,),
                                             button1=_("Yes"),
                                             button2=_("No"))
                 if input == _("No"):
@@ -513,8 +513,8 @@ class OSBackend(object):
                 names = [ x[1] for x in usb ]
                 if not names:
                     names = [ _("No USB device found") ]
-                ret = gui.dialog_choices(msg=_("Select the USB device you want to install UFO on"),
-                                         title="UFO", column=_("Device"), choices=names)
+                ret = gui.dialog_choices(msg=_("Select the USB device you want to install %s on") % (conf.PRODUCTNAME,),
+                                         title=conf.PRODUCTNAME, column=_("Device"), choices=names)
                 if not ret:
                     return conf.STATUS_IGNORE
                     
@@ -556,7 +556,7 @@ class OSBackend(object):
 
     def error_already_running(self, processes, prog="UFO"):
         logging.debug("U.F.O launched twice. Exiting")
-        return gui.dialog_error_report(title=_("UFO can not be launched"),
+        return gui.dialog_error_report(title=_("%s can not be launched") % (conf.PRODUCTNAME,),
                                        msg=_("An already running of instance %s has been found.\n"
                                              "Please close all %s windows and processes.") % (prog, prog),
                                        action=_("Force to close"), details = processes)
@@ -572,8 +572,8 @@ class OSBackend(object):
 
     def installed_vbox_error(self):
         msg = _("We have detected an existing VirtualBox installation on this computer.\n"
-                "UFO is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run UFO.\n\n"
-                "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.")
+                "%s is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run %s.\n\n"
+                "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.") % (conf.PRODUCTNAME, conf.PRODUCTNAME)
         gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
         sys.exit(1)
 
@@ -619,7 +619,7 @@ class OSBackend(object):
                         gui.app.fullscreen_window(False)
                     else:
                         gui.app.normalize_window()
-                    gui.app.set_tooltip(_("UFO: authenticating"))
+                    gui.app.set_tooltip(_("%s: authenticating") % (conf.PRODUCTNAME,))
 
         # Boot progress management
         elif name == "/UFO/Boot/Progress":
@@ -659,7 +659,7 @@ class OSBackend(object):
                     gui.app.fullscreen_window(False)
                 else:
                     gui.app.normalize_window()
-                gui.app.set_tooltip(_("UFO: running"))
+                gui.app.set_tooltip(_("%s: running") % (conf.PRODUCTNAME,))
                 
             elif newValue == "CLOSING_SESSION":
                 gui.app.destroy_persistent_balloon_section('usb')
@@ -669,15 +669,15 @@ class OSBackend(object):
 
                 if self.vbox.current_machine.overlay_data_size > 0:
                     title = _("Recording changes")
-                    msg = _("Please wait while UFO is recording the system modifications (%s Mo),\n"
-                            "you absolutely must not unplug the key !") % (str(self.vbox.current_machine.overlay_data_size),)
+                    msg = _("Please wait while %s is recording the system modifications (%s Mo),\n"
+                            "you absolutely must not unplug the key !") % (conf.PRODUCTNAME, str(self.vbox.current_machine.overlay_data_size),)
                 else:
                     title = _("Shutting down")
-                    msg = _("Please wait while UFO is shutting down,\n"
-                            "you absolutely must not unplug the key !")
+                    msg = _("Please wait while %s is shutting down,\n"
+                            "you absolutely must not unplug the key !") % (conf.PRODUCTNAME,)
 
                 gui.app.create_temporary_balloon(title=title, msg=msg)
-                gui.app.set_tooltip(_("UFO: recording changes"))
+                gui.app.set_tooltip(_("%s: recording changes") % (conf.PRODUCTNAME,))
             
             elif newValue == "HALTING":
                 pass
@@ -686,8 +686,8 @@ class OSBackend(object):
                 self.set_command_line()
                 self.vbox.current_machine.is_booted  = False
                 self.vbox.current_machine.is_booting = True
-                gui.app.create_temporary_balloon(title=_("Restart UFO"),
-                                                 msg=_("UFO is rebooting"),
+                gui.app.create_temporary_balloon(title=_("Restart %s") % (conf.PRODUCTNAME,),
+                                                 msg=_("%s is rebooting") % (conf.PRODUCTNAME,),
                                                  progress=True)
         
             elif newValue == "FIRSTBOOT":
@@ -727,16 +727,16 @@ class OSBackend(object):
                 gui.app.minimize_window()
                 
             if conf.USER != "" or conf.GUESTMODE:
-                title = _(u"UFO is starting")
+                title = _("%s is starting") % (conf.PRODUCTNAME,)
             else:
-                title = _("1<SUP>st</SUP> launch of UFO")
+                title = _("1<SUP>st</SUP> launch of %s") % (conf.PRODUCTNAME,)
 
             gui.app.create_temporary_balloon(title=title,
-                                             msg=_("UFO is starting."),
+                                             msg=_("%s is starting.") % (conf.PRODUCTNAME,),
                                              progress=True,
                                              vlayout={ 'type' : gui.CredentialsLayout,
                                                        'args' : (self.credentials, self.keyring_valid)})
-            gui.app.set_tooltip(_("UFO: starting"))
+            gui.app.set_tooltip(_("%s: starting") % (conf.PRODUCTNAME,))
 
             self.vbox.current_machine.is_booting = True
         
@@ -754,10 +754,10 @@ class OSBackend(object):
             if gui.app.callbacks_timer.isActive():
                 gui.app.stop_check_timer(gui.app.callbacks_timer)
 
-            gui.app.set_tooltip(_("UFO: terminated"))
+            gui.app.set_tooltip(_("%s: terminated") % (conf.PRODUCTNAME,))
             gui.app.process_gui_events()
             gui.app.create_temporary_balloon(_("Goodbye"),
-                                             _("You can now safely eject your UFO key."))
+                                             _("You can now safely eject your %s key.") % (conf.PRODUCTNAME,))
                                              
             gui.app.start_single_timer(gui.app.termination_timer, 3, self.termination_callback)
         

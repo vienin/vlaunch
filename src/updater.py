@@ -51,8 +51,8 @@ def check_update(backend):
         if local_version < latest_version :
             logging.debug("Updating to new version. Asking to user...")
             input = gui.dialog_question(title=_("Update available"),
-                msg=_("A more recent version of the U.F.O launcher is available,"
-                      "do you want to install it ? (%s Mo to download) ?") % (latest_size / (1024*1024),),
+                msg=_("A more recent version of the %s launcher is available,"
+                      "do you want to install it ? (%s Mo to download) ?") % (conf.PRODUCTNAME, latest_size / (1024*1024),),
                 button1=_("Yes"), button2=_("No"))
             logging.debug("Got : " + str(input))
             if input == _("Yes"):
@@ -70,7 +70,7 @@ def check_update(backend):
                     available_space = backend.get_free_space(conf.DATA_DIR)
                     if available_space + removed_space < latest_real_size:
                         input = gui.dialog_error_report(_("Insufficient free space"),
-                                                        _("The available space on your UFO key is insufficient for the update.<br><br>"
+                                                        _("The available space on your key is insufficient for the update.<br><br>"
                                                           "Please remove more than <b>%s Mo</b> in the <b>\"Public\"</b> directory and retry.") %
                                                           ((latest_real_size - (available_space + removed_space)) / (1024*1024),),
                                                         _("Retry"),
@@ -183,7 +183,7 @@ def self_update(ufo_dir, relaunch):
         cp.write(open(conf.conf_file, "w"))
 
         gui.dialog_info(title=_("Information"),
-                        msg=_("Your UFO launcher is up to date (v" + latest_version + ") !"))
+                        msg=_("Your %s launcher is up to date (v") % (conf.PRODUCTNAME,) + latest_version + ") !")
 
         try:
             os.remove(filename)

@@ -52,7 +52,7 @@ class WindowsBackend(OSBackend):
     def check_process(self):
         logging.debug("Checking UFO process")
         # TODO: Get pid for possible kill
-        processes = self.WMI.Win32_Process(Name="ufo.exe")
+        processes = self.WMI.Win32_Process(Name=conf.WINDOWSEXE)
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1:
             logging.debug(str([ x.Name for x in processes if x.ProcessId != os.getpid() ]))
@@ -410,19 +410,19 @@ class WindowsBackend(OSBackend):
         disk.writeImage(image, device, volume=volume, callback=callback)
 
     def rights_error(self):
-        msg = _("You don't have enough permissions to run UFO.")
+        msg = _("You don't have enough permissions to run %s.") % (conf.PRODUCTNAME,)
         logging.debug("Using Windows version " + str(platform.win32_ver()))
         if platform.win32_ver()[0].lower() == "vista":
-            msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as administrator'")
+            msg += _("Run %s as Administrator by right clicking on %s and select : 'Run as administrator'") % (conf.PRODUCTNAME, path.splitext(conf.WINDOWSEXE)[0])
         else:
-            msg += _("Run UFO as Administrator by right clicking on UFO and select : 'Run as ...'")
+            msg += _("Run %s as Administrator by right clicking on %s and select : 'Run as ...'") % (conf.PRODUCTNAME, path.splitext(conf.WINDOWSEXE)[0])
         gui.dialog_info(title=_("Not enough permissions"), msg=msg)
         sys.exit(1)
 
     def installed_vbox_error(self):
         msg = _("We have detected an existing VirtualBox installation on this computer.\n"
-                "UFO is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run UFO.\n\n"
-                "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.")
+                "%s is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run %s.\n\n"
+                "Note that if you want to use your own VirtualBox installation, you need to reboot your computer.") % (conf.PRODUCTNAME, conf.PRODUCTNAME)
         gui.dialog_info(title=_("VirtualBox detected"), msg=msg)
         sys.exit(1)
 

@@ -108,7 +108,7 @@ class MacBackend(OSBackend):
         self.call([ [ "tar", "-cf", "-", "-C", conf.DATA_DIR, "locale" ],
                     [ "tar", "xf", "-", "-C", path.join(self_copied_path, ".data") ] ], output = True)[1]
 
-        return path.join(self_copied_path, "Mac-Intel", "UFO.app", "Contents", "MacOS", "UFO")
+        return path.join(self_copied_path, "Mac-Intel", conf.MACEXE)
 
     def get_model(self, dev):
         medianame = utils.grep(self.call(["/usr/sbin/diskutil", "info", dev], output=True)[1], "Media Name:")
@@ -332,7 +332,7 @@ class MacBackend(OSBackend):
     def prepare(self):
         if not self.is_admin():
             if path.basename(sys.executable) == "python":
-                cmd = [ path.join(path.dirname(sys.executable), "UFO") ]
+                cmd = [ path.join(path.dirname(sys.executable), path.basename(conf.MACEXE)) ]
             else:
                 cmd = [ sys.executable ] + sys.argv
             cmd += [ "--respawn" ]

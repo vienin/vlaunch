@@ -77,7 +77,7 @@ class DDWindow(QtGui.QWizard):
                     self.umounted = True
                     while not self.backend.umount_device(usb[0]):
                         input = gui.dialog_error_report(_("Warning"),
-                                                        _("UFO is not able to umount <b>\"" + usb[0] + "\"</b> because it seems to be busy.\n"
+                                                        _("%s is not able to umount <b>\"") % (conf.PRODUCTNAME,) + usb[0] + _("\"</b> because it seems to be busy.\n"
                                                           "Please close the program that is using it and retry."),
                                                         _("Retry"),
                                                         error=False)
@@ -173,14 +173,14 @@ class DDWindow(QtGui.QWizard):
 
                 if target_size < source_size:
                     gui.dialog_info(title=_("The selected device is too small"),
-                                     msg=_("The size of the source you have selected (" + str(source_size / (1024 * 1024)) + " Mo)"
-                                           " is bigger than the size of the selected target device (" + str(target_size / (1024 * 1024) ) + " Mo)."
-                                           "<br><br>Please select a source equal or smaller than the target key."))
+                                     msg=_("The size of the source you have selected (%d Mo)"
+                                           " is bigger than the size of the selected target device (%d Mo)."
+                                           "<br><br>Please select a source equal or smaller than the target key.") % (str(source_size / (1024 * 1024)), str(target_size / (1024 * 1024))))
                     return False
 
                 response = gui.dialog_question(title=_("All data on the device will be lost"),
-                                               msg=_("To setup G-Dium Mobile PC on your device, "
-                                                     "the device needs to be formatted. Are you sure you want to continue ?"),
+                                               msg=_("To setup %s on your device, "
+                                                     "the device needs to be formatted. Are you sure you want to continue ?") % (conf.PRODUCTNAME,),
                                                dangerous = True)
                 if response != _("Yes"):
                     return False

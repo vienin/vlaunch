@@ -57,13 +57,13 @@ class QtUFOGui(QtGui.QApplication):
         self.menu = QtGui.QMenu()
         action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
                                      QtCore.QString(_("About")), self);
-        action_about.setStatusTip(_("Get informations about UFO"))
+        action_about.setStatusTip(_("Get informations about %s") % (conf.PRODUCTNAME,))
         action_settings = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "settings.png")), 
                                         QtCore.QString(_("Settings...")), self);
-        action_settings.setStatusTip(_("Configure the UFO launcher"))
+        action_settings.setStatusTip(_("Configure the %s launcher") % (conf.PRODUCTNAME,))
         action_creator = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "creator.png")),
                                         QtCore.QString(_("Creator...")), self);
-        action_creator.setStatusTip(_("Create your UFO key"))
+        action_creator.setStatusTip(_("Create your %s key") % (conf.PRODUCTNAME,))
         action_quit = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "exit.png")),
                                         QtCore.QString(_("Quit")), self);
         action_quit.setStatusTip(_("Quit"))
@@ -340,7 +340,7 @@ class QtUFOGui(QtGui.QApplication):
     
     def about(self):
         QtGui.QMessageBox.about(None, 
-                                QtCore.QString(_("About the UFO launcher")),
+                                QtCore.QString(_("About the %s launcher") % (conf.PRODUCTNAME,)),
                                 QtCore.QString(_("Version ") + str(conf.VERSION) + 
                                                "<br><br>Copyright (C) 2010 Agorabox<br><br>" +
                                                _("For more information, please visit") + 
@@ -364,8 +364,8 @@ class QtUFOGui(QtGui.QApplication):
 
         while self.vbox.current_machine.is_running():
             input = dialog_error_report(_("Warning"),
-                                        _("The UFO virtual machine is currently running.\n"
-                                          "Please shutdown the UFO virtual machine before using the UFO creator"),
+                                        _("The %s virtual machine is currently running.\n"
+                                          "Please shutdown the %s virtual machine before using the %s creator") % (conf.PRODUCTNAME, ) * 3,
                                         _("Retry"),
                                         error=False)
             if not input:
@@ -385,8 +385,8 @@ class QtUFOGui(QtGui.QApplication):
             if not self.vbox.current_machine.is_booted or \
                self.vbox.current_machine.power_down() == 1:
                 dialog_info(title=_("Warning"),
-                            msg=_("UFO virtual machine is currently starting.\n"
-                                  "You can not shutdown the machine during startup."))
+                            msg=_("%s virtual machine is currently starting.\n"
+                                  "You can not shutdown the machine during startup.") % (conf.PRODUCTNAME,))
 
         else:
             sys.exit(0)
@@ -395,12 +395,12 @@ class QtUFOGui(QtGui.QApplication):
         if self.vbox.current_machine.is_running():
             no  = _("No")
             if dialog_question(title=_("Dangerous"),
-                               msg=_("The UFO virtual machine is currently running.\n"
+                               msg=_("The %s virtual machine is currently running.\n"
                                      "Forcing machine to shutdown is very DANGEROUS, "
                                      "the modification made during this session will "
                                      "be lost. You should use the \"Quit\" menu "
-                                     "action to shutdown UFO properly.\n\n"
-                                     "Do you really want to kill the UFO virtual machine ?"),
+                                     "action to shutdown %s properly.\n\n"
+                                     "Do you really want to kill the %s virtual machine ?") % (conf.PRODUCTNAME,) * 3,
                                dangerous=True) == no:
                 return
 
@@ -538,7 +538,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
 
         self.temporary_balloon  = None
-        self.persistent_balloon = MultiSmartDictBalloonMessage(title=_("UFO informations balloon"),
+        self.persistent_balloon = MultiSmartDictBalloonMessage(title=_("%s informations balloon") % (conf.PRODUCTNAME,),
                                                                rearrange_callback=self.rearrange_balloons)
         self.balloons = [ self.persistent_balloon ]
         
@@ -1231,7 +1231,7 @@ class CredentialsLayout(QtGui.QVBoxLayout):
         self.hline.setFrameShape(QtGui.QFrame.HLine)
         self.hline.setFrameShadow(QtGui.QFrame.Sunken)
 
-        self.pass_label = QtGui.QLabel(_("UFO password:"))
+        self.pass_label = QtGui.QLabel(_("%s password:") % (conf.PRODUCTNAME,))
         self.password = QtGui.QLineEdit()
         self.password.setEchoMode(QtGui.QLineEdit.Password)
 
@@ -1678,7 +1678,7 @@ class Settings(QtGui.QDialog):
         main_layout.addLayout(valid_layout)
         self.setLayout(main_layout)
 
-        self.setWindowTitle(self.tr(_("UFO settings")))
+        self.setWindowTitle(self.tr(_("%s settings") % (conf.PRODUCTNAME,)))
         
     def createOneTab(self, tab, fields=[]):
         widget     = QtGui.QWidget()

@@ -81,7 +81,7 @@ class LinuxBackend(OSBackend):
     
     def prepare_self_copy(self):
         self_copied_path = tempfile.mkdtemp(prefix="ufo-self-copied")
-        exe_path = os.path.join(self_copied_path, "Linux", "ufo")
+        exe_path = os.path.join(self_copied_path, "Linux", conf.LINUXEXE)
 
         os.mkdir(os.path.join(self_copied_path, ".data"))
         path = os.path.dirname(os.path.dirname(conf.SCRIPT_PATH))
@@ -110,8 +110,8 @@ class LinuxBackend(OSBackend):
 
         if isinstance(self, GenericLinuxBackend):
             gui.dialog_info(title=_("Warning"),
-                            msg=_("Your Linux distribution is not officially supported by U.F.O.\n"
-                                  "You may or may not encounter errors. Install PyQt4 and VirtualBox... and pray :)"))
+                            msg=_("Your Linux distribution is not officially supported by %s\n"
+                                  "You may or may not encounter errors. Install PyQt4 and VirtualBox... and pray :)") % (conf.PRODUCTNAME,))
 
         self.call(["rmmod", "kvm-intel"])
         self.call(["rmmod", "kvm-amd"])
@@ -309,7 +309,7 @@ class LinuxBackend(OSBackend):
         
     def get_generic_installation_messages(self, component):
         return { "title" : _("Please wait"),
-                 "msg" : _('Installing %s (required by UFO)') % (component,),
+                 "msg" : _('Installing %s (required by %s)') % (component, conf.PRODUCTNAME),
                  "success_msg" : _("%s was successfully installed") % (component,),
                  "error_msg" : _("An error occurred while installing %s") % (component,) }
 
@@ -388,9 +388,9 @@ class FedoraLinuxBackend(LinuxBackend):
 
             if cant_compile:
                 if need_reboot:
-                    msg = _("You are not running the latest installed version of the kernel.\nA reboot is required for UFO to work.")
+                    msg = _("You are not running the latest installed version of the kernel.\nA reboot is required for %s to work.") % (conf.PRODUCTNAME,)
                 else:
-                    msg = _("An error has occurred during the installation of VirtualBox.\nPlease install the latest %s and %s-devel packages." % (kernel, kernel))
+                    msg = _("An error has occurred during the installation of VirtualBox.\nPlease install the latest %s and %s-devel packages.") % (kernel, kernel)
                 gui.dialog_info(title=_("Warning"),
                                 msg=msg,
                                 error=False)
