@@ -82,11 +82,13 @@ install: install-mo
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp src/launcher-linux.py "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME)"
-	cp setup/linux-settings-link "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
-	cp setup/linux-creator-link "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
 	cp -R sdk/bindings/xpcom/python/xpcom $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp -R vboxapi sdk $(SOURCES) $(DESTDIR)$(TARGET_PATH)/Linux/bin
-	cp setup/.autorun $(DESTDIR)$(TARGET_PATH)/
+	echo -e "#!/bin/sh\n\"Linux/$(PRODUCTNAME)\"" > $(DESTDIR)$(TARGET_PATH)/.autorun
+	echo "#!/bin/sh" > "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
+	echo '"`dirname \"$$0\"`" --dd' >> "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
+	echo "#!/bin/sh" > "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
+	echo '"`dirname \"$$0\"`" --settings' >> "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
 
 	# installs Boot Iso
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Isos
