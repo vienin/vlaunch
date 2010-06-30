@@ -208,46 +208,6 @@ class Conf(object):
 
         self.load()
 
-        if options.update:
-            self.DATA_DIR = path.join(options.update, ".data")
-        else:
-            self.DATA_DIR = ""
-        self.BIN = ""
-
-        if sys.platform == "linux2":
-            if self.LIVECD:
-                self.DATA_DIR = os.environ["_MEIPASS2"]
-                # no BIN as the livecd always provides a settings.conf
-            else:
-                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(self.SCRIPT_PATH)), ".data")
-                vbox_path = utils.call(["which", "VirtualBox"], output=True, log=False)[1].strip()
-                if not path.lexists(vbox_path): self.BIN = ""
-                else: self.BIN = path.dirname(vbox_path)
-
-        elif sys.platform == "darwin":
-            if self.LIVECD:
-                self.DATA_DIR = path.join(path.dirname(self.SCRIPT_PATH), "..", "Resources", ".data")
-            else:
-                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(self.SCRIPT_PATH))))), ".data")
-            self.BIN = path.join(self.SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
-
-        else:
-            if self.LIVECD:
-                self.DATA_DIR = os.environ["_MEIPASS2"]
-                # no BIN as the livecd always provides a settings.conf
-            else:
-                if not self.DATA_DIR: self.DATA_DIR = path.join(self.SCRIPT_DIR, "..", "..", ".data")
-                self.BIN = path.join(self.SCRIPT_DIR)
-
-        try:
-            gettext.translation('vlaunch', path.join(self.DATA_DIR, "locale"), languages=[self.LANGUAGE]).install(unicode=True)
-        except:
-            print "Could find a translation for " + self.LANGUAGE
-            print "Available translations", gettext.find("vlaunch", localedir=path.join(self.DATA_DIR, "locale"), all=1), "in", path.join(self.DATA_DIR, "locale")
-            gettext.install('vlaunch')
-
-        self.setup()
-
     def make_path(self, base, value):
         if value:
             return path.normpath(path.join(base,path.expanduser(value)))
@@ -320,6 +280,46 @@ class Conf(object):
                         setattr(self, key.upper(), type(default)(self.cp.get(section, key)))
                 except NoOptionError, err:
                     setattr(self, key.upper(), default)
+
+        if options.update:
+            self.DATA_DIR = path.join(options.update, ".data")
+        else:
+            self.DATA_DIR = ""
+        self.BIN = ""
+
+        if sys.platform == "linux2":
+            if self.LIVECD:
+                self.DATA_DIR = os.environ["_MEIPASS2"]
+                # no BIN as the livecd always provides a settings.conf
+            else:
+                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(self.SCRIPT_PATH)), ".data")
+                vbox_path = utils.call(["which", "VirtualBox"], output=True, log=False)[1].strip()
+                if not path.lexists(vbox_path): self.BIN = ""
+                else: self.BIN = path.dirname(vbox_path)
+
+        elif sys.platform == "darwin":
+            if self.LIVECD:
+                self.DATA_DIR = path.join(path.dirname(self.SCRIPT_PATH), "..", "Resources", ".data")
+            else:
+                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(self.SCRIPT_PATH))))), ".data")
+            self.BIN = path.join(self.SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
+
+        else:
+            if self.LIVECD:
+                self.DATA_DIR = os.environ["_MEIPASS2"]
+                # no BIN as the livecd always provides a settings.conf
+            else:
+                if not self.DATA_DIR: self.DATA_DIR = path.join(self.SCRIPT_DIR, "..", "..", ".data")
+                self.BIN = path.join(self.SCRIPT_DIR)
+
+        try:
+            gettext.translation('vlaunch', path.join(self.DATA_DIR, "locale"), languages=[self.LANGUAGE]).install(unicode=True)
+        except:
+            print "Could find a translation for " + self.LANGUAGE
+            print "Available translations", gettext.find("vlaunch", localedir=path.join(self.DATA_DIR, "locale"), all=1), "in", path.join(self.DATA_DIR, "locale")
+            gettext.install('vlaunch')
+
+        self.setup()
 
     def reload(self):
         self.load()
