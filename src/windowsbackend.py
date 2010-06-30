@@ -52,11 +52,16 @@ class WindowsBackend(OSBackend):
     def check_process(self):
         logging.debug("Checking UFO process")
         # TODO: Get pid for possible kill
-        processes = self.WMI.Win32_Process(Name=conf.WINDOWSEXE)
+        processes = []
+        for p in  self.WMI.Win32_Process():
+            if "ufo" in p.Name or p.Name == conf.WINDOWSEXE:
+                processes.append(p)
+
         logging.debug("ufo process : " + str(processes))
         if len(processes) > 1:
             logging.debug(str([ x.Name for x in processes if x.ProcessId != os.getpid() ]))
             self.error_already_running("\n".join([ x.Name for x in processes if x.ProcessId != os.getpid() ]).strip())
+            sys.exit(0)
 
         logging.debug("Checking VBoxXPCOMIPCD process")
         processes = self.WMI.Win32_Process(Name="VBoxSVC.exe")
