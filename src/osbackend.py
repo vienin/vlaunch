@@ -479,7 +479,7 @@ class OSBackend(object):
         if conf.DEV: return conf.STATUS_NORMAL
     
         # no generation needed
-        if not conf.MODEL and not conf.VOLUME and not conf.ROOTUUID:
+        if not conf.MODEL and not conf.VOLUME and not conf.ROOTUUID and conf.LIVECD:
             return conf.STATUS_IGNORE
     
         # research loop
