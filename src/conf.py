@@ -139,7 +139,8 @@ class Conf(object):
           "linuxexe" : "Gdium Mobile PC",
           "windowsexe" : "Gdium Mobile PC.exe",
           "macexe" : "Gdium Mobile PC.app/Contents/MacOS/UFO",
-          "productname" : "Gdium Mobile PC"
+          "productname" : "Gdium Mobile PC",
+          "firstlaunch" : True
         },
       "rawdisk" :
         {

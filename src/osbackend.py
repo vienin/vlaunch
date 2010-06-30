@@ -726,7 +726,7 @@ class OSBackend(object):
                 time.sleep(2)
                 gui.app.minimize_window()
                 
-            if conf.USER != "" or conf.GUESTMODE:
+            if conf.FIRSTLAUNCH:
                 title = _("%s is starting") % (conf.PRODUCTNAME,)
             else:
                 title = _("1<SUP>st</SUP> launch of %s") % (conf.PRODUCTNAME,)
@@ -879,6 +879,8 @@ class OSBackend(object):
         open(path.join(conf.DATA_DIR, self.reservation_file), 'a').truncate(size_to_reserve)
 
     def global_cleanup(self):
+        if conf.FIRSTLAUNCH:
+            conf.write_value_to_file("launcher", "FIRSTLAUNCH", "0")
         if self.vbox.license_agreed():
             conf.write_value_to_file("launcher", "LICENSE", "1")
         if self.dnddir:
