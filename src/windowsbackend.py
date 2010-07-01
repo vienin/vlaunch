@@ -83,7 +83,7 @@ class WindowsBackend(OSBackend):
         os.mkdir(os.path.join(self_copied_path, ".data"))
         for file in files:
             dest = os.path.join(self_copied_path, "Windows", "bin", os.path.basename(file))
-            logging.debug("Copying " + str(file) + " to " + str(dest))
+            # logging.debug("Copying " + str(file) + " to " + str(dest))
             if os.path.isdir(file):
                 copytree(file, dest)
             else:
