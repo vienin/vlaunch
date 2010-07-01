@@ -725,8 +725,8 @@ class OSBackend(object):
             if conf.AUTOMINIMIZE:
                 time.sleep(2)
                 gui.app.minimize_window()
-                
-            if conf.FIRSTLAUNCH:
+
+            if not conf.FIRSTLAUNCH:
                 title = _("%s is starting") % (conf.PRODUCTNAME,)
             else:
                 title = _("1<SUP>st</SUP> launch of %s") % (conf.PRODUCTNAME,)
