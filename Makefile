@@ -162,7 +162,6 @@ install-mo: $(MOFILES)
 	        install -D -m 755 $$mo $(DESTDIR)/usr/share/locale/$$lang/LC_MESSAGES/$$package.mo; \
 	    fi; \
 	done; \
-	exit 1
 
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \
