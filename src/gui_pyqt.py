@@ -204,8 +204,9 @@ class QtUFOGui(QtGui.QApplication):
                     event.timer.start(event.time * 1000)
 
         elif isinstance(event, UpdateProgressEvent):
+            if event.inverse:
+                event.progress_bar.setInvertedAppearance(not event.progress_bar.invertedAppearance())
             event.progress_bar.setValue(event.percent)
-
         else:
             return False
 
@@ -523,10 +524,11 @@ class CommandEvent(QtCore.QEvent):
         self.error = error
 
 class UpdateProgressEvent(QtCore.QEvent):
-    def __init__(self, progress_bar, percent):
+    def __init__(self, progress_bar, percent, inverse=False):
         super(UpdateProgressEvent, self).__init__(QtCore.QEvent.None)
         self.progress_bar = progress_bar
         self.percent      = percent
+        self.inverse      = inverse
 
 
 class TrayIcon(QtGui.QSystemTrayIcon):
@@ -1371,6 +1373,36 @@ class Extractor(threading.Thread):
         app.postEvent(app, UpdateProgressEvent(self.progress, percent))
 
 
+class InfiniteProgressBar(QtGui.QProgressBar, threading.Thread):
+    def __init__(self):
+        QtGui.QProgressBar.__init__(self)
+        threading.Thread.__init__(self)
+        self.setTextVisible(False)
+        self.job_finished = False
+
+    def run(self):
+        app.postEvent(app, UpdateProgressEvent(self, 0))
+        while not self.job_finished:
+            if not self.invertedAppearance():
+                if self.value() == 100:
+                    app.postEvent(app, UpdateProgressEvent(self, self.value() - 5, True))
+                else:
+                    if self.value() + 5 > 100:
+                        value = 100
+                    else:
+                        value = self.value() + 5
+                    app.postEvent(app, UpdateProgressEvent(self, value))
+            else:
+                if self.value() == 0:
+                    app.postEvent(app, UpdateProgressEvent(self, self.value() + 5, True))
+                else:
+                    app.postEvent(app, UpdateProgressEvent(self, self.value() - 5))
+            time.sleep(0.1)
+
+    def stop(self):
+        self.job_finished = True
+
+
 class WaitWindow(QtGui.QDialog):
     def __init__(self, cmd, title, msg, success_msg, error_msg, parent=None):
         super(WaitWindow, self).__init__(main)
@@ -1382,9 +1414,8 @@ class WaitWindow(QtGui.QDialog):
         self.error_msg = error_msg
         self.statusLabel = QtGui.QLabel(self.msg)
         self.cancelButton = QtGui.QPushButton(_("Cancel"))
-        self.animation = QtGui.QLabel()
-        self.animation.setAlignment(QtCore.Qt.AlignCenter)
-        self.animation.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self.infinite_progress = InfiniteProgressBar()
+
         buttonBox = QtGui.QDialogButtonBox()
         buttonBox.addButton(self.cancelButton, QtGui.QDialogButtonBox.ActionRole)
         self.cancelButton.hide()
@@ -1393,20 +1424,14 @@ class WaitWindow(QtGui.QDialog):
         main_layout.addLayout(topLayout)
         main_layout.addWidget(self.statusLabel)
         main_layout.addWidget(buttonBox)
-        main_layout.addWidget(self.animation)
+        main_layout.addWidget(self.infinite_progress)
+
         self.setLayout(main_layout)
-
-        self.animated = QtGui.QMovie(os.path.join(conf.IMGDIR, "animated-bar.mng"), 
-                                     QtCore.QByteArray(), 
-                                     self.animation)
-        self.animated.setCacheMode(QtGui.QMovie.CacheAll)
-        self.animated.setSpeed(100)
-        self.animation.setMovie(self.animated)
-
-        self.animated.start()
         self.command.start()
+        self.infinite_progress.start()
 
     def finished(self, error):
+        self.infinite_progress.stop()
         if error:
             self.reject()
         else:
