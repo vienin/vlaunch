@@ -173,9 +173,9 @@ class DDWindow(QtGui.QWizard):
 
                 if target_size < source_size:
                     gui.dialog_info(title=_("The selected device is too small"),
-                                     msg=_("The size of the source you have selected (%d Mo)"
-                                           " is bigger than the size of the selected target device (%d Mo)."
-                                           "<br><br>Please select a source equal or smaller than the target key.") % (str(source_size / (1024 * 1024)), str(target_size / (1024 * 1024))))
+                                    msg=_("The size of the source you have selected (%d Mo)"
+                                          " is bigger than the size of the selected target device (%d Mo)."
+                                          "<br><br>Please select a source equal or smaller than the target key.") % (source_size / 1024 / 1024, target_size / 1024 / 1024))
                     return False
 
                 response = gui.dialog_question(title=_("All data on the device will be lost"),
