@@ -31,8 +31,6 @@ args = [ arg for arg in sys.argv[1:] if not arg.startswith("-psn_") ]
 parser = OptionParser()
 parser.add_option("-u", "--update", dest="update",
                   help="update a UFO launcher located in ", metavar="FOLDER")
-parser.add_option("-p", "--script-path", dest="script_path",
-                  help="launcher script path", metavar="FOLDER")
 parser.add_option("-d", "--dd", dest="dd", default=False,
                   action="store_true", help="Launch the UFO creator")
 parser.add_option("-r", "--respawn", dest="respawn", default=False,
@@ -192,18 +190,12 @@ class Conf(object):
 
     def __init__(self):
         self.handlers = []
-
-        if options.script_path:
-            exe_path = options.script_path
-        else:
-            exe_path = sys.argv[0]
-
         if sys.platform == "darwin" and getattr(sys, "frozen", None):
-            self.SCRIPT_PATH = path.realpath(path.join(path.dirname(exe_path), "..", "MacOS", "UFO"))
+            self.SCRIPT_PATH = path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO"))
         else:
-            self.SCRIPT_PATH = path.realpath(exe_path)
-        self.SCRIPT_NAME = path.basename(exe_path)
-        self.SCRIPT_DIR  = path.dirname(path.realpath(exe_path))
+            self.SCRIPT_PATH = path.realpath(sys.argv[0])
+        self.SCRIPT_NAME = path.basename(sys.argv[0])
+        self.SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
         print "SCRIPT_PATH", self.SCRIPT_PATH
 
@@ -283,10 +275,7 @@ class Conf(object):
                 except NoOptionError, err:
                     setattr(self, key.upper(), default)
 
-        if options.update:
-            self.DATA_DIR = path.join(options.update, ".data")
-        else:
-            self.DATA_DIR = ""
+        self.DATA_DIR = ""
         self.BIN = ""
 
         if sys.platform == "linux2":

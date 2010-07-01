@@ -91,9 +91,9 @@ class DDWindow(QtGui.QWizard):
 
         if self_copy or need_admin:
             if self_copy:
-                cmd = [ self.backend.prepare_self_copy(), "--dd", "--script-path", self.backend.prepare_self_copy() ]
+                cmd = [ self.backend.prepare_self_copy(), "--dd" ]
             else:
-                cmd = [ sys.executable ] + sys.argv + [  "--dd", "--script-path", sys.executable ]
+                cmd = [ sys.executable ] + sys.argv + [  "--dd" ]
 
             logging.debug("Launching creator : " + " ".join(cmd))
             self.backend.execv(cmd, root=need_admin)

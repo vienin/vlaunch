@@ -29,19 +29,11 @@ import urllib
 import traceback
 
 format = "%(asctime)s [%(levelname)s] %(message)s"
-if conf.options.update or conf.options.dd:
-    if conf.options.update:
-        log = "ufo-updater.log"
-    elif conf.options.dd:
-        log = "ufo-creator.log"
-    conf.LOGFILE = path.join(tempfile.gettempdir(), log)
-
-else:
-    log_dir = os.path.dirname(conf.LOG)
-    if not os.path.exists(log_dir):
-        try: os.makedirs(log_dir)
-        except: pass
-    conf.LOGFILE = path.join(log_dir, os.path.basename(conf.LOG))
+log_dir = os.path.dirname(conf.LOG)
+if not os.path.exists(log_dir):
+    try: os.makedirs(log_dir)
+    except: pass
+conf.LOGFILE = path.join(log_dir, os.path.basename(conf.LOG))
 
 try:
     from utils import RoolOverLogger
