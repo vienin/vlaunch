@@ -153,7 +153,7 @@ def self_update(ufo_dir, relaunch):
                          msg=_("Please wait while the old files are being removed"))
 
         if sys.platform == "darwin":
-            retcode = gui.wait_command(cmd=[ "tar", "--overwrite", "-C", ufo_dir, "-xjf", filename ],
+            success = gui.wait_command(cmd=[ "tar", "--overwrite", "-C", ufo_dir, "-xjf", filename ],
                                        title=_("Installing update"),
                                        msg=_("Please wait while the update is being installed.<br><br>"
                                              "<b>The USB key absolutely must not be unplugged.</b>"))
