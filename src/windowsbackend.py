@@ -445,7 +445,7 @@ class WindowsBackend(OSBackend):
         import disk
         import win32api
         try:
-            hVolume = disk.getHandleOnVolume(mntpoint[0] - ord('A'))
+            hVolume = disk.getHandleOnVolume(ord(mntpoint[0]) - ord('A'))
             disk.getLockOnVolume(hVolume)
             disk.unmountVolume(hVolume)
             disk.removeLockOnVolume(hVolume)

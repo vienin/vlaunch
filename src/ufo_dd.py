@@ -69,22 +69,6 @@ class DDWindow(QtGui.QWizard):
         source = self.source.text()
         target = self.device
 
-        self.umounted = False
-        usbs = self.backend.get_usb_devices()
-        for possible_dev in [source, target]:
-            for usb in usbs:
-                if possible_dev == usb[2]:
-                    self.umounted = True
-                    while not self.backend.umount_device(usb[0]):
-                        input = gui.dialog_error_report(_("Warning"),
-                                                        _("%s is not able to umount <b>\"") % (conf.PRODUCTNAME,) + usb[0] + _("\"</b> because it seems to be busy.\n"
-                                                          "Please close the program that is using it and retry."),
-                                                        _("Retry"),
-                                                        error=False)
-                        if not input:
-                            return
-                        time.sleep(0.3)
-
         self.progress.setRange(0, 100)
         self.progress.valueChanged.connect(self.is_process_finished)
         kwargs = {}
@@ -184,6 +168,24 @@ class DDWindow(QtGui.QWizard):
                                                dangerous = True)
                 if response != _("Yes"):
                     return False
+                    
+                source = self.source.text()
+                self.umounted = False
+                usbs = self.backend.get_usb_devices()
+                for possible_dev in [source, self.device]:
+                    for usb in usbs:
+                        if possible_dev == usb[2]:
+                            self.umounted = True
+                            while not self.backend.umount_device(usb[0]):
+                                input = gui.dialog_error_report(_("Warning"),
+                                                                _("%s is not able to umount <b>\"") % (conf.PRODUCTNAME,) + usb[0] + _("\"</b> because it seems to be busy.\n"
+                                                                  "Please close the program that is using it and retry."),
+                                                                _("Retry"),
+                                                                error=False)
+                                if not input:
+                                    return False
+                                time.sleep(0.3)
+
                 return True
 
         page = BurnPage()
