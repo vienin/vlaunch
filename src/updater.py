@@ -153,16 +153,20 @@ def self_update(ufo_dir, relaunch):
                          msg=_("Please wait while the old files are being removed"))
 
         if sys.platform == "darwin":
-            success = gui.wait_command(cmd=[ "tar", "--overwrite", "-C", ufo_dir, "-xjf", filename ],
-                                       title=_("Installing update"),
-                                       msg=_("Please wait while the update is being installed.<br><br>"
-                                             "<b>The USB key absolutely must not be unplugged.</b>"))
+            gui.wait_command(cmd=[ "tar", "-C", ufo_dir, "-xjf", filename ],
+                             title=_("Installing update"),
+                             msg=_("Please wait while the update is being installed.<br><br>"
+                                   "<b>The USB key absolutely must not be unplugged.</b>"))
 
             mount = utils.grep(utils.call([ "mount" ], output=True)[1], ufo_dir)
             if mount:
                 dev = mount.split()[0]
                 utils.call([ "diskutil", "unmount", dev ])
                 utils.call([ "diskutil", "mount", dev ])
+
+            # At this point we consider that update terminated successfully,
+            # as tar command return higher than 0 when all files has been copied.
+            success = True
 
         else:
             success = gui.extract_tar(tgz=tar,
