@@ -355,7 +355,8 @@ class VBoxHypervisor():
                 logging.debug("Successfully set networking to NAT")
 
     def on_guest_property_set(self, key, value):
-        self.current_machine.set_guest_property(key, value)
+        if self.current_machine.get_guest_property(key) != value:
+            self.current_machine.set_guest_property(key, value)
 
 class VBoxMachine():
 

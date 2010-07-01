@@ -242,9 +242,10 @@ class Conf(object):
         if isinstance(prop, GuestProperty):
             if isinstance(value, GuestProperty):
                 value = value.get_value()
+            newprop = GuestProperty(prop.default, prop.name, value)
+            self.__dict__[attr] = newprop
             for handler in self.handlers:
-                handler(prop.name, str(prop))
-            self.__dict__[attr] = GuestProperty(prop.default, prop.name, value)
+                handler(prop.name, str(newprop))
         else:
             self.__dict__[attr] = value
 
