@@ -151,12 +151,18 @@ refresh-po: Makefile
 generate-mo: $(MOFILES)
 
 install-mo: $(MOFILES)
-	for po in $(MOFILES); \
+	for mo in $(MOFILES); \
 	do \
-	    lang=`basename $$po .mo`; \
-	    install -D -m 755 $$po $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/vlaunch.mo; \
-	    install -D -m 755 $$po $(DESTDIR)/usr/share/locale/$$lang/LC_MESSAGES/vlaunch-guest.mo; \
-	done
+	    lang=`basename $$mo .mo`; \
+	    package=`dirname $$mo`; \
+	    package=`basename $$package`; \
+	    if [ "$$package" = "vlaunch" ]; then \
+	        install -D -m 755 $$mo $(DESTDIR)$(TARGET_PATH)/.data/locale/$$lang/LC_MESSAGES/$$package.mo; \
+	    else \
+	        install -D -m 755 $$mo $(DESTDIR)/usr/share/locale/$$lang/LC_MESSAGES/$$package.mo; \
+	    fi; \
+	done; \
+	exit 1
 
 updater:
 	REV=`python -c "import pysvn; print pysvn.Client().info('.')['revision'].number";`; \
