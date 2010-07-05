@@ -412,9 +412,34 @@ class WindowsBackend(OSBackend):
         disks = self.WMI.Win32_DiskDrive()
         return [[ disk.Name, disk.Model ] for disk in disks if disk.InterfaceType == "USB" ]
 
-    def write_image(self, image, device, volume="", callback=None):
-        import disk
-        disk.writeImage(image, device, volume=volume, callback=callback)
+    def open(self):
+        class WindowsFile:
+            def __init__(self, path, access, mode):
+                if path.startswith("\\\\"):
+                    self.handle = win32file.CreateFile(path, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING, 0, None)
+                    self.size = getFileSizeInSectors(self.handle, 1)
+                else:
+                    self.handle = win32file.CreateFile(src, win32con.GENERIC_READ, 0, None, win32con.OPEN_EXISTING, 0, None)
+                    data = win32file.DeviceIoControl(self.handle, winioctlcon.IOCTL_DISK_GET_DRIVE_GEOMETRY, None, 24)
+                    Cylinders, MediaType, TracksPerCylinder, SectorsPerTrack, BytesPerSector = struct.unpack("qiiii", data)
+                    self. size = Cylinders * TracksPerCylinder * SectorsPerTrack * BytesPerSector
+
+            def __del__(self):
+                self.close()
+
+            def close(self):
+                if self.handle:
+                    win32api.CloseHandle(self.handle)
+                    self.handle = None
+
+            def read(self, size):
+                return win32file.ReadFile(self.handle, size)[1]
+
+            def write(self, data):
+                win32file.WriteFile(self.handle, data)
+
+            def seek(self, offset, position):
+                win32file.SetFilePointer(self.handle, offset, position)
 
     def rights_error(self):
         msg = _("You don't have enough permissions to run %s.") % (conf.PRODUCTNAME,)
@@ -442,13 +467,15 @@ class WindowsBackend(OSBackend):
         return True;
 
     def umount_device(self, mntpoint):
-        import disk
         import win32api
+        import winioctlcon
+        import win32con
         try:
-            hVolume = disk.getHandleOnVolume(ord(mntpoint[0]) - ord('A'))
-            disk.getLockOnVolume(hVolume)
-            disk.unmountVolume(hVolume)
-            disk.removeLockOnVolume(hVolume)
+            hVolume = win32file.CreateFile("\\\\.\\%s:" % (mntpoint[0]),),
+                                           win32con.GENERIC_READ, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE,
+                                           None, win32con.OPEN_EXISTING, 0, None)
+            win32file.DeviceIoControl(hVolume, winioctlcon.FSCTL_LOCK_VOLUME, None, 0)
+            win32file.DeviceIoControl(hVolume, winioctlcon.FSCTL_DISMOUNT_VOLUME, None, 0)
             win32api.CloseHandle(hVolume)
             return True
         except:

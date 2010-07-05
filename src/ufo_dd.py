@@ -77,7 +77,7 @@ class DDWindow(QtGui.QWizard):
         kwargs["callback"] = self.update_progress
         import threading
         threading.Thread(target=self.backend.write_image,
-                         args=(source, target),
+                         args=(str(source), target),
                          kwargs=kwargs).start()
 
     def prepare(self):

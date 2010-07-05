@@ -33,6 +33,8 @@ from ufovboxapi import *
 from ConfigParser import ConfigParser
 from utils import RoolOverLogger
 
+STATUS_WRITING = 0
+
 try:
     import keyring
     print "Using keyring backend"
@@ -829,18 +831,138 @@ class OSBackend(object):
 
         gui.app.process_gui_events()
 
-    def write_image(self, image, device, volume="", callback=None):
-        bs = 1024 * 1024
-        src = os.open(image, os.O_RDONLY)
-        size = os.stat(image).st_size
-        dest = os.open(device, os.O_WRONLY)
-        data = os.read(src, bs)
-        written = 0
-        while data:
-            os.write(dest, data)
-            written += len(data)
-            callback(written, size)
-            data = os.read(src, bs)
+    def open(self, path, mode='r'):
+        class File:
+            def __init__(self, path, mode=0, access=0):
+                self.fd = os.open(path, os.O_RDWR)
+
+            def __del__(self):
+                self.close()
+
+            def close(self):
+                if self.fd != -1:
+                    os.close(self.fd)
+                    self.fd = -1
+
+            def seek(self, offset, position):
+                os.lseek(self.fd, offset, position)
+
+            def read(self, size):
+                return os.read(self.fd, size)
+
+            def write(self, data):
+                return os.write(self.fd, data)
+
+        return File(path)
+
+    def get_disk_geometry(self, device):
+        import re
+        output = self.call(["hdparm", "-g", device], output=True)[1]
+        regexp = re.compile(r" geometry *= (\d+)/(\d+)/(\d+), sectors = (\d+), start = (\d+)")
+        cylinders, heads, sectors, sectors_nb, start = map(int, regexp.search(output).groups())
+        return cylinders, heads, sectors
+
+    def repart(self, device, partitions):
+        dev = self.open(device, "w")
+        input = ""
+        for type, size, bootable in partitions:
+            if bootable:
+                opts = ",*"
+            else:
+                opts = ""
+            if not size:
+                size = ""
+            input += ",%s,%s%s\n" % (size, type, opts)
+        import mbr
+        mb = mbr.MBR(dev)
+        mb.partitions
+        mb.generate(partitions, self.get_device_size(device), *self.get_disk_geometry(device))
+        mb.write(dev)
+
+    def write_image(self, image, device, callback=None):
+        if image.endswith(".zip"):
+            import zipfile
+            zip = zipfile.ZipFile(image)
+
+            mbr_img = zip.open("mbr", "r")
+            fat_img = zip.open("fat", "r")
+            root_img = zip.open("root", "r")
+            boot_img = zip.open("boot", "r")
+            crypto_img = zip.open("crypto", "r")
+
+            total_size = 0
+            for info in zip.infolist():
+                total_size += info.file_size
+
+            self.dd(mbr_img, device)
+
+            parts = ( (0xc, 700 * 1024 * 1024, False),
+                      (0x83, 100 * 1024 * 1024, False),
+                      (0x83, 3200 * 1024 * 1024, True),
+                      (0x83, 0, False) )
+            self.repart(device, parts)
+            self.call(["hdparm", "-z", device])
+
+            cb = lambda x: callback(x, total_size)
+
+            import mbr
+            dev = self.open(device, "w")
+            mb = mbr.MBR(dev)
+            logging.debug("Writing FAT partition")
+            self.dd(fat_img, device, seek=mb.get_partition_offset(0), callback=cb)
+            logging.debug("Writing boot partition")
+            self.dd(boot_img, device, seek=mb.get_partition_offset(1), callback=cb)
+            logging.debug("Writing root partition")
+            self.dd(root_img, device, seek=mb.get_partition_offset(2), callback=cb)
+            logging.debug("Writing crypto")
+            self.dd(crypto_img, device, seek=mb.get_partition_offset(3), callback=cb)
+        else:
+            self.dd(image, device)
+
+    def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
+        if type(src) == str:
+            srcfile = self.open(src)
+        else:
+            srcfile = src
+        if type(dest) == str:
+            destfile = self.open(dest, 'w')
+        else:
+            destfile = dest
+
+        logging.debug("Source %s opened" % (src, ))
+        if skip:
+            srcfile.seek(skip, os.SEEK_SET)
+
+        if seek:
+            destfile.seek(seek, os.SEEK_SET)
+
+        # logging.debug("Destination has %d sectors of size %d" % (destsize, bs))
+        # logging.debug("%d sectors of %d bytes to be written" % (srcsize, bs))
+
+        status = STATUS_WRITING
+
+        # if srcsize != -1 and destsize != -1 and srcsize > destsize:
+        #     raise Exception("Not enough space on disk (%d blocks required, %d blocks available)" % (srcsize, destsize))
+
+        i = 0
+        while (count == -1) or (count > 0 and status == STATUS_WRITING):
+            data = srcfile.read(bs)
+            if not len(data):
+                break
+            destfile.write(data)
+            if callback:
+                callback(i)
+            if len(data) != bs:
+                i += len(data)
+                break
+            if count != -1:
+                count -= 1
+            i += bs
+
+        if callback:
+	        callback(i)
+
+        return i
 
     def find_device_by_path(self, path):
         usbs = self.get_usb_devices()
