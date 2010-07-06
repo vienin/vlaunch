@@ -4,7 +4,7 @@ FRAMEWORKS=dist/"${PRODUCT_NAME}.app"/Contents/Frameworks
 MACOS=dist/"${PRODUCT_NAME}.app"/Contents/MacOS
 VBOXAPP=dist/"${PRODUCT_NAME}.app"/Contents/Resources/VirtualBox.app
 VBOXMACOS=dist/"${PRODUCT_NAME}.app"/Contents/Resources/VirtualBox.app/Contents/MacOS
-SETTINGSAPP=dist/"${PRODUCT_NAME} settings.app"
+SETTINGSAPP=dist/"${PRODUCT_NAME} options.app"
 CREATORAPP=dist/"${PRODUCT_NAME} creator.app"
 
 py2app:
@@ -138,7 +138,7 @@ strip:
 	mv dist-stripped dist
 
 tar-mac-launcher: strip
-	cd dist && tar cvzf mac-intel.tgz "${PRODUCT_NAME}.app" && cd ..
+	cd dist && tar cvzf mac-intel.tgz "`basename ${CREATORAPP}`" "`basename ${SETTINGSAPP}`" "${PRODUCT_NAME}.app" && cd ..
 
 upload-mac-launcher: mac-launcher tar-mac-launcher
 	scp dist/mac-intel.tgz bob@kickstart:/var/www/html/private/virtualization/mac-intel.tgz
