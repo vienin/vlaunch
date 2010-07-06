@@ -92,6 +92,7 @@ class WindowsBackend(OSBackend):
         key_root = os.path.dirname(os.path.dirname(conf.SCRIPT_DIR))
         copytree(path.join(key_root, ".data" , "images"), path.join(self_copied_path, ".data", "images"))
         copytree(path.join(key_root, ".data", "locale"), path.join(self_copied_path, ".data", "locale"))
+        copytree(path.join(key_root, ".data", "settings"), path.join(self_copied_path, ".data", "settings"))
 
         return path.join(self_copied_path, "Windows", "bin", os.path.basename(conf.SCRIPT_PATH))
 

@@ -88,6 +88,7 @@ class LinuxBackend(OSBackend):
         copytree(os.path.join(path, "Linux"), os.path.join(self_copied_path, "Linux"))
         copytree(os.path.join(path, ".data" , "images"), os.path.join(self_copied_path, ".data", "images"))
         copytree(os.path.join(path, ".data", "locale"), os.path.join(self_copied_path, ".data", "locale"))
+        copytree(os.path.join(path, ".data", "settings"), os.path.join(self_copied_path, ".data", "settings"))
 
         return exe_path;
 

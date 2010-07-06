@@ -107,6 +107,8 @@ class MacBackend(OSBackend):
                     [ "tar", "xf", "-", "-C", path.join(self_copied_path, ".data") ] ], output = True)[1]
         self.call([ [ "tar", "-cf", "-", "-C", conf.DATA_DIR, "locale" ],
                     [ "tar", "xf", "-", "-C", path.join(self_copied_path, ".data") ] ], output = True)[1]
+        self.call([ [ "tar", "-cf", "-", "-C", conf.DATA_DIR, "settings" ],
+                    [ "tar", "xf", "-", "-C", path.join(self_copied_path, ".data") ] ], output = True)[1]
 
         return path.join(self_copied_path, "Mac-Intel", conf.MACEXE)
 
