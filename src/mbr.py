@@ -8,11 +8,11 @@ class MBR:
     def __init__(self, f):
         self.partitions = []
         
-        # f = open(device)
-        f.seek(0x01BE, 0)
-        data = f.read(4 * 16)
+        f.seek(0, os.SEEK_SET)
+        data = f.read(512)
+
         for x in xrange(4):
-            pt = struct.unpack("BBBBBBBBii", data[x * 16:x * 16 + 16])
+            pt = struct.unpack("BBBBBBBBii", data[x * 16 + 0x01BE : x * 16 + 16 +0x01BE])
             print pt[6], pt[7], pt[6] & 0x3F, pt[6] & 0xC0, pt[7] | (pt[6] & 0xC0)
             self.partitions.append( { "status" : pt[0],
                                       "start_head" : pt[1],
@@ -25,10 +25,12 @@ class MBR:
                                       "lba" : pt[8],
                                       "sectors" : pt[9] })
 
+        self.data = data
+
     def write(self, f):
-        data = ""
+        parts = ""
         for part in self.partitions:
-            data += struct.pack("BBBBBBBBii",
+            parts += struct.pack("BBBBBBBBii",
                                 part["status"],
                                 part["start_head"],
                                 ((part["start_cylinder"] & 0x300) >> 2) | (part["start_sector"] & 0x3F),
@@ -39,10 +41,9 @@ class MBR:
                                 part["end_cylinder"] & 0xFF,
                                 part["lba"],
                                 part["sectors"])
-        # f = open(device, "w")
-        f.seek(0x01BE, os.SEEK_SET)
-        f.write(data)
-        # f.write("\xAA\x55")
+        self.data = self.data[:0x01BE] + parts + "\x55\xAA"
+        f.seek(0, os.SEEK_SET)
+        f.write(self.data)
 
     def generate(self, partitions, size, c, h, s):
         cyl_units = h * s * BLOCK_SIZE
@@ -60,13 +61,11 @@ class MBR:
                 cylinders = size / cyl_units - 1
                 if size % cyl_units:
                     cylinders += 1
-            # cylinders = [ 100, 510, 13 ][n]
             sectors = cylinders * cyl_units / BLOCK_SIZE
             if bootable:
                 status = 0x80
             else:
                 status = 0x00
-            print "Offset : ", offset, "cylinders", cylinders, "size", size, "sectors", sectors
             if n == 0:
                 part = {
                      "status" : status,

@@ -304,6 +304,7 @@ class WindowsBackend(OSBackend):
         import win32file
         import win32con
         import winioctlcon
+        import win32api
         import struct
 
         hFile = win32file.CreateFile(name, win32con.GENERIC_READ, 0, None, win32con.OPEN_EXISTING, 0, None)
@@ -314,11 +315,30 @@ class WindowsBackend(OSBackend):
             size = reduce(int.__mul__, tup[:1] + tup[2:])
             logging.debug("Found FixedMedia or RemovableMedia of size " + str(size))
         data = win32file.DeviceIoControl(hFile, winioctlcon.IOCTL_DISK_GET_LENGTH_INFO, buffer, 1024)
+        win32api.CloseHandle(hFile)
         if data:
             tup = struct.unpack("q", data)
             size = tup[0]
             logging.debug("Found regular device of size " + str(size))
         return size >> 9
+
+    def get_disk_geometry(self, device):
+        import win32file
+        import win32con
+        import winioctlcon
+        import win32api
+        import struct
+
+        hFile = win32file.CreateFile(device, win32con.GENERIC_READ, 0, None, win32con.OPEN_EXISTING, 0, None)
+        buffer = " " * 1024
+        data = win32file.DeviceIoControl(hFile, winioctlcon.IOCTL_DISK_GET_DRIVE_GEOMETRY, buffer, 1024)
+        win32api.CloseHandle(hFile)
+        tup = struct.unpack("qiiii", data)
+        if tup[1] in (winioctlcon.FixedMedia, winioctlcon.RemovableMedia):
+            size = reduce(int.__mul__, tup[:1] + tup[2:])
+            logging.debug("Found FixedMedia or RemovableMedia of size " + str(size))
+        Cylinders, MediaType, TracksPerCylinder, SectorsPerTrack, BytesPerSector = struct.unpack("qiiii", data)
+        return Cylinders, TracksPerCylinder, SectorsPerTrack
 
     def list_devices(self):
         for disk in self.WMI.Win32_DiskDrive():
@@ -412,17 +432,18 @@ class WindowsBackend(OSBackend):
         disks = self.WMI.Win32_DiskDrive()
         return [[ disk.Name, disk.Model ] for disk in disks if disk.InterfaceType == "USB" ]
 
-    def open(self):
+    def open(self, path, mode='r'):
+        import win32file
+        import win32con
+        import winioctlcon
+        import win32api
         class WindowsFile:
-            def __init__(self, path, access, mode):
+            def __init__(self, path, mode=0, access=win32con.GENERIC_ALL):
+                self.name = path
                 if path.startswith("\\\\"):
-                    self.handle = win32file.CreateFile(path, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING, 0, None)
-                    self.size = getFileSizeInSectors(self.handle, 1)
+                    self.handle = win32file.CreateFile(path, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING, win32con.FILE_FLAG_RANDOM_ACCESS, None)
                 else:
-                    self.handle = win32file.CreateFile(src, win32con.GENERIC_READ, 0, None, win32con.OPEN_EXISTING, 0, None)
-                    data = win32file.DeviceIoControl(self.handle, winioctlcon.IOCTL_DISK_GET_DRIVE_GEOMETRY, None, 24)
-                    Cylinders, MediaType, TracksPerCylinder, SectorsPerTrack, BytesPerSector = struct.unpack("qiiii", data)
-                    self. size = Cylinders * TracksPerCylinder * SectorsPerTrack * BytesPerSector
+                    self.handle = win32file.CreateFile(path, win32con.GENERIC_READ, 0, None, win32con.OPEN_EXISTING, 0, None)
 
             def __del__(self):
                 self.close()
@@ -433,13 +454,20 @@ class WindowsBackend(OSBackend):
                     self.handle = None
 
             def read(self, size):
+                if size < 512: size = 512
                 return win32file.ReadFile(self.handle, size)[1]
 
             def write(self, data):
+                size = len(data)
+                if size < 512: data += "\0" * (512 - size)
+                print self.handle, len(data), data[:16]
                 win32file.WriteFile(self.handle, data)
 
             def seek(self, offset, position):
                 win32file.SetFilePointer(self.handle, offset, position)
+
+        file = WindowsFile(path, mode)
+        return file
 
     def rights_error(self):
         msg = _("You don't have enough permissions to run %s.") % (conf.PRODUCTNAME,)
@@ -467,16 +495,18 @@ class WindowsBackend(OSBackend):
         return True;
 
     def umount_device(self, mntpoint):
+        import win32file
         import win32api
         import winioctlcon
         import win32con
         try:
-            hVolume = win32file.CreateFile("\\\\.\\%s:" % (mntpoint[0]),),
+            hVolume = win32file.CreateFile("\\\\.\\%s:" % (mntpoint[0]),
                                            win32con.GENERIC_READ, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE,
                                            None, win32con.OPEN_EXISTING, 0, None)
             win32file.DeviceIoControl(hVolume, winioctlcon.FSCTL_LOCK_VOLUME, None, 0)
             win32file.DeviceIoControl(hVolume, winioctlcon.FSCTL_DISMOUNT_VOLUME, None, 0)
-            win32api.CloseHandle(hVolume)
+            self.hVolume = hVolume
+            # win32api.CloseHandle(hVolume)
             return True
         except:
             return False

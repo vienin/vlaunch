@@ -834,6 +834,7 @@ class OSBackend(object):
     def open(self, path, mode='r'):
         class File:
             def __init__(self, path, mode=0, access=0):
+                self.name = path
                 self.fd = os.open(path, os.O_RDWR)
 
             def __del__(self):
@@ -862,27 +863,21 @@ class OSBackend(object):
         cylinders, heads, sectors, sectors_nb, start = map(int, regexp.search(output).groups())
         return cylinders, heads, sectors
 
-    def repart(self, device, partitions):
-        dev = self.open(device, "w")
-        input = ""
-        for type, size, bootable in partitions:
-            if bootable:
-                opts = ",*"
-            else:
-                opts = ""
-            if not size:
-                size = ""
-            input += ",%s,%s%s\n" % (size, type, opts)
+    def repart(self, device, partitions, device_size, c, h, s):
         import mbr
-        mb = mbr.MBR(dev)
-        mb.partitions
-        mb.generate(partitions, self.get_device_size(device), *self.get_disk_geometry(device))
-        mb.write(dev)
+        mb = mbr.MBR(device)
+        mb.generate(partitions, device_size, c, h, s)
+        mb.write(device)
+        return mb
 
     def write_image(self, image, device, callback=None):
         if image.endswith(".zip"):
             import zipfile
             zip = zipfile.ZipFile(image)
+
+            # We wait a bit otherwise it sometimes fails on Windows
+            import time
+            time.sleep(3)
 
             mbr_img = zip.open("mbr", "r")
             fat_img = zip.open("fat", "r")
@@ -894,37 +889,41 @@ class OSBackend(object):
             for info in zip.infolist():
                 total_size += info.file_size
 
-            self.dd(mbr_img, device)
+            device_size = self.get_device_size(device)
+            c, h, s = self.get_disk_geometry(device)
+            dev = self.open(device, "w")
+            self.dd(mbr_img, dev)
 
             parts = ( (0xc, 700 * 1024 * 1024, False),
                       (0x83, 100 * 1024 * 1024, False),
                       (0x83, 3200 * 1024 * 1024, True),
                       (0x83, 0, False) )
-            self.repart(device, parts)
-            self.call(["hdparm", "-z", device])
+            mb = self.repart(dev, parts, device_size, c, h, s)
 
             cb = lambda x: callback(x, total_size)
 
-            import mbr
-            dev = self.open(device, "w")
-            mb = mbr.MBR(dev)
+            offsets = [ ]
+            for i in xrange(4):
+                offsets.append(mb.get_partition_offset(i))
             logging.debug("Writing FAT partition")
-            self.dd(fat_img, device, seek=mb.get_partition_offset(0), callback=cb)
+            written = self.dd(fat_img, dev, seek=offsets[0], callback=lambda x: callback(x, total_size))
             logging.debug("Writing boot partition")
-            self.dd(boot_img, device, seek=mb.get_partition_offset(1), callback=cb)
+            written += self.dd(boot_img, dev, seek=offsets[1], callback=lambda x: callback(x + written, total_size))
             logging.debug("Writing root partition")
-            self.dd(root_img, device, seek=mb.get_partition_offset(2), callback=cb)
+            written += self.dd(root_img, dev, seek=offsets[2], callback=lambda x: callback(x + written, total_size))
             logging.debug("Writing crypto")
-            self.dd(crypto_img, device, seek=mb.get_partition_offset(3), callback=cb)
+            written += self.dd(crypto_img, dev, seek=offsets[3], callback=lambda x: callback(x + written, total_size))
+            callback(total_size, total_size)
+            dev.close()
         else:
             self.dd(image, device)
 
     def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
-        if type(src) == str:
+        if type(src) in (str, unicode):
             srcfile = self.open(src)
         else:
             srcfile = src
-        if type(dest) == str:
+        if type(dest) in (str, unicode):
             destfile = self.open(dest, 'w')
         else:
             destfile = dest

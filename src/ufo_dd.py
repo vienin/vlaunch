@@ -13,6 +13,19 @@ class DDWindow(QtGui.QWizard):
         super(DDWindow, self).__init__()
         self.backend = backend
         self.dl_mutex = False
+
+        self.load_usbs()
+        
+        self.connect(self, QtCore.SIGNAL("currentIdChanged(int)"), self.currentIdChanged)
+
+        self.addPage(self.create_intro_page())
+        self.addPage(self.create_burn_page())
+        self.addPage(self.create_processing_page())
+        self.addPage(self.create_finish_page())
+
+        self.setWindowTitle(_("Mobile PC Creator"))
+
+    def load_usbs(self):
         self.usbs = dict(self.backend.get_usb_sticks())
         self.letters = {}
         for usb in self.backend.get_usb_devices():
@@ -25,15 +38,6 @@ class DDWindow(QtGui.QWizard):
                 model = model + " ( " + usb[0][:-1] + " )"
             self.usbs[devname] = model
         self.usbs = self.usbs.items()
-
-        self.connect(self, QtCore.SIGNAL("currentIdChanged(int)"), self.currentIdChanged)
-
-        self.addPage(self.create_intro_page())
-        self.addPage(self.create_burn_page())
-        self.addPage(self.create_processing_page())
-        self.addPage(self.create_finish_page())
-
-        self.setWindowTitle(_("Mobile PC Creator"))
 
     def on_dl(self):
         if self.dl_mutex:
@@ -66,14 +70,13 @@ class DDWindow(QtGui.QWizard):
         self.dl_mutex = False
 
     def launch_process(self):
+        self.button(QtGui.QWizard.NextButton).setEnabled(False)
         source = self.source.text()
         target = self.device
 
         self.progress.setRange(0, 100)
         self.progress.valueChanged.connect(self.is_process_finished)
         kwargs = {}
-        if self.letters.has_key(self.device):
-            kwargs["volume"] = self.letters[self.device][0]
         kwargs["callback"] = self.update_progress
         import threading
         threading.Thread(target=self.backend.write_image,
@@ -112,6 +115,12 @@ class DDWindow(QtGui.QWizard):
             return
         self.target_filename = str(filedialog.selectedFiles()[0])
         self.target_label.setText(self.target_filename)
+
+    def on_refresh(self):
+        self.load_usbs()
+        self.usb_list.clear()
+        for i in self.usbs:
+            self.usb_list.addItem(i[1])
 
     def create_intro_page(self):
         page = QtGui.QWizardPage()
@@ -171,9 +180,8 @@ class DDWindow(QtGui.QWizard):
                     
                 source = self.source.text()
                 self.umounted = False
-                usbs = self.backend.get_usb_devices()
                 for possible_dev in [source, self.device]:
-                    for usb in usbs:
+                    for usb in self.usbs:
                         if possible_dev == usb[2]:
                             self.umounted = True
                             while not self.backend.umount_device(usb[0]):
@@ -210,13 +218,18 @@ class DDWindow(QtGui.QWizard):
         hlayout.addWidget(download)
         layout.addLayout(hlayout)
 
+        hlayout = QtGui.QHBoxLayout()
         label = QtGui.QLabel(_("Please choose the target device:"))
-        layout.addWidget(label)
+        refresh = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "reload.png")), _("Refresh"))
+        refresh.clicked.connect(self.on_refresh)
+        hlayout.addWidget(label)
+        hlayout.addWidget(refresh, 0, QtCore.Qt.AlignLeft)
+        layout.addLayout(hlayout)
 
-        self.choicelist = choicelist = QtGui.QListWidget()
+        self.usb_list = usb_list = QtGui.QListWidget()
         for i in self.usbs:
-            choicelist.addItem(i[1])
-        layout.addWidget(choicelist)
+            usb_list.addItem(i[1])
+        layout.addWidget(usb_list)
 
         page.setLayout(layout)
         return page
