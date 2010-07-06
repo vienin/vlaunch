@@ -29,13 +29,16 @@ class DDWindow(QtGui.QWizard):
         self.usbs = dict(self.backend.get_usb_sticks())
         self.letters = {}
         for usb in self.backend.get_usb_devices():
+            mountpoint = usb[0]
+            if mountpoint.endswith("\\"):
+                mountpoint = mountpoint[:-1]
             devname = usb[2]
             self.letters[devname] = self.letters.get(devname, []) + [ usb[0][0] ]
             model = self.usbs[devname]
             if model.endswith(")"):
-                model = model[:-2] + " " + usb[0] + " )"
+                model = model[:-2] + " " + mountpoint + " )"
             else:
-                model = model + " ( " + usb[0][:-1] + " )"
+                model = model + " ( " + mountpoint + " )"
             self.usbs[devname] = model
         self.usbs = self.usbs.items()
 
@@ -156,11 +159,11 @@ class DDWindow(QtGui.QWizard):
                                           "clicking the 'Download it' button"))
                     return False
 
-                if self.choicelist.currentItem() == None:
+                if self.usb_list.currentItem() == None:
                     gui.dialog_info(title=_("Missing target device"), msg=_("Please select a target device"))
                     return False
 
-                self.device = self.usbs[self.choicelist.currentRow()][0]
+                self.device = self.usbs[self.usb_list.currentRow()][0]
                 source_size = os.stat(filename).st_size
                 target_size = self.backend.get_device_size(self.device) * 512
 
@@ -182,7 +185,7 @@ class DDWindow(QtGui.QWizard):
                 self.umounted = False
                 for possible_dev in [source, self.device]:
                     for usb in self.usbs:
-                        if possible_dev == usb[2]:
+                        if possible_dev == usb[0]:
                             self.umounted = True
                             while not self.backend.umount_device(usb[0]):
                                 input = gui.dialog_error_report(_("Warning"),

@@ -153,8 +153,9 @@ class LinuxBackend(OSBackend):
 
     def find_device_by_model(self, dev_model):
         return ""
-        
-    def find_device_by_path(self, path):
+
+    def get_mountpoints(self):
+        mountpoints = []
         mounts = open('/proc/mounts', 'r').readlines()
         for mount in reversed(mounts):
             splitted = mount.split(" ")
@@ -162,19 +163,31 @@ class LinuxBackend(OSBackend):
             if l > 6:
                 splitted = splitted[:1] + " ".join(splitted[1:l - 5 + 1]) + splitted[-4:]
             dev, mountpoint, type, options, opt1, opt2 = splitted
-            if path.startswith(mountpoint):
-                return dev[:-1]
+            mountpoints.append({ "device" : dev,
+                                 "mountpoint" : mountpoint,
+                                 "type" : type,
+                                 "options" : options,
+                                 "opt1" : opt1,
+                                 "opt2" : opt2 })
+        return mountpoints
+
+    def find_device_by_path(self, path):
+        for mount in self.get_mountpoints():
+            if path.startswith(mount["mountpoint"]):
+                return mount["device"][:-1]
         return ""
 
-    def umount_device(self, mntpoint):
-        if self.call(["umount", mntpoint]) != 0:
-            return False
+    def umount_device(self, dev):
+        for mount in self.get_mountpoints():
+            if mount["device"].startswith(dev):
+                if self.call(["umount", mount["mountpoint"]]) != 0:
+                    return False
         return True
 
     def prepare_device(self, disk):
         self.call(["umount", disk + "3"])
         self.call(["umount", disk + "4"])
-    
+
     def get_device_parts(self, dev):
         parts = glob.glob(dev + '[0-9]')
         device_parts = {}
