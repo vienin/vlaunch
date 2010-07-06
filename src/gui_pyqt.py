@@ -33,14 +33,14 @@ import math
 
 
 class QtUFOGui(QtGui.QApplication):
-        
+
     def __init__(self):
         QtGui.QApplication.__init__(self, sys.argv)
 
-        self.vbox      = None
-        self.animation = None
-        self.tray      = None
-        self.splash    = None
+        self.vbox    = None
+        self.tray    = None
+        self.backend = None
+        self.splash  = None
 
         self.usb_check_timer  = QtCore.QTimer(self)
         self.net_adapt_timer  = QtCore.QTimer(self)
@@ -51,9 +51,8 @@ class QtUFOGui(QtGui.QApplication):
                               'creator'  : None,
                               'antivirus': None }
 
-        self.console_window   = None
-        self.console_winid    = 0
-        self.backend          = None
+        self.console_window = None
+        self.console_winid  = 0
 
         self.menu = QtGui.QMenu()
         action_about = QtGui.QAction(QtGui.QIcon(os.path.join(conf.IMGDIR, "about.png")), 
