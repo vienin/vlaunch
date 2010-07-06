@@ -221,6 +221,7 @@ class DDWindow(QtGui.QWizard):
         hlayout = QtGui.QHBoxLayout()
         label = QtGui.QLabel(_("Please choose the target device:"))
         refresh = QtGui.QPushButton(QtGui.QIcon(os.path.join(conf.IMGDIR, "reload.png")), _("Refresh"))
+        refresh.setFlat(True)
         refresh.clicked.connect(self.on_refresh)
         hlayout.addWidget(label)
         hlayout.addWidget(refresh, 0, QtCore.Qt.AlignLeft)
