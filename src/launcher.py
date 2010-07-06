@@ -106,22 +106,8 @@ if conf.USER:
 else:
     logging.debug("Customer: None")
 
-
-if __name__ == "__main__":
+def main():
     try:
-        if conf.options.update and conf.options.relaunch:
-            updater.self_update(conf.options.update, conf.options.relaunch)
-        elif not conf.NOUPDATE and not conf.options.respawn:
-            updater.check_update(backend)
-
-        if conf.options.dd:
-            from ufo_dd import DDWindow
-            creator = DDWindow(backend, conf.options.relaunch)
-            creator.prepare()
-            creator.show()
-            creator.exec_()
-            sys.exit(1)
-
         if conf.options.settings:
             settings = gui.Settings()
             settings.show()
@@ -135,6 +121,19 @@ if __name__ == "__main__":
             settings.show()
             if not settings.exec_():
                 sys.exit(0)
+
+        if conf.options.dd:
+            from ufo_dd import DDWindow
+            creator = DDWindow(backend, conf.options.relaunch)
+            creator.prepare()
+            creator.show()
+            creator.exec_()
+            sys.exit(1)
+
+        if conf.options.update and conf.options.relaunch:
+            updater.self_update(conf.options.update, conf.options.relaunch)
+        elif not conf.NOUPDATE and not conf.options.respawn:
+            updater.check_update(backend)
 
         logging.debug("Checking for running UFO processes")
         backend.check_process()
@@ -187,3 +186,6 @@ if __name__ == "__main__":
 
     # quit application
     gui.app.quit()
+
+if __name__ == "__main__":
+    main()
