@@ -47,10 +47,11 @@ class QtUFOGui(QtGui.QApplication):
         self.callbacks_timer  = QtCore.QTimer(self)
         self.termination_timer  = QtCore.QTimer(self)
 
+        self.tray_windows = { 'settings' : None,
+                              'creator'  : None,
+                              'antivirus': None }
+
         self.console_window   = None
-        self.settings_window  = None
-        self.creator_window    = None
-        self.antivirus_window = None
         self.console_winid    = 0
         self.backend          = None
 
@@ -217,6 +218,14 @@ class QtUFOGui(QtGui.QApplication):
         self.backend = backend
         self.postEvent(self, SetTrayIconEvent())
 
+    def all_tray_windows_closed(self, ):
+        all_closed = True
+        for tray_window in self.tray_windows.values():
+            if tray_window and tray_window.isVisible():
+                all_closed = False
+                break
+        return all_closed
+
     def _create_splash_screen(self):
         images = glob.glob(os.path.join(conf.IMGDIR, "ufo-*.bmp"))
         if images:
@@ -348,19 +357,19 @@ class QtUFOGui(QtGui.QApplication):
                                                " http://ufo.agorabox.org"))
     
     def settings(self):
-        if self.settings_window:
-            self.settings_window.showNormal()
+        if self.tray_windows['settings']:
+            self.tray_windows['settings'].showNormal()
             return
             
-        self.settings_window = Settings()
-        self.settings_window.show()
-        self.settings_window.exec_()
-        del self.settings_window
-        self.settings_window = None
+        self.tray_windows['settings'] = Settings()
+        self.tray_windows['settings'].show()
+        self.tray_windows['settings'].exec_()
+        del self.tray_windows['settings']
+        self.tray_windows['settings'] = None
 
     def creator(self):
-        if self.creator_window:
-            self.creator_window.showNormal()
+        if self.tray_windows['creator']:
+            self.tray_windows['creator'].showNormal()
             return
 
         while self.vbox.current_machine.is_running():
@@ -374,12 +383,12 @@ class QtUFOGui(QtGui.QApplication):
             time.sleep(0.3)
 
         from ufo_dd import DDWindow
-        self.creator_window = DDWindow(self.backend)
-        self.creator_window.prepare()
-        self.creator_window.show()
-        self.creator_window.exec_()
-        del self.creator_window
-        self.creator_window = None
+        self.tray_windows['creator'] = DDWindow(self.backend)
+        self.tray_windows['creator'].prepare()
+        self.tray_windows['creator'].show()
+        self.tray_windows['creator'].exec_()
+        del self.tray_windows['creator']
+        self.tray_windows['creator'] = None
 
     def exit(self):
         if self.vbox.current_machine.is_running():
@@ -411,24 +420,24 @@ class QtUFOGui(QtGui.QApplication):
             sys.exit(0)
 
     def antivirus(self):
-        if self.antivirus_window:
-            self.antivirus_window.showNormal()
+        if self.tray_windows['antivirus']:
+            self.tray_windows['antivirus'].showNormal()
             return
             
         from clamavgui import Antivirus
-        self.antivirus_window = Antivirus(info_callback=self.update_antivirus_message, 
-                                          progress_callback=self.update_antivirus_progress)
+        self.tray_windows['antivirus'] = Antivirus(info_callback=self.update_antivirus_message,
+                                                   progress_callback=self.update_antivirus_progress)
         self.add_persistent_balloon_section(key='antivirus',
                                             msg=_("Antivirus"),
                                             default=_("No virus found"),
                                             progress=True,
-                                            smartdict=self.antivirus_window.virus_found,
+                                            smartdict=self.tray_windows['antivirus'].virus_found,
                                             hlayout={ 'type' : VirusFoundLayout,
-                                                      'args' : (self.antivirus_window.virus_attitude,)})
-        self.antivirus_window.show()
-        self.antivirus_window.exec_()
-        del self.antivirus_window
-        self.antivirus_window = None
+                                                      'args' : (self.tray_windows['antivirus'].virus_attitude,)})
+        self.tray_windows['antivirus'].show()
+        self.tray_windows['antivirus'].exec_()
+        del self.tray_windows['antivirus']
+        self.tray_windows['antivirus'] = None
         self.destroy_persistent_balloon_section(key='antivirus')
 
     def update_antivirus_message(self, msg):
@@ -1405,7 +1414,7 @@ class InfiniteProgressBar(QtGui.QProgressBar, threading.Thread):
 
 class WaitWindow(QtGui.QDialog):
     def __init__(self, cmd, title, msg, success_msg, error_msg, parent=None):
-        super(WaitWindow, self).__init__(main)
+        super(WaitWindow, self).__init__(desktop)
         self.cmd = cmd
         self.setWindowTitle(title)
         self.command = CommandLauncher(self.cmd, self.finished)
@@ -1441,8 +1450,8 @@ class WaitWindow(QtGui.QDialog):
 class DownloadWindow(QtGui.QDialog):
     def __init__(self, url, filename, title, msg, autostart,
                  success_msg, autoclose=False,
-                 embedded_progress=True, parent=None):
-        super(DownloadWindow, self).__init__(parent)
+                 embedded_progress=True):
+        super(DownloadWindow, self).__init__(desktop)
         self.url = url
         self.fileName = filename
         self.autostart = autostart
@@ -1587,7 +1596,7 @@ class DownloadWindow(QtGui.QDialog):
 
 class ExtractWindow(QtGui.QProgressDialog):
     def __init__(self, tgz, dest, title, msg):
-        super(ExtractWindow, self).__init__(main)
+        super(ExtractWindow, self).__init__(desktop)
         self.tgz   = tgz
         self.dest  = dest
         self.title = title
@@ -2182,8 +2191,8 @@ def extract_tar(tgz, dest, title=_("Installing"), msg=_("Please wait")):
 def download_file(url, filename, title = _("Downloading"),
                   msg = _("Please wait"),
                   success_msg = _("Download completed"),
-                  autostart=False, autoclose=False, parent=None):
-    downloadWin = DownloadWindow(parent=parent, url=url, filename=filename, title=title, msg=msg,
+                  autostart=False, autoclose=False):
+    downloadWin = DownloadWindow(url=url, filename=filename, title=title, msg=msg,
                                  autostart=autostart, autoclose=autoclose, success_msg=success_msg, embedded_progress=True)
     if not autostart:
         downloadWin.show()
@@ -2201,7 +2210,7 @@ def wait_command(cmd, title=_("Please wait"), msg=_("Operation in progress"),
 
 def create_message_box(title, msg, width=200, height=100, buttons=QtGui.QMessageBox.Ok):
     darwin = sys.platform == "darwin"
-    msgbox = OurMessageBox(main)
+    msgbox = OurMessageBox(desktop)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
     if False: # darwin:
@@ -2234,7 +2243,7 @@ def dialog_question(title, msg, button1=_("Yes"), button2=_("No"), dangerous=Fal
     else: return button2
 
 def dialog_error_report(title, msg, action=None, details=None, error=True):
-    msgbox = OurMessageBox(main)
+    msgbox = OurMessageBox(desktop)
     msgbox.setIcon(QtGui.QMessageBox.Question)
     msgbox.setText(msg)
     msgbox.setWindowTitle(title)
@@ -2293,8 +2302,6 @@ def destroy_app(app):
 app = QtUFOGui()
 desktop = QtGui.QApplication.desktop()
 screenRect = desktop.screenGeometry(desktop.primaryScreen())
-main = QtGui.QMainWindow(desktop)
-main.resize(screenRect.width(), screenRect.height())
 
 if sys.platform == "darwin":
     QtGui.qt_mac_set_dock_menu(app.menu)

@@ -62,7 +62,7 @@ class DDWindow(QtGui.QWizard):
                                      self.dest_file,
                                      title=_("Downloading UFO key image"),
                                      msg=_("Please wait while the image is being downloaded"),
-                                     parent=self, autoclose = True, autostart = True)
+                                     autoclose = True, autostart = True)
         if not retcode:
             self.source_filename = self.dest_file
             self.source.setText(self.dest_file)

@@ -822,6 +822,13 @@ class OSBackend(object):
         while not self.vbox.current_machine.is_finished:
             self.wait_for_events(0.01)
 
+        # All this dirty stuff will disappear when the
+        # launcher will use multiprocessing module...
+        while not gui.app.all_tray_windows_closed():
+            print "False"
+            time.sleep(0.1)
+        print "True"
+
     def wait_for_events(self, interval):
         # This function is overloaded only on Windows
         if self.vbox.callbacks_aware:
@@ -1000,6 +1007,8 @@ class OSBackend(object):
         open(path.join(conf.DATA_DIR, self.reservation_file), 'a').truncate(size_to_reserve)
 
     def global_cleanup(self):
+        gui.app.tray.hide()
+
         if conf.FIRSTLAUNCH:
             conf.write_value_to_file("launcher", "FIRSTLAUNCH", "0")
         if self.vbox.license_agreed():
