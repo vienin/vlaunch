@@ -55,7 +55,7 @@ class DDWindow(QtGui.QWizard):
             return
 
         self.dest_dir = str(filedialog.selectedFiles()[0])
-        self.dest_file = os.path.join(self.dest_dir, "ufo-key-latest.img")
+        self.dest_file = os.path.join(self.dest_dir, "ufo-key-latest.zip")
 
         logging.debug("Downloading " + conf.IMGURL + " to " + self.dest_file)
         retcode  = gui.download_file(conf.IMGURL,
