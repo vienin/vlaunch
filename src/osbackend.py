@@ -838,9 +838,13 @@ class OSBackend(object):
 
     def open(self, path, mode='r'):
         class File:
-            def __init__(self, path, mode=0, access=0):
+            def __init__(self, path, mode="r", access=0):
                 self.name = path
-                self.fd = os.open(path, os.O_RDWR)
+                if mode == "r": os_mode = os.O_RDONLY
+                elif mode == "w": os_mode = os.O_WRONLY | os.O_CREAT
+                elif mode == "rw": os_mode = os.O.RDWR | os.O_CREAT
+                else: raise Exception("Unsupported mode %s" % mode)
+                self.fd = os.open(path, os_mode)
 
             def __del__(self):
                 self.close()
@@ -859,7 +863,7 @@ class OSBackend(object):
             def write(self, data):
                 return os.write(self.fd, data)
 
-        return File(path)
+        return File(path, mode)
 
     def repart(self, device, partitions, device_size, c, h, s):
         import mbr

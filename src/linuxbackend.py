@@ -96,9 +96,9 @@ class LinuxBackend(OSBackend):
         return conf.SCRIPT_PATH
     
     def execv(self, cmd, root=False):
-        cmd = [ '"' + x + '"' for x in cmd ]
         logging.shutdown()
         if root:
+            cmd = [ '"' + x + '"' for x in cmd ]
             self.run_as_root.call(cmd, replace=True)
         else:
             os.execv(cmd[0], cmd)
