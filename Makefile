@@ -17,7 +17,7 @@ MOFILES         = $(patsubst %.po,%.mo,$(POFILES))
 MSGFMT          = msgfmt --statistics --verbose
 MSGMERGE        = msgmerge -v -U
 
-SOURCES = src/ufovboxapi.py src/linuxbackend.py src/launcher.py src/updater.py src/createrawvmdk.py src/keyring_ctypes.py src/conf.py src/utils.py src/ufo_subprocess.py src/osbackend.py src/gui*.py
+SOURCES = src/*.py
 
 GUESTBIN        = guest/vbox-client-symlink guest/vbox-client-dnd guest/vbox-get-property guest/vbox-set-property guest/toggle-fullscreen guest/notify-logged-in guestmode/bind-fat-folders
 
@@ -84,11 +84,15 @@ install: install-mo
 	cp src/launcher-linux.py "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME)"
 	cp -R sdk/bindings/xpcom/python/xpcom $(DESTDIR)$(TARGET_PATH)/Linux/bin/sdk/bindings/xpcom/python
 	cp -R vboxapi sdk $(SOURCES) $(DESTDIR)$(TARGET_PATH)/Linux/bin
+	for toremove in launcher-windows.py windowsbackend.py macbackend.py; \
+	do \
+	    rm $(DESTDIR)$(TARGET_PATH)/Linux/bin/$$toremove; \
+	done
 	echo -e "#!/bin/sh\n\"Linux/$(PRODUCTNAME)\"" > $(DESTDIR)$(TARGET_PATH)/.autorun
 	echo "#!/bin/sh" > "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
-	echo '"`dirname \"$$0\"`" --dd' >> "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
+	echo '"`dirname \"$$0\"`/$(PRODUCTNAME)" --dd' >> "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) creator"
 	echo "#!/bin/sh" > "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
-	echo '"`dirname \"$$0\"`" --settings' >> "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
+	echo '"`dirname \"$$0\"`/$(PRODUCTNAME)" --settings' >> "$(DESTDIR)$(TARGET_PATH)/Linux/$(PRODUCTNAME) options"
 
 	# installs Boot Iso
 	mkdir -p $(DESTDIR)$(TARGET_PATH)/.data/.VirtualBox/Isos
