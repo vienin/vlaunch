@@ -20,6 +20,7 @@
 
 
 import glob
+import os
 import os.path as path
 import createrawvmdk
 from conf import conf
@@ -850,17 +851,21 @@ class OSBackend(object):
                 self.close()
 
             def close(self):
+                import os
                 if self.fd != -1:
                     os.close(self.fd)
                     self.fd = -1
 
             def seek(self, offset, position):
+                import os
                 os.lseek(self.fd, offset, position)
 
             def read(self, size):
+                import os
                 return os.read(self.fd, size)
 
             def write(self, data):
+                import os
                 return os.write(self.fd, data)
 
         return File(path, mode)
@@ -931,6 +936,7 @@ class OSBackend(object):
             srcfile = self.open(src)
         else:
             srcfile = src
+
         if type(dest) in (str, unicode):
             destfile = self.open(dest, 'w')
         else:
