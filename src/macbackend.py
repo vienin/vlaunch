@@ -197,6 +197,13 @@ class MacBackend(OSBackend):
             device_parts.update({ part_number : part_info })
         return device_parts
 
+    def get_disk_geometry(self, device):
+        import re
+        output = self.call(["fdisk", device], output=True)[1]
+        regexp = re.compile(r"Disk: /dev/disk[0-9]\tgeometry: (\d+)/(\d+)/(\d+) \[(\d+) sectors\]")
+        cylinders, heads, sectors, sectors_nb = map(int, regexp.search(output).groups())
+        return cylinders, heads, sectors
+
     def get_device_size(self, dev, partition = 0):
         if partition > 0:
             dev = dev + "s" + str(partition)
@@ -294,8 +301,8 @@ class MacBackend(OSBackend):
     def is_admin(self):
         return os.geteuid() == 0;
 
-    def umount_device(self, mntpoint):
-        if self.call([ "diskutil", "unmount", mntpoint ]) != 0:
+    def umount_device(self, device):
+        if self.call([ "diskutil", "unmountDisk", device ]) != 0:
             return False
         return True
 

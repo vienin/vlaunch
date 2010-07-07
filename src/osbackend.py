@@ -861,13 +861,6 @@ class OSBackend(object):
 
         return File(path)
 
-    def get_disk_geometry(self, device):
-        import re
-        output = self.call(["hdparm", "-g", device], output=True)[1]
-        regexp = re.compile(r" geometry *= (\d+)/(\d+)/(\d+), sectors = (\d+), start = (\d+)")
-        cylinders, heads, sectors, sectors_nb, start = map(int, regexp.search(output).groups())
-        return cylinders, heads, sectors
-
     def repart(self, device, partitions, device_size, c, h, s):
         import mbr
         mb = mbr.MBR(device)
@@ -897,12 +890,16 @@ class OSBackend(object):
             device_size = self.get_device_size(device)
             c, h, s = self.get_disk_geometry(device)
             dev = self.open(device, "w")
+
+            logging.debug("Writing Master Boot Record")
             self.dd(mbr_img, dev)
 
             parts = ( (0xc, 700 * 1024 * 1024, False),
                       (0x83, 100 * 1024 * 1024, False),
                       (0x83, 3200 * 1024 * 1024, True),
                       (0x83, 0, False) )
+
+            logging.debug("Repartition the key")
             mb = self.repart(dev, parts, device_size, c, h, s)
 
             cb = lambda x: callback(x, total_size)
@@ -918,10 +915,12 @@ class OSBackend(object):
             written += self.dd(root_img, dev, seek=offsets[2], callback=lambda x: callback(x + written, total_size))
             logging.debug("Writing crypto")
             written += self.dd(crypto_img, dev, seek=offsets[3], callback=lambda x: callback(x + written, total_size))
-            callback(total_size, total_size)
             dev.close()
         else:
-            self.dd(image, device)
+            total_size = os.stat(image).st_size
+            self.dd(image, device, callback=lambda x: callback(x, total_size))
+
+        callback(total_size, total_size)
 
     def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
         if type(src) in (str, unicode):

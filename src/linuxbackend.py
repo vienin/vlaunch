@@ -189,6 +189,13 @@ class LinuxBackend(OSBackend):
         self.call(["umount", disk + "3"])
         self.call(["umount", disk + "4"])
 
+    def get_disk_geometry(self, device):
+        import re
+        output = self.call(["hdparm", "-g", device], output=True)[1]
+        regexp = re.compile(r" geometry *= (\d+)/(\d+)/(\d+), sectors = (\d+), start = (\d+)")
+        cylinders, heads, sectors, sectors_nb, start = map(int, regexp.search(output).groups())
+        return cylinders, heads, sectors
+
     def get_device_parts(self, dev):
         parts = glob.glob(dev + '[0-9]')
         device_parts = {}
