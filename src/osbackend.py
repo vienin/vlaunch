@@ -876,23 +876,23 @@ class OSBackend(object):
         return mb
 
     def write_image(self, image, device, callback=None):
-        if image.endswith(".zip"):
-            import zipfile
-            zip = zipfile.ZipFile(image)
+        if image.endswith(".tar.bz2"):
+            import tarfile
+            tar = tarfile.open(image)
 
             # We wait a bit otherwise it sometimes fails on Windows
             import time
             time.sleep(3)
 
-            mbr_img = zip.open("mbr", "r")
-            fat_img = zip.open("fat", "r")
-            root_img = zip.open("root", "r")
-            boot_img = zip.open("boot", "r")
-            crypto_img = zip.open("crypto", "r")
+            mbr_img = tar.extractfile("mbr")
+            fat_img = tar.extractfile("fat")
+            root_img = tar.extractfile("root")
+            boot_img = tar.extractfile("boot")
+            crypto_img = tar.extractfile("crypto")
 
             total_size = 0
-            for info in zip.infolist():
-                total_size += info.file_size
+            for info in tar.getmembers():
+                total_size += info.size
 
             device_size = self.get_device_size(device)
             c, h, s = self.get_disk_geometry(device)
