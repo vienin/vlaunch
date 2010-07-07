@@ -1,6 +1,5 @@
 import os, sys
 import struct
-from collections import namedtuple
 
 BLOCK_SIZE = 512
 
