@@ -458,7 +458,10 @@ class UbuntuLinuxBackend(LinuxBackend):
             gui.wait_command(["apt-get", "update"],
                               msg="Votre système est en train d'être mis à jour")
             gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.1"],
-                             **self.get_generic_installation_messages("VirtualBox 3"))
+                             **self.get_generic_installation_messages("VirtualBox 3.1"))
+
+        lsmod = self.call([[ "lsmod" ], [ "grep", "vboxdrv" ]], output=True)[1]
+        if not lsmod:
             gui.wait_command(["/etc/init.d/vboxdrv", "setup"],
                              msg="Configuration en cours de \"VirtualBox 3\".")
          
