@@ -98,7 +98,6 @@ class LinuxBackend(OSBackend):
     def execv(self, cmd, root=False):
         logging.shutdown()
         if root:
-            cmd = [ '"' + x + '"' for x in cmd ]
             self.run_as_root.call(cmd, replace=True)
         else:
             os.execv(cmd[0], cmd)
@@ -174,7 +173,9 @@ class LinuxBackend(OSBackend):
 
     def find_device_by_path(self, path):
         for mount in self.get_mountpoints():
-            if path.startswith(mount["mountpoint"]):
+            if path.startswith(mount["mountpoint"]) and mount["mountpoint"] != "/":
+                if os.path.islink(mount["device"]):
+                    return os.path.join("dev", os.path.basename(os.readlink(mount["device"])))[:-1]
                 return mount["device"][:-1]
         return ""
 
@@ -453,7 +454,7 @@ class UbuntuLinuxBackend(LinuxBackend):
         vbox_path = utils.call(["which", "VirtualBox"], output=True)[1].strip()
         if not os.path.lexists(vbox_path):
             open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
-            os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
+            os.system("wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | sudo apt-key add -")
             gui.wait_command(["apt-get", "update"],
                               msg="Votre système est en train d'être mis à jour")
             gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.1"],
@@ -490,6 +491,7 @@ class BeesuRunAsRoot(RunAsRoot):
         self.prefix = ["/usr/bin/beesu", "-m" ]
     
     def call(self, command, replace=False):
+        command = [ '"' + x + '"' for x in command ]
         if os.environ.has_key("GNOME_KEYRING_SOCKET"):
             command = [ "GNOME_KEYRING_SOCKET=" + os.environ["GNOME_KEYRING_SOCKET"] ] + command
         if replace:
