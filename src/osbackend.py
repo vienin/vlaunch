@@ -841,7 +841,7 @@ class OSBackend(object):
                 self.name = path
                 if mode == "r": os_mode = os.O_RDONLY
                 elif mode == "w": os_mode = os.O_WRONLY | os.O_CREAT
-                elif mode == "rw": os_mode = os.O.RDWR | os.O_CREAT
+                elif mode == "rw": os_mode = os.O_RDWR | os.O_CREAT
                 else: raise Exception("Unsupported mode %s" % mode)
                 self.fd = os.open(path, os_mode)
 

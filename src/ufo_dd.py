@@ -204,16 +204,14 @@ class DDWindow(QtGui.QWizard):
             time.sleep(3)
 
             tar = tarfile.open(image)
-            dev = self.backend.open(device, "w")
+            dev = self.backend.open(device, "rw")
 
             total_size = self.total_size
             device_size = self.device_size
             c, h, s = self.backend.get_disk_geometry(device)
 
             logging.debug("Writing Master Boot Record")
-            # self.dd(tar.extractfile("mbr"), dev)
-            tar.next()
-            self.dd(tar.extractfile(tar.next()), dev)
+            self.dd(tar.extractfile("mbr"), dev)
 
             logging.debug("Repartition the key")
             mb = self.repart(dev, self.parts, device_size, c, h, s)
@@ -225,7 +223,10 @@ class DDWindow(QtGui.QWizard):
                                                    callback = lambda x: callback(x + written, total_size)))
             dev.close()
         else:
-            total_size = os.stat(image).st_size
+            if self.reverse:
+                total_size = self.get_device_size(image) * 512
+            else:
+                total_size = self.total_size
             self.dd(image, device, callback = lambda x: callback(x, total_size))
 
         self.next()
@@ -430,6 +431,8 @@ class DDWindow(QtGui.QWizard):
 
             def on_file_select(_self):
                 filedialog = QtGui.QFileDialog(self, _("Please select an UFO image"), os.getcwd())
+                if self.reverse:
+                    filedialog.setDefaultSuffix("img")
                 if filedialog.exec_() != QtGui.QDialog.Accepted:
                     return
                 _self.edit.setText(unicode(filedialog.selectedFiles()[0]))
