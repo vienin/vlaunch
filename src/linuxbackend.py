@@ -154,7 +154,7 @@ class LinuxBackend(OSBackend):
     def find_device_by_model(self, dev_model):
         return ""
 
-    def get_mountpoints(self):
+    def get_mountpoints(self, device=""):
         mountpoints = []
         mounts = open('/proc/mounts', 'r').readlines()
         for mount in reversed(mounts):
@@ -163,6 +163,8 @@ class LinuxBackend(OSBackend):
             if l > 6:
                 splitted = splitted[:1] + " ".join(splitted[1:l - 5 + 1]) + splitted[-4:]
             dev, mountpoint, type, options, opt1, opt2 = splitted
+            if device and dev.startswith(device):
+                continue
             mountpoints.append({ "device" : dev,
                                  "mountpoint" : mountpoint,
                                  "type" : type,
