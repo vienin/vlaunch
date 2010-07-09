@@ -246,9 +246,10 @@ class Conf(object):
         self.options = options
         try:
             files = [path.join(self.SCRIPT_DIR, "settings.conf"), # Used on Mac OS LiveCD
+                     path.join(self.SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf"), # Mac - Normal case
+                     path.join(self.SCRIPT_DIR, "..", "..", "..", ".data", "settings", "settings.conf"),
                      path.join(self.SCRIPT_DIR, "..", "..", ".data", "settings", "settings.conf"), # Windows - Normal case
-                     path.join(self.SCRIPT_DIR, "..", ".data", "settings", "settings.conf"), # Linux - Normal case
-                     path.join(self.SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf")] # Mac - Normal case
+                     path.join(self.SCRIPT_DIR, "..", ".data", "settings", "settings.conf")] # Linux - Normal case
             if os.environ.has_key("_MEIPASS2"): # Used on Windows & Linux Live
                 files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
             if options.update:
