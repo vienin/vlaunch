@@ -287,6 +287,20 @@ class WindowsBackend(OSBackend):
             return disks[0].Name
         return ""
 
+    def get_mountpoints(self, device):
+        disks = self.WMI.Win32_DiskDrive (DeviceID = device)
+        if not disks:
+            return ""
+
+        partitions = disks[0].associators(wmi_association_class="Win32_DiskDriveToDiskPartition")
+        if not partitions:
+            return ""
+
+        mountpoints = []
+        for part in partitions:
+            mountpoints += part.associators(wmi_result_class="Win32_LogicalDisk")
+        return [ mntpt.Caption for mntpt in mountpoints ]
+
     def get_disk_from_partition(self, part):
         partitions = part.associators(wmi_association_class="Win32_LogicalDiskToPartition")
         if not partitions:
@@ -461,7 +475,6 @@ class WindowsBackend(OSBackend):
             def write(self, data):
                 size = len(data)
                 if size < 512: data += "\0" * (512 - size)
-                print self.handle, len(data), data[:16]
                 win32file.WriteFile(self.handle, data)
 
             def seek(self, offset, position):
@@ -495,7 +508,7 @@ class WindowsBackend(OSBackend):
         # We assume that we are admin as the exe manifest requires
         return True;
 
-    def umount_device(self, mntpoint):
+    def umount_mountpoint(self, mntpoint):
         import win32file
         import win32api
         import winioctlcon
@@ -511,6 +524,12 @@ class WindowsBackend(OSBackend):
             return True
         except:
             return False
+
+    def umount_device(self, device):
+        for mntpt in self.get_mountpoints(device):
+            if not self.umount_mountpoint(mntpt):
+                return False
+        return True
 
     def prepare(self):
         # Adjusting paths

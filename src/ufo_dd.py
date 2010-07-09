@@ -203,24 +203,30 @@ class DDWindow(QtGui.QWizard):
             import time
             time.sleep(3)
 
-            tar = tarfile.open(image)
-            dev = self.backend.open(device, "rw")
-
             total_size = self.total_size
             device_size = self.device_size
             c, h, s = self.backend.get_disk_geometry(device)
 
+            dev = self.backend.open(device, "rw")
+            tar = tarfile.open(image)
+            tar.next()
+
             logging.debug("Writing Master Boot Record")
-            self.dd(tar.extractfile("mbr"), dev)
+            self.dd(tar.extractfile(tar.next()), dev)
 
             logging.debug("Repartition the key")
             mb = self.repart(dev, self.parts, device_size, c, h, s)
 
             written = 0
-            for i, part in enumerate(self.parts):
-                logging.debug("Writing %s partition" % part["name"])
-                written += self.dd(tar.extractfile(part["name"]), dev, seek=mb.get_partition_offset(i),
-                                                   callback = lambda x: callback(x + written, total_size))
+            i = 0
+            while True:
+                part = tar.next()
+                if not part:
+                    break
+                logging.debug("Writing %s partition" % part.name)
+                written += self.dd(tar.extractfile(part), dev, seek=mb.get_partition_offset(i),
+                                   callback = lambda x: callback(x + written, total_size))
+                i += 1
             dev.close()
         else:
             if self.reverse:
