@@ -105,8 +105,8 @@ class DDWindow(QtGui.QWizard):
         sizes = []
         free_space = self.get_free_space()
         if not self.splitter.count():
-           n = 0
-           for i, part in enumerate(self.parts):
+            n = 0
+            for i, part in enumerate(self.parts):
                 if not part["resizable"]:
                     continue
                 label = QtGui.QLabel(self.get_partition_pretty_name(part))
@@ -273,7 +273,7 @@ class DDWindow(QtGui.QWizard):
             i += bs
 
         if callback:
-	        callback(i)
+            callback(i)
 
         return i
 
@@ -501,13 +501,13 @@ class DDWindow(QtGui.QWizard):
                                                    "or you can resize the partition sizes to meet your needs :<br><br>"))
                 self.resize_label.setWordWrap(True)
                 self.resize_label.setEnabled(False)
-                layout.addWidget(self.resize_label)
+                add_to_layout(layout, self.resize_label)
                 self.splitter = splitter = QtGui.QSplitter()
                 self.splitter.setMinimumSize(600, 32)
                 self.splitter.setStyleSheet("QSplitter { border: 1px solid black; }")
                 self.splitter.splitterMoved.connect(self.splitter_moved)
                 self.splitter.setEnabled(False)
-                layout.addWidget(splitter)
+                add_to_layout(layout, splitter)
                 return layout
 
             def delete(_self, item):
