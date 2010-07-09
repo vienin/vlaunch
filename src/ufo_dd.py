@@ -360,13 +360,11 @@ class DDWindow(QtGui.QWizard):
                 else:
                     self.source = unicode(edit)
                     self.target = unicode(self.usbs[_self.usb_list.currentRow()][0])
-                    source_size = os.stat(self.source).st_size
-                    target_size = self.backend.get_device_size(self.target) * 512
-                    if target_size < source_size:
+                    if self.device_size < self.total_size:
                         gui.dialog_info(title=_("The selected target is too small"),
                                         msg=_("The size of the source you have selected (%d Mo)"
                                               " is bigger than the size of the selected target (%d Mo)."
-                                              "<br><br>Please select a source equal or smaller than the target.") % (source_size / 1024 / 1024, target_size / 1024 / 1024))
+                                              "<br><br>Please select a source equal or smaller than the target.") % (self.total_size / 1024 / 1024, self.device_size / 1024 / 1024))
                         return False
 
                 if not self.reverse:
