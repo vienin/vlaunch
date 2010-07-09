@@ -34,8 +34,6 @@ from ufovboxapi import *
 from ConfigParser import ConfigParser
 from utils import RoolOverLogger
 
-STATUS_WRITING = 0
-
 try:
     import keyring
     print "Using keyring backend"
@@ -869,113 +867,6 @@ class OSBackend(object):
                 return os.write(self.fd, data)
 
         return File(path, mode)
-
-    def repart(self, device, partitions, device_size, c, h, s):
-        import mbr
-        mb = mbr.MBR(device)
-        mb.generate(partitions, device_size, c, h, s)
-        mb.write(device)
-        return mb
-
-    def write_image(self, image, device, callback=None):
-        if image.endswith(".tar.bz2"):
-            import tarfile
-            tar = tarfile.open(image)
-
-            # We wait a bit otherwise it sometimes fails on Windows
-            import time
-            time.sleep(3)
-
-            mbr_img = tar.extractfile("mbr")
-            fat_img = tar.extractfile("fat")
-            root_img = tar.extractfile("root")
-            boot_img = tar.extractfile("boot")
-            crypto_img = tar.extractfile("crypto")
-
-            total_size = 0
-            for info in tar.getmembers():
-                total_size += info.size
-
-            device_size = self.get_device_size(device)
-            c, h, s = self.get_disk_geometry(device)
-            dev = self.open(device, "w")
-
-            logging.debug("Writing Master Boot Record")
-            self.dd(mbr_img, dev)
-
-            parts = ( (0xc, 700 * 1024 * 1024, False),
-                      (0x83, 100 * 1024 * 1024, False),
-                      (0x83, 3200 * 1024 * 1024, True),
-                      (0x83, 0, False) )
-
-            logging.debug("Repartition the key")
-            mb = self.repart(dev, parts, device_size, c, h, s)
-
-            cb = lambda x: callback(x, total_size)
-
-            offsets = [ ]
-            for i in xrange(4):
-                offsets.append(mb.get_partition_offset(i))
-            logging.debug("Writing FAT partition")
-            written = self.dd(fat_img, dev, seek=offsets[0], callback=lambda x: callback(x, total_size))
-            logging.debug("Writing boot partition")
-            written += self.dd(boot_img, dev, seek=offsets[1], callback=lambda x: callback(x + written, total_size))
-            logging.debug("Writing root partition")
-            written += self.dd(root_img, dev, seek=offsets[2], callback=lambda x: callback(x + written, total_size))
-            logging.debug("Writing crypto")
-            written += self.dd(crypto_img, dev, seek=offsets[3], callback=lambda x: callback(x + written, total_size))
-            dev.close()
-        else:
-            total_size = os.stat(image).st_size
-            self.dd(image, device, callback=lambda x: callback(x, total_size))
-
-        callback(total_size, total_size)
-
-    def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
-        if type(src) in (str, unicode):
-            srcfile = self.open(src)
-        else:
-            srcfile = src
-
-        if type(dest) in (str, unicode):
-            destfile = self.open(dest, 'w')
-        else:
-            destfile = dest
-
-        logging.debug("Source %s opened" % (src, ))
-        if skip:
-            srcfile.seek(skip, os.SEEK_SET)
-
-        if seek:
-            destfile.seek(seek, os.SEEK_SET)
-
-        # logging.debug("Destination has %d sectors of size %d" % (destsize, bs))
-        # logging.debug("%d sectors of %d bytes to be written" % (srcsize, bs))
-
-        status = STATUS_WRITING
-
-        # if srcsize != -1 and destsize != -1 and srcsize > destsize:
-        #     raise Exception("Not enough space on disk (%d blocks required, %d blocks available)" % (srcsize, destsize))
-
-        i = 0
-        while (count == -1) or (count > 0 and status == STATUS_WRITING):
-            data = srcfile.read(bs)
-            if not len(data):
-                break
-            destfile.write(data)
-            if callback:
-                callback(i)
-            if len(data) != bs:
-                i += len(data)
-                break
-            if count != -1:
-                count -= 1
-            i += bs
-
-        if callback:
-	        callback(i)
-
-        return i
 
     def find_device_by_path(self, path):
         usbs = self.get_usb_devices()

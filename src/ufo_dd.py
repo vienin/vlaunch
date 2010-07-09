@@ -6,6 +6,10 @@ import time
 import os
 import sys
 import gui
+import tarfile
+from ConfigParser import ConfigParser
+
+STATUS_WRITING = 0
 
 class DDWindow(QtGui.QWizard):
 
@@ -19,6 +23,8 @@ class DDWindow(QtGui.QWizard):
         self.backend = backend
 
         self.load_usbs()
+        self.device_size = 0
+        self.parts = []
         
         self.connect(self, QtCore.SIGNAL("currentIdChanged(int)"), self.currentIdChanged)
 
@@ -49,12 +55,11 @@ class DDWindow(QtGui.QWizard):
     def launch_process(self):
         self.button(QtGui.QWizard.NextButton).setEnabled(False)
         self.progress.setRange(0, 100)
-        self.progress.valueChanged.connect(self.is_process_finished)
         kwargs = {}
         kwargs["callback"] = self.update_progress
         import threading
-        threading.Thread(target=self.backend.write_image,
-                         args=(str(self.source), str(self.target)),
+        threading.Thread(target=self.write_image,
+                         args=(unicode(self.source), unicode(self.target)),
                          kwargs=kwargs).start()
 
     def prepare(self):
@@ -75,6 +80,195 @@ class DDWindow(QtGui.QWizard):
             logging.debug("Launching creator : " + " ".join(cmd))
             self.backend.execv(cmd, root=need_admin)
             sys.exit(0)
+
+    def repart(self, device, partitions, device_size, c, h, s):
+        import mbr
+        mb = mbr.MBR(device)
+        mb.generate(partitions, device_size, c, h, s)
+        mb.write(device)
+        return mb
+
+    def get_free_space(self):
+        size = self.device_size
+        for part in self.parts:
+            size -= part["size"]
+        return size
+
+    def update_sliders(self):
+        if not self.parts or not self.device_size:
+            return
+
+        self.button(QtGui.QWizard.NextButton).setEnabled(True)
+        self.resize_label.setEnabled(True)
+        self.splitter.setEnabled(True)
+
+        sizes = []
+        free_space = self.get_free_space()
+        if not self.splitter.count():
+           n = 0
+           for i, part in enumerate(self.parts):
+                if not part["resizable"]:
+                    continue
+                label = QtGui.QLabel(self.get_partition_pretty_name(part))
+                label.setAlignment(QtCore.Qt.AlignCenter)
+                label.setMinimumWidth(150)
+                self.splitter.addWidget(label)
+                self.splitter.setCollapsible(n, False)
+                part["widget"] = label
+                sizes.append(part["size"] + free_space * part["percentage"] / 100)
+                n += 1
+
+        widths = [ int(x / float(self.total_size)) for x in sizes ]
+        self.splitter.setSizes(widths)
+        self.update_sizes()
+
+    def update_sizes(self):
+        for i, part in self.get_resizable_partitions():
+            self.update_text(part)
+
+    def get_partition_pretty_name(self, part):
+        return { "fat" : _("Public data"),
+                 "root" : _("System data"),
+                 "crypt" : _("Private data") }[part["name"]]
+
+    def update_text(self, part):
+        part["widget"].setText(self.get_partition_pretty_name(part) + " " + _("(%d Mo)") % (self.get_partition_size(part) / 1024 / 1024))
+
+    def get_partition_size(self, part):
+        if part.has_key("widget"):
+            widget = part["widget"]
+            return int((self.splitter.sizes()[self.splitter.indexOf(widget)] - widget.minimumWidth()) * self.get_size_per_pixel() + part["size"])
+        else:
+            return part["size"]
+
+    def get_size_per_pixel(self):
+        sizes = self.splitter.sizes()
+        free_pixels = 0
+        for i, size in enumerate(sizes):
+            free_pixels += size - self.splitter.widget(i).minimumWidth()
+        return float(self.get_free_space()) / free_pixels
+
+    def get_resizable_partitions(self):
+        return [ (self.parts.index(x), x) for x in self.parts if x["resizable"] ]
+
+    def splitter_moved(self, pos, index):
+        self.update_sizes()
+
+    def on_select_device(self, row):
+        self.open_device(self.usbs[row][0])
+        self.update_sliders()
+
+    def on_text_changed(self, text):
+        if not self.reverse:
+            self.open_target(unicode(text))
+        self.update_sliders()
+
+    def get_partition(self, name):
+        for part in self.parts:
+            if part["name"] == name:
+                return part
+
+    def open_device(self, device):
+        self.device_size = self.backend.get_device_size(device) * 512
+
+    def open_target(self, filename):
+        if tarfile.is_tarfile(filename):
+            self.parts = []
+            self.total_size = 0
+            tar = tarfile.open(filename)
+            try:
+                layout = ConfigParser()
+                layout.readfp(tar.extractfile(tar.next()))
+                for n in xrange(4):
+                    section = "part%d" % n
+                    if not layout.has_section(section):
+                        break
+                    size = int(layout.get(section, "size"))
+                    self.total_size += size
+                    self.parts.append( { "name" : layout.get(section, "name"),
+                                         "type" : eval(layout.get(section, "type", "0x83")),
+                                         "percentage" : int(layout.get(section, "percentage")),
+                                         "size" : size,
+                                         "resizable" : eval(layout.get(section, "resizable", "True")),
+                                         "bootable" : eval(layout.get(section, "bootable", "False")) })
+
+            except:
+                logging.debug("Could not load layout.conf in archive %s" % filename)
+                return -1
+
+    def write_image(self, image, device, callback=None):
+        if tarfile.is_tarfile(image):
+
+            # We wait a bit otherwise it sometimes fails on Windows
+            import time
+            time.sleep(3)
+
+            tar = tarfile.open(image)
+            dev = self.backend.open(device, "w")
+
+            total_size = self.total_size
+            device_size = self.device_size
+            c, h, s = self.backend.get_disk_geometry(device)
+
+            logging.debug("Writing Master Boot Record")
+            # self.dd(tar.extractfile("mbr"), dev)
+            tar.next()
+            self.dd(tar.extractfile(tar.next()), dev)
+
+            logging.debug("Repartition the key")
+            mb = self.repart(dev, self.parts, device_size, c, h, s)
+
+            written = 0
+            for i, part in enumerate(self.parts):
+                logging.debug("Writing %s partition" % part["name"])
+                written += self.dd(tar.extractfile(part["name"], dev, seek=mb.get_partition_offset(i),
+                                                   callback = lambda x: callback(x + written, total_size)))
+            dev.close()
+        else:
+            total_size = os.stat(image).st_size
+            self.dd(image, device, callback = lambda x: callback(x, total_size))
+
+        self.next()
+
+    def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
+        if type(src) in (str, unicode):
+            srcfile = self.backend.open(src)
+        else:
+            srcfile = src
+
+        if type(dest) in (str, unicode):
+            destfile = self.backend.open(dest, 'w')
+        else:
+            destfile = dest
+
+        logging.debug("Source %s opened" % (src, ))
+        if skip:
+            srcfile.seek(skip, os.SEEK_SET)
+
+        if seek:
+            destfile.seek(seek, os.SEEK_SET)
+
+        status = STATUS_WRITING
+
+        i = 0
+        while (count == -1) or (count > 0 and status == STATUS_WRITING):
+            data = srcfile.read(bs)
+            if not len(data):
+                break
+            destfile.write(data)
+            if callback:
+                callback(i)
+            if len(data) != bs:
+                i += len(data)
+                break
+            if count != -1:
+                count -= 1
+            i += bs
+
+        if callback:
+	        callback(i)
+
+        return i
 
     def create_intro_page(self):
         class IntroPage(QtGui.QWizardPage):
@@ -109,7 +303,7 @@ class DDWindow(QtGui.QWizard):
 
     def create_burn_page(self):
         def add_to_layout(layout, intem, align=False):
-            if type(intem) == QtGui.QHBoxLayout:
+            if isinstance(intem, QtGui.QLayout):
                 item_type = "layout"
                 add_function = layout.addLayout
             else:
@@ -146,14 +340,14 @@ class DDWindow(QtGui.QWizard):
                     return False
 
                 # checking file  selection
-                edit = _self.edit.text()
+                edit = unicode(_self.edit.text())
                 if not edit or (not os.path.exists(edit) and not self.reverse):
                     gui.dialog_info(title=missing_file_title, msg=missing_file_msg)
                     return False
 
                 if self.reverse:
-                    self.source = str(self.usbs[_self.usb_list.currentRow()][0])
-                    self.target = str(edit)
+                    self.source = unicode(self.usbs[_self.usb_list.currentRow()][0])
+                    self.target = unicode(edit)
                     source_size = self.backend.get_device_size(self.source) * 512
                     disk_space = self.backend.get_free_space(os.path.dirname(self.target))
                     if disk_space < source_size:
@@ -163,8 +357,8 @@ class DDWindow(QtGui.QWizard):
                                           "<br><br>Please free some space and retry.") % ((source_size - disk_space) / 1024 / 1024))
                         return False
                 else:
-                    self.source = str(edit)
-                    self.target = str(self.usbs[_self.usb_list.currentRow()][0])
+                    self.source = unicode(edit)
+                    self.target = unicode(self.usbs[_self.usb_list.currentRow()][0])
                     source_size = os.stat(self.source).st_size
                     target_size = self.backend.get_device_size(self.target) * 512
                     if target_size < source_size:
@@ -172,7 +366,7 @@ class DDWindow(QtGui.QWizard):
                                         msg=_("The size of the source you have selected (%d Mo)"
                                               " is bigger than the size of the selected target (%d Mo)."
                                               "<br><br>Please select a source equal or smaller than the target.") % (source_size / 1024 / 1024, target_size / 1024 / 1024))
-                    return False
+                        return False
 
                 if not self.reverse:
                     response = gui.dialog_question(title=_("All data on the device will be lost"),
@@ -197,6 +391,12 @@ class DDWindow(QtGui.QWizard):
                                     return False
                                 time.sleep(0.3)
 
+                sizes = []
+                for part in self.parts:
+                    sizes.append(self.get_partition_size(part))
+                for i, part in enumerate(self.parts):
+                    part["size"] = sizes[i]
+
                 return True
 
             def on_dl(_self):
@@ -211,7 +411,7 @@ class DDWindow(QtGui.QWizard):
                     _self.dl_mutex = False
                     return
 
-                _self.dest_dir = str(filedialog.selectedFiles()[0])
+                _self.dest_dir = unicode(filedialog.selectedFiles()[0])
                 _self.dest_file = os.path.join(_self.dest_dir, "ufo-key-latest.img")
 
                 logging.debug("Downloading " + conf.IMGURL + " to " + _self.dest_file)
@@ -232,9 +432,9 @@ class DDWindow(QtGui.QWizard):
                 filedialog = QtGui.QFileDialog(self, _("Please select an UFO image"), os.getcwd())
                 if filedialog.exec_() != QtGui.QDialog.Accepted:
                     return
-                _self.edit.setText(str(filedialog.selectedFiles()[0]))
+                _self.edit.setText(unicode(filedialog.selectedFiles()[0]))
 
-            def on_refresh(self):
+            def on_refresh(_self):
                 self.load_usbs()
                 _self.usb_list.clear()
                 for i in self.usbs:
@@ -254,6 +454,7 @@ class DDWindow(QtGui.QWizard):
             def create_file_chooser_layout(_self, reverse):
                 hlayout = QtGui.QHBoxLayout()
                 _self.edit = edit = QtGui.QLineEdit()
+                _self.edit.textChanged.connect(self.on_text_changed)
                 browse = QtGui.QPushButton("...")
                 browse.clicked.connect(_self.on_file_select)
                 browse.setMaximumWidth(20)
@@ -281,9 +482,26 @@ class DDWindow(QtGui.QWizard):
 
             def create_device_chooser_layout(_self):
                 _self.usb_list = QtGui.QListWidget()
+                _self.usb_list.currentRowChanged.connect(self.on_select_device)
+
                 for i in self.usbs:
                     _self.usb_list.addItem(i[1])
                 return _self.usb_list
+
+            def create_device_resize_layout(_self):
+                layout = QtGui.QVBoxLayout()
+                self.resize_label = QtGui.QLabel(_("Partition sizes :<br>You can use the following default values "
+                                                   "or you can resize the partition sizes to meet your needs :<br><br>"))
+                self.resize_label.setWordWrap(True)
+                self.resize_label.setEnabled(False)
+                layout.addWidget(self.resize_label)
+                self.splitter = splitter = QtGui.QSplitter()
+                self.splitter.setMinimumHeight(32)
+                self.splitter.setStyleSheet("QSplitter { border: 1px solid black; }")
+                self.splitter.splitterMoved.connect(self.splitter_moved)
+                self.splitter.setEnabled(False)
+                layout.addWidget(splitter)
+                return layout
 
             def delete(_self, item):
                 item.deleteLater()
@@ -324,10 +542,12 @@ class DDWindow(QtGui.QWizard):
                     add_to_layout(layout, _self.create_file_chooser_layout(reverse))
                     add_to_layout(layout, _self.create_device_chooser_label(reverse))
                     add_to_layout(layout, _self.create_device_chooser_layout())
+                    add_to_layout(layout, _self.create_device_resize_layout())
 
                 _self.setLayout(layout)
 
         page = BurnPage()
+        page.fill_page(False)
         return page
 
     def create_processing_page(self):
@@ -360,10 +580,6 @@ class DDWindow(QtGui.QWizard):
         page.setLayout(layout)
         return page
 
-    def is_process_finished(self, value):
-        if value == 100:
-            self.next()
-
     def update_progress(self, sectors, total):
         if total:
             gui.app.postEvent(gui.app, gui.UpdateProgressEvent(self.progress, int(sectors / float(total) * 100)))
@@ -371,6 +587,7 @@ class DDWindow(QtGui.QWizard):
     def currentIdChanged(self, id):
         if id == self.PAGE_INDEX_BURN:
             self.page(id).fill_page(self.reverse)
+            self.button(QtGui.QWizard.NextButton).setEnabled(False)
 
         elif id == self.PAGE_INDEX_PROCESS:
             self.launch_process()
