@@ -88,6 +88,7 @@ class LinuxBackend(OSBackend):
         copytree(os.path.join(path, "Linux"), os.path.join(self_copied_path, "Linux"))
         copytree(os.path.join(path, ".data" , "images"), os.path.join(self_copied_path, ".data", "images"))
         copytree(os.path.join(path, ".data", "locale"), os.path.join(self_copied_path, ".data", "locale"))
+        copytree(os.path.join(path, ".data", "settings"), os.path.join(self_copied_path, ".data", "settings"))
 
         return exe_path;
 
@@ -95,7 +96,6 @@ class LinuxBackend(OSBackend):
         return conf.SCRIPT_PATH
     
     def execv(self, cmd, root=False):
-        cmd = [ '"' + x + '"' for x in cmd ]
         logging.shutdown()
         if root:
             self.run_as_root.call(cmd, replace=True)
@@ -153,8 +153,9 @@ class LinuxBackend(OSBackend):
 
     def find_device_by_model(self, dev_model):
         return ""
-        
-    def find_device_by_path(self, path):
+
+    def get_mountpoints(self):
+        mountpoints = []
         mounts = open('/proc/mounts', 'r').readlines()
         for mount in reversed(mounts):
             splitted = mount.split(" ")
@@ -162,19 +163,40 @@ class LinuxBackend(OSBackend):
             if l > 6:
                 splitted = splitted[:1] + " ".join(splitted[1:l - 5 + 1]) + splitted[-4:]
             dev, mountpoint, type, options, opt1, opt2 = splitted
-            if path.startswith(mountpoint):
-                return dev[:-1]
+            mountpoints.append({ "device" : dev,
+                                 "mountpoint" : mountpoint,
+                                 "type" : type,
+                                 "options" : options,
+                                 "opt1" : opt1,
+                                 "opt2" : opt2 })
+        return mountpoints
+
+    def find_device_by_path(self, path):
+        for mount in self.get_mountpoints():
+            if path.startswith(mount["mountpoint"]) and mount["mountpoint"] != "/":
+                if os.path.islink(mount["device"]):
+                    return os.path.join("dev", os.path.basename(os.readlink(mount["device"])))[:-1]
+                return mount["device"][:-1]
         return ""
 
-    def umount_device(self, mntpoint):
-        if self.call(["umount", mntpoint]) != 0:
-            return False
+    def umount_device(self, dev):
+        for mount in self.get_mountpoints():
+            if mount["device"].startswith(dev):
+                if self.call(["umount", mount["mountpoint"]]) != 0:
+                    return False
         return True
 
     def prepare_device(self, disk):
         self.call(["umount", disk + "3"])
         self.call(["umount", disk + "4"])
-    
+
+    def get_disk_geometry(self, device):
+        import re
+        output = self.call(["hdparm", "-g", device], output=True)[1]
+        regexp = re.compile(r" geometry *= (\d+)/(\d+)/(\d+), sectors = (\d+), start = (\d+)")
+        cylinders, heads, sectors, sectors_nb, start = map(int, regexp.search(output).groups())
+        return cylinders, heads, sectors
+
     def get_device_parts(self, dev):
         parts = glob.glob(dev + '[0-9]')
         device_parts = {}
@@ -432,11 +454,14 @@ class UbuntuLinuxBackend(LinuxBackend):
         vbox_path = utils.call(["which", "VirtualBox"], output=True)[1].strip()
         if not os.path.lexists(vbox_path):
             open("/etc/apt/sources.list", "a").write("deb http://download.virtualbox.org/virtualbox/debian %s non-free\n" % (self.codename.lower(), ))
-            os.system("wget -q http://download.virtualbox.org/virtualbox/debian/sun_vbox.asc -O- | apt-key add -")
+            os.system("wget -q http://download.virtualbox.org/virtualbox/debian/oracle_vbox.asc -O- | sudo apt-key add -")
             gui.wait_command(["apt-get", "update"],
                               msg="Votre système est en train d'être mis à jour")
             gui.wait_command(["apt-get", "-y", "install", "virtualbox-3.1"],
-                             **self.get_generic_installation_messages("VirtualBox 3"))
+                             **self.get_generic_installation_messages("VirtualBox 3.1"))
+
+        lsmod = self.call([[ "lsmod" ], [ "grep", "vboxdrv" ]], output=True)[1]
+        if not lsmod:
             gui.wait_command(["/etc/init.d/vboxdrv", "setup"],
                              msg="Configuration en cours de \"VirtualBox 3\".")
          
@@ -469,6 +494,7 @@ class BeesuRunAsRoot(RunAsRoot):
         self.prefix = ["/usr/bin/beesu", "-m" ]
     
     def call(self, command, replace=False):
+        command = [ '"' + x + '"' for x in command ]
         if os.environ.has_key("GNOME_KEYRING_SOCKET"):
             command = [ "GNOME_KEYRING_SOCKET=" + os.environ["GNOME_KEYRING_SOCKET"] ] + command
         if replace:

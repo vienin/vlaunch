@@ -20,6 +20,7 @@
 
 
 import glob
+import os
 import os.path as path
 import createrawvmdk
 from conf import conf
@@ -820,6 +821,11 @@ class OSBackend(object):
         while not self.vbox.current_machine.is_finished:
             self.wait_for_events(0.01)
 
+        # All this dirty stuff will disappear when the
+        # launcher will use multiprocessing module...
+        while not gui.app.all_tray_windows_closed():
+            time.sleep(0.1)
+
     def wait_for_events(self, interval):
         # This function is overloaded only on Windows
         if self.vbox.callbacks_aware:
@@ -829,18 +835,38 @@ class OSBackend(object):
 
         gui.app.process_gui_events()
 
-    def write_image(self, image, device, volume="", callback=None):
-        bs = 1024 * 1024
-        src = os.open(image, os.O_RDONLY)
-        size = os.stat(image).st_size
-        dest = os.open(device, os.O_WRONLY)
-        data = os.read(src, bs)
-        written = 0
-        while data:
-            os.write(dest, data)
-            written += len(data)
-            callback(written, size)
-            data = os.read(src, bs)
+    def open(self, path, mode='r'):
+        class File:
+            def __init__(self, path, mode="r", access=0):
+                self.name = path
+                if mode == "r": os_mode = os.O_RDONLY
+                elif mode == "w": os_mode = os.O_WRONLY | os.O_CREAT
+                elif mode == "rw": os_mode = os.O_RDWR | os.O_CREAT
+                else: raise Exception("Unsupported mode %s" % mode)
+                self.fd = os.open(path, os_mode)
+
+            def __del__(self):
+                self.close()
+
+            def close(self):
+                import os
+                if self.fd != -1:
+                    os.close(self.fd)
+                    self.fd = -1
+
+            def seek(self, offset, position):
+                import os
+                os.lseek(self.fd, offset, position)
+
+            def read(self, size):
+                import os
+                return os.read(self.fd, size)
+
+            def write(self, data):
+                import os
+                return os.write(self.fd, data)
+
+        return File(path, mode)
 
     def find_device_by_path(self, path):
         usbs = self.get_usb_devices()
@@ -879,6 +905,8 @@ class OSBackend(object):
         open(path.join(conf.DATA_DIR, self.reservation_file), 'a').truncate(size_to_reserve)
 
     def global_cleanup(self):
+        gui.app.tray.hide()
+
         if conf.FIRSTLAUNCH:
             conf.write_value_to_file("launcher", "FIRSTLAUNCH", "0")
         if self.vbox.license_agreed():

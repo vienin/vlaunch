@@ -174,6 +174,16 @@ rm -rf $RPM_BUILD_ROOT
 "%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/__error__.sh"
 "%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME}.app/Contents/Resources/VirtualBox.app"
 
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} creator.app/Contents/Info.plist
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} creator.app/Contents/MacOS/creator
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} creator.app/Contents/PkgInfo
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} creator.app/Contents/Resources/ufo.icns
+
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} options.app/Contents/Info.plist
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} options.app/Contents/MacOS/settings
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} options.app/Contents/PkgInfo
+"%{TARGET_PATH}/Mac-Intel/%{PRODUCTNAME} options.app/Contents/Resources/ufo.icns
+
 "%{TARGET_PATH}/Linux/%{PRODUCTNAME}"
 "%{TARGET_PATH}/Linux/%{PRODUCTNAME} options"
 "%{TARGET_PATH}/Linux/%{PRODUCTNAME} creator"
