@@ -53,7 +53,7 @@ class MBR:
         start_sector = 2
         self.partitions = []
         for n, part in enumerate(partitions):
-            type, size, bootable = part
+            type, size, bootable = part["type"], part["size"], part["bootable"]
             if not size:
                 cylinders = c - offset
             else:

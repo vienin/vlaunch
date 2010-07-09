@@ -219,8 +219,8 @@ class DDWindow(QtGui.QWizard):
             written = 0
             for i, part in enumerate(self.parts):
                 logging.debug("Writing %s partition" % part["name"])
-                written += self.dd(tar.extractfile(part["name"], dev, seek=mb.get_partition_offset(i),
-                                                   callback = lambda x: callback(x + written, total_size)))
+                written += self.dd(tar.extractfile(part["name"]), dev, seek=mb.get_partition_offset(i),
+                                                   callback = lambda x: callback(x + written, total_size))
             dev.close()
         else:
             if self.reverse:
