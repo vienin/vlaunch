@@ -105,9 +105,12 @@ class LinuxBackend(OSBackend):
     def is_admin(self):
         return os.getuid() == 0;
 
+    def get_respawn_command(self):
+        return [sys.executable] + sys.argv + [ "--respawn" ]
+
     def prepare(self):
         if not self.is_admin():
-            self.execv([sys.executable] + sys.argv + [ "--respawn" ], True)
+            self.execv(self.get_respawn_command(), True)
 
         if isinstance(self, GenericLinuxBackend):
             gui.dialog_info(title=_("Warning"),

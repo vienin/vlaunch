@@ -70,6 +70,9 @@ class WindowsBackend(OSBackend):
             self.error_already_running("\n".join([ x.Name for x in processes ]), "VirtualBox")
             sys.exit(0)
 
+    def get_respawn_command(self):
+        raise Exception("get_respawn_command should not be called on Windows")
+
     def prepare_self_copy(self):
         self_copied_path = tempfile.mkdtemp(prefix="ufo-self-copied")
         patterns = [ "*.exe", "*.dll", "library.zip", "Qt*.dll", "msv*.dll", "*.pyd", "py*.dll", "Microsoft.VC*.CRT"]

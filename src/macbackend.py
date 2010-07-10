@@ -338,14 +338,17 @@ class MacBackend(OSBackend):
         self.call([ "killall", "-9", "VBoxXPCOMIPCD" ])
         self.call([ "killall", "-9", "VBoxSVC" ])
 
+    def get_respawn_command(self):
+        if path.basename(sys.executable) == "python":
+            cmd = [ path.join(path.dirname(sys.executable), path.basename(conf.MACEXE)) ]
+        else:
+            cmd = [ sys.executable ] + sys.argv
+        cmd += [ "--respawn" ]
+        return cmd    
+
     def prepare(self):
         if not self.is_admin():
-            if path.basename(sys.executable) == "python":
-                cmd = [ path.join(path.dirname(sys.executable), path.basename(conf.MACEXE)) ]
-            else:
-                cmd = [ sys.executable ] + sys.argv
-            cmd += [ "--respawn" ]
-
+            cmd = self.get_respawn_command()
             self.execv(cmd, True)
             sys.exit(1)
 

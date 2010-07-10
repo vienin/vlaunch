@@ -75,7 +75,7 @@ class DDWindow(QtGui.QWizard):
             if self_copy:
                 cmd = [ self.backend.prepare_self_copy(), "--dd" ]
             else:
-                cmd = [ sys.executable ] + sys.argv + [  "--dd" ]
+                cmd = self.backend.get_respawn_command() + [ "--dd" ]
 
             logging.debug("Launching creator : " + " ".join(cmd))
             self.backend.execv(cmd, root=need_admin)
