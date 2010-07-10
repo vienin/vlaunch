@@ -128,6 +128,7 @@ mac-launcher: clean py2app
 	echo "#!/bin/bash" > ${CREATORAPP}/Contents/MacOS/creator
 	echo "\"\`dirname \\\"$$\c" >> ${CREATORAPP}/Contents/MacOS/creator
 	echo "0\\\"\`/../../../"${PRODUCT_NAME}.app"/Contents/MacOS/UFO\" --dd" >> ${CREATORAPP}/Contents/MacOS/creator
+	chmod +x ${CREATORAPP}/Contents/MacOS/creator
 	# cp mac-creator-link ${CREATORAPP}/Contents/MacOS/creator
 	cp ../graphics/creator.icns ${CREATORAPP}/Contents/Resources/ufo.icns
 
@@ -136,6 +137,22 @@ strip:
 	ditto -arch i386 -arch x86_64 dist dist-stripped; \
 	rm -rf dist; \
 	mv dist-stripped dist
+
+creator-dmg:
+	rm -f creator.dmg
+	hdiutil create -megabytes 128 -volname "${PRODUCT_NAME} creator" -fs HFS+ creator.dmg
+	hdiutil mount creator.dmg
+	cp -R ../graphics/.background "/Volumes/${PRODUCT_NAME} creator"
+	cp DS_Store.creator "/Volumes/${PRODUCT_NAME} creator/.DS_Store"
+	mkdir -p "/Volumes/${PRODUCT_NAME} creator/.data/settings"
+	cp settings.conf "/Volumes/${PRODUCT_NAME} creator/.data/settings"
+	cp -p -P -R "dist/${PRODUCT_NAME}.app" "dist/${PRODUCT_NAME} creator.app" "/Volumes/${PRODUCT_NAME} creator"
+	SetFile -a V "/Volumes/${PRODUCT_NAME} creator/${PRODUCT_NAME}.app"
+	cp -R ../graphics/creator.icns "/Volumes/${PRODUCT_NAME} creator/.VolumeIcon.icns"
+	diskutil unmountDisk "/Volumes/${PRODUCT_NAME} creator"
+
+upload-creator: creator-dmg
+	scp creator.dmg bob@elko.agorabox.org:/var/www/html/creator/mac
 
 tar-mac-launcher: strip
 	cd dist && tar cvzf mac-intel.tgz "`basename ${CREATORAPP}`" "`basename ${SETTINGSAPP}`" "${PRODUCT_NAME}.app" && cd ..
