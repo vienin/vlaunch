@@ -442,9 +442,10 @@ class WindowsBackend(OSBackend):
     
     def get_usb_devices(self):
         logical_disks = self.WMI.Win32_LogicalDisk (DriveType = 2)
-        return [[logical_disk.Caption + '\\',
-                  str(logical_disk.Caption) + str("_") + str(logical_disk.VolumeName),
-                  self.get_disk_from_partition(logical_disk) ] for logical_disk in logical_disks ]
+        devices = [[logical_disk.Caption + '\\',
+                    str(logical_disk.Caption) + str("_") + str(logical_disk.VolumeName),
+                    self.get_disk_from_partition(logical_disk) ] for logical_disk in logical_disks ]
+        return [ device for device in devices if device[2] ]
 
     def get_usb_sticks(self):
         disks = self.WMI.Win32_DiskDrive()
