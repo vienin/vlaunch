@@ -503,7 +503,7 @@ class DDWindow(QtGui.QWizard):
                 self.resize_label.setEnabled(False)
                 layout.addWidget(self.resize_label)
                 self.splitter = splitter = QtGui.QSplitter()
-                self.splitter.setMinimumHeight(32)
+                self.splitter.setMinimumSize(600, 32)
                 self.splitter.setStyleSheet("QSplitter { border: 1px solid black; }")
                 self.splitter.splitterMoved.connect(self.splitter_moved)
                 self.splitter.setEnabled(False)
