@@ -191,11 +191,11 @@ class Conf(object):
     def __init__(self):
         self.handlers = []
         if sys.platform == "darwin" and getattr(sys, "frozen", None):
-            self.SCRIPT_PATH = path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO"))
+            self.SCRIPT_PATH = unicode(path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO")))
         else:
-            self.SCRIPT_PATH = path.realpath(sys.argv[0])
-        self.SCRIPT_NAME = path.basename(sys.argv[0])
-        self.SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
+            self.SCRIPT_PATH = unicode(path.realpath(sys.argv[0]))
+        self.SCRIPT_NAME = unicode(path.basename(sys.argv[0]))
+        self.SCRIPT_DIR  = unicode(path.dirname(path.realpath(sys.argv[0])))
 
         print "SCRIPT_PATH", self.SCRIPT_PATH
 
@@ -297,7 +297,7 @@ class Conf(object):
             self.BIN = path.join(self.SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
         else:
-            if self.LIVECD:
+            if self.LIVECD or os.environ.has_key("_MEIPASS2"):
                 self.DATA_DIR = os.environ["_MEIPASS2"]
                 # no BIN as the livecd always provides a settings.conf
             else:
