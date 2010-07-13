@@ -2230,7 +2230,9 @@ def dialog_info(title, msg, error=False):
         msgbox.setIcon(QtGui.QMessageBox.Information)
     msgbox.exec_()
 
-def dialog_question(title, msg, button1=_("Yes"), button2=_("No"), dangerous=False):
+def dialog_question(title, msg, button1="", button2="", dangerous=False):
+    if not button1: button1 = _("Yes")
+    if not button2: button2 = _("No")
     msgbox = create_message_box(title=title, msg=msg, buttons=QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, width=500)
     if dangerous:
         icon = QtGui.QMessageBox.Warning
