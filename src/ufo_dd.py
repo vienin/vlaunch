@@ -62,23 +62,24 @@ class DDWindow(QtGui.QWizard):
                          args=(unicode(self.source), unicode(self.target)),
                          kwargs=kwargs).start()
 
-    def prepare(self):
+    @staticmethod
+    def prepare(backend):
         self_copy  = False
-        need_admin = not self.backend.is_admin()
+        need_admin = not backend.is_admin()
 
-        usbs = self.backend.get_usb_devices()
+        usbs = backend.get_usb_devices()
         for usb in usbs:
             if conf.SCRIPT_PATH.startswith(usb[0]):
                 self_copy = True
 
         if self_copy or need_admin:
             if self_copy:
-                cmd = [ self.backend.prepare_self_copy(), "--dd" ]
+                cmd = [ backend.prepare_self_copy(), "--dd" ]
             else:
-                cmd = self.backend.get_respawn_command() + [ "--dd" ]
+                cmd = backend.get_respawn_command() + [ "--dd" ]
 
             logging.debug("Launching creator : " + " ".join(cmd))
-            self.backend.execv(cmd, root=need_admin)
+            backend.execv(cmd, root=need_admin)
             sys.exit(0)
 
     def repart(self, device, partitions, device_size, c, h, s):
