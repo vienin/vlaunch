@@ -288,16 +288,16 @@ class DDWindow(QtGui.QWizard):
 
         page = IntroPage()
         page.setTitle(_("Introduction"))
-        label = QtGui.QLabel(_("Welcome to the Mobile PC Creator software.\n\n"
-                               "This tool allows you to put G-Dium Mobile PC on your "
+        label = QtGui.QLabel(_("Welcome to the %s Creator software.\n\n"
+                               "This tool allows you to put %s on your "
                                "USB pen drive or your USB hard drive or to backup "
-                               "your G-Dium Mobile PC system into a file.\n\n"
-                               "Please select what you want to do.\n"))
+                               "your %s system into a file.\n\n"
+                               "Please select what you want to do.\n") % ((conf.PRODUCTNAME, ) * 3))
         label.setWordWrap(True)
 
         groupbox = QtGui.QGroupBox()
-        self.create = QtGui.QRadioButton(_("Install G-Dium Mobile PC on a device"), groupbox)
-        self.backup = QtGui.QRadioButton(_("Backup my G-Dium Mobile PC device"), groupbox)
+        self.create = QtGui.QRadioButton(_("Install %s on a device") % conf.PRODUCTNAME, groupbox)
+        self.backup = QtGui.QRadioButton(_("Backup my %s device") % PRODUCTNAME, groupbox)
         self.create.setChecked(True)
 
         layout = QtGui.QVBoxLayout()
@@ -533,9 +533,9 @@ class DDWindow(QtGui.QWizard):
                     _self.reset()
 
                 if reverse:
-                    _self.setTitle(_("Backup my Gdium Mobile PC device on hard disk"))
+                    _self.setTitle(_("Backup my %s on hard disk") % conf.PRODUCTNAME)
                 else:
-                    _self.setTitle(_("Install Gdium Mobile PC on my device"))
+                    _self.setTitle(_("Install %s on my device") % conf.PRODUCTNAME)
 
                 layout = QtGui.QVBoxLayout()
 
@@ -562,8 +562,8 @@ class DDWindow(QtGui.QWizard):
         page.setTitle(_("Generating"))
         layout = QtGui.QVBoxLayout()
 
-        label = QtGui.QLabel(_("Please wait while G-Dium Mobile PC is beeing "
-                               "written to the device"))
+        label = QtGui.QLabel(_("Please wait while %s is beeing "
+                               "written to the device") % conf.PRODUCTNAME)
         label.setWordWrap(True)
         layout.addWidget(label)
 
@@ -578,9 +578,9 @@ class DDWindow(QtGui.QWizard):
         page.setTitle(_("Operation successfull !"))
         layout = QtGui.QVBoxLayout()
 
-        label = QtGui.QLabel(_("G-Dium Mobile PC has been successfully installed "
+        label = QtGui.QLabel(_("%s has been successfully installed "
                                "on your device. You can use it right away.\n\n"
-                               "Enjoy !"))
+                               "Enjoy !") % conf.PRODUCTNAME)
         label.setWordWrap(True)
         layout.addWidget(label)
 

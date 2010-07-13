@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-06-29 11:58+CEST\n"
-"PO-Revision-Date: 2010-06-29 11:59+0100\n"
+"POT-Creation-Date: 2010-07-13 10:55+CEST\n"
+"PO-Revision-Date: 2010-07-13 10:57+0100\n"
 "Last-Translator: Sylvain Baubeau <sylvain.baubeau@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
@@ -14,217 +14,217 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: src/conf.py:364
+#: src/conf.py:357
 msgid "Direct"
 msgstr "Direct"
 
-#: src/conf.py:364
+#: src/conf.py:357
 msgid "Host disk"
 msgstr "Disque hôte"
 
-#: src/conf.py:364
-#: src/conf.py:456
+#: src/conf.py:357
+#: src/conf.py:449
 msgid "Memory"
 msgstr "Mémoire vive"
 
-#: src/conf.py:365
+#: src/conf.py:358
 msgid "English"
 msgstr "Anglais"
 
-#: src/conf.py:365
+#: src/conf.py:358
 msgid "French"
 msgstr "Français"
 
-#: src/conf.py:366
+#: src/conf.py:359
 msgid "Cairo-dock"
 msgstr "Cairo-dock"
 
-#: src/conf.py:366
+#: src/conf.py:359
 msgid "GNOME"
 msgstr "GNOME"
 
-#: src/conf.py:366
+#: src/conf.py:359
 msgid "Moblin"
 msgstr "Moblin"
 
-#: src/conf.py:369
+#: src/conf.py:362
 msgid "Behavior"
 msgstr "Comportement"
 
-#: src/conf.py:375
+#: src/conf.py:368
 msgid "Window resolution"
 msgstr "Résolution de la fenêtre"
 
-#: src/conf.py:376
+#: src/conf.py:369
 msgid "Choose the starting resolution of the window. Note that if the chosen resolution is higher or equal than the computer one, the window will be displayed in fullscreen mode."
 msgstr "Choisissez la résolution initiale de la fenêtre. Notez que si la résolution choisie est supérieure ou égale à celle de l'ordinateur, la fenêtre sera affichée en mode plein écran."
 
-#: src/conf.py:383
+#: src/conf.py:376
 msgid "Activate voice"
 msgstr "Activer la voix"
 
-#: src/conf.py:384
+#: src/conf.py:377
 msgid "Enable this option if you want to turn on voice synthesis."
 msgstr "Activez cette option si vous voulez activer la synthèse de voix."
 
-#: src/conf.py:389
+#: src/conf.py:382
 msgid "Fullscreen automatic"
 msgstr "Plein écran automatique"
 
-#: src/conf.py:390
+#: src/conf.py:383
 msgid "Enable this option if you want the window switch to fullscreen mode at login."
 msgstr "Activez cette option si vous voulez que la fenêtre soit affichée en mode plein écran à l'arrivée au bureau."
 
-#: src/conf.py:395
+#: src/conf.py:388
 msgid "Minimize automatic"
 msgstr "Réduction automatique"
 
-#: src/conf.py:396
+#: src/conf.py:389
 msgid "Enable this option if you want the window switch to minimized mode at startup and shutdown."
 msgstr "Activez cette option si vous voulez que la fenêtre soit réduite durant les étapes de démarrage et de fermeture."
 
-#: src/conf.py:401
+#: src/conf.py:394
 msgid "Eject key at shutdown"
 msgstr "Éjecter la clé à l'extinction"
 
-#: src/conf.py:402
+#: src/conf.py:395
 msgid "Enable this option if you want to eject the key at shutdown."
 msgstr ""
 "Activez cette option si vous voulez que la clé soit éjectée\n"
 "à l'extinction de la machine virtuelle."
 
-#: src/conf.py:406
-#: src/launcher.py:137
+#: src/conf.py:399
+#: src/launcher.py:121
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/conf.py:412
+#: src/conf.py:405
 msgid "Language"
 msgstr "Langue"
 
-#: src/conf.py:413
+#: src/conf.py:406
 msgid "Choose your language."
 msgstr "Choisissez la langue."
 
-#: src/conf.py:420
+#: src/conf.py:413
 msgid "Menu bar"
 msgstr "Barre de menu"
 
-#: src/conf.py:421
+#: src/conf.py:414
 msgid "Display/hide the window menu bar."
 msgstr "Afficher/cacher la barre de menu."
 
-#: src/conf.py:427
+#: src/conf.py:420
 msgid "Balloon top color"
 msgstr "Couleur du haut"
 
-#: src/conf.py:431
+#: src/conf.py:424
 msgid "Balloon bottom color"
 msgstr "Couleur du bas"
 
-#: src/conf.py:435
+#: src/conf.py:428
 msgid "Balloon text color"
 msgstr "Couleur du texte"
 
-#: src/conf.py:438
+#: src/conf.py:431
 msgid "Customize colors of the balloon message window. Use different collors for top and bottom to get a color gradient."
 msgstr "Personnalisez la couleur de l'infobulle de messages. Utilisez des couleurs différentes pour le haut et le bas pour obtenir un dégradé de couleurs."
 
-#: src/conf.py:443
+#: src/conf.py:436
 msgid "User interface"
 msgstr "Interface utilisateur"
 
-#: src/conf.py:444
+#: src/conf.py:437
 msgid "Select a graphical interface."
 msgstr "Sélectionner une interface utilisateur."
 
-#: src/conf.py:450
+#: src/conf.py:443
 msgid "Advanced"
 msgstr "Avancé"
 
-#: src/conf.py:457
+#: src/conf.py:450
 msgid "Set the size of the virtual machine memory."
 msgstr "Spécifiez la taille de la mémoire vive de la machine virtuelle."
 
-#: src/conf.py:464
+#: src/conf.py:457
 msgid "CPU number"
 msgstr "Nombre de processeurs"
 
-#: src/conf.py:465
+#: src/conf.py:458
 msgid "Set the number of cpus connected to the virtual machine."
 msgstr "Spécifiez le nombre de processeurs de la machine virtuelle."
 
-#: src/conf.py:472
+#: src/conf.py:465
 msgid "3D acceleration"
 msgstr "Accélération 3D"
 
-#: src/conf.py:473
+#: src/conf.py:466
 msgid "Set the 3D acceleration capability. Even if 3D is enabled, availability of this feature depends of the host computer 3Ddevice."
 msgstr "Activez l'accélération 3D. Bien que cette option soit activée, la disponibilité de cette fonctionnalité dépend du matériel de l'ordinateur."
 
-#: src/conf.py:482
+#: src/conf.py:475
 msgid "VT-x/AMD-V"
 msgstr "VT-x/AMD-V"
 
-#: src/conf.py:486
+#: src/conf.py:479
 msgid "Nested paging"
 msgstr "Pagination enchevêtrée"
 
-#: src/conf.py:489
+#: src/conf.py:482
 msgid "Set the virtualization extentions. Even if virtualizatuion extentions are enabled, availability of this feature depends of the host computer cpu properties."
 msgstr "Activez les extensions de virtualisation. Bien que cette option soit activée,la disponibilité de cette fonctionnalité dépend du matériel de l'ordinateur."
 
-#: src/conf.py:496
+#: src/conf.py:489
 msgid "Network"
 msgstr "Réseau"
 
-#: src/conf.py:504
+#: src/conf.py:497
 msgid "Web proxy"
 msgstr "Serveur mandataire HTTP"
 
-#: src/conf.py:509
+#: src/conf.py:502
 msgid "Secure Web proxy"
 msgstr "Serveur mandataire HTTP sécurisé"
 
-#: src/conf.py:514
+#: src/conf.py:507
 msgid "FTP proxy"
 msgstr "Serveur mandataire FTP"
 
-#: src/conf.py:519
+#: src/conf.py:512
 msgid "SOCKS proxy"
 msgstr "Hôte SOCKS"
 
-#: src/conf.py:523
+#: src/conf.py:516
 msgid "Use autodetection for proxy servers or configure them manually using <br>format <i>hostname:port</i>"
 msgstr "Détecter les serveurs mandataires ou configurer les manuellement <br>en utilisant le format <i>hôte:port</i>"
 
-#: src/conf.py:527
+#: src/conf.py:520
 msgid "System"
 msgstr "Système"
 
-#: src/conf.py:533
-#: src/launcher.py:149
-#: src/osbackend.py:423
+#: src/conf.py:526
+#: src/launcher.py:147
+#: src/osbackend.py:424
 msgid "Debug mode"
 msgstr "Mode débogage"
 
-#: src/conf.py:534
+#: src/conf.py:527
 msgid "Set debug mode to get more complete log files."
 msgstr "Activer le mode débogage."
 
-#: src/conf.py:538
+#: src/conf.py:531
 msgid "Reintegration policy"
 msgstr "Politique de réintégration"
 
-#: src/conf.py:539
+#: src/conf.py:532
 msgid "DANGEROUS. Select the reintegration policy. The reintegration policy defines how system modifications are written on the removable device."
 msgstr "DANGEREUX. Sélectionne la politique de réintégration. La politique de réintégration définie la manière dont les modifications du système sont écrites sur le support amovible."
 
-#: src/conf.py:548
+#: src/conf.py:541
 msgid "Kernel command line"
 msgstr "Ligne de commande du noyau"
 
-#: src/conf.py:549
+#: src/conf.py:542
 msgid "DANGEROUS. Set the kernel command line parameters. If the following parameters already exist on the kernel command line, they will be overwritten."
 msgstr "DANGEREUX. Défini les paramètres de la ligne de commande du noyau. Si les paramètres suivants existe déjà sur la ligne de commande du noyau, il seront surchargés."
 
@@ -267,46 +267,46 @@ msgid "Antivirus..."
 msgstr "Antivirus..."
 
 #: src/gui_pyqt.py:75
-#: src/gui_pyqt.py:421
+#: src/gui_pyqt.py:430
 msgid "Antivirus"
 msgstr "Antivirus"
 
-#: src/gui_pyqt.py:343
+#: src/gui_pyqt.py:352
 msgid "About the %s launcher"
 msgstr "A propos du lanceur %s"
 
-#: src/gui_pyqt.py:344
+#: src/gui_pyqt.py:353
 msgid "Version "
 msgstr "Version "
 
-#: src/gui_pyqt.py:346
+#: src/gui_pyqt.py:355
 msgid "For more information, please visit"
 msgstr "Pour plus d'informations, visitez "
 
-#: src/gui_pyqt.py:366
-#: src/gui_pyqt.py:387
-#: src/linuxbackend.py:112
-#: src/linuxbackend.py:394
-#: src/osbackend.py:241
-#: src/osbackend.py:504
-#: src/ufo_dd.py:64
-#: src/ufo_dd.py:79
+#: src/gui_pyqt.py:375
+#: src/gui_pyqt.py:396
+#: src/linuxbackend.py:116
+#: src/linuxbackend.py:422
+#: src/osbackend.py:242
+#: src/osbackend.py:505
+#: src/ufo_dd.py:390
+#: src/ufo_dd.py:432
 msgid "Warning"
 msgstr "Attention"
 
-#: src/gui_pyqt.py:367
+#: src/gui_pyqt.py:376
 msgid ""
 "The %s virtual machine is currently running.\n"
 "Please shutdown the %s virtual machine before using the %s creator"
 msgstr "La machine virtuelle %s est en cours de fonctionnement. Veuillez éteindre la machine virtuelle %s avant d'utiliser %s Creator"
 
-#: src/gui_pyqt.py:369
-#: src/ufo_dd.py:82
+#: src/gui_pyqt.py:378
+#: src/ufo_dd.py:393
 #: src/updater.py:76
 msgid "Retry"
 msgstr "Réessayer"
 
-#: src/gui_pyqt.py:388
+#: src/gui_pyqt.py:397
 msgid ""
 "%s virtual machine is currently starting.\n"
 "You can not shutdown the machine during startup."
@@ -314,21 +314,21 @@ msgstr ""
 "La machine virtuelle %s est en cours de démarrage.\n"
 "Vous ne pouvez pas éteindre la machine pendant le démarrage."
 
-#: src/gui_pyqt.py:396
-#: src/gui_pyqt.py:2035
-#: src/gui_pyqt.py:2050
-#: src/gui_pyqt.py:2200
-#: src/osbackend.py:507
+#: src/gui_pyqt.py:405
+#: src/gui_pyqt.py:2068
+#: src/gui_pyqt.py:2083
+#: src/gui_pyqt.py:2233
 #: src/osbackend.py:508
+#: src/osbackend.py:509
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
 
-#: src/gui_pyqt.py:397
+#: src/gui_pyqt.py:406
 msgid "Dangerous"
 msgstr "Dangereux"
 
-#: src/gui_pyqt.py:398
+#: src/gui_pyqt.py:407
 msgid ""
 "The %s virtual machine is currently running.\n"
 "Forcing machine to shutdown is very DANGEROUS, the modification made during this session will be lost. You should use the \"Quit\" menu action to shutdown %s properly.\n"
@@ -340,103 +340,103 @@ msgstr ""
 "\n"
 "Voulez-vous vraiment forcer la fermeture de %s ?"
 
-#: src/gui_pyqt.py:422
+#: src/gui_pyqt.py:431
 msgid "No virus found"
 msgstr "Aucun virus trouvé"
 
-#: src/gui_pyqt.py:541
+#: src/gui_pyqt.py:551
 msgid "%s informations balloon"
 msgstr "Ballon d'informations %s"
 
-#: src/gui_pyqt.py:895
+#: src/gui_pyqt.py:905
 msgid "Free space available:"
 msgstr "Espace disque disponible:"
 
-#: src/gui_pyqt.py:896
+#: src/gui_pyqt.py:906
 msgid "Applications"
 msgstr "Applications"
 
-#: src/gui_pyqt.py:898
+#: src/gui_pyqt.py:908
 msgid "Public"
 msgstr "Public"
 
-#: src/gui_pyqt.py:1093
-#: src/gui_pyqt.py:1111
+#: src/gui_pyqt.py:1103
+#: src/gui_pyqt.py:1121
 msgid "Detach"
 msgstr "Détacher"
 
-#: src/gui_pyqt.py:1096
-#: src/gui_pyqt.py:1108
+#: src/gui_pyqt.py:1106
+#: src/gui_pyqt.py:1118
 msgid "Attach"
 msgstr "Attacher"
 
-#: src/gui_pyqt.py:1137
+#: src/gui_pyqt.py:1147
 msgid "Delete"
 msgstr "Supprimer"
 
-#: src/gui_pyqt.py:1139
+#: src/gui_pyqt.py:1149
 msgid "Ignore"
 msgstr "Ignorer"
 
-#: src/gui_pyqt.py:1188
+#: src/gui_pyqt.py:1198
 msgid "You already are authenticated"
 msgstr "Vous êtes déjà authentifié"
 
-#: src/gui_pyqt.py:1190
-#: src/gui_pyqt.py:1215
-#: src/gui_pyqt.py:1272
-#: src/gui_pyqt.py:1276
+#: src/gui_pyqt.py:1200
+#: src/gui_pyqt.py:1225
+#: src/gui_pyqt.py:1282
+#: src/gui_pyqt.py:1286
 msgid "Authenticate"
 msgstr "S'authentifier"
 
-#: src/gui_pyqt.py:1201
-#: src/gui_pyqt.py:1276
+#: src/gui_pyqt.py:1211
+#: src/gui_pyqt.py:1286
 msgid "Guest mode"
 msgstr "Mode invité"
 
-#: src/gui_pyqt.py:1234
+#: src/gui_pyqt.py:1244
 msgid "%s password:"
 msgstr "Mot de passe %s:"
 
-#: src/gui_pyqt.py:1240
-#: src/gui_pyqt.py:2245
+#: src/gui_pyqt.py:1250
+#: src/gui_pyqt.py:2278
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
-#: src/gui_pyqt.py:1384
-#: src/gui_pyqt.py:1437
-#: src/gui_pyqt.py:1465
-#: src/gui_pyqt.py:1502
-#: src/gui_pyqt.py:1570
-#: src/gui_pyqt.py:1669
+#: src/gui_pyqt.py:1424
+#: src/gui_pyqt.py:1470
+#: src/gui_pyqt.py:1498
+#: src/gui_pyqt.py:1535
+#: src/gui_pyqt.py:1603
+#: src/gui_pyqt.py:1702
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/gui_pyqt.py:1435
+#: src/gui_pyqt.py:1468
 msgid "Download"
 msgstr "Télécharger"
 
-#: src/gui_pyqt.py:1493
-#: src/launcher.py:176
-#: src/macbackend.py:276
-#: src/updater.py:194
+#: src/gui_pyqt.py:1526
+#: src/launcher.py:174
+#: src/macbackend.py:285
+#: src/updater.py:197
 msgid "Error"
 msgstr "Erreur"
 
-#: src/gui_pyqt.py:1494
+#: src/gui_pyqt.py:1527
 msgid "Could not write to file %s: %s."
 msgstr "Impossible d'écrire dans le fichier %s: %s."
 
-#: src/gui_pyqt.py:1509
-#: src/gui_pyqt.py:2157
+#: src/gui_pyqt.py:1542
+#: src/gui_pyqt.py:2190
 msgid "Downloading"
 msgstr "En cours de téléchargement"
 
-#: src/gui_pyqt.py:1510
+#: src/gui_pyqt.py:1543
 msgid "Downloading to %s"
 msgstr "Téléchargement de %s"
 
-#: src/gui_pyqt.py:1520
+#: src/gui_pyqt.py:1553
 msgid ""
 "Download canceled.\n"
 "Press 'Download' to retry"
@@ -444,108 +444,108 @@ msgstr ""
 "Téléchargement annulé.\n"
 "Cliquez sur 'Télécharger' pour recommencer"
 
-#: src/gui_pyqt.py:1552
+#: src/gui_pyqt.py:1585
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/gui_pyqt.py:1665
+#: src/gui_pyqt.py:1698
 msgid "Ok"
 msgstr "Ok"
 
-#: src/gui_pyqt.py:1674
+#: src/gui_pyqt.py:1707
 msgid "Defaults"
 msgstr "Réglages par défaut"
 
-#: src/gui_pyqt.py:1681
+#: src/gui_pyqt.py:1714
 msgid "%s settings"
 msgstr "Paramètres de %s"
 
-#: src/gui_pyqt.py:1852
-#: src/gui_pyqt.py:1939
-#: src/gui_pyqt.py:1980
+#: src/gui_pyqt.py:1885
+#: src/gui_pyqt.py:1972
+#: src/gui_pyqt.py:2013
 msgid "Auto"
 msgstr "Auto"
 
-#: src/gui_pyqt.py:2023
+#: src/gui_pyqt.py:2056
 msgid "Restart required"
 msgstr "Redémarrage requis"
 
-#: src/gui_pyqt.py:2024
+#: src/gui_pyqt.py:2057
 msgid "You need to restart U.F.O for this changes to be applied"
 msgstr ""
 "Le redémarrage de U.F.O est nécessaire pour que \n"
 "les changements soit pris en compte"
 
-#: src/gui_pyqt.py:2034
-#: src/gui_pyqt.py:2049
-#: src/gui_pyqt.py:2200
-#: src/osbackend.py:506
-#: src/ufo_dd.py:185
+#: src/gui_pyqt.py:2067
+#: src/gui_pyqt.py:2082
+#: src/gui_pyqt.py:2233
+#: src/osbackend.py:507
+#: src/ufo_dd.py:381
 #: src/updater.py:56
 #: src/updater.py:58
 msgid "Yes"
 msgstr "Oui"
 
-#: src/gui_pyqt.py:2036
+#: src/gui_pyqt.py:2069
 msgid "Would you cancel the following changes ?"
 msgstr "Voulez vous annuler les changements suivants ?"
 
-#: src/gui_pyqt.py:2051
+#: src/gui_pyqt.py:2084
 msgid "Would you reset all settings to default ?"
 msgstr "Voulez vous réinitialiser les réglages par défaut ?"
 
-#: src/gui_pyqt.py:2077
+#: src/gui_pyqt.py:2110
 msgid "Activated"
 msgstr "Activé"
 
-#: src/gui_pyqt.py:2079
+#: src/gui_pyqt.py:2112
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: src/gui_pyqt.py:2113
+#: src/gui_pyqt.py:2146
 msgid "Message title"
 msgstr "Titre du message"
 
-#: src/gui_pyqt.py:2115
+#: src/gui_pyqt.py:2148
 msgid "Message contents"
 msgstr "Contenu du message"
 
-#: src/gui_pyqt.py:2144
-#: src/launcher.py:152
+#: src/gui_pyqt.py:2177
+#: src/launcher.py:150
 msgid "Send debug reports"
 msgstr "Envoyer les rapports de débogage"
 
-#: src/gui_pyqt.py:2153
+#: src/gui_pyqt.py:2186
 msgid "Installing"
 msgstr "Installer"
 
-#: src/gui_pyqt.py:2153
-#: src/gui_pyqt.py:2158
-#: src/gui_pyqt.py:2172
+#: src/gui_pyqt.py:2186
+#: src/gui_pyqt.py:2191
+#: src/gui_pyqt.py:2205
 #: src/gui_zenity.py:164
-#: src/linuxbackend.py:311
+#: src/linuxbackend.py:339
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
-#: src/gui_pyqt.py:2159
+#: src/gui_pyqt.py:2192
 msgid "Download completed"
 msgstr "Téléchargement terminé"
 
-#: src/gui_pyqt.py:2172
+#: src/gui_pyqt.py:2205
 #: src/gui_zenity.py:164
 msgid "Operation in progress"
 msgstr "Opération en cours"
 
-#: src/gui_pyqt.py:2173
+#: src/gui_pyqt.py:2206
 #: src/gui_zenity.py:165
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:2238
+#: src/gui_pyqt.py:2271
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:2242
+#: src/gui_pyqt.py:2275
 #: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
@@ -554,21 +554,21 @@ msgstr "Mot de passe requis"
 msgid "Please enter your password:"
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/launcher.py:85
+#: src/launcher.py:81
 msgid "A %s Live CD is required to continue."
 msgstr "Un live %s est nécessaire pour continuer."
 
-#: src/launcher.py:86
+#: src/launcher.py:82
 msgid "Press 'Download' to start downloading the %s Live image."
 msgstr "Cliquez sur 'Télécharger' pour commencer le téléchargement de l'image %s."
 
-#: src/launcher.py:87
+#: src/launcher.py:83
 msgid "This operation can take up to a few hours, depending on your connection speed."
 msgstr ""
 "Cette opération peut prendre de quelques minutes à plusieurs heures\n"
 "suivant la vitesse de votre connexion."
 
-#: src/launcher.py:150
+#: src/launcher.py:148
 msgid ""
 "%s was run in debug mode.\n"
 "You can help fixing your problem by submitting the debug reports"
@@ -576,23 +576,23 @@ msgstr ""
 "%s a été exécuté en mode débogage. Vous pouvez aider à la correction de votre problème en soumettant\n"
 "les rapports de débogage."
 
-#: src/launcher.py:171
+#: src/launcher.py:169
 msgid "%s has encountered a minor error. Restarting the application may fix the problem."
 msgstr "%s a rencontré une erreur mineure. Redémarrer l'application peut régler le problème."
 
-#: src/launcher.py:174
+#: src/launcher.py:172
 msgid "%s has encountered a fatal error and will now be closed."
 msgstr "%s a rencontré une erreur fatale et doit fermer."
 
-#: src/launcher.py:178
+#: src/launcher.py:176
 msgid "You can help fixing this problem by submitting an error report"
 msgstr "Vous pouvez aider à la correction du problème en soumettant le rapport d'erreur."
 
-#: src/launcher.py:179
+#: src/launcher.py:177
 msgid "Send a report"
 msgstr "Envoyer le rapport d'erreur"
 
-#: src/linuxbackend.py:113
+#: src/linuxbackend.py:117
 msgid ""
 "Your Linux distribution is not officially supported by %s\n"
 "You may or may not encounter errors. Install PyQt4 and VirtualBox... and pray :)"
@@ -600,31 +600,31 @@ msgstr ""
 "Votre distribution Linux n'est pas officiellement supportée par %s.\n"
 "Il est possible que vous rencontriez des erreurs. Installer PyQt4 et VirtualBox... et croisez les doigts !"
 
-#: src/linuxbackend.py:242
+#: src/linuxbackend.py:270
 msgid "My Linux documents"
 msgstr "Mes documents Linux"
 
-#: src/linuxbackend.py:312
+#: src/linuxbackend.py:340
 msgid "Installing %s (required by %s)"
 msgstr "Installation de %s (composant requis par %s)"
 
-#: src/linuxbackend.py:313
+#: src/linuxbackend.py:341
 msgid "%s was successfully installed"
 msgstr "%s a été installé avec succès"
 
-#: src/linuxbackend.py:314
+#: src/linuxbackend.py:342
 msgid "An error occurred while installing %s"
 msgstr "Une erreur est survenue lors de l'installation de %s"
 
-#: src/linuxbackend.py:356
+#: src/linuxbackend.py:384
 msgid "Setting Yum Agorabox repository"
 msgstr "Configuration des dépôts Agorabox pour Yum"
 
-#: src/linuxbackend.py:361
+#: src/linuxbackend.py:389
 msgid "Installing VirtualBox Open Source edition. This can take a few minutes"
 msgstr "Installation de VirtualBox Open Source Edition. Ceci peut prendre plusieurs minutes"
 
-#: src/linuxbackend.py:391
+#: src/linuxbackend.py:419
 msgid ""
 "You are not running the latest installed version of the kernel.\n"
 "A reboot is required for %s to work."
@@ -632,7 +632,7 @@ msgstr ""
 "Votre système n'utilise pas la dernière version du noyau installée.\n"
 "Le redémarrage du système est nécessaire au fonctionnement de %s."
 
-#: src/linuxbackend.py:393
+#: src/linuxbackend.py:421
 msgid ""
 "An error has occurred during the installation of VirtualBox.\n"
 "Please install the latest %s and %s-devel packages."
@@ -640,23 +640,23 @@ msgstr ""
 "Une erreur est survenue lors de l'installation de VirtualBox.\n"
 "Veuillez installer les paquetages %s et %s-devel."
 
-#: src/linuxbackend.py:408
+#: src/linuxbackend.py:436
 msgid "Compiling VirtualBox drivers"
 msgstr "Compilation des pilotes VirtualBox"
 
-#: src/macbackend.py:157
+#: src/macbackend.py:159
 msgid "My Mac documents"
 msgstr "Mes documents Mac"
 
-#: src/macbackend.py:248
+#: src/macbackend.py:257
 msgid "Unable to unmount the volume "
 msgstr "Impossible de démonter le volume "
 
-#: src/macbackend.py:277
+#: src/macbackend.py:286
 msgid "Sorry, couldn't authenticate. Please check your password."
 msgstr "Impossible de s'authentifier. Veuillez vérifier votre mot de passe."
 
-#: src/osbackend.py:242
+#: src/osbackend.py:243
 msgid ""
 "The available memory on this computer is low.\n"
 "This can deeply impact the speed of the %s virtual machine.\n"
@@ -668,7 +668,7 @@ msgstr ""
 "\n"
 "Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances."
 
-#: src/osbackend.py:421
+#: src/osbackend.py:422
 msgid ""
 "%s is running in debug mode.\n"
 "Be aware to disable debug mode at the next session."
@@ -676,27 +676,27 @@ msgstr ""
 "%s est exécuté en mode débogage.\n"
 "Prenez garde à désactiver le mode débogage à la fin de la session."
 
-#: src/osbackend.py:505
+#: src/osbackend.py:506
 msgid "Could not find an %s key, try again ?"
 msgstr "Aucune clé %s n'a été trouvée, réessayer ?"
 
-#: src/osbackend.py:515
+#: src/osbackend.py:516
 msgid "No USB device found"
 msgstr "Aucune clé trouvée"
 
-#: src/osbackend.py:516
+#: src/osbackend.py:517
 msgid "Select the USB device you want to install %s on"
 msgstr "Sélectionnez le périphérique USB sur lequel vous voulez installer %s"
 
-#: src/osbackend.py:517
+#: src/osbackend.py:518
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/osbackend.py:559
+#: src/osbackend.py:560
 msgid "%s can not be launched"
 msgstr "%s n'a pas pu être démarré"
 
-#: src/osbackend.py:560
+#: src/osbackend.py:561
 msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
@@ -704,20 +704,20 @@ msgstr ""
 "Une instance de %s est en déjà cours d'exécution.\n"
 "Veuillez fermer toutes les fenêtres de %s et recommencez."
 
-#: src/osbackend.py:562
+#: src/osbackend.py:563
 msgid "Force to close"
 msgstr "Forcer à quitter"
 
-#: src/osbackend.py:569
+#: src/osbackend.py:570
 msgid "The VirtualBox binaries could not be found"
 msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 
-#: src/osbackend.py:570
+#: src/osbackend.py:571
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:574
-#: src/windowsbackend.py:423
+#: src/osbackend.py:575
+#: src/windowsbackend.py:500
 msgid ""
 "We have detected an existing VirtualBox installation on this computer.\n"
 "%s is not compatible with this version of VirtualBox, please remove this VirtualBox installation to run %s.\n"
@@ -729,48 +729,48 @@ msgstr ""
 "\n"
 "Notez que si vous voulez utiliser votre propre installation de VirtualBox, vous devez redémarrer votre ordinateur."
 
-#: src/osbackend.py:577
-#: src/windowsbackend.py:426
+#: src/osbackend.py:578
+#: src/windowsbackend.py:503
 msgid "VirtualBox detected"
 msgstr "VirtualBox détecté"
 
-#: src/osbackend.py:581
+#: src/osbackend.py:582
 msgid "We're sorry but your architecture (%s) is not yet supported."
 msgstr "Votre architecture (%s) n'est pas encore supportée. Nous sommes désolé et vous conseillons de suivre les mise à jour du logiciel."
 
-#: src/osbackend.py:582
+#: src/osbackend.py:583
 msgid "Unsupported architecture"
 msgstr "Architecture non supportée"
 
-#: src/osbackend.py:611
+#: src/osbackend.py:612
 msgid "Opening session..."
 msgstr "Ouverture de la session en cours..."
 
-#: src/osbackend.py:622
+#: src/osbackend.py:623
 msgid "%s: authenticating"
 msgstr "%s: en cours d'authentification"
 
-#: src/osbackend.py:636
+#: src/osbackend.py:637
 msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
-#: src/osbackend.py:649
+#: src/osbackend.py:650
 msgid "Removable devices management:"
 msgstr "Gestion des périphériques amovibles:"
 
-#: src/osbackend.py:650
+#: src/osbackend.py:651
 msgid "No removable devices found"
 msgstr "Aucun périphérique amovible trouvé"
 
-#: src/osbackend.py:662
+#: src/osbackend.py:663
 msgid "%s: running"
 msgstr "%s: en cours d'exécution"
 
-#: src/osbackend.py:671
+#: src/osbackend.py:672
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:672
+#: src/osbackend.py:673
 msgid ""
 "Please wait while %s is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
@@ -778,11 +778,11 @@ msgstr ""
 "%s est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:675
+#: src/osbackend.py:676
 msgid "Shutting down"
 msgstr "Arrêt en cours"
 
-#: src/osbackend.py:676
+#: src/osbackend.py:677
 msgid ""
 "Please wait while %s is shutting down,\n"
 "you absolutely must not unplug the key !"
@@ -790,43 +790,43 @@ msgstr ""
 "%s est en cours de fermeture,\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:680
+#: src/osbackend.py:681
 msgid "%s: recording changes"
 msgstr "%s: en cours de sauvegarde"
 
-#: src/osbackend.py:689
+#: src/osbackend.py:690
 msgid "Restart %s"
 msgstr "Redémarrage de %s"
 
-#: src/osbackend.py:690
+#: src/osbackend.py:691
 msgid "%s is rebooting"
 msgstr "%s est en cours de redémarrage"
 
-#: src/osbackend.py:730
+#: src/osbackend.py:731
 msgid "%s is starting"
 msgstr "Démarrage de %s"
 
-#: src/osbackend.py:732
+#: src/osbackend.py:733
 msgid "1<SUP>st</SUP> launch of %s"
 msgstr "1<SUP>er</SUP> démarrage de %s"
 
-#: src/osbackend.py:735
+#: src/osbackend.py:736
 msgid "%s is starting."
 msgstr "%s est en cours de démarrage"
 
-#: src/osbackend.py:739
+#: src/osbackend.py:740
 msgid "%s: starting"
 msgstr "%s: en cours de démarrage"
 
-#: src/osbackend.py:757
+#: src/osbackend.py:758
 msgid "%s: terminated"
 msgstr "%s: terminé"
 
-#: src/osbackend.py:759
+#: src/osbackend.py:760
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:760
+#: src/osbackend.py:761
 msgid "You can now safely eject your %s key."
 msgstr "Vous pouvez éjecter votre clé %s en toute sécurité."
 
@@ -834,23 +834,105 @@ msgstr "Vous pouvez éjecter votre clé %s en toute sécurité."
 msgid "Mobile PC Creator"
 msgstr "Mobile PC Creator"
 
-#: src/ufo_dd.py:43
-msgid "Please select a destination directory for the download"
-msgstr "Veuillez sélectionner un répertoire de destination pour le téléchargement"
+#: src/ufo_dd.py:130
+msgid "Public data"
+msgstr "Données publiques"
 
-#: src/ufo_dd.py:56
-msgid "Downloading UFO key image"
-msgstr "Téléchargement de la mise à jour"
+#: src/ufo_dd.py:131
+msgid "System data"
+msgstr "Système"
 
-#: src/ufo_dd.py:57
-msgid "Please wait while the image is being downloaded"
-msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
+#: src/ufo_dd.py:132
+msgid "Private data"
+msgstr "Données privées"
 
-#: src/ufo_dd.py:65
-msgid "The download has encountered a fatal error, please check your Internet connection and retry"
-msgstr "Le téléchargement a échoué. Veuillez vérifier votre connexion à Internet"
+#: src/ufo_dd.py:135
+msgid "(%d Mo)"
+msgstr "(%d Mo)"
 
-#: src/ufo_dd.py:80
+#: src/ufo_dd.py:290
+msgid "Introduction"
+msgstr "Introduction"
+
+#: src/ufo_dd.py:291
+msgid ""
+"Welcome to the %s Creator software.\n"
+"\n"
+"This tool allows you to put %s on your USB pen drive or your USB hard drive or to backup your %s system into a file.\n"
+"\n"
+"Please select what you want to do.\n"
+msgstr ""
+"Bienvenue dans %s Creator.\n"
+"\n"
+"Cet outil vous permet d'installer %s sur votre clé USB, ou de sauvegarder votre système %s dans un fichier.\n"
+"\n"
+"Veuillez sélectionner l'action de votre choix..\n"
+
+#: src/ufo_dd.py:299
+msgid "Install %s on a device"
+msgstr "Installer %s sur un périphérique"
+
+#: src/ufo_dd.py:300
+msgid "Backup my %s device"
+msgstr "Sauvegarder un périphérique %s"
+
+#: src/ufo_dd.py:333
+msgid "Missing source device"
+msgstr "Périphérique source manquant"
+
+#: src/ufo_dd.py:334
+msgid "Please select a source device"
+msgstr "Veuillez sélectionner un périphérique"
+
+#: src/ufo_dd.py:335
+msgid "Missing target image"
+msgstr "Aucun périphérique sélectionné"
+
+#: src/ufo_dd.py:336
+msgid "Please specify a target image"
+msgstr "Veuillez sélectionner un périphérique"
+
+#: src/ufo_dd.py:338
+msgid "Missing target device"
+msgstr "Aucun périphérique sélectionné"
+
+#: src/ufo_dd.py:339
+msgid "Please select a target device"
+msgstr "Veuillez sélectionner un périphérique"
+
+#: src/ufo_dd.py:340
+msgid "Missing source image"
+msgstr "Image source manquante"
+
+#: src/ufo_dd.py:341
+msgid "Please specify a source image or download one by clicking the 'Download it' button"
+msgstr "Veuillez spécifier une image source ou téléchargez en une en cliquant sur le bouton 'Télécharger la'"
+
+#: src/ufo_dd.py:361
+msgid "Insufficient disk space"
+msgstr "Espace disque insuffisant"
+
+#: src/ufo_dd.py:362
+msgid "The available size on your disk is insufficient. You need more than %d Mo free on your disk to backup your device.<br><br>Please free some space and retry."
+msgstr "L'espace disque disponible est insuffisant. %d Mo d'espace libre sont requis pour effectuer une sauvegarde de votre clé.<br><br>Veuillez libérer de l'espace et renouvellez l'opération."
+
+#: src/ufo_dd.py:370
+msgid "The selected target is too small"
+msgstr "La capacité du périphérique sélectionné est trop faible"
+
+#: src/ufo_dd.py:371
+msgid "The size of the source you have selected (%d Mo) is bigger than the size of the selected target (%d Mo).<br><br>Please select a source equal or smaller than the target."
+msgstr "La taille de la source sélectionnée (%d Mo) est plus grande que la taille du périphérique de destination (%d Mo). <br><br>Veuillez insérer une clé de capacité plus importante."
+
+#: src/ufo_dd.py:377
+msgid "All data on the device will be lost"
+msgstr "Toutes les données sur le périphérique seront perdues"
+
+#: src/ufo_dd.py:378
+msgid "To setup %s on your device, the device needs to be formatted. Are you sure you want to continue ?"
+msgstr "Pour installer %s sur votre clé usb, le périphérique a besoin d'être formaté. Êtes vous certain de vouloir continuer ? "
+
+#: src/ufo_dd.py:391
 msgid ""
 "\"</b> because it seems to be busy.\n"
 "Please close the program that is using it and retry."
@@ -858,108 +940,85 @@ msgstr ""
 "\"</b> car il semble être en cours d'utilisation.\n"
 "Veuillez fermer les programmes l'utilisant et réessayer."
 
-#: src/ufo_dd.py:80
+#: src/ufo_dd.py:391
 msgid "%s is not able to umount <b>\""
 msgstr "%s ne parvient pas à démonter <b>\""
 
-#: src/ufo_dd.py:119
-#: src/ufo_dd.py:126
+#: src/ufo_dd.py:412
+msgid "Please select a destination directory for the download"
+msgstr "Veuillez sélectionner un répertoire de destination pour le téléchargement"
+
+#: src/ufo_dd.py:425
+msgid "Downloading UFO key image"
+msgstr "Téléchargement de la mise à jour"
+
+#: src/ufo_dd.py:426
+msgid "Please wait while the image is being downloaded"
+msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
+
+#: src/ufo_dd.py:433
+msgid "The download has encountered a fatal error, please check your Internet connection and retry"
+msgstr "Le téléchargement a échoué. Veuillez vérifier votre connexion à Internet"
+
+#: src/ufo_dd.py:437
 msgid "Please select an UFO image"
 msgstr "Vous devez préciser une image source"
 
-#: src/ufo_dd.py:134
-msgid "Introduction"
-msgstr "Introduction"
+#: src/ufo_dd.py:452
+msgid "Please select the target file your key will be backed up into"
+msgstr "Veuillez spécifier l'emplacement du fichier de sauvegarde de votre clé"
 
-#: src/ufo_dd.py:135
-msgid ""
-"Welcome to the Mobile PC Creator software.\n"
-"\n"
-"This tool allows you to put G-Dium Mobile PC on your USB pen drive or your USB hard drive or to backup your G-Dium Mobile PC system into a file.\n"
-"\n"
-"Please select what you want to do.\n"
-msgstr ""
-"Bienvenue dans Mobile PC Creator.\n"
-"\n"
-"Cet outil vous permet d'installer G-Dium Mobile PC sur votre clé USB, ou de sauvegarder votre système G-Dium Mobile PC dans un fichier.\n"
-"\n"
-"Veuillez sélectionner l'action de votre choix..\n"
-
-#: src/ufo_dd.py:143
-msgid "Install G-Dium Mobile PC on a device"
-msgstr "Installer G-Dium Mobile PC sur un périphérique"
-
-#: src/ufo_dd.py:144
-msgid "Backup my G-Dium Mobile PC device"
-msgstr "Sauvegarder un périphérique G-Dium Mobile PC"
-
-#: src/ufo_dd.py:161
-msgid "Missing source image"
-msgstr "Image source manquante"
-
-#: src/ufo_dd.py:162
-msgid "Please specify a source image or download one by clicking the 'Download it' button"
-msgstr "Veuillez spécifier une image source ou téléchargez en une en cliquant sur le bouton 'Télécharger la'"
-
-#: src/ufo_dd.py:167
-msgid "Missing target device"
-msgstr "Aucun périphérique sélectionné"
-
-#: src/ufo_dd.py:167
-msgid "Please select a target device"
-msgstr "Veuillez sélectionner un périphérique"
-
-#: src/ufo_dd.py:175
-msgid "The selected device is too small"
-msgstr "La capacité du périphérique sélectionné est trop faible"
-
-#: src/ufo_dd.py:176
-msgid "The size of the source you have selected (%d Mo) is bigger than the size of the selected target device (%d Mo).<br><br>Please select a source equal or smaller than the target key."
-msgstr "La taille de la source sélectionnée (%d Mo) est plus grande que la taille du périphérique de destination (%d Mo). <br><br>Veuillez insérer une clé de capacité plus importante."
-
-#: src/ufo_dd.py:181
-msgid "All data on the device will be lost"
-msgstr "Toutes les données sur le périphérique seront perdues"
-
-#: src/ufo_dd.py:182
-msgid "To setup %s on your device, the device needs to be formatted. Are you sure you want to continue ?"
-msgstr "Pour installer %s sur votre clé usb, le périphérique a besoin d'être formaté. Êtes vous certain de vouloir continuer ? "
-
-#: src/ufo_dd.py:190
-msgid "Install G-Dium Mobile PC on my device"
-msgstr "Installer G-Dium Mobile PC sur mon périphérique amovible"
-
-#: src/ufo_dd.py:193
+#: src/ufo_dd.py:454
 msgid "If you already have downloaded an image please select its location, otherwise you can download the latest version from the Web"
 msgstr "Sélectionner une image si vous l'avez déjà téléchargée, sinon vous pouvez télécharger la dernière version depuis Internet. "
 
-#: src/ufo_dd.py:204
+#: src/ufo_dd.py:471
 msgid "Download it"
 msgstr "Télécharger le"
 
-#: src/ufo_dd.py:211
+#: src/ufo_dd.py:479
+msgid "Please choose the source device you want to backup:"
+msgstr "Veuillez sélectionner un périphérique:"
+
+#: src/ufo_dd.py:481
 msgid "Please choose the target device:"
 msgstr "Veuillez sélectionner un périphérique:"
 
-#: src/ufo_dd.py:224
+#: src/ufo_dd.py:483
+msgid "Refresh"
+msgstr "Rafraîchir"
+
+#: src/ufo_dd.py:500
+msgid "Partition sizes :<br>You can use the following default values or you can resize the partition sizes to meet your needs :<br><br>"
+msgstr "Tailles des partitions :<br>Vous pouvez utiliser les valeurs par défaut ou dimensionner les partitions suivants vos besoins :<br><br>"
+
+#: src/ufo_dd.py:536
+msgid "Backup my %s on hard disk"
+msgstr "Sauvegarder un périphérique %s"
+
+#: src/ufo_dd.py:538
+msgid "Install %s on my device"
+msgstr "Installer %s sur mon périphérique amovible"
+
+#: src/ufo_dd.py:562
 msgid "Generating"
 msgstr "En cours de génération"
 
-#: src/ufo_dd.py:227
-msgid "Please wait while G-Dium Mobile PC is beeing written to the device"
-msgstr "Veuillez patienter pendant l'installation de G-Dium Mobile PC sur le périphérique"
+#: src/ufo_dd.py:565
+msgid "Please wait while %s is beeing written to the device"
+msgstr "Veuillez patienter pendant l'installation de %s sur le périphérique"
 
-#: src/ufo_dd.py:240
+#: src/ufo_dd.py:578
 msgid "Operation successfull !"
 msgstr "Opération effectué avec succès !"
 
-#: src/ufo_dd.py:243
+#: src/ufo_dd.py:581
 msgid ""
-"G-Dium Mobile PC has been successfully installed on your device. You can use it right away.\n"
+"%s has been successfully installed on your device. You can use it right away.\n"
 "\n"
 "Enjoy !"
 msgstr ""
-"G-Dium Mobile PC a été installé avec succès. Vous pouvez l'utiliser dès maintenant.\n"
+"%s a été installé avec succès. Vous pouvez l'utiliser dès maintenant.\n"
 "\n"
 "Bonne utilisation !"
 
@@ -979,15 +1038,15 @@ msgstr "Espace disque insuffisant"
 msgid "The available space on your key is insufficient for the update.<br><br>Please remove more than <b>%s Mo</b> in the <b>\"Public\"</b> directory and retry."
 msgstr "La capacité du périphérique est insuffisante. La mise à jour ne peut être installée.<br><br>Veuillez libérer <b>%s Mo</b> dans le dossier <b>\"Public\"</b>  et relancez la mise à jour"
 
-#: src/updater.py:138
+#: src/updater.py:137
 msgid "Downloading update"
 msgstr "Téléchargement de la mise à jour"
 
-#: src/updater.py:139
+#: src/updater.py:138
 msgid "Please wait while the update is being downloaded"
 msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
 
-#: src/updater.py:140
+#: src/updater.py:139
 msgid ""
 "Your key will now be updated.<br>This operation can take a few minutes<br><br>\n"
 "<b>The USB key absolutely must not be unplugged during this process.</b>"
@@ -995,57 +1054,57 @@ msgstr ""
 "Votre clé va maintenant être mise à jour.<br>Cette opération peut prendre plusieurs minutes<br><br>\n"
 "<b>La clé ne doit être débranchée en aucun cas.</b>"
 
-#: src/updater.py:153
+#: src/updater.py:152
 msgid "Removing old files"
 msgstr "Suppression des fichiers obsolètes"
 
-#: src/updater.py:154
+#: src/updater.py:153
 msgid "Please wait while the old files are being removed"
 msgstr "Veuillez patienter pendant la suppression des fichiers obsolètes"
 
-#: src/updater.py:158
-#: src/updater.py:171
+#: src/updater.py:157
+#: src/updater.py:174
 msgid "Installing update"
 msgstr "Installation de la mise à jour"
 
-#: src/updater.py:159
-#: src/updater.py:172
+#: src/updater.py:158
+#: src/updater.py:175
 msgid "Please wait while the update is being installed.<br><br><b>The USB key absolutely must not be unplugged.</b>"
 msgstr "Veuillez patienter pendant l'installation de la mise à jour.<br><br><b>La clé ne doit être débranchée en aucun cas.</b>"
 
-#: src/updater.py:185
+#: src/updater.py:188
 msgid "Information"
 msgstr "Information"
 
-#: src/updater.py:186
+#: src/updater.py:189
 msgid "Your %s launcher is up to date (v"
 msgstr "Votre lanceur %s is à jour (v"
 
-#: src/updater.py:195
+#: src/updater.py:198
 msgid "An error occurred. You key could not be updated."
 msgstr "Une erreur est intervenue. Votre clé n'a pas pu être mise à jour."
 
-#: src/windowsbackend.py:375
+#: src/windowsbackend.py:420
 msgid "My Windows desktop"
 msgstr "Mon bureau Windows"
 
-#: src/windowsbackend.py:376
+#: src/windowsbackend.py:421
 msgid "My Windows documents"
 msgstr "Mes documents Windows"
 
-#: src/windowsbackend.py:413
+#: src/windowsbackend.py:490
 msgid "You don't have enough permissions to run %s."
 msgstr "Vous ne disposez pas des autorisations nécessaires pour lancer %s."
 
-#: src/windowsbackend.py:416
+#: src/windowsbackend.py:493
 msgid "Run %s as Administrator by right clicking on %s and select : 'Run as administrator'"
 msgstr "Relancer %s en tant qu'administrateur en faisant un clic droit sur %s et en choisissant 'Lancer en tant qu'administrateur'"
 
-#: src/windowsbackend.py:418
+#: src/windowsbackend.py:495
 msgid "Run %s as Administrator by right clicking on %s and select : 'Run as ...'"
 msgstr "Relancer %s en tant qu'administrateur en faisant un clic droit sur %s et en choisissant 'Lancer en tant que...'"
 
-#: src/windowsbackend.py:419
+#: src/windowsbackend.py:496
 msgid "Not enough permissions"
 msgstr "Permissions insuffisantes"
 
