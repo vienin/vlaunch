@@ -146,6 +146,8 @@ creator-dmg:
 	cp DS_Store.creator "/Volumes/${PRODUCT_NAME} creator/.DS_Store"
 	mkdir -p "/Volumes/${PRODUCT_NAME} creator/.data/settings"
 	cp settings.conf "/Volumes/${PRODUCT_NAME} creator/.data/settings"
+	mkdir -p "/Volumes/${PRODUCT_NAME} creator/.data/images"
+	cp ../graphics/reload.png "/Volumes/${PRODUCT_NAME} creator/.data/images"
 	cp -p -P -R "dist/${PRODUCT_NAME}.app" "dist/${PRODUCT_NAME} creator.app" "/Volumes/${PRODUCT_NAME} creator"
 	SetFile -a V "/Volumes/${PRODUCT_NAME} creator/${PRODUCT_NAME}.app"
 	cp -R ../graphics/creator.icns "/Volumes/${PRODUCT_NAME} creator/.VolumeIcon.icns"
