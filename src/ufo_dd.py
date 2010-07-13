@@ -297,7 +297,7 @@ class DDWindow(QtGui.QWizard):
 
         groupbox = QtGui.QGroupBox()
         self.create = QtGui.QRadioButton(_("Install %s on a device") % conf.PRODUCTNAME, groupbox)
-        self.backup = QtGui.QRadioButton(_("Backup my %s device") % PRODUCTNAME, groupbox)
+        self.backup = QtGui.QRadioButton(_("Backup my %s device") % conf.PRODUCTNAME, groupbox)
         self.create.setChecked(True)
 
         layout = QtGui.QVBoxLayout()
