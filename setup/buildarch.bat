@@ -40,7 +40,6 @@ goto begin
 goto end
 
 :begin
-
 set OLDPATH=%PATH%
 set PATH=%PATH%;%VBOX_BIN_PATH%;%QT_BIN_PATH%;%VBOX_BIN_PATH%\Microsoft.VC80.CRT;E:\Program Files\Microsoft Visual Studio 9.0\VC\redist\x86\Microsoft.VC90.CRT
 
@@ -72,17 +71,31 @@ mkdir %VBOX_BIN_DEST%\drivers
 mkdir %VBOX_BIN_DEST%\drivers\VBoxDrv
 move /Y %VBOX_BIN_DEST%\VBoxDrv.sys %VBOX_BIN_DEST%\drivers\VBoxDrv
 move /Y %VBOX_BIN_DEST%\launcher.exe %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
-@echo move /Y launcher-windows.exe "%PRODUCT_NAME%.exe"
-move /Y launcher-windows.exe "%PRODUCT_NAME%.exe"
 
+if "%1%" == "creator"  goto buildcreator 
+
+:sign
 %SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" %VBOX_BIN_DEST%\ufo.%PROCESSOR_ARCHITECTURE%.exe
 %SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" "%PRODUCT_NAME%.exe" "%PRODUCT_NAME% options.exe" "%PRODUCT_NAME% creator.exe"
+if "%1" == "creator"  %SIGNTOOL_PATH%\signtool sign /v /ac %VBOX_PATH%\tools\win.x86\cert\MSCV-GlobalSign.cer /s my /n "Agorabox" "..\%PRODUCT_NAME% creator.exe"
 
 C:\Python26\python.exe -c  "import glob, tarfile; tar = tarfile.open('..\windows.%PROCESSOR_ARCHITECTURE%.tgz', 'w:gz'); tar.add('.'); tar.close();"
 
 cd ..
-pscp.exe -i id_rsa.ppk windows.%PROCESSOR_ARCHITECTURE%.tgz bob@kickstart.alpha.agorabox.org:/var/www/html/private/virtualization
+pscp.exe windows.%PROCESSOR_ARCHITECTURE%.tgz "%PRODUCT_NAME% creator.exe" bob@kickstart.alpha.agorabox.org:/var/www/html/private/virtualization
 rem pscp.exe -i id_rsa.ppk dist\ufo.exe bob@kickstart.agorabox.org:/var/www/html/private/virtualization
+
+goto end
+
+:buildcreator
+@echo Building standalone creator
+del /F /Q /S messages.mo
+..\pygettext.py -o ..\..\locale\vlaunch\vlaunch.pot ..\..\locale\vlaunch ..\..\src
+for %%f in (..\..\locale\vlaunch\*.po) do "c:\Program Files\GnuWin32\bin\msgmerge.exe" --update "%%f" ..\..\locale\vlaunch\vlaunch.pot
+for %%f in (..\..\locale\vlaunch\*.po) do ..\msgfmt.py "%%f"
+"C:\Program Files\AutoIt3\Aut2Exe\Aut2exe.exe"  /in ../windows-creator-standalone.au3 /out "..\%PRODUCT_NAME% creator.exe" /icon ../../graphics/creator.ico
+
+goto sign
 
 :end
 
