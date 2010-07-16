@@ -191,11 +191,11 @@ class Conf(object):
     def __init__(self):
         self.handlers = []
         if sys.platform == "darwin" and getattr(sys, "frozen", None):
-            self.SCRIPT_PATH = unicode(path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO")))
+            self.SCRIPT_PATH = path.realpath(path.join(path.dirname(sys.argv[0]), "..", "MacOS", "UFO"))
         else:
-            self.SCRIPT_PATH = unicode(path.realpath(sys.argv[0]))
-        self.SCRIPT_NAME = unicode(path.basename(sys.argv[0]))
-        self.SCRIPT_DIR  = unicode(path.dirname(path.realpath(sys.argv[0])))
+            self.SCRIPT_PATH = path.realpath(sys.argv[0])
+        self.SCRIPT_NAME = path.basename(sys.argv[0])
+        self.SCRIPT_DIR  = path.dirname(path.realpath(sys.argv[0]))
 
         print "SCRIPT_PATH", self.SCRIPT_PATH
 
