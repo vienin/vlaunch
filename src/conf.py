@@ -241,15 +241,28 @@ class Conf(object):
         else:
             self.__dict__[attr] = value
 
+    def find_data_directory(self, initial_path):
+        try:
+            last_path = ""
+            current_path = initial_path
+            while current_path != last_path:
+                if os.path.exists(os.path.join(current_path, ".data")):
+                    return os.path.join(current_path, ".data")
+                last_path = current_path
+                current_path = os.path.dirname(current_path)
+        except:
+            return ""
+ 
     def load(self):
+        # Searching data directory
+        self.DATA_DIR = self.find_data_directory(self.SCRIPT_DIR)
+
+        # Searching settings file
         self.cp = ConfigParser()
         self.options = options
         try:
             files = [path.join(self.SCRIPT_DIR, "settings.conf"), # Used on Mac OS LiveCD
-                     path.join(self.SCRIPT_DIR, "..", "..", "..", "..", ".data", "settings", "settings.conf"), # Mac - Normal case
-                     path.join(self.SCRIPT_DIR, "..", "..", "..", ".data", "settings", "settings.conf"),
-                     path.join(self.SCRIPT_DIR, "..", "..", ".data", "settings", "settings.conf"), # Windows - Normal case
-                     path.join(self.SCRIPT_DIR, "..", ".data", "settings", "settings.conf")] # Linux - Normal case
+                     path.join(self.DATA_DIR, "settings", "settings.conf")] # Linux - Normal case
             if os.environ.has_key("_MEIPASS2"): # Used on Windows & Linux Live
                 files.append(path.join(os.environ["_MEIPASS2"], "settings.conf"))
             if options.update:
@@ -258,7 +271,8 @@ class Conf(object):
             self.conf_file = settings[0]
         except:
             print "Could not read settings.conf"
-            self.conf_file = ""
+            # This file will be created if needed
+            self.conf_file = path.join(self.SCRIPT_DIR, "settings.conf")
 
         print "Using configuration file:", self.conf_file
 
@@ -276,15 +290,13 @@ class Conf(object):
                 except NoOptionError, err:
                     setattr(self, key.upper(), default)
 
-        self.DATA_DIR = ""
+        # Adjusting paths as operating system type
         self.BIN = ""
-
         if sys.platform == "linux2":
             if self.LIVECD:
                 self.DATA_DIR = os.environ["_MEIPASS2"]
                 # no BIN as the livecd always provides a settings.conf
             else:
-                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(self.SCRIPT_PATH)), ".data")
                 vbox_path = utils.call(["which", "VirtualBox"], output=True, log=False)[1].strip()
                 if not path.lexists(vbox_path): self.BIN = ""
                 else: self.BIN = path.dirname(vbox_path)
@@ -292,8 +304,6 @@ class Conf(object):
         elif sys.platform == "darwin":
             if self.LIVECD:
                 self.DATA_DIR = path.join(path.dirname(self.SCRIPT_PATH), "..", "Resources", ".data")
-            else:
-                if not self.DATA_DIR: self.DATA_DIR = path.join(path.dirname(path.dirname(path.dirname(path.dirname(path.dirname(self.SCRIPT_PATH))))), ".data")
             self.BIN = path.join(self.SCRIPT_DIR, "..", "Resources", "VirtualBox.app", "Contents", "MacOS")
 
         else:
@@ -301,9 +311,14 @@ class Conf(object):
                 self.DATA_DIR = os.environ["_MEIPASS2"]
                 # no BIN as the livecd always provides a settings.conf
             else:
-                if not self.DATA_DIR: self.DATA_DIR = path.join(self.SCRIPT_DIR, "..", "..", ".data")
                 self.BIN = path.join(self.SCRIPT_DIR)
 
+        if not self.DATA_DIR:
+            print "Could not find data directory, creating one at " + str(os.path.join(self.SCRIPT_DIR, ".data"))
+            os.mkdir(os.path.join(self.SCRIPT_DIR, ".data"))
+            self.DATA_DIR = os.path.join(self.SCRIPT_DIR, ".data")
+
+        # Searching locale files
         try:
             gettext.translation('vlaunch', path.join(self.DATA_DIR, "locale"), languages=[self.LANGUAGE]).install(unicode=True)
         except:

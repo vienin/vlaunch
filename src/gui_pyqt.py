@@ -2049,6 +2049,8 @@ class Settings(QtGui.QDialog):
                 need_reboot = False
                 for setting in self.registred_selections.keys():
                     need_reboot |= self.registred_selections[setting].get("reboot", False)
+                    if not cp.has_section(self.registred_selections[setting]['sectid']):
+                        cp.add_section(self.registred_selections[setting]['sectid'])
                     cp.set(self.registred_selections[setting]['sectid'], 
                            self.registred_selections[setting]['confid'].upper(),
                            self.file_writable(self.registred_selections[setting]['value']))
