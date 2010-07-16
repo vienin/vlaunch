@@ -148,6 +148,8 @@ creator-dmg:
 	cp settings.conf "/Volumes/${PRODUCT_NAME} creator/.data/settings"
 	mkdir -p "/Volumes/${PRODUCT_NAME} creator/.data/images"
 	cp ../graphics/reload.png "/Volumes/${PRODUCT_NAME} creator/.data/images"
+	mkdir -p "/Volumes/${PRODUCT_NAME} creator/.data/locale/fr/LC_MESSAGES"
+	cp vlaunch.mo "/Volumes/${PRODUCT_NAME} creator/.data/locale/fr/LC_MESSAGES"
 	cp -p -P -R "dist/${PRODUCT_NAME}.app" "dist/${PRODUCT_NAME} creator.app" "/Volumes/${PRODUCT_NAME} creator"
 	SetFile -a V "/Volumes/${PRODUCT_NAME} creator/${PRODUCT_NAME}.app"
 	cp -R ../graphics/creator.icns "/Volumes/${PRODUCT_NAME} creator/.VolumeIcon.icns"
