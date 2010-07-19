@@ -423,7 +423,7 @@ class DDWindow(QtGui.QWizard):
                 logging.debug("Downloading " + conf.IMGURL + " to " + _self.dest_file)
                 retcode  = gui.download_file(conf.IMGURL,
                                              _self.dest_file,
-                                             title=_("Downloading UFO key image"),
+                                             title=_("Downloading %s key image") % (conf.PRODUCTNAME,),
                                              msg=_("Please wait while the image is being downloaded"),
                                              autoclose = True, autostart = True)
                 if not retcode:
@@ -435,7 +435,7 @@ class DDWindow(QtGui.QWizard):
                 _self.dl_mutex = False
 
             def on_file_select(_self):
-                filedialog = QtGui.QFileDialog(self, _("Please select an UFO image"), os.getcwd())
+                filedialog = QtGui.QFileDialog(self, _("Please select an %s image") % (conf.PRODUCTNAME,), os.getcwd())
                 if self.reverse:
                     filedialog.setDefaultSuffix("img")
                 if filedialog.exec_() != QtGui.QDialog.Accepted:
