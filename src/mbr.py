@@ -12,7 +12,6 @@ class MBR:
 
         for x in xrange(4):
             pt = struct.unpack("BBBBBBBBii", data[x * 16 + 0x01BE : x * 16 + 16 +0x01BE])
-            print pt[6], pt[7], pt[6] & 0x3F, pt[6] & 0xC0, pt[7] | (pt[6] & 0xC0)
             self.partitions.append( { "status" : pt[0],
                                       "start_head" : pt[1],
                                       "start_sector" : pt[2] & 0x3F,
@@ -57,7 +56,7 @@ class MBR:
             if not size:
                 cylinders = c - offset
             else:
-                cylinders = size / cyl_units - 1
+                cylinders = size / cyl_units
                 if size % cyl_units:
                     cylinders += 1
             sectors = cylinders * cyl_units / BLOCK_SIZE
