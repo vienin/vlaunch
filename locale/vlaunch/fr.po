@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-07-19 13:18+CEST\n"
-"PO-Revision-Date: 2010-07-19 13:18+0100\n"
+"POT-Creation-Date: 2010-07-20 15:17+CEST\n"
+"PO-Revision-Date: 2010-07-20 15:21+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
@@ -317,7 +317,7 @@ msgstr ""
 #: src/gui_pyqt.py:405
 #: src/gui_pyqt.py:2070
 #: src/gui_pyqt.py:2085
-#: src/gui_pyqt.py:2237
+#: src/gui_pyqt.py:2270
 #: src/osbackend.py:508
 #: src/osbackend.py:509
 #: src/updater.py:56
@@ -399,7 +399,7 @@ msgid "%s password:"
 msgstr "Mot de passe %s:"
 
 #: src/gui_pyqt.py:1250
-#: src/gui_pyqt.py:2282
+#: src/gui_pyqt.py:2315
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
@@ -428,7 +428,7 @@ msgid "Could not write to file %s: %s."
 msgstr "Impossible d'écrire dans le fichier %s: %s."
 
 #: src/gui_pyqt.py:1542
-#: src/gui_pyqt.py:2192
+#: src/gui_pyqt.py:2225
 msgid "Downloading"
 msgstr "En cours de téléchargement"
 
@@ -478,7 +478,7 @@ msgstr ""
 
 #: src/gui_pyqt.py:2069
 #: src/gui_pyqt.py:2084
-#: src/gui_pyqt.py:2236
+#: src/gui_pyqt.py:2269
 #: src/osbackend.py:507
 #: src/ufo_dd.py:382
 #: src/updater.py:56
@@ -510,42 +510,66 @@ msgstr "Titre du message"
 msgid "Message contents"
 msgstr "Contenu du message"
 
-#: src/gui_pyqt.py:2179
+#: src/gui_pyqt.py:2160
+msgid "Type a short description of your problem"
+msgstr "Décrivez brièvement votre problème"
+
+#: src/gui_pyqt.py:2171
+msgid "Description is empty"
+msgstr "La description est vide"
+
+#: src/gui_pyqt.py:2172
+msgid "Please describe your problem in the dedicated text area."
+msgstr "Vous devez décrire votre problème dans la zone de saisie prévue à cet effet."
+
+#: src/gui_pyqt.py:2185
+msgid "No internet connection found"
+msgstr "Aucune connexion internet détectée"
+
+#: src/gui_pyqt.py:2186
+msgid "You need an internet connection to submit you bug report."
+msgstr "La soumission des rapports de débogage nécessite une connexion internet."
+
+#: src/gui_pyqt.py:2199
 #: src/launcher.py:150
 msgid "Send debug reports"
 msgstr "Envoyer les rapports de débogage"
 
-#: src/gui_pyqt.py:2188
+#: src/gui_pyqt.py:2210
+msgid "If you have encountered a problem while using %s, you should send your logging reports to help us to fix the bug."
+msgstr "Si vous avez rencontré un problème en utilisant %s, vous pouvez soumettre un rapport de bogue pour accélérer sa correction."
+
+#: src/gui_pyqt.py:2221
 msgid "Installing"
 msgstr "Installer"
 
-#: src/gui_pyqt.py:2188
-#: src/gui_pyqt.py:2193
-#: src/gui_pyqt.py:2207
+#: src/gui_pyqt.py:2221
+#: src/gui_pyqt.py:2226
+#: src/gui_pyqt.py:2240
 #: src/gui_zenity.py:164
 #: src/linuxbackend.py:339
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
-#: src/gui_pyqt.py:2194
+#: src/gui_pyqt.py:2227
 msgid "Download completed"
 msgstr "Téléchargement terminé"
 
-#: src/gui_pyqt.py:2207
+#: src/gui_pyqt.py:2240
 #: src/gui_zenity.py:164
 msgid "Operation in progress"
 msgstr "Opération en cours"
 
-#: src/gui_pyqt.py:2208
+#: src/gui_pyqt.py:2241
 #: src/gui_zenity.py:165
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:2275
+#: src/gui_pyqt.py:2308
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:2279
+#: src/gui_pyqt.py:2312
 #: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
