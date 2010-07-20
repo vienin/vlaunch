@@ -2033,7 +2033,7 @@ class Settings(QtGui.QDialog):
                 customid = control.conf_infos['confid']
             if self.custom_handlers.get(customid):
                 self.custom_handlers[customid]['function'](str(color.name()))
-        
+
     def on_validation(self):
         if len(self.registred_selections) > 0:
             # yes = _("Yes")
@@ -2148,6 +2148,7 @@ class Settings(QtGui.QDialog):
         self.balloon_preview = BalloonMessage(title=_("Message title"),
                                               fake= True,
                                               msg=_("Message contents"))
+        self.balloon_preview.setMaximumWidth(400)
         val_layout.addWidget(self.balloon_preview)
         val_layout.addSpacing(30)
         custom_layout.addSpacing(15)
@@ -2156,30 +2157,62 @@ class Settings(QtGui.QDialog):
         return custom_layout
 
     def create_debug_custom_layout(self):
+        desc = _("Type a short description of your problem")
+
         def send_debug_reports():
             control = self.sender()
-            control.setEnabled(False)
+
             import urllib
             report_files = glob.glob(os.path.join(os.path.dirname(conf.LOGFILE ), "*"))
 
             if conf.USER: user = conf.USER
             else: user = "None"
-            reports = "REPORT SENDED MANUALLY BY USER (" + user + ")"
+            if control.text_edit.toPlainText() == desc:
+                dialog_info(_("Description is empty"),
+                            _("Please describe your problem in the dedicated text area."))
+                return
+
+            reports = "Report sended manualy by user (" + user + ")\n\n"
+            reports += control.text_edit.toPlainText() + "\n"
             for file in report_files:
                 reports += "\n" + ("_" * len(file)) + "\n" + file + "\n\n"
                 reports += open(file, 'r').read()
-            params = urllib.urlencode({'report': reports})
+            params = urllib.urlencode({'report': str(reports.toUtf8())})
             try:
                 urllib.urlopen(conf.REPORTURL, params)
+                control.setEnabled(False)
             except:
-                pass
+                dialog_info(_("No internet connection found"),
+                            _("You need an internet connection to submit you bug report."),
+                            error=True)
 
-        custom_layout = QtGui.QHBoxLayout()
-        custom_layout.addSpacing(30)
+        def clear_desc_area():
+            control = self.sender()
+            if control.toPlainText() == desc:
+                control.setHtml("&nbsp;")
+                control.selectAll()
+
+        custom_layout = QtGui.QVBoxLayout()
+        custom_layout.addSpacing(15)
+        hlayout = QtGui.QHBoxLayout()
+        vlayout = QtGui.QVBoxLayout()
         send_button = QtGui.QPushButton(_("Send debug reports"))
         self.connect(send_button, QtCore.SIGNAL('clicked()'), send_debug_reports)
-        custom_layout.addWidget(send_button)
-        custom_layout.addSpacing(30)
+        send_button.text_edit = QtGui.QTextEdit("<i><font color=#B09F91>" + desc + "</font></i>")
+        self.connect(send_button.text_edit, QtCore.SIGNAL('cursorPositionChanged()'), clear_desc_area)
+        send_button.text_edit.setMaximumHeight(70)
+        vlayout.addWidget(send_button.text_edit)
+        vlayout.addWidget(send_button)
+        hlayout.addSpacing(30)
+        hlayout.addLayout(vlayout)
+        hlayout.addSpacing(30)
+
+        send_button.text_label = QtGui.QLabel(_("If you have encountered a problem while using %s, "
+                                                "you should send your logging reports to help us to "
+                                                "fix the bug.") % conf.PRODUCTNAME)
+        send_button.text_label.setWordWrap(True)
+        custom_layout.addWidget(send_button.text_label)
+        custom_layout.addLayout(hlayout)
 
         return custom_layout
 
