@@ -62,23 +62,24 @@ class DDWindow(QtGui.QWizard):
                          args=(unicode(self.source), unicode(self.target)),
                          kwargs=kwargs).start()
 
-    def prepare(self):
+    @staticmethod
+    def prepare(backend):
         self_copy  = False
-        need_admin = not self.backend.is_admin()
+        need_admin = not backend.is_admin()
 
-        usbs = self.backend.get_usb_devices()
+        usbs = backend.get_usb_devices()
         for usb in usbs:
             if conf.SCRIPT_PATH.startswith(usb[0]):
                 self_copy = True
 
         if self_copy or need_admin:
             if self_copy:
-                cmd = [ self.backend.prepare_self_copy(), "--dd" ]
+                cmd = [ backend.prepare_self_copy(), "--dd" ]
             else:
-                cmd = self.backend.get_respawn_command() + [ "--dd" ]
+                cmd = backend.get_respawn_command() + [ "--dd" ]
 
             logging.debug("Launching creator : " + " ".join(cmd))
-            self.backend.execv(cmd, root=need_admin)
+            backend.execv(cmd, root=need_admin)
             sys.exit(0)
 
     def repart(self, device, partitions, device_size, c, h, s):
@@ -422,7 +423,7 @@ class DDWindow(QtGui.QWizard):
                 logging.debug("Downloading " + conf.IMGURL + " to " + _self.dest_file)
                 retcode  = gui.download_file(conf.IMGURL,
                                              _self.dest_file,
-                                             title=_("Downloading UFO key image"),
+                                             title=_("Downloading %s key image") % (conf.PRODUCTNAME,),
                                              msg=_("Please wait while the image is being downloaded"),
                                              autoclose = True, autostart = True)
                 if not retcode:
@@ -434,7 +435,7 @@ class DDWindow(QtGui.QWizard):
                 _self.dl_mutex = False
 
             def on_file_select(_self):
-                filedialog = QtGui.QFileDialog(self, _("Please select an UFO image"), os.getcwd())
+                filedialog = QtGui.QFileDialog(self, _("Please select an %s image") % (conf.PRODUCTNAME,), os.getcwd())
                 if self.reverse:
                     filedialog.setDefaultSuffix("img")
                 if filedialog.exec_() != QtGui.QDialog.Accepted:

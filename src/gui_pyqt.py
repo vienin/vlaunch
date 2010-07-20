@@ -2056,7 +2056,7 @@ class Settings(QtGui.QDialog):
                            self.file_writable(self.registred_selections[setting]['value']))
                 if (not self.no_reboot) and need_reboot:
                     dialog_info(title=_("Restart required"),
-                                msg=_("You need to restart U.F.O for this changes to be applied"))
+                                msg=_("You need to restart %s for this changes to be applied") % (conf.PRODUCTNAME,))
                 cp.write(open(conf.conf_file, "w"))
                 conf.reload()
 

@@ -12,7 +12,6 @@ class MBR:
 
         for x in xrange(4):
             pt = struct.unpack("BBBBBBBBii", data[x * 16 + 0x01BE : x * 16 + 16 +0x01BE])
-            print pt[6], pt[7], pt[6] & 0x3F, pt[6] & 0xC0, pt[7] | (pt[6] & 0xC0)
             self.partitions.append( { "status" : pt[0],
                                       "start_head" : pt[1],
                                       "start_sector" : pt[2] & 0x3F,
@@ -48,18 +47,17 @@ class MBR:
         cyl_units = h * s * BLOCK_SIZE
         totalsize = cyl_units
         offset = 0
-        lba = 1
-        start_head = 0
-        start_sector = 2
+        lba = s
         self.partitions = []
         for n, part in enumerate(partitions):
             type, size, bootable = part["type"], part["size"], part["bootable"]
             if not size:
                 cylinders = c - offset
             else:
-                cylinders = size / cyl_units - 1
+                cylinders = size / cyl_units
                 if size % cyl_units:
                     cylinders += 1
+            cylinders = min(cylinders, c - offset)
             sectors = cylinders * cyl_units / BLOCK_SIZE
             if bootable:
                 status = 0x80
@@ -68,31 +66,30 @@ class MBR:
             if n == 0:
                 part = {
                      "status" : status,
-                     "start_head" : start_head,
-                     "start_sector" : start_sector,
-                     "start_cylinder" : offset,
+                     "start_head" : 1,
+                     "start_sector" : 1,
+                     "start_cylinder" : 0,
                      "end_head" : h - 1,
                      "end_sector" : s,
                      "end_cylinder" : offset + cylinders - 1,
                      "type" : type,
-                     "lba" : lba,
+                     "lba" : offset * h * s + s,
                      "sectors" : sectors - lba,
                 }
                 lba += sectors - lba
             else:
                 part = {
                      "status" : status,
-                     "start_head" : start_head,
+                     "start_head" : 0,
                      "start_sector" : 1,
                      "start_cylinder" : offset,
                      "end_head" : h - 1,
                      "end_sector" : s,
                      "end_cylinder" : offset + cylinders - 1, 
                      "type" : type,
-                     "lba" : lba,
+                     "lba" : offset * h * s,
                      "sectors" : sectors,
                 }
-                lba += sectors
             offset += cylinders
             self.partitions.append(part)
     

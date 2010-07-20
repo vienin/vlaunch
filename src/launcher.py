@@ -127,8 +127,8 @@ def main():
         if conf.options.dd:
             backend.checking_pyqt()
             from ufo_dd import DDWindow
+            DDWindow.prepare(backend)
             creator = DDWindow(backend, conf.options.relaunch)
-            creator.prepare()
             creator.show()
             creator.exec_()
             sys.exit(1)

@@ -147,6 +147,7 @@ rm -rf $RPM_BUILD_ROOT
 %{TARGET_PATH}/.data/images/ignore_virus.png
 %{TARGET_PATH}/.data/images/delete_virus.png
 %{TARGET_PATH}/.data/images/proxy.png
+%{TARGET_PATH}/.data/images/reload.png
 
 %{TARGET_PATH}/.data/launcher.filelist
 %{TARGET_PATH}/.data/locale/fr/LC_MESSAGES/vlaunch.mo
