@@ -601,7 +601,7 @@ class OSBackend(object):
 
         # Disk space management
         elif os.path.dirname(name) == "/UFO/DiskSpace":
-            gui.app.update_disk_space_progress(os.path.basename(name), newValue)
+            gui.app.update_available_spaces(os.path.basename(name), newValue)
 
         # Credentials management
         elif os.path.dirname(name) == "/UFO/Credentials":
@@ -646,6 +646,13 @@ class OSBackend(object):
             if newValue == "LOGGED_IN":
                 # Start usb check loop
                 gui.app.destroy_temporary_balloon()
+                gui.app.add_persistent_balloon_section(key='availablespace',
+                                                       msg=_("Free space available:"),
+                                                       default=_("Information currently unreachable"),
+                                                       progress=False,
+                                                       smartdict=gui.app.available_spaces,
+                                                       hlayout={ 'type' : gui.AvailableSpaceLayout,
+                                                                 'args' : ()})
                 gui.app.add_persistent_balloon_section(key='usb',
                                                        msg=_("Removable devices management:"),
                                                        default=_("No removable devices found"),
@@ -664,6 +671,7 @@ class OSBackend(object):
                 
             elif newValue == "CLOSING_SESSION":
                 gui.app.destroy_persistent_balloon_section('usb')
+                gui.app.destroy_persistent_balloon_section('availablespace')
 
                 if conf.AUTOMINIMIZE:
                     gui.app.minimize_window()
