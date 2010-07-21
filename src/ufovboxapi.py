@@ -658,13 +658,21 @@ class VBoxMachine():
         return 0
 
     def set_guest_property(self, key, value, save=False):
-        self.machine.setGuestProperty(key, value, '')
-        if save:
-            self.machine.saveSettings()
-        return 0
+        try:
+            self.machine.setGuestProperty(key, value, '')
+            if save:
+                self.machine.saveSettings()
+            return 0
+        except Exception, e:
+            logging.debug("Exception while setGuestProperty: " + str(e))
+            return 1
     
     def get_guest_property(self, key):
-        return self.machine.getGuestPropertyValue(key)
+        try:
+            return self.machine.getGuestPropertyValue(key)
+        except Exception, e:
+            logging.debug("Exception while getGuestPropertyValue: " + str(e))
+            return ""
 
     def set_extra_data(self, key, value, save=False):
         self.machine.setExtraData(key, value)
