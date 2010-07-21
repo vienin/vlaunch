@@ -1277,6 +1277,8 @@ class CredentialsLayout(QtGui.QVBoxLayout):
         self.add_expdand_contents(self, self.remember)
 
         self.password.grabKeyboard()
+        self.password.setFocus()
+        self.password.end(True)
         self.expanded = True
 
     def collapse(self):
