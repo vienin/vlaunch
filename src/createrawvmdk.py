@@ -56,6 +56,7 @@ def createrawvmdk (target_path, device_name, device_size, partitions = {}, relat
     # write vmdk file
     device_size = int(device_size)
     cylinders = min(device_size / 16 / 63, 16383)
+    mbr_block_count = 63
 
     vmdk_file = open(target_path, 'a')
     
@@ -73,12 +74,12 @@ def createrawvmdk (target_path, device_name, device_size, partitions = {}, relat
         partition_table_target_path = target_path[ 0 : len(target_path) - 5] + "-pt.vmdk"
 
         # copy partition table
-        open(partition_table_target_path, "ab").write(open(device_name, "rb").read(512))
+        open(partition_table_target_path, "ab").write(open(device_name, "rb").read(512 * mbr_block_count))
 
         # iterate on device partitions
-        vmdk_file.write("RW 1 FLAT \"" + os.path.basename(partition_table_target_path) + "\"\n")
+        vmdk_file.write("RW " + str(mbr_block_count) + " FLAT \"" + os.path.basename(partition_table_target_path) + "\"\n")
         current_part = 1
-        incremental_size = 1
+        incremental_size = mbr_block_count
         while current_part <= len(partitions):
             part_infos = partitions.get(current_part)
 
