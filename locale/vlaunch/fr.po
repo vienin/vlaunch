@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-07-19 13:18+CEST\n"
-"PO-Revision-Date: 2010-07-19 13:18+0100\n"
+"POT-Creation-Date: 2010-07-21 14:42+CEST\n"
+"PO-Revision-Date: 2010-07-21 14:44+0100\n"
 "Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
@@ -228,63 +228,63 @@ msgstr "Ligne de commande du noyau"
 msgid "DANGEROUS. Set the kernel command line parameters. If the following parameters already exist on the kernel command line, they will be overwritten."
 msgstr "DANGEREUX. Défini les paramètres de la ligne de commande du noyau. Si les paramètres suivants existe déjà sur la ligne de commande du noyau, il seront surchargés."
 
-#: src/gui_pyqt.py:59
+#: src/gui_pyqt.py:61
 msgid "About"
 msgstr "A propos"
 
-#: src/gui_pyqt.py:60
+#: src/gui_pyqt.py:62
 msgid "Get informations about %s"
 msgstr "Obtenir des informations à propos de %s"
 
-#: src/gui_pyqt.py:62
+#: src/gui_pyqt.py:64
 msgid "Settings..."
 msgstr "Paramètres..."
 
-#: src/gui_pyqt.py:63
+#: src/gui_pyqt.py:65
 msgid "Configure the %s launcher"
 msgstr "Configurez le lanceur %s"
 
-#: src/gui_pyqt.py:65
+#: src/gui_pyqt.py:67
 msgid "Creator..."
 msgstr "Creator..."
 
-#: src/gui_pyqt.py:66
+#: src/gui_pyqt.py:68
 msgid "Create your %s key"
 msgstr "Créer votre clé %s"
 
-#: src/gui_pyqt.py:68
-#: src/gui_pyqt.py:69
+#: src/gui_pyqt.py:70
+#: src/gui_pyqt.py:71
 msgid "Quit"
 msgstr "Quitter"
 
-#: src/gui_pyqt.py:71
-#: src/gui_pyqt.py:72
+#: src/gui_pyqt.py:73
+#: src/gui_pyqt.py:74
 msgid "Force to quit"
 msgstr "Forcer à quitter"
 
-#: src/gui_pyqt.py:74
+#: src/gui_pyqt.py:76
 msgid "Antivirus..."
 msgstr "Antivirus..."
 
-#: src/gui_pyqt.py:75
-#: src/gui_pyqt.py:430
+#: src/gui_pyqt.py:77
+#: src/gui_pyqt.py:428
 msgid "Antivirus"
 msgstr "Antivirus"
 
-#: src/gui_pyqt.py:352
+#: src/gui_pyqt.py:350
 msgid "About the %s launcher"
 msgstr "A propos du lanceur %s"
 
-#: src/gui_pyqt.py:353
+#: src/gui_pyqt.py:351
 msgid "Version "
 msgstr "Version "
 
-#: src/gui_pyqt.py:355
+#: src/gui_pyqt.py:353
 msgid "For more information, please visit"
 msgstr "Pour plus d'informations, visitez "
 
-#: src/gui_pyqt.py:375
-#: src/gui_pyqt.py:396
+#: src/gui_pyqt.py:373
+#: src/gui_pyqt.py:394
 #: src/linuxbackend.py:116
 #: src/linuxbackend.py:422
 #: src/osbackend.py:242
@@ -294,19 +294,19 @@ msgstr "Pour plus d'informations, visitez "
 msgid "Warning"
 msgstr "Attention"
 
-#: src/gui_pyqt.py:376
+#: src/gui_pyqt.py:374
 msgid ""
 "The %s virtual machine is currently running.\n"
 "Please shutdown the %s virtual machine before using the %s creator"
 msgstr "La machine virtuelle %s est en cours de fonctionnement. Veuillez éteindre la machine virtuelle %s avant d'utiliser %s Creator"
 
-#: src/gui_pyqt.py:378
+#: src/gui_pyqt.py:376
 #: src/ufo_dd.py:394
 #: src/updater.py:76
 msgid "Retry"
 msgstr "Réessayer"
 
-#: src/gui_pyqt.py:397
+#: src/gui_pyqt.py:395
 msgid ""
 "%s virtual machine is currently starting.\n"
 "You can not shutdown the machine during startup."
@@ -314,21 +314,21 @@ msgstr ""
 "La machine virtuelle %s est en cours de démarrage.\n"
 "Vous ne pouvez pas éteindre la machine pendant le démarrage."
 
-#: src/gui_pyqt.py:405
-#: src/gui_pyqt.py:2070
-#: src/gui_pyqt.py:2085
-#: src/gui_pyqt.py:2237
+#: src/gui_pyqt.py:403
+#: src/gui_pyqt.py:2088
+#: src/gui_pyqt.py:2103
+#: src/gui_pyqt.py:2288
 #: src/osbackend.py:508
 #: src/osbackend.py:509
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
 
-#: src/gui_pyqt.py:406
+#: src/gui_pyqt.py:404
 msgid "Dangerous"
 msgstr "Dangereux"
 
-#: src/gui_pyqt.py:407
+#: src/gui_pyqt.py:405
 msgid ""
 "The %s virtual machine is currently running.\n"
 "Forcing machine to shutdown is very DANGEROUS, the modification made during this session will be lost. You should use the \"Quit\" menu action to shutdown %s properly.\n"
@@ -340,103 +340,99 @@ msgstr ""
 "\n"
 "Voulez-vous vraiment forcer la fermeture de %s ?"
 
-#: src/gui_pyqt.py:431
+#: src/gui_pyqt.py:429
 msgid "No virus found"
 msgstr "Aucun virus trouvé"
 
-#: src/gui_pyqt.py:551
-msgid "%s informations balloon"
-msgstr "Ballon d'informations %s"
+#: src/gui_pyqt.py:555
+msgid "%s informations"
+msgstr "%s informations"
 
-#: src/gui_pyqt.py:905
-msgid "Free space available:"
-msgstr "Espace disque disponible:"
-
-#: src/gui_pyqt.py:906
+#: src/gui_pyqt.py:1059
 msgid "Applications"
 msgstr "Applications"
 
-#: src/gui_pyqt.py:908
+#: src/gui_pyqt.py:1061
 msgid "Public"
 msgstr "Public"
 
-#: src/gui_pyqt.py:1103
-#: src/gui_pyqt.py:1121
+#: src/gui_pyqt.py:1109
+#: src/gui_pyqt.py:1127
 msgid "Detach"
 msgstr "Détacher"
 
-#: src/gui_pyqt.py:1106
-#: src/gui_pyqt.py:1118
+#: src/gui_pyqt.py:1112
+#: src/gui_pyqt.py:1124
 msgid "Attach"
 msgstr "Attacher"
 
-#: src/gui_pyqt.py:1147
+#: src/gui_pyqt.py:1160
 msgid "Delete"
 msgstr "Supprimer"
 
-#: src/gui_pyqt.py:1149
+#: src/gui_pyqt.py:1162
 msgid "Ignore"
 msgstr "Ignorer"
 
-#: src/gui_pyqt.py:1198
+#: src/gui_pyqt.py:1214
 msgid "You already are authenticated"
 msgstr "Vous êtes déjà authentifié"
 
-#: src/gui_pyqt.py:1200
-#: src/gui_pyqt.py:1225
-#: src/gui_pyqt.py:1282
-#: src/gui_pyqt.py:1286
+#: src/gui_pyqt.py:1216
+#: src/gui_pyqt.py:1241
+#: src/gui_pyqt.py:1300
+#: src/gui_pyqt.py:1304
 msgid "Authenticate"
 msgstr "S'authentifier"
 
-#: src/gui_pyqt.py:1211
-#: src/gui_pyqt.py:1286
+#: src/gui_pyqt.py:1227
+#: src/gui_pyqt.py:1304
 msgid "Guest mode"
 msgstr "Mode invité"
 
-#: src/gui_pyqt.py:1244
+#: src/gui_pyqt.py:1260
 msgid "%s password:"
 msgstr "Mot de passe %s:"
 
-#: src/gui_pyqt.py:1250
-#: src/gui_pyqt.py:2282
+#: src/gui_pyqt.py:1266
+#: src/gui_pyqt.py:2333
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
-#: src/gui_pyqt.py:1424
-#: src/gui_pyqt.py:1470
-#: src/gui_pyqt.py:1498
-#: src/gui_pyqt.py:1535
-#: src/gui_pyqt.py:1603
-#: src/gui_pyqt.py:1702
+#: src/gui_pyqt.py:1442
+#: src/gui_pyqt.py:1488
+#: src/gui_pyqt.py:1516
+#: src/gui_pyqt.py:1553
+#: src/gui_pyqt.py:1621
+#: src/gui_pyqt.py:1720
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/gui_pyqt.py:1468
+#: src/gui_pyqt.py:1486
 msgid "Download"
 msgstr "Télécharger"
 
-#: src/gui_pyqt.py:1526
+#: src/gui_pyqt.py:1544
 #: src/launcher.py:174
 #: src/macbackend.py:285
 #: src/updater.py:197
 msgid "Error"
 msgstr "Erreur"
 
-#: src/gui_pyqt.py:1527
+#: src/gui_pyqt.py:1545
 msgid "Could not write to file %s: %s."
 msgstr "Impossible d'écrire dans le fichier %s: %s."
 
-#: src/gui_pyqt.py:1542
-#: src/gui_pyqt.py:2192
+#: src/gui_pyqt.py:1560
+#: src/gui_pyqt.py:2243
 msgid "Downloading"
 msgstr "En cours de téléchargement"
 
-#: src/gui_pyqt.py:1543
+#: src/gui_pyqt.py:1561
 msgid "Downloading to %s"
 msgstr "Téléchargement de %s"
 
-#: src/gui_pyqt.py:1553
+#: src/gui_pyqt.py:1571
 msgid ""
 "Download canceled.\n"
 "Press 'Download' to retry"
@@ -444,41 +440,41 @@ msgstr ""
 "Téléchargement annulé.\n"
 "Cliquez sur 'Télécharger' pour recommencer"
 
-#: src/gui_pyqt.py:1585
+#: src/gui_pyqt.py:1603
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/gui_pyqt.py:1698
+#: src/gui_pyqt.py:1716
 msgid "Ok"
 msgstr "Ok"
 
-#: src/gui_pyqt.py:1707
+#: src/gui_pyqt.py:1725
 msgid "Defaults"
 msgstr "Réglages par défaut"
 
-#: src/gui_pyqt.py:1714
+#: src/gui_pyqt.py:1732
 msgid "%s settings"
 msgstr "Paramètres de %s"
 
-#: src/gui_pyqt.py:1885
-#: src/gui_pyqt.py:1972
-#: src/gui_pyqt.py:2013
+#: src/gui_pyqt.py:1903
+#: src/gui_pyqt.py:1990
+#: src/gui_pyqt.py:2031
 msgid "Auto"
 msgstr "Auto"
 
-#: src/gui_pyqt.py:2058
+#: src/gui_pyqt.py:2076
 msgid "Restart required"
 msgstr "Redémarrage requis"
 
-#: src/gui_pyqt.py:2059
+#: src/gui_pyqt.py:2077
 msgid "You need to restart %s for this changes to be applied"
 msgstr ""
 "Le redémarrage de %s est nécessaire pour que \n"
 "les changements soit pris en compte"
 
-#: src/gui_pyqt.py:2069
-#: src/gui_pyqt.py:2084
-#: src/gui_pyqt.py:2236
+#: src/gui_pyqt.py:2087
+#: src/gui_pyqt.py:2102
+#: src/gui_pyqt.py:2287
 #: src/osbackend.py:507
 #: src/ufo_dd.py:382
 #: src/updater.py:56
@@ -486,66 +482,90 @@ msgstr ""
 msgid "Yes"
 msgstr "Oui"
 
-#: src/gui_pyqt.py:2071
+#: src/gui_pyqt.py:2089
 msgid "Would you cancel the following changes ?"
 msgstr "Voulez vous annuler les changements suivants ?"
 
-#: src/gui_pyqt.py:2086
+#: src/gui_pyqt.py:2104
 msgid "Would you reset all settings to default ?"
 msgstr "Voulez vous réinitialiser les réglages par défaut ?"
 
-#: src/gui_pyqt.py:2112
+#: src/gui_pyqt.py:2130
 msgid "Activated"
 msgstr "Activé"
 
-#: src/gui_pyqt.py:2114
+#: src/gui_pyqt.py:2132
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: src/gui_pyqt.py:2148
+#: src/gui_pyqt.py:2166
 msgid "Message title"
 msgstr "Titre du message"
 
-#: src/gui_pyqt.py:2150
+#: src/gui_pyqt.py:2168
 msgid "Message contents"
 msgstr "Contenu du message"
 
-#: src/gui_pyqt.py:2179
+#: src/gui_pyqt.py:2178
+msgid "Type a short description of your problem"
+msgstr "Décrivez brièvement votre problème"
+
+#: src/gui_pyqt.py:2189
+msgid "Description is empty"
+msgstr "La description est vide"
+
+#: src/gui_pyqt.py:2190
+msgid "Please describe your problem in the dedicated text area."
+msgstr "Vous devez décrire votre problème dans la zone de saisie prévue à cet effet."
+
+#: src/gui_pyqt.py:2203
+msgid "No internet connection found"
+msgstr "Aucune connexion internet détectée"
+
+#: src/gui_pyqt.py:2204
+msgid "You need an internet connection to submit you bug report."
+msgstr "La soumission des rapports de débogage nécessite une connexion internet."
+
+#: src/gui_pyqt.py:2217
 #: src/launcher.py:150
 msgid "Send debug reports"
 msgstr "Envoyer les rapports de débogage"
 
-#: src/gui_pyqt.py:2188
+#: src/gui_pyqt.py:2228
+msgid "If you have encountered a problem while using %s, you should send your logging reports to help us to fix the bug."
+msgstr "Si vous avez rencontré un problème en utilisant %s, vous pouvez soumettre un rapport de bogue pour accélérer sa correction."
+
+#: src/gui_pyqt.py:2239
 msgid "Installing"
 msgstr "Installer"
 
-#: src/gui_pyqt.py:2188
-#: src/gui_pyqt.py:2193
-#: src/gui_pyqt.py:2207
+#: src/gui_pyqt.py:2239
+#: src/gui_pyqt.py:2244
+#: src/gui_pyqt.py:2258
 #: src/gui_zenity.py:164
 #: src/linuxbackend.py:339
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
-#: src/gui_pyqt.py:2194
+#: src/gui_pyqt.py:2245
 msgid "Download completed"
 msgstr "Téléchargement terminé"
 
-#: src/gui_pyqt.py:2207
+#: src/gui_pyqt.py:2258
 #: src/gui_zenity.py:164
 msgid "Operation in progress"
 msgstr "Opération en cours"
 
-#: src/gui_pyqt.py:2208
+#: src/gui_pyqt.py:2259
 #: src/gui_zenity.py:165
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:2275
+#: src/gui_pyqt.py:2326
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:2279
+#: src/gui_pyqt.py:2330
 #: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
@@ -755,22 +775,30 @@ msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
 #: src/osbackend.py:650
+msgid "Free space available:"
+msgstr "Espace disque disponible:"
+
+#: src/osbackend.py:651
+msgid "Information currently unreachable"
+msgstr "Information momentanément indisponible"
+
+#: src/osbackend.py:657
 msgid "Removable devices management:"
 msgstr "Gestion des périphériques amovibles:"
 
-#: src/osbackend.py:651
+#: src/osbackend.py:658
 msgid "No removable devices found"
 msgstr "Aucun périphérique amovible trouvé"
 
-#: src/osbackend.py:663
+#: src/osbackend.py:670
 msgid "%s: running"
 msgstr "%s: en cours d'exécution"
 
-#: src/osbackend.py:672
+#: src/osbackend.py:680
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:673
+#: src/osbackend.py:681
 msgid ""
 "Please wait while %s is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
@@ -778,11 +806,11 @@ msgstr ""
 "%s est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:676
+#: src/osbackend.py:684
 msgid "Shutting down"
 msgstr "Arrêt en cours"
 
-#: src/osbackend.py:677
+#: src/osbackend.py:685
 msgid ""
 "Please wait while %s is shutting down,\n"
 "you absolutely must not unplug the key !"
@@ -790,43 +818,43 @@ msgstr ""
 "%s est en cours de fermeture,\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:681
+#: src/osbackend.py:689
 msgid "%s: recording changes"
 msgstr "%s: en cours de sauvegarde"
 
-#: src/osbackend.py:690
+#: src/osbackend.py:698
 msgid "Restart %s"
 msgstr "Redémarrage de %s"
 
-#: src/osbackend.py:691
+#: src/osbackend.py:699
 msgid "%s is rebooting"
 msgstr "%s est en cours de redémarrage"
 
-#: src/osbackend.py:731
+#: src/osbackend.py:739
 msgid "%s is starting"
 msgstr "Démarrage de %s"
 
-#: src/osbackend.py:733
+#: src/osbackend.py:741
 msgid "1<SUP>st</SUP> launch of %s"
 msgstr "1<SUP>er</SUP> démarrage de %s"
 
-#: src/osbackend.py:736
+#: src/osbackend.py:744
 msgid "%s is starting."
 msgstr "%s est en cours de démarrage"
 
-#: src/osbackend.py:740
+#: src/osbackend.py:748
 msgid "%s: starting"
 msgstr "%s: en cours de démarrage"
 
-#: src/osbackend.py:758
+#: src/osbackend.py:766
 msgid "%s: terminated"
 msgstr "%s: terminé"
 
-#: src/osbackend.py:760
+#: src/osbackend.py:768
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:761
+#: src/osbackend.py:769
 msgid "You can now safely eject your %s key."
 msgstr "Vous pouvez éjecter votre clé %s en toute sécurité."
 

@@ -45,7 +45,9 @@ class QtUFOGui(QtGui.QApplication):
         self.usb_check_timer  = QtCore.QTimer(self)
         self.net_adapt_timer  = QtCore.QTimer(self)
         self.callbacks_timer  = QtCore.QTimer(self)
-        self.termination_timer  = QtCore.QTimer(self)
+        self.termination_timer = QtCore.QTimer(self)
+
+        self.available_spaces = SmartDict()
 
         self.tray_windows = { 'settings' : None,
                               'creator'  : None,
@@ -183,14 +185,6 @@ class QtUFOGui(QtGui.QApplication):
                 else:
                     return False
 
-        elif isinstance(event, UpdateDiskSpaceEvent):
-            if event.disk == "root":
-                self.tray.persistent_balloon.update_progress_root(event.progress)
-            elif event.disk == "user":
-                self.tray.persistent_balloon.update_progress_user(event.progress)
-            elif event.disk == "public":
-                self.tray.persistent_balloon.update_progress_public(event.progress)
-
         elif isinstance(event, TimerEvent):
             if event.stop:
                 event.timer.stop()
@@ -207,6 +201,10 @@ class QtUFOGui(QtGui.QApplication):
             if event.inverse:
                 event.progress_bar.setInvertedAppearance(not event.progress_bar.invertedAppearance())
             event.progress_bar.setValue(event.percent)
+
+        elif isinstance(event, AvailableSpaceEvent):
+            self.available_spaces[event.key] =  { 'name' : event.key,
+                                                  'size' : event.size }
         else:
             return False
 
@@ -445,8 +443,8 @@ class QtUFOGui(QtGui.QApplication):
     def update_antivirus_progress(self, progress):
         self.update_persistent_balloon_section(key='antivirus', progress=float(progress))
 
-    def update_disk_space_progress(self, disk, progress):
-        self.postEvent(self, UpdateDiskSpaceEvent(disk, progress))
+    def update_available_spaces(self, key, size):
+        self.postEvent(self, AvailableSpaceEvent(key, size))
 
 class NoneEvent(QtCore.QEvent):
     def __init__(self, size, total):
@@ -538,6 +536,12 @@ class UpdateProgressEvent(QtCore.QEvent):
         self.percent      = percent
         self.inverse      = inverse
 
+class AvailableSpaceEvent(QtCore.QEvent):
+    def __init__(self, key, size):
+        super(AvailableSpaceEvent, self).__init__(QtCore.QEvent.None)
+        self.key = key
+        self.size = size
+
 
 class TrayIcon(QtGui.QSystemTrayIcon):
 
@@ -548,7 +552,7 @@ class TrayIcon(QtGui.QSystemTrayIcon):
         self.setVisible(True)
 
         self.temporary_balloon  = None
-        self.persistent_balloon = MultiSmartDictBalloonMessage(title=_("%s informations balloon") % (conf.PRODUCTNAME,),
+        self.persistent_balloon = MultiSmartDictBalloonMessage(title=_("%s informations") % (conf.PRODUCTNAME,),
                                                                rearrange_callback=self.rearrange_balloons)
         self.balloons = [ self.persistent_balloon ]
         
@@ -892,40 +896,6 @@ class BalloonMessage(QtGui.QWidget):
 class MultiSmartDictBalloonMessage(BalloonMessage):
     def __init__(self, title, rearrange_callback=None):
         BalloonMessage.__init__(self, title=title, rearrange_callback=rearrange_callback)
-
-        self.progress_bar_root = QtGui.QProgressBar()
-        self.progress_bar_user = QtGui.QProgressBar()
-        self.progress_bar_public = QtGui.QProgressBar()
-        self.progress_bar_root.setMaximumHeight(50)
-        self.progress_bar_user.setMaximumHeight(50)
-        self.progress_bar_user.setMaximumHeight(50)
-        self.layout_root = QtGui.QHBoxLayout()
-        self.layout_user = QtGui.QHBoxLayout()
-        self.layout_public = QtGui.QHBoxLayout()
-        self.label_space = QtGui.QLabel(_("Free space available:"))
-        self.label_root = QtGui.QLabel("<i>" + _("Applications") + "</i>")
-        self.label_user = QtGui.QLabel("<i>" + str(conf.USER) + "</i>")
-        self.label_public = QtGui.QLabel("<i>" + _("Public") + "</i>")
-        self.label_root.setMinimumWidth(160)
-        self.label_user.setMinimumWidth(160)
-        self.label_public.setMinimumWidth(160)
-        self.layout_root.addWidget(self.label_root)
-        self.layout_user.addWidget(self.label_user)
-        self.layout_public.addWidget(self.label_public)
-        self.layout_root.addWidget(self.progress_bar_root)
-        self.layout_user.addWidget(self.progress_bar_user)
-        self.layout_public.addWidget(self.progress_bar_public)
-        self.contents_layout.addWidget(self.label_space)
-        self.contents_layout.addLayout(self.layout_root)
-        self.contents_layout.addLayout(self.layout_user)
-        self.contents_layout.addLayout(self.layout_public)
-        self.label_space.hide()
-        self.label_root.hide()
-        self.label_user.hide()
-        self.label_public.hide()
-        self.progress_bar_root.hide()
-        self.progress_bar_user.hide()
-        self.progress_bar_public.hide()
         self.sections = {}
 
     def add_section(self, key, msg, default, smartdict, hlayout, progress=False):
@@ -949,24 +919,6 @@ class MultiSmartDictBalloonMessage(BalloonMessage):
                 self.hide()
             self.rearrange_callback()
 
-    def update_progress_root(self, percent):
-        self.progress_bar_root.setValue(int(percent))
-        self.progress_bar_root.show()
-        self.label_root.show()
-        self.label_space.show()
-
-    def update_progress_user(self, percent):
-        self.progress_bar_user.setValue(int(percent))
-        self.progress_bar_user.show()
-        self.label_user.show()
-        self.label_space.show()
-
-    def update_progress_public(self, percent):
-        self.progress_bar_public.setValue(int(percent))
-        self.progress_bar_public.show()
-        self.label_public.show()
-        self.label_space.show()
-
 
 class SmartDictLayout(QtGui.QVBoxLayout):
     def __init__(self, parent, msg, default, smartdict, hlayout, progress):
@@ -979,8 +931,8 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         # Restering callback to handle updates on the dict
         self.smartdict.register_on_set_item_callback(self.refresh)
         self.smartdict.register_on_del_item_callback(self.refresh)
-        
-        # Registring callbck to resize balloon
+
+        # Registring callback to resize balloon
         self.smartdict.register_on_set_item_callback(self.resize_smartdisct_balloon)
         self.smartdict.register_on_del_item_callback(self.resize_smartdisct_balloon)
 
@@ -989,7 +941,7 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         self.hline.setFrameShadow(QtGui.QFrame.Sunken)
 
         self.text_label = QtGui.QLabel("<font color=%s>%s</font>" % \
-                                                     (self.parent.colors['ballooncolortext'], msg))
+                                       (self.parent.colors['ballooncolortext'], msg))
         self.text_label.setPalette(QtGui.QToolTip.palette())
         self.text_label.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
 
@@ -1048,14 +1000,19 @@ class SmartDictLayout(QtGui.QVBoxLayout):
                 self.diplayed_hlayouts[item] = \
                     self.hlayout['type'](*((self.smartdict[item],) + self.hlayout['args']))
                 self.addLayout(self.diplayed_hlayouts[item])
-                self.parent.show()
+                if self.diplayed_hlayouts[item].SHOW_PARENT_ON_UPDATE:
+                    self.parent.show()
 
             else:
+                if item == key:
+                    self.old_displayed_hlayouts[item].refresh(value)
                 del self.old_displayed_hlayouts[item]
 
         # And then remove deprecated ones
         for item in self.old_displayed_hlayouts:
             self.diplayed_hlayouts[item].hide()
+            if self.diplayed_hlayouts[item].SHOW_PARENT_ON_REMOVE:
+                self.parent.show()
             del self.diplayed_hlayouts[item]
         
         if len(self.diplayed_hlayouts):
@@ -1091,7 +1048,56 @@ class SmartDictLayout(QtGui.QVBoxLayout):
         self.parent.rearrange_callback()
 
 
+class AvailableSpaceLayout(QtGui.QHBoxLayout):
+
+    SHOW_PARENT_ON_UPDATE = False
+    SHOW_PARENT_ON_REMOVE = False
+
+    def __init__(self, space):
+        QtGui.QHBoxLayout.__init__(self)
+
+        pretty_names = { 'root'   : _("Applications"),
+                         'user'   : conf.USER,
+                         'public' : _("Public") }
+
+        self.space = space
+        self.name  = pretty_names[self.space['name']]
+
+        self.space_label = QtGui.QLabel("<i>" + str(self.name) + ":</i>")
+        self.space_gauge = QtGui.QProgressBar()
+        self.space_gauge.setMaximumHeight(20)
+        self.space_gauge.setMinimumWidth(150)
+        self.space_gauge.setMaximumWidth(150)
+        self.space_gauge.setEnabled(False)
+        self.set_gauge_value(self.space['size'])
+
+        self.addWidget(self.space_label, 0, QtCore.Qt.AlignLeft)
+        self.addWidget(self.space_gauge, 0, QtCore.Qt.AlignRight)
+
+    def refresh(self, value):
+        self.set_gauge_value(value['size'])
+
+    def set_gauge_value(self, value):
+        try:
+            self.space_gauge.setValue(int(value))
+        except:
+            # Guest system is sending some garbage...
+            pass
+
+    def hide(self):
+        self.space_label.hide()
+        self.space_gauge.hide()
+        self.removeWidget(self.space_label)
+        self.removeWidget(self.space_gauge)
+        del self.space_label
+        del self.space_gauge
+
+
 class UsbAttachementLayout(QtGui.QHBoxLayout):
+
+    SHOW_PARENT_ON_UPDATE = True
+    SHOW_PARENT_ON_REMOVE = False
+
     def __init__(self, usb, callback):
         QtGui.QHBoxLayout.__init__(self)
 
@@ -1123,6 +1129,9 @@ class UsbAttachementLayout(QtGui.QHBoxLayout):
 
         self.callback(self.usb, attach=not self.usb['attach'])
 
+    def refresh(self, value):
+        pass
+
     def hide(self):
         self.attach_button.hide()
         self.usb_label.hide()
@@ -1133,6 +1142,10 @@ class UsbAttachementLayout(QtGui.QHBoxLayout):
 
 
 class VirusFoundLayout(QtGui.QHBoxLayout):
+
+    SHOW_PARENT_ON_UPDATE = True
+    SHOW_PARENT_ON_REMOVE = False
+
     def __init__(self, virus, callback):
         QtGui.QHBoxLayout.__init__(self)
 
@@ -1168,7 +1181,10 @@ class VirusFoundLayout(QtGui.QHBoxLayout):
             self.callback(self.virus['path'], clamavgui.VIRUS_DELETE)
         elif control == self.pass_button:
             self.callback(self.virus['path'], clamavgui.VIRUS_IGNORE)
-        
+
+    def refresh(self, value):
+        pass
+
     def hide(self):
         self.del_button.hide()
         self.pass_button.hide()
@@ -1259,6 +1275,10 @@ class CredentialsLayout(QtGui.QVBoxLayout):
         self.add_expdand_contents(self.password_field, self.ok_button)
         self.addLayout(self.password_field)
         self.add_expdand_contents(self, self.remember)
+
+        self.password.grabKeyboard()
+        self.password.setFocus()
+        self.password.end(True)
         self.expanded = True
 
     def collapse(self):
@@ -2033,7 +2053,7 @@ class Settings(QtGui.QDialog):
                 customid = control.conf_infos['confid']
             if self.custom_handlers.get(customid):
                 self.custom_handlers[customid]['function'](str(color.name()))
-        
+
     def on_validation(self):
         if len(self.registred_selections) > 0:
             # yes = _("Yes")
@@ -2148,6 +2168,7 @@ class Settings(QtGui.QDialog):
         self.balloon_preview = BalloonMessage(title=_("Message title"),
                                               fake= True,
                                               msg=_("Message contents"))
+        self.balloon_preview.setMaximumWidth(400)
         val_layout.addWidget(self.balloon_preview)
         val_layout.addSpacing(30)
         custom_layout.addSpacing(15)
@@ -2156,30 +2177,62 @@ class Settings(QtGui.QDialog):
         return custom_layout
 
     def create_debug_custom_layout(self):
+        desc = _("Type a short description of your problem")
+
         def send_debug_reports():
             control = self.sender()
-            control.setEnabled(False)
+
             import urllib
             report_files = glob.glob(os.path.join(os.path.dirname(conf.LOGFILE ), "*"))
 
             if conf.USER: user = conf.USER
             else: user = "None"
-            reports = "REPORT SENDED MANUALLY BY USER (" + user + ")"
+            if control.text_edit.toPlainText() == desc:
+                dialog_info(_("Description is empty"),
+                            _("Please describe your problem in the dedicated text area."))
+                return
+
+            reports = "Report sended manualy by user (" + user + ")\n\n"
+            reports += control.text_edit.toPlainText() + "\n"
             for file in report_files:
                 reports += "\n" + ("_" * len(file)) + "\n" + file + "\n\n"
                 reports += open(file, 'r').read()
-            params = urllib.urlencode({'report': reports})
+            params = urllib.urlencode({'report': str(reports.toUtf8())})
             try:
                 urllib.urlopen(conf.REPORTURL, params)
+                control.setEnabled(False)
             except:
-                pass
+                dialog_info(_("No internet connection found"),
+                            _("You need an internet connection to submit you bug report."),
+                            error=True)
 
-        custom_layout = QtGui.QHBoxLayout()
-        custom_layout.addSpacing(30)
+        def clear_desc_area():
+            control = self.sender()
+            if control.toPlainText() == desc:
+                control.setHtml("&nbsp;")
+                control.selectAll()
+
+        custom_layout = QtGui.QVBoxLayout()
+        custom_layout.addSpacing(15)
+        hlayout = QtGui.QHBoxLayout()
+        vlayout = QtGui.QVBoxLayout()
         send_button = QtGui.QPushButton(_("Send debug reports"))
         self.connect(send_button, QtCore.SIGNAL('clicked()'), send_debug_reports)
-        custom_layout.addWidget(send_button)
-        custom_layout.addSpacing(30)
+        send_button.text_edit = QtGui.QTextEdit("<i><font color=#B09F91>" + desc + "</font></i>")
+        self.connect(send_button.text_edit, QtCore.SIGNAL('cursorPositionChanged()'), clear_desc_area)
+        send_button.text_edit.setMaximumHeight(70)
+        vlayout.addWidget(send_button.text_edit)
+        vlayout.addWidget(send_button)
+        hlayout.addSpacing(30)
+        hlayout.addLayout(vlayout)
+        hlayout.addSpacing(30)
+
+        send_button.text_label = QtGui.QLabel(_("If you have encountered a problem while using %s, "
+                                                "you should send your logging reports to help us to "
+                                                "fix the bug.") % conf.PRODUCTNAME)
+        send_button.text_label.setWordWrap(True)
+        custom_layout.addWidget(send_button.text_label)
+        custom_layout.addLayout(hlayout)
 
         return custom_layout
 
