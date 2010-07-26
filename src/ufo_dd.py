@@ -236,7 +236,7 @@ class DDWindow(QtGui.QWizard):
                 total_size = self.total_size
             self.dd(image, device, callback = lambda x: callback(x, total_size))
 
-        self.next()
+        callback(total_size, total_size)
 
     def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
         if type(src) in (str, unicode):
