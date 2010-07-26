@@ -569,6 +569,7 @@ class DDWindow(QtGui.QWizard):
         layout.addWidget(label)
 
         self.progress = progress = QtGui.QProgressBar()
+        self.progress.valueChanged.connect(self.on_update_progress)
         layout.addWidget(progress)
 
         page.setLayout(layout)
@@ -587,6 +588,9 @@ class DDWindow(QtGui.QWizard):
 
         page.setLayout(layout)
         return page
+
+    def on_update_progress(self, progress):
+        self.next()
 
     def update_progress(self, sectors, total):
         if total:
