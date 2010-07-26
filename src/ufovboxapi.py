@@ -471,6 +471,7 @@ class VBoxMachine():
         try:
             if self.hypervisor.vbox_version() >= "3.1.0":
                 controller = self.get_controller("IDE")
+                controller.controllerType = self.hypervisor.constants.StorageControllerType_ICH6
                 self.machine.attachDevice(controller.name, disk_rank // 2, disk_rank % 2,
                                           self.hypervisor.constants.DeviceType_HardDisk, disk.id)
             elif self.hypervisor.vbox_version() >= "2.2.0":
