@@ -25,6 +25,7 @@ If FileExists ($tempdir) Then
 EndIf
 
 DirCreate ($tempdir & "\bin\Microsoft.VC90.CRT")
+DirCreate ($tempdir & "\bin\Microsoft.VC80.CRT")
 DirCreate ($tempdir & "\.data\images")
 DirCreate ($tempdir & "\.data\logs")
 DirCreate ($tempdir & "\.data\settings")
@@ -49,6 +50,10 @@ FileInstall("dist\bin\Microsoft.VC90.CRT\Microsoft.VC90.CRT.manifest", $tempdir 
 FileInstall("dist\bin\Microsoft.VC90.CRT\msvcm90.dll", $tempdir & "\bin\Microsoft.VC90.CRT\msvcm90.dll")
 FileInstall("dist\bin\Microsoft.VC90.CRT\msvcp90.dll", $tempdir & "\bin\Microsoft.VC90.CRT\msvcp90.dll")
 FileInstall("dist\bin\Microsoft.VC90.CRT\msvcr90.dll", $tempdir & "\bin\Microsoft.VC90.CRT\msvcr90.dll")
+
+FileInstall("dist\bin\Microsoft.VC80.CRT\Microsoft.VC80.CRT.manifest", $tempdir & "\bin\Microsoft.VC80.CRT\Microsoft.VC80.CRT.manifest")
+FileInstall("dist\bin\Microsoft.VC80.CRT\msvcp80.dll", $tempdir & "\bin\Microsoft.VC80.CRT\msvcp80.dll")
+FileInstall("dist\bin\Microsoft.VC80.CRT\msvcr80.dll", $tempdir & "\bin\Microsoft.VC80.CRT\msvcr80.dll")
 
 ; Python binaries
 FileInstall("dist\bin\win32wnet.pyd", $tempdir & "\bin\win32wnet.pyd")
