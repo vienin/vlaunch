@@ -222,6 +222,7 @@ class DDWindow(QtGui.QWizard):
             i = 0
             while True:
                 part = tar.next()
+                logging.debug("No more partitions to write")
                 if not part:
                     break
                 logging.debug("Writing %s partition" % part.name)
@@ -590,7 +591,8 @@ class DDWindow(QtGui.QWizard):
         return page
 
     def on_update_progress(self, progress):
-        self.next()
+        if progress == 100:
+            self.next()
 
     def update_progress(self, sectors, total):
         if total:
