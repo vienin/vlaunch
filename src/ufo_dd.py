@@ -25,6 +25,7 @@ class DDWindow(QtGui.QWizard):
         self.load_usbs()
         self.device_size = 0
         self.parts = []
+        self.generating = False
         
         self.connect(self, QtCore.SIGNAL("currentIdChanged(int)"), self.currentIdChanged)
 
@@ -58,9 +59,22 @@ class DDWindow(QtGui.QWizard):
         kwargs = {}
         kwargs["callback"] = self.update_progress
         import threading
-        threading.Thread(target=self.write_image,
-                         args=(unicode(self.source), unicode(self.target)),
-                         kwargs=kwargs).start()
+        self.process_thread = threading.Thread(target=self.write_image,
+                                               args=(unicode(self.source), unicode(self.target)),
+                                               kwargs=kwargs)
+        self.process_thread.start()
+
+    def done(self, result):
+        if not self.reverse and self.generating and result == QtGui.QWizard.Rejected:
+            response = gui.dialog_question(title=_("Do you really want to cancel ?"),
+                                           msg=_("If you cancel the process now, your USB key will be unsable until you format it. Are you sure you want to cancel ?"),
+                                           dangerous = True)
+            if response != _("Yes"):
+                return
+        if self.generating:
+            self.generating = False
+            self.process_thread.join()
+        QtGui.QWizard.done(self, result)
 
     @staticmethod
     def prepare(backend):
@@ -88,86 +102,6 @@ class DDWindow(QtGui.QWizard):
         mb.generate(partitions, device_size, c, h, s)
         mb.write(device)
         return mb
-
-    def get_free_space(self):
-        size = self.device_size
-        for part in self.parts:
-            size -= part["size"]
-        return size
-
-    def update_sliders(self):
-        if not self.parts or not self.device_size:
-            return
-
-        self.button(QtGui.QWizard.NextButton).setEnabled(True)
-        self.resize_label.setEnabled(True)
-        self.splitter.setEnabled(True)
-
-        sizes = []
-        free_space = self.get_free_space()
-        if not self.splitter.count():
-            n = 0
-            for i, part in enumerate(self.parts):
-                if not part["resizable"]:
-                    continue
-                label = QtGui.QLabel(self.get_partition_pretty_name(part))
-                label.setAlignment(QtCore.Qt.AlignCenter)
-                label.setMinimumWidth(150)
-                self.splitter.addWidget(label)
-                self.splitter.setCollapsible(n, False)
-                part["widget"] = label
-                sizes.append(part["size"] + free_space * part["percentage"] / 100)
-                n += 1
-
-        widths = [ int(x / float(self.total_size)) for x in sizes ]
-        self.splitter.setSizes(widths)
-        self.update_sizes()
-
-    def update_sizes(self):
-        for i, part in self.get_resizable_partitions():
-            self.update_text(part)
-
-    def get_partition_pretty_name(self, part):
-        return { "fat" : _("Public data"),
-                 "root" : _("System data"),
-                 "crypt" : _("Private data") }[part["name"]]
-
-    def update_text(self, part):
-        part["widget"].setText(self.get_partition_pretty_name(part) + " " + _("(%d Mo)") % (self.get_partition_size(part) / 1024 / 1024))
-
-    def get_partition_size(self, part):
-        if part.has_key("widget"):
-            widget = part["widget"]
-            return int((self.splitter.sizes()[self.splitter.indexOf(widget)] - widget.minimumWidth()) * self.get_size_per_pixel() + part["size"])
-        else:
-            return part["size"]
-
-    def get_size_per_pixel(self):
-        sizes = self.splitter.sizes()
-        free_pixels = 0
-        for i, size in enumerate(sizes):
-            free_pixels += size - self.splitter.widget(i).minimumWidth()
-        return float(self.get_free_space()) / free_pixels
-
-    def get_resizable_partitions(self):
-        return [ (self.parts.index(x), x) for x in self.parts if x["resizable"] ]
-
-    def splitter_moved(self, pos, index):
-        self.update_sizes()
-
-    def on_select_device(self, row):
-        self.open_device(self.usbs[row][0])
-        self.update_sliders()
-
-    def on_text_changed(self, text):
-        if not self.reverse:
-            self.open_target(unicode(text))
-        self.update_sliders()
-
-    def get_partition(self, name):
-        for part in self.parts:
-            if part["name"] == name:
-                return part
 
     def open_device(self, device):
         self.device_size = self.backend.get_device_size(device) * 512
@@ -198,10 +132,10 @@ class DDWindow(QtGui.QWizard):
                 return -1
 
     def write_image(self, image, device, callback=None):
+        self.generating = True
         if tarfile.is_tarfile(image):
 
             # We wait a bit otherwise it sometimes fails on Windows
-            import time
             time.sleep(3)
 
             total_size = self.total_size
@@ -231,13 +165,11 @@ class DDWindow(QtGui.QWizard):
                 i += 1
             dev.close()
         else:
-            if self.reverse:
-                total_size = self.get_device_size(image) * 512
-            else:
-                total_size = self.total_size
+            total_size = self.device_size
             self.dd(image, device, callback = lambda x: callback(x, total_size))
 
         callback(total_size, total_size)
+        self.generating = False
 
     def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
         if type(src) in (str, unicode):
@@ -257,10 +189,8 @@ class DDWindow(QtGui.QWizard):
         if seek:
             destfile.seek(seek, os.SEEK_SET)
 
-        status = STATUS_WRITING
-
         i = 0
-        while (count == -1) or (count > 0 and status == STATUS_WRITING):
+        while self.generating and (count == -1 or count > 0):
             data = srcfile.read(bs)
             if not len(data):
                 break
@@ -400,7 +330,7 @@ class DDWindow(QtGui.QWizard):
 
                 sizes = []
                 for part in self.parts:
-                    sizes.append(self.get_partition_size(part))
+                    sizes.append(_self.get_partition_size(part))
                 for i, part in enumerate(self.parts):
                     part["size"] = sizes[i]
 
@@ -439,6 +369,8 @@ class DDWindow(QtGui.QWizard):
                 filedialog = QtGui.QFileDialog(self, _("Please select an %s image") % (conf.PRODUCTNAME,), os.getcwd())
                 if self.reverse:
                     filedialog.setDefaultSuffix("img")
+                    filedialog.selectFile("%s %s-%s.img" % (conf.PRODUCTNAME, _("backup"), time.strftime("%m-%d-%y")))
+
                 if filedialog.exec_() != QtGui.QDialog.Accepted:
                     return
                 _self.edit.setText(unicode(filedialog.selectedFiles()[0]))
@@ -448,6 +380,90 @@ class DDWindow(QtGui.QWizard):
                 _self.usb_list.clear()
                 for i in self.usbs:
                     _self.usb_list.addItem(i[1])
+
+            def on_select_device(_self, row):
+                self.open_device(self.usbs[row][0])
+                _self.update_sliders()
+
+            def on_text_changed(_self, text):
+                if not self.reverse:
+                    self.open_target(unicode(text))
+                _self.update_sliders()
+
+            def update_sliders(_self):
+                if not self.reverse:
+                    if not self.parts or not self.device_size:
+                        return
+                    self.button(QtGui.QWizard.NextButton).setEnabled(True)
+                else:
+                    self.button(QtGui.QWizard.NextButton).setEnabled(not _self.edit.text().isEmpty())
+                    return
+
+                _self.resize_label.setEnabled(True)
+                _self.splitter.setEnabled(True)
+
+                sizes = []
+                free_space = _self.get_free_space()
+                if not _self.splitter.count():
+                    n = 0
+                    for i, part in enumerate(self.parts):
+                        if not part["resizable"]:
+                            continue
+                        label = QtGui.QLabel(_self.get_partition_pretty_name(part))
+                        label.setAlignment(QtCore.Qt.AlignCenter)
+                        label.setMinimumWidth(150)
+                        _self.splitter.addWidget(label)
+                        _self.splitter.setCollapsible(n, False)
+                        part["widget"] = label
+                        sizes.append(part["size"] + free_space * part["percentage"] / 100)
+                        n += 1
+
+                widths = [ int(x / float(self.total_size)) for x in sizes ]
+                _self.splitter.setSizes(widths)
+                _self.update_sizes()
+
+            def get_partition_size(_self, part):
+                if part.has_key("widget"):
+                    widget = part["widget"]
+                    return int((_self.splitter.sizes()[_self.splitter.indexOf(widget)] - widget.minimumWidth()) * _self.get_size_per_pixel() + part["size"])
+                else:
+                    return part["size"]
+
+            def get_size_per_pixel(_self):
+                sizes = _self.splitter.sizes()
+                free_pixels = 0
+                for i, size in enumerate(sizes):
+                    free_pixels += size - _self.splitter.widget(i).minimumWidth()
+                return float(_self.get_free_space()) / free_pixels
+
+            def get_free_space(_self):
+                size = self.device_size
+                for part in self.parts:
+                    size -= part["size"]
+                return size
+
+            def update_sizes(_self):
+                for i, part in _self.get_resizable_partitions():
+                    _self.update_text(part)
+
+            def get_partition_pretty_name(self, part):
+                return { "fat" : _("Public data"),
+                         "root" : _("System data"),
+                         "crypt" : _("Private data") }[part["name"]]
+
+            def update_text(_self, part):
+                part["widget"].setText(_self.get_partition_pretty_name(part) + " " + _("(%d Mo)") % (_self.get_partition_size(part) / 1024 / 1024))
+
+            def get_resizable_partitions(_self):
+                return [ (self.parts.index(x), x) for x in self.parts if x["resizable"] ]
+
+            def splitter_moved(_self, pos, index):
+                _self.update_sizes()
+
+            def get_partition(self, name):
+                for part in self.parts:
+                    if part["name"] == name:
+                        return part
 
             def create_file_chooser_label(_self, reverse):
                 if reverse:
@@ -463,7 +479,7 @@ class DDWindow(QtGui.QWizard):
             def create_file_chooser_layout(_self, reverse):
                 hlayout = QtGui.QHBoxLayout()
                 _self.edit = edit = QtGui.QLineEdit()
-                _self.edit.textChanged.connect(self.on_text_changed)
+                _self.edit.textChanged.connect(_self.on_text_changed)
                 browse = QtGui.QPushButton("...")
                 browse.clicked.connect(_self.on_file_select)
                 browse.setMaximumWidth(20)
@@ -491,7 +507,7 @@ class DDWindow(QtGui.QWizard):
 
             def create_device_chooser_layout(_self):
                 _self.usb_list = QtGui.QListWidget()
-                _self.usb_list.currentRowChanged.connect(self.on_select_device)
+                _self.usb_list.currentRowChanged.connect(_self.on_select_device)
 
                 for i in self.usbs:
                     _self.usb_list.addItem(i[1])
@@ -499,16 +515,16 @@ class DDWindow(QtGui.QWizard):
 
             def create_device_resize_layout(_self):
                 layout = QtGui.QVBoxLayout()
-                self.resize_label = QtGui.QLabel(_("Partition sizes :<br>You can use the following default values "
+                _self.resize_label = QtGui.QLabel(_("Partition sizes :<br>You can use the following default values "
                                                    "or you can resize the partition sizes to meet your needs :<br><br>"))
-                self.resize_label.setWordWrap(True)
-                self.resize_label.setEnabled(False)
-                add_to_layout(layout, self.resize_label)
-                self.splitter = splitter = QtGui.QSplitter()
-                self.splitter.setMinimumSize(600, 32)
-                self.splitter.setStyleSheet("QSplitter { border: 1px solid black; }")
-                self.splitter.splitterMoved.connect(self.splitter_moved)
-                self.splitter.setEnabled(False)
+                _self.resize_label.setWordWrap(True)
+                _self.resize_label.setEnabled(False)
+                add_to_layout(layout, _self.resize_label)
+                _self.splitter = splitter = QtGui.QSplitter()
+                _self.splitter.setMinimumSize(600, 32)
+                _self.splitter.setStyleSheet("QSplitter { border: 1px solid black; }")
+                _self.splitter.splitterMoved.connect(_self.splitter_moved)
+                _self.splitter.setEnabled(False)
                 add_to_layout(layout, splitter)
                 return layout
 
@@ -578,14 +594,16 @@ class DDWindow(QtGui.QWizard):
 
     def create_finish_page(self):
         page = QtGui.QWizardPage()
+        page.setCommitPage(True)
+        page.setFinalPage(True)
         page.setTitle(_("Operation successfull !"))
         layout = QtGui.QVBoxLayout()
 
-        label = QtGui.QLabel(_("%s has been successfully installed "
-                               "on your device. You can use it right away.\n\n"
-                               "Enjoy !") % conf.PRODUCTNAME)
-        label.setWordWrap(True)
-        layout.addWidget(label)
+        self.finish_label = QtGui.QLabel(_("%s has been successfully installed "
+                                           "on your device. You can use it right away.\n\n"
+                                           "Enjoy !") % conf.PRODUCTNAME)
+        self.finish_label.setWordWrap(True)
+        layout.addWidget(self.finish_label)
 
         page.setLayout(layout)
         return page
@@ -604,7 +622,15 @@ class DDWindow(QtGui.QWizard):
             self.button(QtGui.QWizard.NextButton).setEnabled(False)
 
         elif id == self.PAGE_INDEX_PROCESS:
+            self.button(QtGui.QWizard.BackButton).setEnabled(False)
             self.launch_process()
+
+        elif id == self.PAGE_INDEX_FINISH:
+            self.setButtonLayout([ int(QtGui.QWizard.Stretch), int(QtGui.QWizard.FinishButton) ])
+            if self.reverse:
+                self.finish_label.setText(_("Your device was successfully backed up. You can use the same tool to restore "
+                                            "your device.\n\nPlease note that you can only restore an image to a device "
+                                            "of the very same type that the cloned one."))
 
 
 if __name__ == "__main__":

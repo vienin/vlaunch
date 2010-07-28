@@ -5,9 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2010-07-21 14:42+CEST\n"
-"PO-Revision-Date: 2010-07-21 14:44+0100\n"
-"Last-Translator: Kevin Pouget <kevin.pouget@agorabox.org>\n"
+"POT-Creation-Date: 2010-07-28 23:42+CEST\n"
+"PO-Revision-Date: 2010-07-28 23:46+0100\n"
+"Last-Translator: Sylvain Baubeau <sylvain.baubeau@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -289,8 +289,8 @@ msgstr "Pour plus d'informations, visitez "
 #: src/linuxbackend.py:422
 #: src/osbackend.py:242
 #: src/osbackend.py:505
-#: src/ufo_dd.py:391
-#: src/ufo_dd.py:433
+#: src/ufo_dd.py:320
+#: src/ufo_dd.py:362
 msgid "Warning"
 msgstr "Attention"
 
@@ -301,7 +301,7 @@ msgid ""
 msgstr "La machine virtuelle %s est en cours de fonctionnement. Veuillez éteindre la machine virtuelle %s avant d'utiliser %s Creator"
 
 #: src/gui_pyqt.py:376
-#: src/ufo_dd.py:394
+#: src/ufo_dd.py:323
 #: src/updater.py:76
 msgid "Retry"
 msgstr "Réessayer"
@@ -315,9 +315,9 @@ msgstr ""
 "Vous ne pouvez pas éteindre la machine pendant le démarrage."
 
 #: src/gui_pyqt.py:403
-#: src/gui_pyqt.py:2088
-#: src/gui_pyqt.py:2103
-#: src/gui_pyqt.py:2288
+#: src/gui_pyqt.py:2090
+#: src/gui_pyqt.py:2105
+#: src/gui_pyqt.py:2290
 #: src/osbackend.py:508
 #: src/osbackend.py:509
 #: src/updater.py:56
@@ -380,13 +380,13 @@ msgstr "Vous êtes déjà authentifié"
 
 #: src/gui_pyqt.py:1216
 #: src/gui_pyqt.py:1241
-#: src/gui_pyqt.py:1300
-#: src/gui_pyqt.py:1304
+#: src/gui_pyqt.py:1302
+#: src/gui_pyqt.py:1306
 msgid "Authenticate"
 msgstr "S'authentifier"
 
 #: src/gui_pyqt.py:1227
-#: src/gui_pyqt.py:1304
+#: src/gui_pyqt.py:1306
 msgid "Guest mode"
 msgstr "Mode invité"
 
@@ -395,44 +395,44 @@ msgid "%s password:"
 msgstr "Mot de passe %s:"
 
 #: src/gui_pyqt.py:1266
-#: src/gui_pyqt.py:2333
+#: src/gui_pyqt.py:2335
 msgid "Remember my password"
 msgstr "Se souvenir de mon mot de passe"
 
-#: src/gui_pyqt.py:1442
-#: src/gui_pyqt.py:1488
-#: src/gui_pyqt.py:1516
-#: src/gui_pyqt.py:1553
-#: src/gui_pyqt.py:1621
-#: src/gui_pyqt.py:1720
+#: src/gui_pyqt.py:1444
+#: src/gui_pyqt.py:1490
+#: src/gui_pyqt.py:1518
+#: src/gui_pyqt.py:1555
+#: src/gui_pyqt.py:1623
+#: src/gui_pyqt.py:1722
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/gui_pyqt.py:1486
+#: src/gui_pyqt.py:1488
 msgid "Download"
 msgstr "Télécharger"
 
-#: src/gui_pyqt.py:1544
+#: src/gui_pyqt.py:1546
 #: src/launcher.py:174
 #: src/macbackend.py:285
 #: src/updater.py:197
 msgid "Error"
 msgstr "Erreur"
 
-#: src/gui_pyqt.py:1545
+#: src/gui_pyqt.py:1547
 msgid "Could not write to file %s: %s."
 msgstr "Impossible d'écrire dans le fichier %s: %s."
 
-#: src/gui_pyqt.py:1560
-#: src/gui_pyqt.py:2243
+#: src/gui_pyqt.py:1562
+#: src/gui_pyqt.py:2245
 msgid "Downloading"
 msgstr "En cours de téléchargement"
 
-#: src/gui_pyqt.py:1561
+#: src/gui_pyqt.py:1563
 msgid "Downloading to %s"
 msgstr "Téléchargement de %s"
 
-#: src/gui_pyqt.py:1571
+#: src/gui_pyqt.py:1573
 msgid ""
 "Download canceled.\n"
 "Press 'Download' to retry"
@@ -440,132 +440,133 @@ msgstr ""
 "Téléchargement annulé.\n"
 "Cliquez sur 'Télécharger' pour recommencer"
 
-#: src/gui_pyqt.py:1603
+#: src/gui_pyqt.py:1605
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/gui_pyqt.py:1716
+#: src/gui_pyqt.py:1718
 msgid "Ok"
 msgstr "Ok"
 
-#: src/gui_pyqt.py:1725
+#: src/gui_pyqt.py:1727
 msgid "Defaults"
 msgstr "Réglages par défaut"
 
-#: src/gui_pyqt.py:1732
+#: src/gui_pyqt.py:1734
 msgid "%s settings"
 msgstr "Paramètres de %s"
 
-#: src/gui_pyqt.py:1903
-#: src/gui_pyqt.py:1990
-#: src/gui_pyqt.py:2031
+#: src/gui_pyqt.py:1905
+#: src/gui_pyqt.py:1992
+#: src/gui_pyqt.py:2033
 msgid "Auto"
 msgstr "Auto"
 
-#: src/gui_pyqt.py:2076
+#: src/gui_pyqt.py:2078
 msgid "Restart required"
 msgstr "Redémarrage requis"
 
-#: src/gui_pyqt.py:2077
+#: src/gui_pyqt.py:2079
 msgid "You need to restart %s for this changes to be applied"
 msgstr ""
 "Le redémarrage de %s est nécessaire pour que \n"
 "les changements soit pris en compte"
 
-#: src/gui_pyqt.py:2087
-#: src/gui_pyqt.py:2102
-#: src/gui_pyqt.py:2287
+#: src/gui_pyqt.py:2089
+#: src/gui_pyqt.py:2104
+#: src/gui_pyqt.py:2289
 #: src/osbackend.py:507
-#: src/ufo_dd.py:382
+#: src/ufo_dd.py:71
+#: src/ufo_dd.py:311
 #: src/updater.py:56
 #: src/updater.py:58
 msgid "Yes"
 msgstr "Oui"
 
-#: src/gui_pyqt.py:2089
+#: src/gui_pyqt.py:2091
 msgid "Would you cancel the following changes ?"
 msgstr "Voulez vous annuler les changements suivants ?"
 
-#: src/gui_pyqt.py:2104
+#: src/gui_pyqt.py:2106
 msgid "Would you reset all settings to default ?"
 msgstr "Voulez vous réinitialiser les réglages par défaut ?"
 
-#: src/gui_pyqt.py:2130
+#: src/gui_pyqt.py:2132
 msgid "Activated"
 msgstr "Activé"
 
-#: src/gui_pyqt.py:2132
+#: src/gui_pyqt.py:2134
 msgid "Disabled"
 msgstr "Désactivé"
 
-#: src/gui_pyqt.py:2166
+#: src/gui_pyqt.py:2168
 msgid "Message title"
 msgstr "Titre du message"
 
-#: src/gui_pyqt.py:2168
+#: src/gui_pyqt.py:2170
 msgid "Message contents"
 msgstr "Contenu du message"
 
-#: src/gui_pyqt.py:2178
+#: src/gui_pyqt.py:2180
 msgid "Type a short description of your problem"
 msgstr "Décrivez brièvement votre problème"
 
-#: src/gui_pyqt.py:2189
+#: src/gui_pyqt.py:2191
 msgid "Description is empty"
 msgstr "La description est vide"
 
-#: src/gui_pyqt.py:2190
+#: src/gui_pyqt.py:2192
 msgid "Please describe your problem in the dedicated text area."
 msgstr "Vous devez décrire votre problème dans la zone de saisie prévue à cet effet."
 
-#: src/gui_pyqt.py:2203
+#: src/gui_pyqt.py:2205
 msgid "No internet connection found"
 msgstr "Aucune connexion internet détectée"
 
-#: src/gui_pyqt.py:2204
+#: src/gui_pyqt.py:2206
 msgid "You need an internet connection to submit you bug report."
 msgstr "La soumission des rapports de débogage nécessite une connexion internet."
 
-#: src/gui_pyqt.py:2217
+#: src/gui_pyqt.py:2219
 #: src/launcher.py:150
 msgid "Send debug reports"
 msgstr "Envoyer les rapports de débogage"
 
-#: src/gui_pyqt.py:2228
+#: src/gui_pyqt.py:2230
 msgid "If you have encountered a problem while using %s, you should send your logging reports to help us to fix the bug."
 msgstr "Si vous avez rencontré un problème en utilisant %s, vous pouvez soumettre un rapport de bogue pour accélérer sa correction."
 
-#: src/gui_pyqt.py:2239
+#: src/gui_pyqt.py:2241
 msgid "Installing"
 msgstr "Installer"
 
-#: src/gui_pyqt.py:2239
-#: src/gui_pyqt.py:2244
-#: src/gui_pyqt.py:2258
+#: src/gui_pyqt.py:2241
+#: src/gui_pyqt.py:2246
+#: src/gui_pyqt.py:2260
 #: src/gui_zenity.py:164
 #: src/linuxbackend.py:339
 msgid "Please wait"
 msgstr "Veuillez patienter"
 
-#: src/gui_pyqt.py:2245
+#: src/gui_pyqt.py:2247
 msgid "Download completed"
 msgstr "Téléchargement terminé"
 
-#: src/gui_pyqt.py:2258
+#: src/gui_pyqt.py:2260
 #: src/gui_zenity.py:164
 msgid "Operation in progress"
 msgstr "Opération en cours"
 
-#: src/gui_pyqt.py:2259
+#: src/gui_pyqt.py:2261
 #: src/gui_zenity.py:165
 msgid "Operation successfully completed"
 msgstr "Opération effectué avec succès"
 
-#: src/gui_pyqt.py:2326
+#: src/gui_pyqt.py:2328
 msgid "Please enter the password for user "
 msgstr "Veuillez entrer le mot de passe pour l'utilisateur "
 
-#: src/gui_pyqt.py:2330
+#: src/gui_pyqt.py:2332
 #: src/gui_zenity.py:178
 msgid "Password required"
 msgstr "Mot de passe requis"
@@ -858,31 +859,23 @@ msgstr "Au revoir"
 msgid "You can now safely eject your %s key."
 msgstr "Vous pouvez éjecter votre clé %s en toute sécurité."
 
-#: src/ufo_dd.py:36
+#: src/ufo_dd.py:37
 msgid "Mobile PC Creator"
 msgstr "Mobile PC Creator"
 
-#: src/ufo_dd.py:131
-msgid "Public data"
-msgstr "Données publiques"
+#: src/ufo_dd.py:68
+msgid "Do you really want to cancel ?"
+msgstr "Voulez-vous vraiment annuler l'opération ?"
 
-#: src/ufo_dd.py:132
-msgid "System data"
-msgstr "Système"
+#: src/ufo_dd.py:69
+msgid "If you cancel the process now, your USB key will be unsable until you format it. Are you sure you want to cancel ?"
+msgstr "Si vous annulez l'opération maintenant, votre clé sera inutilisable. Il vous faudra la formatter pour l'utiliser à nouveau. Etes-vous sûr de vouloir annuler ?"
 
-#: src/ufo_dd.py:133
-msgid "Private data"
-msgstr "Données privées"
-
-#: src/ufo_dd.py:136
-msgid "(%d Mo)"
-msgstr "(%d Mo)"
-
-#: src/ufo_dd.py:291
+#: src/ufo_dd.py:220
 msgid "Introduction"
 msgstr "Introduction"
 
-#: src/ufo_dd.py:292
+#: src/ufo_dd.py:221
 msgid ""
 "Welcome to the %s Creator software.\n"
 "\n"
@@ -896,71 +889,71 @@ msgstr ""
 "\n"
 "Veuillez sélectionner l'action de votre choix..\n"
 
-#: src/ufo_dd.py:300
+#: src/ufo_dd.py:229
 msgid "Install %s on a device"
 msgstr "Installer %s sur un périphérique"
 
-#: src/ufo_dd.py:301
+#: src/ufo_dd.py:230
 msgid "Backup my %s device"
 msgstr "Sauvegarder un périphérique %s"
 
-#: src/ufo_dd.py:334
+#: src/ufo_dd.py:263
 msgid "Missing source device"
 msgstr "Périphérique source manquant"
 
-#: src/ufo_dd.py:335
+#: src/ufo_dd.py:264
 msgid "Please select a source device"
 msgstr "Veuillez sélectionner un périphérique"
 
-#: src/ufo_dd.py:336
+#: src/ufo_dd.py:265
 msgid "Missing target image"
 msgstr "Aucun périphérique sélectionné"
 
-#: src/ufo_dd.py:337
+#: src/ufo_dd.py:266
 msgid "Please specify a target image"
 msgstr "Veuillez sélectionner un périphérique"
 
-#: src/ufo_dd.py:339
+#: src/ufo_dd.py:268
 msgid "Missing target device"
 msgstr "Aucun périphérique sélectionné"
 
-#: src/ufo_dd.py:340
+#: src/ufo_dd.py:269
 msgid "Please select a target device"
 msgstr "Veuillez sélectionner un périphérique"
 
-#: src/ufo_dd.py:341
+#: src/ufo_dd.py:270
 msgid "Missing source image"
 msgstr "Image source manquante"
 
-#: src/ufo_dd.py:342
+#: src/ufo_dd.py:271
 msgid "Please specify a source image or download one by clicking the 'Download it' button"
 msgstr "Veuillez spécifier une image source ou téléchargez en une en cliquant sur le bouton 'Télécharger la'"
 
-#: src/ufo_dd.py:362
+#: src/ufo_dd.py:291
 msgid "Insufficient disk space"
 msgstr "Espace disque insuffisant"
 
-#: src/ufo_dd.py:363
+#: src/ufo_dd.py:292
 msgid "The available size on your disk is insufficient. You need more than %d Mo free on your disk to backup your device.<br><br>Please free some space and retry."
 msgstr "L'espace disque disponible est insuffisant. %d Mo d'espace libre sont requis pour effectuer une sauvegarde de votre clé.<br><br>Veuillez libérer de l'espace et renouvellez l'opération."
 
-#: src/ufo_dd.py:371
+#: src/ufo_dd.py:300
 msgid "The selected target is too small"
 msgstr "La capacité du périphérique sélectionné est trop faible"
 
-#: src/ufo_dd.py:372
+#: src/ufo_dd.py:301
 msgid "The size of the source you have selected (%d Mo) is bigger than the size of the selected target (%d Mo).<br><br>Please select a source equal or smaller than the target."
 msgstr "La taille de la source sélectionnée (%d Mo) est plus grande que la taille du périphérique de destination (%d Mo). <br><br>Veuillez insérer une clé de capacité plus importante."
 
-#: src/ufo_dd.py:378
+#: src/ufo_dd.py:307
 msgid "All data on the device will be lost"
 msgstr "Toutes les données sur le périphérique seront perdues"
 
-#: src/ufo_dd.py:379
+#: src/ufo_dd.py:308
 msgid "To setup %s on your device, the device needs to be formatted. Are you sure you want to continue ?"
 msgstr "Pour installer %s sur votre clé usb, le périphérique a besoin d'être formaté. Êtes vous certain de vouloir continuer ? "
 
-#: src/ufo_dd.py:392
+#: src/ufo_dd.py:321
 msgid ""
 "\"</b> because it seems to be busy.\n"
 "Please close the program that is using it and retry."
@@ -968,79 +961,99 @@ msgstr ""
 "\"</b> car il semble être en cours d'utilisation.\n"
 "Veuillez fermer les programmes l'utilisant et réessayer."
 
-#: src/ufo_dd.py:392
+#: src/ufo_dd.py:321
 msgid "%s is not able to umount <b>\""
 msgstr "%s ne parvient pas à démonter <b>\""
 
-#: src/ufo_dd.py:413
+#: src/ufo_dd.py:342
 msgid "Please select a destination directory for the download"
 msgstr "Veuillez sélectionner un répertoire de destination pour le téléchargement"
 
-#: src/ufo_dd.py:426
+#: src/ufo_dd.py:355
 msgid "Downloading %s key image"
 msgstr "Téléchargement de l'image %s"
 
-#: src/ufo_dd.py:427
+#: src/ufo_dd.py:356
 msgid "Please wait while the image is being downloaded"
 msgstr "Veuillez patienter pendant le téléchargement de la mise à jour"
 
-#: src/ufo_dd.py:434
+#: src/ufo_dd.py:363
 msgid "The download has encountered a fatal error, please check your Internet connection and retry"
 msgstr "Le téléchargement a échoué. Veuillez vérifier votre connexion à Internet"
 
-#: src/ufo_dd.py:438
+#: src/ufo_dd.py:367
 msgid "Please select an %s image"
 msgstr "Vous devez préciser une image %s source"
 
+#: src/ufo_dd.py:370
+msgid "backup"
+msgstr "sauvegarde"
+
+#: src/ufo_dd.py:448
+msgid "Public data"
+msgstr "Données publiques"
+
+#: src/ufo_dd.py:449
+msgid "System data"
+msgstr "Système"
+
+#: src/ufo_dd.py:450
+msgid "Private data"
+msgstr "Données privées"
+
 #: src/ufo_dd.py:453
+msgid "(%d Mo)"
+msgstr "(%d Mo)"
+
+#: src/ufo_dd.py:468
 msgid "Please select the target file your key will be backed up into"
 msgstr "Veuillez spécifier l'emplacement du fichier de sauvegarde de votre clé"
 
-#: src/ufo_dd.py:455
+#: src/ufo_dd.py:470
 msgid "If you already have downloaded an image please select its location, otherwise you can download the latest version from the Web"
 msgstr "Sélectionner une image si vous l'avez déjà téléchargée, sinon vous pouvez télécharger la dernière version depuis Internet. "
 
-#: src/ufo_dd.py:472
+#: src/ufo_dd.py:487
 msgid "Download it"
 msgstr "Télécharger le"
 
-#: src/ufo_dd.py:480
+#: src/ufo_dd.py:495
 msgid "Please choose the source device you want to backup:"
 msgstr "Veuillez sélectionner un périphérique:"
 
-#: src/ufo_dd.py:482
+#: src/ufo_dd.py:497
 msgid "Please choose the target device:"
 msgstr "Veuillez sélectionner un périphérique:"
 
-#: src/ufo_dd.py:484
+#: src/ufo_dd.py:499
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: src/ufo_dd.py:501
+#: src/ufo_dd.py:516
 msgid "Partition sizes :<br>You can use the following default values or you can resize the partition sizes to meet your needs :<br><br>"
 msgstr "Tailles des partitions :<br>Vous pouvez utiliser les valeurs par défaut ou dimensionner les partitions suivants vos besoins :<br><br>"
 
-#: src/ufo_dd.py:537
+#: src/ufo_dd.py:552
 msgid "Backup my %s on hard disk"
 msgstr "Sauvegarder un périphérique %s"
 
-#: src/ufo_dd.py:539
+#: src/ufo_dd.py:554
 msgid "Install %s on my device"
 msgstr "Installer %s sur mon périphérique amovible"
 
-#: src/ufo_dd.py:563
+#: src/ufo_dd.py:578
 msgid "Generating"
 msgstr "En cours de génération"
 
-#: src/ufo_dd.py:566
+#: src/ufo_dd.py:581
 msgid "Please wait while %s is beeing written to the device"
 msgstr "Veuillez patienter pendant l'installation de %s sur le périphérique"
 
-#: src/ufo_dd.py:579
+#: src/ufo_dd.py:597
 msgid "Operation successfull !"
 msgstr "Opération effectué avec succès !"
 
-#: src/ufo_dd.py:582
+#: src/ufo_dd.py:600
 msgid ""
 "%s has been successfully installed on your device. You can use it right away.\n"
 "\n"
@@ -1049,6 +1062,16 @@ msgstr ""
 "%s a été installé avec succès. Vous pouvez l'utiliser dès maintenant.\n"
 "\n"
 "Bonne utilisation !"
+
+#: src/ufo_dd.py:628
+msgid ""
+"Your device was successfully backed up. You can use the same tool to restore your device.\n"
+"\n"
+"Please note that you can only restore an image to a device of the very same type that the cloned one."
+msgstr ""
+"Le périphérique a été sauvegardé avec succès. Vous pouvez utiliser le même programme pour restaurer une image.\n"
+"\n"
+"Veuillez noter que vous ne pouvez restaurer une image que sur un périphérique identique à celui d'origine."
 
 #: src/updater.py:53
 msgid "Update available"
