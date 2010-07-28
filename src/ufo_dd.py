@@ -9,8 +9,6 @@ import gui
 import tarfile
 from ConfigParser import ConfigParser
 
-STATUS_WRITING = 0
-
 class DDWindow(QtGui.QWizard):
 
     PAGE_INDEX_INTRO   = 0
