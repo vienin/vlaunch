@@ -140,7 +140,8 @@ while [ 1 ]; do
 		mount_share_and_link $awaited_share_label $awaited_share_name
 		;;
 	"Remove")
-		unlink "${desktop}/${awaited_share_label}"
+		unlink "$HOME/${awaited_share_name}"
+		rm "${desktop}/${awaited_share_name}.desktop"
 		umount $awaited_share_mntpt
 		rmdir "${target}/${awaited_share_label}"
 		;;

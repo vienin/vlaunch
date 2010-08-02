@@ -566,8 +566,11 @@ class VBoxMachine():
         else:
             logging.debug("Detaching usb device: " + str(usb['path']) + ", " + str(usb['name']))
             self.remove_shared_folder(str(usb['name']))
-            self.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb['name']), 
-                                    str(usb['path']))
+            self.set_guest_property("/UFO/Com/HostToGuest/Shares/Remove/" + str(usb['name']),
+                                    str(usb['name']))
+            self.set_guest_property("/UFO/Com/HostToGuest/Shares/ReadyToMount/" + str(usb['name']),
+                                    "")
+
         usb['attach'] = attach
 
     def add_shared_folder(self, name, host_path, writable, save=False):
