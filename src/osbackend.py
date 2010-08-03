@@ -223,7 +223,7 @@ class OSBackend(object):
                 for current_part in device_parts:
                     device_parts.get(current_part).append(str(current_part) in conf.PARTS.split(','))
                 blockcount = self.get_device_size(conf.DEV)
-                createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, device_parts, self.RELATIVE_VMDK_POLICY)
+                createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, self.get_disk_geometry(conf.DEV), device_parts, self.RELATIVE_VMDK_POLICY)
 
             self.vbox.current_machine.attach_harddisk(vmdk, rank)
 

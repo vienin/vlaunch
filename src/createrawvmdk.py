@@ -49,14 +49,14 @@ ddb.uuid.parentmodification="00000000-0000-0000-0000-000000000000"
 
 # create a raw vmdk file
 # params : target_file_path, device_name, device_size (ko)
-def createrawvmdk (target_path, device_name, device_size, partitions = {}, relative = True):
+def createrawvmdk (target_path, device_name, device_size, geometry, partitions = {}, relative = True):
     # generate vmdk uuid
     vmdk_uuid = str(uuid.uuid4())
     
     # write vmdk file
     device_size = int(device_size)
     cylinders = min(device_size / 16 / 63, 16383)
-    mbr_block_count = 63
+    mbr_block_count = int(geometry[2])
 
     vmdk_file = open(target_path, 'a')
     
