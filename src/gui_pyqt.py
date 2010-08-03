@@ -1104,7 +1104,12 @@ class UsbAttachementLayout(QtGui.QHBoxLayout):
         self.usb      = usb
         self.callback = callback
 
-        self.usb_label = QtGui.QLabel(self.usb['name'] + " (" + self.usb['path'] + ")")
+        self.usb_infos_layout = QtGui.QVBoxLayout()
+        self.usb_name = QtGui.QLabel(self.usb['name'])
+        self.usb_name.setMaximumHeight(12)
+        self.usb_path = QtGui.QLabel("<i><font size=2>" + self.usb['path'] + "</font></i>")
+        self.usb_infos_layout.addWidget(self.usb_name)
+        self.usb_infos_layout.addWidget(self.usb_path)
         if self.usb['attach']:
             button_msg  = _("Detach")
             button_icon = QtGui.QIcon(os.path.join(conf.IMGDIR, "eject.png"))
@@ -1115,7 +1120,7 @@ class UsbAttachementLayout(QtGui.QHBoxLayout):
         self.attach_button.setFlat(True)
         self.attach_button.setMaximumSize(100, 22)
 
-        self.addWidget(self.usb_label)
+        self.addLayout(self.usb_infos_layout)
         self.addWidget(self.attach_button)
         self.connect(self.attach_button, QtCore.SIGNAL("clicked()"), self.attach)
 
@@ -1134,11 +1139,14 @@ class UsbAttachementLayout(QtGui.QHBoxLayout):
 
     def hide(self):
         self.attach_button.hide()
-        self.usb_label.hide()
+        self.usb_name.hide()
+        self.usb_path.hide()
+        self.usb_infos_layout.removeWidget(self.usb_name)
+        self.usb_infos_layout.removeWidget(self.usb_path)
         self.removeWidget(self.attach_button)
-        self.removeWidget(self.usb_label)
         del self.attach_button
-        del self.usb_label
+        del self.usb_name
+        del self.usb_path
 
 
 class VirusFoundLayout(QtGui.QHBoxLayout):
