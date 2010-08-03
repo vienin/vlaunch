@@ -1025,9 +1025,9 @@ class SmartDictLayout(QtGui.QVBoxLayout):
 
     def hide(self):
         if len(self.diplayed_hlayouts):
-            for item in self.diplayed_hlayouts:
-                self.diplayed_hlayouts[item].hide()
-            del self.diplayed_hlayouts[item]
+            for item in self.diplayed_hlayouts.values():
+                item.hide()
+                del item
 
         else:
             self.default.hide()
