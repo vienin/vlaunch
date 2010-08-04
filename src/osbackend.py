@@ -223,7 +223,7 @@ class OSBackend(object):
                 for current_part in device_parts:
                     device_parts.get(current_part).append(str(current_part) in conf.PARTS.split(','))
                 blockcount = self.get_device_size(conf.DEV)
-                createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, self.get_disk_geometry(conf.DEV), device_parts, self.RELATIVE_VMDK_POLICY)
+                createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, self.get_mbr(self.open(conf.DEV)), device_parts, self.RELATIVE_VMDK_POLICY)
 
             self.vbox.current_machine.attach_harddisk(vmdk, rank)
 
@@ -875,6 +875,10 @@ class OSBackend(object):
                 return os.write(self.fd, data)
 
         return File(path, mode)
+
+    def get_mbr(self, device):
+        import mbr
+        return mbr.MBR(device)
 
     def find_device_by_path(self, path):
         usbs = self.get_usb_devices()
