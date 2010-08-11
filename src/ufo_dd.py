@@ -24,6 +24,7 @@ class DDWindow(QtGui.QWizard):
         self.device_size = 0
         self.parts = []
         self.generating = False
+        self.reverse = False
         
         self.connect(self, QtCore.SIGNAL("currentIdChanged(int)"), self.currentIdChanged)
 
