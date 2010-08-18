@@ -95,8 +95,8 @@ make install DESTDIR=$RPM_BUILD_ROOT TARGET_PATH=%{TARGET_PATH}
 %pre guestmode
 useradd guest
 usermod -G ufo -a guest
-passwd -f -u guest
-passwd -f -u root
+passwd -f -d guest
+passwd -f -d root
 sed -i 's/#*\(default_user *\)[a-zA-Z]*/\1guest/' /etc/slim.conf
 
 %post guestmode
