@@ -33,6 +33,8 @@ Summary: Guest mode for the UFO distribution
 Group: Applications/System
 Requires: vlaunch = %{version}-%{release}
 Requires(pre): %{_sbindir}/useradd, %{_sbindir}/usermod, /bin/sed
+Requires(pre):  agorabox-conf
+Requires(pre):  slim
 Requires(post): /bin/chown
 
 %package generic
