@@ -1,5 +1,8 @@
 #!/bin/sh
 
+user=`basename $HOME`
+desktop=$(su $user xdg-user-dir DESKTOP)
+
 [ ! -d /media/UFO ] && mkdir /media/UFO
 runlevel=`runlevel | cut -d " " -f 2`
 if [ "$runlevel" = 4 ]; then
@@ -10,7 +13,6 @@ else
     mount $fat /media/UFO
 fi
 
-user=`basename $HOME`
 if [ "$user" = "guest" ]; then
     for folder in Bureau Documents Images Modèles Musique Téléchargements Vidéos
     do
@@ -18,4 +20,19 @@ if [ "$user" = "guest" ]; then
     done
 else
     mount --bind /media/UFO/Public $HOME/Public
+    cat > $desktop/public.desktop <<EOF
+#!/usr/bin/env xdg-open
+
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Link
+Name=Public
+Name[fr_FR]=Public
+Comment=My public files
+Comment[fr_FR]=Mes fichiers publics
+URL=/media/UFO/Public
+Icon=gdu-encrypted-unlock
+EOF
+    chown $user:$user $desktop/public.desktop
 fi
