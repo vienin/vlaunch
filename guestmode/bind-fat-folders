@@ -2,24 +2,26 @@
 
 user=`basename $HOME`
 desktop=$(su $user xdg-user-dir DESKTOP)
-
-[ ! -d /media/UFO ] && mkdir /media/UFO
+mountpoint=/media/UFO
+[ ! -d $mountpoint ] && mkdir $mountpoint
 runlevel=`runlevel | cut -d " " -f 2`
+
 if [ "$runlevel" = 4 ]; then
-    mount.vboxsf UFO /media/UFO -o uid=$USERHELPER_UID,rw,dmode=755,fmode=755
+    vbox-client-symlink --nowait
 else
     . /etc/sysconfig/ufo/uuids
     fat=`findfs UUID=$UFO`
-    mount $fat /media/UFO
+    [ -f $desktop/UFO.desktop ] && rm $desktop/UFO.desktop
+    mount -o rw,nosuid,nodev,uhelper=devkit,uid=$USERHELPER_UID,gid=$USERHELPER_UID,shortname=mixed,dmask=0077,utf8=1,flush $fat $mountpoint
 fi
 
 if [ "$user" = "guest" ]; then
     for folder in Bureau Documents Images Modèles Musique Téléchargements Vidéos
     do
-        mount --bind /media/UFO/Public/$folder $HOME/$folder
+        mount --bind $mountpoint/Public/$folder $HOME/$folder
     done
 else
-    mount --bind /media/UFO/Public $HOME/Public
+    mount --bind $mountpoint/Public $HOME/Public
     cat > $desktop/public.desktop <<EOF
 #!/usr/bin/env xdg-open
 
@@ -31,7 +33,7 @@ Name=Public
 Name[fr_FR]=Public
 Comment=My public files
 Comment[fr_FR]=Mes fichiers publics
-URL=/media/UFO/Public
+URL=$HOME/Public
 Icon=gdu-encrypted-unlock
 EOF
     chown $user:$user $desktop/public.desktop

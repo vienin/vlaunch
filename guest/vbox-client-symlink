@@ -107,6 +107,8 @@ for label in ${share_labels[@]}; do
 	i=$(( $i + 1 ))
 done
 
+[ "$1" = "--nowait" ] && exit 0;
+
 while [ 1 ]; do
 	for ligne in `/usr/bin/VBoxControl -nologo guestproperty wait "/UFO/Com/HostToGuest/Shares/*"`; do
 
