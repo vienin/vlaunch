@@ -18,6 +18,7 @@ fi
 if [ "$user" = "guest" ]; then
     for folder in Bureau Documents Images Modèles Musique Téléchargements Vidéos
     do
+        [ ! -d $HOME/$folder ] && mkdir $HOME/$folder && chown $user:$user $HOME/$folder
         mount --bind $mountpoint/Public/$folder $HOME/$folder
     done
 else
