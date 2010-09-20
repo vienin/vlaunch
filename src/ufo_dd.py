@@ -125,11 +125,12 @@ class DDWindow(QtGui.QWizard):
                                          "size" : size,
                                          "resizable" : eval(layout.get(section, "resizable", "True")),
                                          "bootable" : eval(layout.get(section, "bootable", "False")) })
-
             except:
                 logging.debug("Could not load layout.conf in archive %s" % filename)
                 return -1
-
+        else:
+            self.total_size = os.stat(filename).st_size
+            
     def write_image(self, image, device, callback=None):
         self.generating = True
         if tarfile.is_tarfile(image):
@@ -163,6 +164,7 @@ class DDWindow(QtGui.QWizard):
                                    callback = lambda x: callback(x + written, total_size))
                 i += 1
             dev.close()
+
         else:
             total_size = self.device_size
             self.dd(image, device, callback = lambda x: callback(x, total_size))
@@ -177,7 +179,7 @@ class DDWindow(QtGui.QWizard):
             srcfile = src
 
         if type(dest) in (str, unicode):
-            destfile = self.backend.open(dest, 'w')
+            destfile = self.backend.open(dest, 'rw')
         else:
             destfile = dest
 
@@ -391,8 +393,12 @@ class DDWindow(QtGui.QWizard):
 
             def update_sliders(_self):
                 if not self.reverse:
-                    if not self.parts or not self.device_size:
+                    if not self.device_size or not self.total_size:
                         return
+                    if not self.parts:
+                        if self.device_size == self.total_size:
+                            self.button(QtGui.QWizard.NextButton).setEnabled(True)
+                            return
                     self.button(QtGui.QWizard.NextButton).setEnabled(True)
                 else:
                     self.button(QtGui.QWizard.NextButton).setEnabled(not _self.edit.text().isEmpty())

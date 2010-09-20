@@ -849,6 +849,9 @@ class OSBackend(object):
                 elif mode == "rw": os_mode = os.O_RDWR | os.O_CREAT
                 else: raise Exception("Unsupported mode %s" % mode)
                 self.fd = os.open(path, os_mode)
+                curpos = os.lseek(self.fd, 0, os.SEEK_CUR)
+                self.size = os.lseek(self.fd, 0, os.SEEK_END)
+                os.lseek(self.fd, curpos, os.SEEK_SET)
 
             def __del__(self):
                 self.close()

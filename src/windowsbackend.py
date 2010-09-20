@@ -451,7 +451,7 @@ class WindowsBackend(OSBackend):
         disks = self.WMI.Win32_DiskDrive()
         return [[ disk.Name, disk.Model ] for disk in disks if disk.InterfaceType == "USB" ]
 
-    def open(self, path, mode='r'):
+    def open(_self, path, mode='r'):
         import win32file
         import win32con
         import winioctlcon
@@ -459,10 +459,20 @@ class WindowsBackend(OSBackend):
         class WindowsFile:
             def __init__(self, path, mode=0, access=win32con.GENERIC_ALL):
                 self.name = path
+                access = 0
+                winmode = 0
+                if 'r' in mode:
+                    winmode = win32con.OPEN_EXISTING
+                    access |= win32con.GENERIC_READ
+                if 'w' in mode:
+                    winmode |= win32con.CREATE_ALWAYS
+                    access |= win32con.GENERIC_WRITE
                 if path.startswith("\\\\"):
-                    self.handle = win32file.CreateFile(path, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, win32con.OPEN_EXISTING, win32con.FILE_FLAG_RANDOM_ACCESS, None)
+                    self.size = _self.get_device_size(path) * 512
+                    self.handle = win32file.CreateFile(path, access, win32con.FILE_SHARE_READ | win32con.FILE_SHARE_WRITE, None, winmode, win32con.FILE_FLAG_RANDOM_ACCESS, None)
                 else:
-                    self.handle = win32file.CreateFile(path, win32con.GENERIC_READ, 0, None, win32con.OPEN_EXISTING, 0, None)
+                    self.handle = win32file.CreateFile(path, access, 0, None, winmode, 0, None)
+                    self.size = win32file.GetFileSize(self.handle)
 
             def __del__(self):
                 self.close()
@@ -474,6 +484,9 @@ class WindowsBackend(OSBackend):
 
             def read(self, size):
                 if size < 512: size = 512
+                pos = win32file.SetFilePointer(self.handle, 0, win32file.FILE_CURRENT)
+                if pos + size > self.size:
+                    size = self.size - pos
                 return win32file.ReadFile(self.handle, size)[1]
 
             def write(self, data):
