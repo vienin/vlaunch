@@ -133,7 +133,8 @@ class DDWindow(QtGui.QWizard):
             
     def write_image(self, image, device, callback=None):
         self.generating = True
-        if tarfile.is_tarfile(image):
+        # is_tarfile on a device returns True on Mac...
+        if tarfile.is_tarfile(image) and not image.startswith("/dev"):
 
             # We wait a bit otherwise it sometimes fails on Windows
             time.sleep(3)
@@ -172,7 +173,7 @@ class DDWindow(QtGui.QWizard):
         callback(total_size, total_size)
         self.generating = False
 
-    def dd(self, src, dest, callback=None, bs=32768, count = -1, skip=0, seek=0):
+    def dd(self, src, dest, callback=None, bs=1024*1024, count = -1, skip=0, seek=0):
         if type(src) in (str, unicode):
             srcfile = self.backend.open(src)
         else:
@@ -369,6 +370,7 @@ class DDWindow(QtGui.QWizard):
             def on_file_select(_self):
                 filedialog = QtGui.QFileDialog(self, _("Please select an %s image") % (conf.PRODUCTNAME,), os.getcwd())
                 if self.reverse:
+                    filedialog.setAcceptMode(filedialog.AcceptSave)
                     filedialog.setDefaultSuffix("img")
                     filedialog.selectFile("%s %s-%s.img" % (conf.PRODUCTNAME, _("backup"), time.strftime("%m-%d-%y")))
 
