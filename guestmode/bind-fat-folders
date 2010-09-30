@@ -1,7 +1,8 @@
 #!/bin/sh
 
 user=`basename $HOME`
-desktop=$(su $user xdg-user-dir DESKTOP)
+. $HOME/.config/user-dirs.dirs
+desktop=$XDG_DESKTOP_DIR
 mountpoint=/media/UFO
 [ ! -d $mountpoint ] && mkdir $mountpoint
 runlevel=`runlevel | cut -d " " -f 2`
