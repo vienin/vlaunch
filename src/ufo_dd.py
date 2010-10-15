@@ -22,6 +22,7 @@ class DDWindow(QtGui.QWizard):
 
         self.load_usbs()
         self.device_size = 0
+        self.total_size = 0
         self.parts = []
         self.generating = False
         self.reverse = False
