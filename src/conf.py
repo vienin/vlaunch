@@ -179,7 +179,7 @@ class Conf(object):
           "cmdline" : "rhgb ro quiet 4",
           "reintegration" : reintegrationValues[2],
           "guestdebug" : GuestProperty(False, "/UFO/Debug"),
-          "guestmode" : False,
+          "guestmode" : True,
           "guestuser" : "guest",
           "gui" : GuestProperty(guiValues[0], "/UFO/GUI")
         },
