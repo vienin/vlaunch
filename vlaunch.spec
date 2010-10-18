@@ -99,7 +99,7 @@ useradd guest
 usermod -G ufo -a guest
 passwd -f -d guest
 passwd -f -d root
-sed -i 's/#*\(default_user *\)[a-zA-Z]*/\1guest/' /etc/slim.conf
+
 
 %post guestmode
 chown -R guest:guest /home/guest/.config
