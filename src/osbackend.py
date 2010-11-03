@@ -32,7 +32,7 @@ import platform
 import utils
 from ufovboxapi import *
 from ConfigParser import ConfigParser
-from utils import RoolOverLogger
+from utils import RollOverLogger
 
 try:
     import keyring
@@ -710,7 +710,7 @@ class OSBackend(object):
         elif "/UFO/Debug/" in name:
             debug = os.path.basename(name)
             if not self.debug_reports.has_key(debug):
-                self.debug_reports[debug] = RoolOverLogger(conf.LOGFILE + "_" + debug, 1)
+                self.debug_reports[debug] = RollOverLogger(conf.LOGFILE + "_" + debug, 1)
 
             self.debug_reports[debug].safe_debug(newValue)
 

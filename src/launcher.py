@@ -36,9 +36,9 @@ if not os.path.exists(log_dir):
 conf.LOGFILE = path.join(log_dir, os.path.basename(conf.LOG))
 
 try:
-    from utils import RoolOverLogger
+    from utils import RollOverLogger
     log_path    = path.join(conf.SCRIPT_DIR, conf.LOGFILE)
-    root_logger = RoolOverLogger(log_path, 10)
+    root_logger = RollOverLogger(log_path, 10)
 
     logging.debug = root_logger.safe_debug
     print "Logging to " + log_path

@@ -52,17 +52,17 @@ class SmartDict(dict):
             callback(key)
 
 
-class RoolOverLogger():
+class RollOverLogger():
 
     format = "%(asctime)s [%(levelname)s] %(message)s"
 
     def __init__(self, file_path, count):
-        do_roolover = os.path.exists(file_path)
+        do_rollover = os.path.exists(file_path)
         self.file_handler = logging.handlers.RotatingFileHandler(file_path, backupCount=count)
         self.file_handler.setFormatter(logging.Formatter(self.format))
         self.file_handler.setLevel(logging.DEBUG)
 
-        if do_roolover:
+        if do_rollover:
             self.file_handler.doRollover()
 
         self.logger = logging.getLogger(os.path.basename(file_path))
