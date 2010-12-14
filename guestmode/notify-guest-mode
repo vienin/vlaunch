@@ -18,5 +18,6 @@ Name[fr_FR]=Identifiez vous !
 Icon=firstboot.png
 EOF
 
+sleep 60
 chmod +x $desktop/firstboot.desktop
 notify-send --icon=/usr/share/icons/hicolor/48x48/apps/firstboot.png $"You are currently logged in guest mode. Please consider clicking on the 'Setup my key' icon to get access to services like synchronization of your files, encryption, and more"
