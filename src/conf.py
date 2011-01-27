@@ -87,7 +87,7 @@ class Conf(object):
                              'overlay=tmpfs',
                              'overlay=' ]
     languageValues       = [ 'fr_FR', 'en_US' ]
-    guiValues            = [ "gnome", "cairo-dock", "moblin" ]
+    guiValues            = [ "gnome", "bloom" ]
 
     config = \
     {
@@ -372,7 +372,7 @@ class Conf(object):
 
         self.reintegrationStrings = [ _('Host disk'), _('Memory'), _('Direct') ]
         self.languageStrings      = [ _('French'), _('English') ]
-        self.guiStrings           = [ _('GNOME'), _('Cairo-dock'), _("Moblin") ]
+        self.guiStrings           = [ _('GNOME'), _("Bloom") ]
 
         self.settings = [ \
           { 'tabname'  : _("Behavior"),
@@ -453,6 +453,7 @@ class Conf(object):
                   'label'  : _("Select a graphical interface."),
                   'values' : self.guiValues,
                   'strgs'  : self.guiStrings,
+                  'reboot' : True
                 },
               ]
           },
