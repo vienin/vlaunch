@@ -4,12 +4,16 @@ TEXTDOMAIN=vlaunch-guest
 
 start_gnome() {
 	echo "start-gnome"
-	sed "s?PREFERRED=[^$]*?PREFERRED=/usr/bin/gnome-session?" -i /etc/sysconfig/desktop
+	sed "s?PREFERRED=[^$]*?PREFERRED=/usr/bin/gnome-session?" /etc/sysconfig/desktop > /tmp/switch
+	cat /tmp/switch > /etc/sysconfig/desktop
+	rm /tmp/switch
 }
 
 start_bloom() {
 	echo "start-bloom"
-	sed "s?PREFERRED=[^$]*?PREFERRED=/usr/bin/startbloom?" -i /etc/sysconfig/desktop
+	sed "s?PREFERRED=[^$]*?PREFERRED=/usr/bin/startbloom?" /etc/sysconfig/desktop > /tmp/switch
+	cat /tmp/switch > /etc/sysconfig/desktop
+	rm /tmp/switch
 }
 
 set_gui() {
