@@ -23,8 +23,8 @@ Source7:        USB_Disk_Eject.exe
 Source8:        dd.exe
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:	python VirtualBox-OSE
-Requires:       kernel-vbox python-augeas
+BuildRequires:	python VirtualBox-OSE gettext
+Requires:       python-augeas
 
 %package guest
 Summary: Install guest part files
