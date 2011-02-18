@@ -81,8 +81,6 @@ operating systems : Linux, Windows and MacOSX.
 
 %prep
 %setup -n vlaunch-%{version}
-make download-binaries
-make bootfloppy
 
 
 %build
