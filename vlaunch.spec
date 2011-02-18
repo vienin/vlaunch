@@ -19,9 +19,11 @@ Source3:        windows.AMD64.tgz
 Source4:        windows.x86.tgz
 Source5:        ufo_overlay.vdi
 Source6:        UFO-VirtualBox-boot.img
+Source7:        USB_Disk_Eject.exe
+Source8:        dd.exe
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:	python /usr/bin/VirtualBox
+BuildRequires:	python VirtualBox-OSE
 Requires:       kernel-vbox python-augeas
 
 %package guest
@@ -82,6 +84,7 @@ operating systems : Linux, Windows and MacOSX.
 
 %prep
 %setup -n vlaunch-%{version}
+cp "%{SOURCE1}" "%{SOURCE2}" "%{SOURCE3}" "%{SOURCE4}" "%{SOURCE5}" "%{SOURCE6}" "%{SOURCE7}" "%{SOURCE8}" .
 
 
 %build
