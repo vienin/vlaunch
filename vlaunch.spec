@@ -15,9 +15,10 @@ URL:            http://www.glumol.com
 Source0:        vlaunch-%{version}.tar.gz
 Source1:        Manuel d'utilisation.pdf
 Source2:        mac-intel.tgz
-Source3:        windows.tgz
-Source4:        ufo_overlay.vdi
-Source5:        bootfloppy.img
+Source3:        windows.AMD64.tgz
+Source4:        windows.x86.tgz
+Source5:        ufo_overlay.vdi
+Source6:        UFO-VirtualBox-boot.img
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:	python /usr/bin/VirtualBox
