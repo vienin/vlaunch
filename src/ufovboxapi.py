@@ -156,9 +156,14 @@ class VBoxHypervisor():
             return 1
         try:
             if self.vbox_version() >= "2.1.0":
-                self.vbox.registerMachine(
-                    self.vbox.createMachine(machine_name, os_type, base_dir, 
-                                            "00000000-0000-0000-0000-000000000000"))
+                if self.vbox_version() >= "3.2.0":
+                    self.vbox.registerMachine(
+                        self.vbox.createMachine(machine_name, os_type, base_dir,
+                                                "00000000-0000-0000-0000-000000000000", False))
+                else:
+                    self.vbox.registerMachine(
+                        self.vbox.createMachine(machine_name, os_type, base_dir,
+                                                "00000000-0000-0000-0000-000000000000"))
             else:
                 if base_dir == '':
                     base_dir = 'Machines'
@@ -756,7 +761,10 @@ class VBoxMachine():
 
     def enable_pae(self, state):
         if self.hypervisor.vbox_version() >= "3.1.0":
-            self.machine.setCpuProperty(self.hypervisor.constants.CpuPropertyType_PAE, state)
+            if self.hypervisor.vbox_version() >= "3.2.0":
+                self.machine.setCPUProperty(self.hypervisor.constants.CpuPropertyType_PAE, state)
+            else:
+                self.machine.setCpuProperty(self.hypervisor.constants.CpuPropertyType_PAE, state)
         else:
             self.machine.PAEEnabled = state
             
