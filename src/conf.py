@@ -134,11 +134,11 @@ class Conf(object):
           "proxyhttps" : GuestProperty(AUTO_STRING, "/UFO/Proxy/HTTPS"),
           "proxyftp" : GuestProperty(AUTO_STRING, "/UFO/Proxy/FTP"),
           "proxysocks" : GuestProperty(AUTO_STRING, "/UFO/Proxy/SOCKS"),
-          "linuxexe" : "Gdium Mobile PC",
-          "windowsexe" : "Gdium Mobile PC.exe",
-          "macexe" : "Gdium Mobile PC.app/Contents/MacOS/UFO",
-          "productname" : "Gdium Mobile PC",
-          "publicpartname" : "MOBILEPC",
+          "linuxexe" : "Bloom",
+          "windowsexe" : "Bloom.exe",
+          "macexe" : "Bloom.app/Contents/MacOS/UFO",
+          "productname" : "Bloom",
+          "publicpartname" : "BLOOM",
           "firstlaunch" : True
         },
       "rawdisk" :
@@ -152,7 +152,7 @@ class Conf(object):
         },
       "vm" :
         {
-          "vm" : "Gdium Mobile PC",
+          "vm" : "Bloom",
           "os" : "Fedora",
           "nettype" : 2,
           "hostnet" : "",

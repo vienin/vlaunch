@@ -6,7 +6,7 @@ ARCHIVE=$(DIR).tar.gz
 SPECFILE=$(NAME).spec
 URL=http://www.glumol.com/chicoutimi/vlaunch
 
-PRODUCTNAME=Gdium Mobile PC
+PRODUCTNAME=Bloom
 
 OVERLAY_DEV_UUID=b07ac827-ce0c-4741-ae81-1f234377b4b5
 OVERLAY_DEV_TYPE=ext4-no_journal-no_huge_files
