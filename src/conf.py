@@ -467,7 +467,12 @@ class Conf(object):
                   'label'  : _("Set the size of the virtual machine memory."),
                   'range'  : [self.MINRAM, 4096],
                   'autocb' : True,
-                  'reboot' : True
+                  'reboot' : True,
+                  'thresholds' : [ (512, _("It is highly recommended to use %s with at least 512 Mo of memory."
+                                           "You may encounter severe performance loss.") % self.PRODUCTNAME),
+                                   (2048, ""),
+                                   (4096, _("If you use %s with more than 2 Go, you may encounter some performance loss "
+                                            "that may goes up to 50%% on some slow computers.") % self.PRODUCTNAME) ]
                 },
                 { 'confid' : "cpus",
                   'sectid' : "vm",

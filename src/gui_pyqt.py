@@ -1933,7 +1933,25 @@ class Settings(QtGui.QDialog):
                     val_layout.addWidget(slider)
                     val_layout.addSpacing(30)
                     set_layout.addLayout(val_layout)
-                    
+
+                    if item.get('thresholds'):
+                        infos = QtGui.QLabel()
+                        infos.setWordWrap(True)
+                        def on_changed(thresholds, infos, value):
+                            for threashold, msg in thresholds:
+                                if value < threashold:
+                                    infos.setText(msg)
+                                    return
+
+                        from functools import partial
+                        handler = partial(on_changed, item.get('thresholds'), infos)
+                        spin.valueChanged.connect(handler)
+                        checkbox.toggled.connect(partial(lambda infos, value: infos.setText('') if value else handler(0),
+                                                         infos))
+                        vbox = QtGui.QVBoxLayout()
+                        vbox.addWidget(infos)
+                        set_layout.addLayout(vbox)
+
                 else:
                     
                     # Here build value edit item corresponding to variable type
