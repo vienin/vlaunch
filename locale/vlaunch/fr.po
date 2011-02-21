@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: vlaunch 0.9\n"
-"POT-Creation-Date: 2011-02-21 11:28+EST\n"
-"PO-Revision-Date: 2011-02-21 11:31-0500\n"
+"POT-Creation-Date: 2011-02-21 12:31+EST\n"
+"PO-Revision-Date: 2011-02-21 12:34-0500\n"
 "Last-Translator: Sylvain Baubeau <sylvain.baubeau@agorabox.org>\n"
 "Language-Team: French <translations@agorabox.org>\n"
 "MIME-Version: 1.0\n"
@@ -14,221 +14,229 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: pygettext.py 1.5\n"
 
-#: src/conf.py:373
+#: src/conf.py:374
 msgid "Direct"
 msgstr "Direct"
 
-#: src/conf.py:373
+#: src/conf.py:374
 msgid "Host disk"
 msgstr "Disque hôte"
 
-#: src/conf.py:373
-#: src/conf.py:466
+#: src/conf.py:374
+#: src/conf.py:467
 msgid "Memory"
 msgstr "Mémoire vive"
 
-#: src/conf.py:374
+#: src/conf.py:375
 msgid "English"
 msgstr "Anglais"
 
-#: src/conf.py:374
+#: src/conf.py:375
 msgid "French"
 msgstr "Français"
 
-#: src/conf.py:375
+#: src/conf.py:376
 msgid "Bloom"
 msgstr "Bloom"
 
-#: src/conf.py:375
+#: src/conf.py:376
 msgid "GNOME"
 msgstr "GNOME"
 
-#: src/conf.py:378
+#: src/conf.py:379
 msgid "Behavior"
 msgstr "Comportement"
 
-#: src/conf.py:384
+#: src/conf.py:385
 msgid "Window resolution"
 msgstr "Résolution de la fenêtre"
 
-#: src/conf.py:385
+#: src/conf.py:386
 msgid "Choose the starting resolution of the window. Note that if the chosen resolution is higher or equal than the computer one, the window will be displayed in fullscreen mode."
 msgstr "Choisissez la résolution initiale de la fenêtre. Notez que si la résolution choisie est supérieure ou égale à celle de l'ordinateur, la fenêtre sera affichée en mode plein écran."
 
-#: src/conf.py:392
+#: src/conf.py:393
 msgid "Activate voice"
 msgstr "Activer la voix"
 
-#: src/conf.py:393
+#: src/conf.py:394
 msgid "Enable this option if you want to turn on voice synthesis."
 msgstr "Activez cette option si vous voulez activer la synthèse de voix."
 
-#: src/conf.py:398
+#: src/conf.py:399
 msgid "Fullscreen automatic"
 msgstr "Plein écran automatique"
 
-#: src/conf.py:399
+#: src/conf.py:400
 msgid "Enable this option if you want the window switch to fullscreen mode at login."
 msgstr "Activez cette option si vous voulez que la fenêtre soit affichée en mode plein écran à l'arrivée au bureau."
 
-#: src/conf.py:404
+#: src/conf.py:405
 msgid "Minimize automatic"
 msgstr "Réduction automatique"
 
-#: src/conf.py:405
+#: src/conf.py:406
 msgid "Enable this option if you want the window switch to minimized mode at startup and shutdown."
 msgstr "Activez cette option si vous voulez que la fenêtre soit réduite durant les étapes de démarrage et de fermeture."
 
-#: src/conf.py:410
+#: src/conf.py:411
 msgid "Eject key at shutdown"
 msgstr "Éjecter la clé à l'extinction"
 
-#: src/conf.py:411
+#: src/conf.py:412
 msgid "Enable this option if you want to eject the key at shutdown."
 msgstr ""
 "Activez cette option si vous voulez que la clé soit éjectée\n"
 "à l'extinction de la machine virtuelle."
 
-#: src/conf.py:415
+#: src/conf.py:416
 #: src/launcher.py:121
 msgid "Appearance"
 msgstr "Apparence"
 
-#: src/conf.py:421
+#: src/conf.py:422
 msgid "Language"
 msgstr "Langue"
 
-#: src/conf.py:422
+#: src/conf.py:423
 msgid "Choose your language."
 msgstr "Choisissez la langue."
 
-#: src/conf.py:429
+#: src/conf.py:430
 msgid "Menu bar"
 msgstr "Barre de menu"
 
-#: src/conf.py:430
+#: src/conf.py:431
 msgid "Display/hide the window menu bar."
 msgstr "Afficher/cacher la barre de menu."
 
-#: src/conf.py:436
+#: src/conf.py:437
 msgid "Balloon top color"
 msgstr "Couleur du haut"
 
-#: src/conf.py:440
+#: src/conf.py:441
 msgid "Balloon bottom color"
 msgstr "Couleur du bas"
 
-#: src/conf.py:444
+#: src/conf.py:445
 msgid "Balloon text color"
 msgstr "Couleur du texte"
 
-#: src/conf.py:447
+#: src/conf.py:448
 msgid "Customize colors of the balloon message window. Use different collors for top and bottom to get a color gradient."
 msgstr "Personnalisez la couleur de l'infobulle de messages. Utilisez des couleurs différentes pour le haut et le bas pour obtenir un dégradé de couleurs."
 
-#: src/conf.py:452
+#: src/conf.py:453
 msgid "User interface"
 msgstr "Interface utilisateur"
 
-#: src/conf.py:453
+#: src/conf.py:454
 msgid "Select a graphical interface."
 msgstr "Sélectionner une interface utilisateur."
 
-#: src/conf.py:460
+#: src/conf.py:461
 msgid "Advanced"
 msgstr "Avancé"
 
-#: src/conf.py:467
+#: src/conf.py:468
 msgid "Set the size of the virtual machine memory."
 msgstr "Spécifiez la taille de la mémoire vive de la machine virtuelle."
 
-#: src/conf.py:471
+#: src/conf.py:472
 msgid "It is highly recommended to use %s with at least 512 Mo of memory.You may encounter severe performance loss."
 msgstr "Il est fortemment recommandé d'utiliser %s avec au moins 512 Mo de mémoire, sous risque de rencontrer une forte baisse des performances."
 
-#: src/conf.py:474
+#: src/conf.py:475
 msgid "If you use %s with more than 2 Go, you may encounter some performance loss that may goes up to 50%% on some slow computers."
 msgstr "Si vous utilisez %s avec plus de 2 Go de mémoire, il se peut que vous observiez une baisse des performances pouvant aller jusqu'à 50%% sur certains ordinateurs ancients."
 
-#: src/conf.py:479
+#: src/conf.py:480
+msgid "High memory"
+msgstr "Mémoire haute"
+
+#: src/conf.py:481
+msgid "Enable this option if you need more than 2 Go of RAM."
+msgstr "Activez cette option si vous avez besoin de plus de 2 Go de mémoire."
+
+#: src/conf.py:485
 msgid "CPU number"
 msgstr "Nombre de processeurs"
 
-#: src/conf.py:480
+#: src/conf.py:486
 msgid "Set the number of cpus connected to the virtual machine."
 msgstr "Spécifiez le nombre de processeurs de la machine virtuelle."
 
-#: src/conf.py:487
+#: src/conf.py:493
 msgid "3D acceleration"
 msgstr "Accélération 3D"
 
-#: src/conf.py:488
+#: src/conf.py:494
 msgid "Set the 3D acceleration capability. Even if 3D is enabled, availability of this feature depends of the host computer 3Ddevice."
 msgstr "Activez l'accélération 3D. Bien que cette option soit activée, la disponibilité de cette fonctionnalité dépend du matériel de l'ordinateur."
 
-#: src/conf.py:497
+#: src/conf.py:503
 msgid "VT-x/AMD-V"
 msgstr "VT-x/AMD-V"
 
-#: src/conf.py:501
+#: src/conf.py:507
 msgid "Nested paging"
 msgstr "Pagination enchevêtrée"
 
-#: src/conf.py:504
+#: src/conf.py:510
 msgid "Set the virtualization extentions. Even if virtualizatuion extentions are enabled, availability of this feature depends of the host computer cpu properties."
 msgstr "Activez les extensions de virtualisation. Bien que cette option soit activée,la disponibilité de cette fonctionnalité dépend du matériel de l'ordinateur."
 
-#: src/conf.py:511
+#: src/conf.py:517
 msgid "Network"
 msgstr "Réseau"
 
-#: src/conf.py:519
+#: src/conf.py:525
 msgid "Web proxy"
 msgstr "Serveur mandataire HTTP"
 
-#: src/conf.py:524
+#: src/conf.py:530
 msgid "Secure Web proxy"
 msgstr "Serveur mandataire HTTP sécurisé"
 
-#: src/conf.py:529
+#: src/conf.py:535
 msgid "FTP proxy"
 msgstr "Serveur mandataire FTP"
 
-#: src/conf.py:534
+#: src/conf.py:540
 msgid "SOCKS proxy"
 msgstr "Hôte SOCKS"
 
-#: src/conf.py:538
+#: src/conf.py:544
 msgid "Use autodetection for proxy servers or configure them manually using <br>format <i>hostname:port</i>"
 msgstr "Détecter les serveurs mandataires ou configurer les manuellement <br>en utilisant le format <i>hôte:port</i>"
 
-#: src/conf.py:542
+#: src/conf.py:548
 msgid "System"
 msgstr "Système"
 
-#: src/conf.py:548
+#: src/conf.py:554
 #: src/launcher.py:147
-#: src/osbackend.py:429
+#: src/osbackend.py:436
 msgid "Debug mode"
 msgstr "Mode débogage"
 
-#: src/conf.py:549
+#: src/conf.py:555
 msgid "Set debug mode to get more complete log files."
 msgstr "Activer le mode débogage."
 
-#: src/conf.py:553
+#: src/conf.py:559
 msgid "Reintegration policy"
 msgstr "Politique de réintégration"
 
-#: src/conf.py:554
+#: src/conf.py:560
 msgid "DANGEROUS. Select the reintegration policy. The reintegration policy defines how system modifications are written on the removable device."
 msgstr "DANGEREUX. Sélectionne la politique de réintégration. La politique de réintégration définie la manière dont les modifications du système sont écrites sur le support amovible."
 
-#: src/conf.py:563
+#: src/conf.py:569
 msgid "Kernel command line"
 msgstr "Ligne de commande du noyau"
 
-#: src/conf.py:564
+#: src/conf.py:570
 msgid "DANGEROUS. Set the kernel command line parameters. If the following parameters already exist on the kernel command line, they will be overwritten."
 msgstr "DANGEREUX. Défini les paramètres de la ligne de commande du noyau. Si les paramètres suivants existe déjà sur la ligne de commande du noyau, il seront surchargés."
 
@@ -291,8 +299,8 @@ msgstr "Pour plus d'informations, visitez "
 #: src/gui_pyqt.py:394
 #: src/linuxbackend.py:116
 #: src/linuxbackend.py:422
-#: src/osbackend.py:247
-#: src/osbackend.py:507
+#: src/osbackend.py:251
+#: src/osbackend.py:514
 #: src/ufo_dd.py:325
 #: src/ufo_dd.py:367
 msgid "Warning"
@@ -322,8 +330,8 @@ msgstr ""
 #: src/gui_pyqt.py:2117
 #: src/gui_pyqt.py:2132
 #: src/gui_pyqt.py:2317
-#: src/osbackend.py:510
-#: src/osbackend.py:511
+#: src/osbackend.py:517
+#: src/osbackend.py:518
 #: src/updater.py:56
 msgid "No"
 msgstr "Non"
@@ -479,7 +487,7 @@ msgstr ""
 #: src/gui_pyqt.py:2116
 #: src/gui_pyqt.py:2131
 #: src/gui_pyqt.py:2316
-#: src/osbackend.py:509
+#: src/osbackend.py:516
 #: src/ufo_dd.py:72
 #: src/ufo_dd.py:316
 #: src/updater.py:56
@@ -681,7 +689,7 @@ msgstr "Impossible de démonter le volume "
 msgid "Sorry, couldn't authenticate. Please check your password."
 msgstr "Impossible de s'authentifier. Veuillez vérifier votre mot de passe."
 
-#: src/osbackend.py:248
+#: src/osbackend.py:252
 msgid ""
 "The available memory on this computer is low.\n"
 "This can deeply impact the speed of the %s virtual machine.\n"
@@ -693,7 +701,7 @@ msgstr ""
 "\n"
 "Fermer des applications ou redémarrer l'ordinateur peut améliorer les performances."
 
-#: src/osbackend.py:427
+#: src/osbackend.py:434
 msgid ""
 "%s is running in debug mode.\n"
 "Be aware to disable debug mode at the next session."
@@ -701,27 +709,27 @@ msgstr ""
 "%s est exécuté en mode débogage.\n"
 "Prenez garde à désactiver le mode débogage à la fin de la session."
 
-#: src/osbackend.py:508
+#: src/osbackend.py:515
 msgid "Could not find an %s key, try again ?"
 msgstr "Aucune clé %s n'a été trouvée, réessayer ?"
 
-#: src/osbackend.py:518
+#: src/osbackend.py:525
 msgid "No USB device found"
 msgstr "Aucune clé trouvée"
 
-#: src/osbackend.py:519
+#: src/osbackend.py:526
 msgid "Select the USB device you want to install %s on"
 msgstr "Sélectionnez le périphérique USB sur lequel vous voulez installer %s"
 
-#: src/osbackend.py:520
+#: src/osbackend.py:527
 msgid "Device"
 msgstr "Périphérique"
 
-#: src/osbackend.py:562
+#: src/osbackend.py:569
 msgid "%s can not be launched"
 msgstr "%s n'a pas pu être démarré"
 
-#: src/osbackend.py:563
+#: src/osbackend.py:570
 msgid ""
 "An already running of instance %s has been found.\n"
 "Please close all %s windows and processes."
@@ -729,19 +737,19 @@ msgstr ""
 "Une instance de %s est en déjà cours d'exécution.\n"
 "Veuillez fermer toutes les fenêtres de %s et recommencez."
 
-#: src/osbackend.py:565
+#: src/osbackend.py:572
 msgid "Force to close"
 msgstr "Forcer à quitter"
 
-#: src/osbackend.py:572
+#: src/osbackend.py:579
 msgid "The VirtualBox binaries could not be found"
 msgstr "Les fichiers binaires de VirtualBox sont introuvables"
 
-#: src/osbackend.py:573
+#: src/osbackend.py:580
 msgid "Missing binaries"
 msgstr "Binaires VirtualBox manquants"
 
-#: src/osbackend.py:577
+#: src/osbackend.py:584
 #: src/windowsbackend.py:514
 msgid ""
 "We have detected an existing VirtualBox installation on this computer.\n"
@@ -754,56 +762,56 @@ msgstr ""
 "\n"
 "Notez que si vous voulez utiliser votre propre installation de VirtualBox, vous devez redémarrer votre ordinateur."
 
-#: src/osbackend.py:580
+#: src/osbackend.py:587
 #: src/windowsbackend.py:517
 msgid "VirtualBox detected"
 msgstr "VirtualBox détecté"
 
-#: src/osbackend.py:584
+#: src/osbackend.py:591
 msgid "We're sorry but your architecture (%s) is not yet supported."
 msgstr "Votre architecture (%s) n'est pas encore supportée. Nous sommes désolé et vous conseillons de suivre les mise à jour du logiciel."
 
-#: src/osbackend.py:585
+#: src/osbackend.py:592
 msgid "Unsupported architecture"
 msgstr "Architecture non supportée"
 
-#: src/osbackend.py:614
+#: src/osbackend.py:621
 msgid "Opening session..."
 msgstr "Ouverture de la session en cours..."
 
-#: src/osbackend.py:625
+#: src/osbackend.py:632
 msgid "%s: authenticating"
 msgstr "%s: en cours d'authentification"
 
-#: src/osbackend.py:639
+#: src/osbackend.py:646
 msgid "Authenticating..."
 msgstr "Authentification en cours..."
 
-#: src/osbackend.py:652
+#: src/osbackend.py:659
 msgid "Free space available:"
 msgstr "Espace disque disponible:"
 
-#: src/osbackend.py:653
+#: src/osbackend.py:660
 msgid "Information currently unreachable"
 msgstr "Information momentanément indisponible"
 
-#: src/osbackend.py:659
+#: src/osbackend.py:666
 msgid "Removable devices management:"
 msgstr "Gestion des périphériques amovibles:"
 
-#: src/osbackend.py:660
+#: src/osbackend.py:667
 msgid "No removable devices found"
 msgstr "Aucun périphérique amovible trouvé"
 
-#: src/osbackend.py:672
+#: src/osbackend.py:679
 msgid "%s: running"
 msgstr "%s: en cours d'exécution"
 
-#: src/osbackend.py:682
+#: src/osbackend.py:689
 msgid "Recording changes"
 msgstr "Sauvegarde des données"
 
-#: src/osbackend.py:683
+#: src/osbackend.py:690
 msgid ""
 "Please wait while %s is recording the system modifications (%s Mo),\n"
 "you absolutely must not unplug the key !"
@@ -811,11 +819,11 @@ msgstr ""
 "%s est en train d'enregistrer les modifications du système (%s méga-octets),\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:686
+#: src/osbackend.py:693
 msgid "Shutting down"
 msgstr "Arrêt en cours"
 
-#: src/osbackend.py:687
+#: src/osbackend.py:694
 msgid ""
 "Please wait while %s is shutting down,\n"
 "you absolutely must not unplug the key !"
@@ -823,43 +831,43 @@ msgstr ""
 "%s est en cours de fermeture,\n"
 "ne débranchez surtout pas la clé !"
 
-#: src/osbackend.py:691
+#: src/osbackend.py:698
 msgid "%s: recording changes"
 msgstr "%s: en cours de sauvegarde"
 
-#: src/osbackend.py:700
+#: src/osbackend.py:707
 msgid "Restart %s"
 msgstr "Redémarrage de %s"
 
-#: src/osbackend.py:701
+#: src/osbackend.py:708
 msgid "%s is rebooting"
 msgstr "%s est en cours de redémarrage"
 
-#: src/osbackend.py:741
+#: src/osbackend.py:748
 msgid "%s is starting"
 msgstr "Démarrage de %s"
 
-#: src/osbackend.py:743
+#: src/osbackend.py:750
 msgid "1<SUP>st</SUP> launch of %s"
 msgstr "1<SUP>er</SUP> démarrage de %s"
 
-#: src/osbackend.py:746
+#: src/osbackend.py:753
 msgid "%s is starting."
 msgstr "%s est en cours de démarrage"
 
-#: src/osbackend.py:750
+#: src/osbackend.py:757
 msgid "%s: starting"
 msgstr "%s: en cours de démarrage"
 
-#: src/osbackend.py:768
+#: src/osbackend.py:775
 msgid "%s: terminated"
 msgstr "%s: terminé"
 
-#: src/osbackend.py:770
+#: src/osbackend.py:777
 msgid "Goodbye"
 msgstr "Au revoir"
 
-#: src/osbackend.py:771
+#: src/osbackend.py:778
 msgid "You can now safely eject your %s key."
 msgstr "Vous pouvez éjecter votre clé %s en toute sécurité."
 
@@ -1162,3 +1170,4 @@ msgstr "Relancer %s en tant qu'administrateur en faisant un clic droit sur %s et
 #: src/windowsbackend.py:510
 msgid "Not enough permissions"
 msgstr "Permissions insuffisantes"
+

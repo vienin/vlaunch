@@ -235,9 +235,16 @@ class OSBackend(object):
                 else:
                     freeram = self.get_free_ram()
                 ram = max(2 * freeram / 3, conf.MINRAM)
+
+                # The VM is a lot slower if we use high memory
+                if not conf.USEHIGHMEM:
+                    ram = min(2048, ram)
             else:
                 ram = conf.RAMSIZE
-                
+
+            # Cannot give more than 3584 Mo of RAM
+            ram = min(3584, ram)
+
             if int(ram) <= int(conf.MINRAM):
                 gui.dialog_info(title=_("Warning"), 
                                 msg=_("The available memory on this computer is low.\n"

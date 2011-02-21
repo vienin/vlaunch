@@ -159,6 +159,7 @@ class Conf(object):
           "macaddr" : "",
           "ramsize" : AUTO_INTEGER,
           "minram" : 256,
+          "usehighmem" : False,
           "kioskmode" : 0,
           "driverank" : 0,
           "swapfile" : ".VirtualBox/HardDisks/ufo_swap.vdi",
@@ -473,6 +474,11 @@ class Conf(object):
                                    (2048, ""),
                                    (4096, _("If you use %s with more than 2 Go, you may encounter some performance loss "
                                             "that may goes up to 50%% on some slow computers.") % self.PRODUCTNAME) ]
+                },
+                { 'confid' : "usehighmem",
+                  'sectid' : "vm",
+                  'short'  : _("High memory"),
+                  'label'  : _("Enable this option if you need more than 2 Go of RAM."),
                 },
                 { 'confid' : "cpus",
                   'sectid' : "vm",
