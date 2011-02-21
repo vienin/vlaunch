@@ -461,8 +461,8 @@ class VBoxMachine():
         if disk_rank == -1:
             disk_rank = self.current_disk_rank
             self.current_disk_rank += 1
-        if disk_rank >= 3:
-            logging.debug("Maximum IDE disk rank is 2, " + str(disk_rank) + " given")
+        if disk_rank >= 4:
+            logging.debug("Maximum IDE disk rank is 3, " + str(disk_rank) + " given")
             return 1
         disk = self.hypervisor.find_disk(location)
         if disk == None:
@@ -471,8 +471,6 @@ class VBoxMachine():
             return 1
 
         # device 1, port 0 is busy by cd-rom...
-        if disk_rank >= 2:
-            disk_rank += 1
         try:
             if self.hypervisor.vbox_version() >= "3.1.0":
                 controller = self.get_controller("IDE")

@@ -199,6 +199,7 @@ class OSBackend(object):
         logging.debug("VMDK = " + conf.VMDK + " create_vmdk " + str(create_vmdk))
         if conf.ROOTVDI:
             self.vbox.current_machine.attach_harddisk(conf.ROOTVDI, conf.DRIVERANK)
+            conf.DRIVERANK += 1
 
         elif conf.VMDK and create_vmdk:
             rank = conf.DRIVERANK
@@ -226,6 +227,7 @@ class OSBackend(object):
                 createrawvmdk.createrawvmdk(vmdk, conf.DEV, blockcount, self.get_mbr(self.open(conf.DEV)), device_parts, self.RELATIVE_VMDK_POLICY)
 
             self.vbox.current_machine.attach_harddisk(vmdk, rank)
+            conf.DRIVERANK += 1
 
         if conf.CONFIGUREVM:
             # compute reasonable memory size
@@ -316,21 +318,24 @@ class OSBackend(object):
 
             if conf.BOOTISO:
                 logging.debug("Using boot iso image " + conf.BOOTISO)
-                self.vbox.current_machine.attach_dvd(conf.BOOTISO)
+                failed = self.vbox.current_machine.attach_dvd(conf.BOOTISO)
                 if not conf.LIVECD:
                     self.vbox.current_machine.set_boot_device('DVD') 
             else:
                 logging.debug("Using host dvd drive")
-                self.vbox.current_machine.attach_dvd(host_drive = True, blacklist=["UFO"])
+                failed = self.vbox.current_machine.attach_dvd(host_drive = True, blacklist=["UFO"])
+
+            conf.DRIVERANK += 0 if failed else 1
 
             if conf.LIVECD or not conf.BOOTISO and not conf.BOOTFLOPPY:
                 logging.debug("Using hard disk for booting")
                 self.vbox.current_machine.set_boot_device('HardDisk') 
-                
+
             if conf.LIVECD:
                 logging.debug("Setting bootdisk %s for Live CD at rank %d" % (conf.BOOTDISK, conf.DRIVERANK,))
                 self.vbox.current_machine.attach_harddisk(conf.BOOTDISK, conf.DRIVERANK)
-            
+                conf.DRIVERANK += 1
+
             if conf.RESOLUTION:
                 self.fullscreen = False
                 resolution = conf.RESOLUTION
@@ -365,16 +370,16 @@ class OSBackend(object):
         logging.debug("conf.SWAPFILE: " + conf.SWAPFILE)
         if conf.SWAPFILE:
             try:
+                swap_rank = conf.DRIVERANK
                 if not conf.LIVECD or sys.platform != "win32":
                     self.tmp_swapdir = tempfile.mkdtemp(suffix="ufo-swap")
                     logging.debug("self.tmp_swapdir = " + self.tmp_swapdir);
-                    conf.DRIVERANK += 1
-                    swap_rank = conf.DRIVERANK
                     shutil.copyfile(conf.SWAPFILE, 
                                     path.join(self.tmp_swapdir, path.basename(conf.SWAPFILE)))
                 else:
                     self.tmp_swapdir = conf.DATA_DIR
                 self.vbox.current_machine.attach_harddisk(path.join(self.tmp_swapdir, path.basename(conf.SWAPFILE)), swap_rank)
+                conf.DRIVERANK += 1
 
                 swap_dev = "sd" + chr(swap_rank + ord('a'))
                 self.vbox.current_machine.set_guest_property("/UFO/Storages/Swap/Device", swap_dev)
@@ -391,11 +396,10 @@ class OSBackend(object):
             try:
                 self.tmp_overlaydir = tempfile.mkdtemp(suffix="ufo-overlay")
                 logging.debug("self.tmp_overlaydir = " + self.tmp_overlaydir);
-                conf.DRIVERANK += 1
-                overlay_rank = conf.DRIVERANK
                 tmp_overlay = path.join(self.tmp_overlaydir, path.basename(conf.OVERLAYFILE))
                 shutil.copyfile(conf.OVERLAYFILE, tmp_overlay)
-                self.vbox.current_machine.attach_harddisk(tmp_overlay, overlay_rank)
+                self.vbox.current_machine.attach_harddisk(tmp_overlay, conf.DRIVERANK)
+                conf.DRIVERANK += 1
 
                 # TODO:
                 # Set guest prop about max size of the overlay to 
